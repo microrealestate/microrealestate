@@ -1,0 +1,63 @@
+#!/bin/bash
+COMPOSE_FILES="\
+    -f ./docker-compose.monitoring.yml \
+    -f ./docker-compose.kafka.yml \
+    -f ./docker-compose.sample.yml \
+"
+
+export_ports() {
+    export ZOOKEEPER_PORT=2181
+    export KAFKA_PORT=9092
+    export LOGSTASH_PORT=5000
+    export ES_PORT=9200
+    export KIBANA_PORT=8080
+    export CADVISOR_PORT=8090
+}
+
+status() {
+    export_ports
+    docker-compose $COMPOSE_FILES ps
+}
+
+start() {
+    echo "Starting microrealestate services..."
+    export_ports
+    docker-compose $COMPOSE_FILES up -d
+    echo ""
+    echo "kibana           http://localhost:$KIBANA_PORT"
+    echo "cadvisor         http://localhost:$CADVISOR_PORT"
+}
+
+stop() {
+    echo "Stoping microrealestate services..."
+    export_ports
+    docker-compose $COMPOSE_FILES stop
+}
+
+display_help() {
+    echo "Usage: $0 [option...] {status|start|stop|restart}" >&2
+}
+
+case "$1" in
+    status)
+        status
+        ;;
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    restart)
+        stop
+        start
+        ;;
+    -h | --help)
+        display_help
+        exit 0
+        ;;
+    *)
+        display_help
+        exit 1
+        ;;
+esac
