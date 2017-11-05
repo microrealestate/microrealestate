@@ -1,0 +1,12 @@
+version: '3.3'
+services:
+  mytest:
+    image: python:2.7.14-alpine3.6
+    command: python /scripts/test.py
+    volumes:
+      - './sample/python:/scripts'
+    logging:
+      driver: syslog
+      options:
+        syslog-address: 'udp://localhost:5000'
+        tag: '{{.Name}}/{{.ID}}'

@@ -1,0 +1,45 @@
+version: '3.3'
+services:
+###############################################################################
+# logstash
+###############################################################################
+  logstash:
+    image: logstash:alpine
+    command: -f /logstash/pipeline.conf
+    ports:
+      - '$LOGSTASH_PORT:5000'
+      - '$LOGSTASH_PORT:5000/udp'
+    volumes:
+      - './config/logstash:/logstash'
+    environment:
+      # otherwise logstash will keep sending its own logs to itself
+      # over and over...
+      LOGSPOUT: ignore
+###############################################################################
+# elasticsearch
+###############################################################################
+  elasticsearch:
+    image: elasticsearch:alpine
+    ports:
+      - '$ES_PORT:9200'
+    volumes:
+      - './data/elasticsearch:/usr/share/elasticsearch/data'
+###############################################################################
+# kibana
+###############################################################################
+  kibana:
+    image: kibana
+    ports:
+      - '$KIBANA_PORT:5601'
+###############################################################################
+# cadvisor
+###############################################################################
+  cadvisor:
+    image: google/cadvisor:latest
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    ports:
+      - '$CADVISOR_PORT:8080'
