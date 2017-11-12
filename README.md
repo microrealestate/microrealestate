@@ -26,6 +26,7 @@ In a second stage, the monolith application will be broken in microservices.
 ## Getting started
 
 ### Prerequisite
+- Linux
 - Docker and docker-compose installed
 
 ### Start the application
