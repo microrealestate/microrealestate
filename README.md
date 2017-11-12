@@ -26,11 +26,11 @@ In a second stage, the monolith application will be broken in microservices.
 ## Getting started
 
 ### Prerequisite
-- Linux
 - Docker and docker-compose installed
 
 ### Start the application
 ```shell
 $ ./mre start
 ```
+> `mre` is a bash script. It doesn't work on windows.
 
