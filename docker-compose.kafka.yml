@@ -33,6 +33,8 @@ services:
         tag: '{{.Name}}/{{.ID}}'
         syslog-facility: 'daemon'
         syslog-address: 'udp://localhost:$LOGSTASH_PORT'
+    depends_on:
+      - zookeeper
 networks:
   net:
     driver: bridge
