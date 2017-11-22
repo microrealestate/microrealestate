@@ -1,9 +1,7 @@
 #!/bin/bash
-COMPOSE_FILES="\
-    -f ./docker-compose.monitoring.yml \
-    -f ./docker-compose.kafka.yml \
-    -f ./docker-compose.sample.yml \
-"
+COMPOSE_FILES=("./docker-compose.monitoring.yml" "./docker-compose.kafka.yml" "./docker-compose.sample.yml")
+
+compose_files_argument=$(printf " -f %s" "${COMPOSE_FILES[@]}")
 
 export_ports() {
     export ZOOKEEPER_PORT=2181
@@ -16,13 +14,17 @@ export_ports() {
 
 status() {
     export_ports
-    docker-compose $COMPOSE_FILES ps
+    docker-compose $compose_files_argument ps
 }
 
 start() {
     echo "Starting microrealestate services..."
-    export_ports
-    docker-compose $COMPOSE_FILES up -d
+    for compose_file in ${COMPOSE_FILES[*]}
+    do
+        docker-compose -f $compose_file up -d
+    done
+    echo ""
+    echo "Containers started (^_^)"
     echo ""
     echo "kibana           http://localhost:$KIBANA_PORT"
     echo "cadvisor         http://localhost:$CADVISOR_PORT"
@@ -30,13 +32,16 @@ start() {
 
 stop() {
     echo "Stoping microrealestate services..."
-    export_ports
-    docker-compose $COMPOSE_FILES stop
+    docker-compose $compose_files_argument stop
+    echo ""
+    echo "Containers stoped (^_^)"
 }
 
 display_help() {
     echo "Usage: $0 [option...] {status|start|stop|restart}" >&2
 }
+
+export_ports
 
 case "$1" in
     status)

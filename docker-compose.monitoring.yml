@@ -1,6 +1,15 @@
 version: '3.3'
 services:
 ###############################################################################
+# elasticsearch
+###############################################################################
+  elasticsearch:
+    image: elasticsearch:alpine
+    ports:
+      - '$ES_PORT:9200'
+    volumes:
+      - './data/elasticsearch:/usr/share/elasticsearch/data'
+###############################################################################
 # logstash
 ###############################################################################
   logstash:
@@ -15,15 +24,8 @@ services:
       # otherwise logstash will keep sending its own logs to itself
       # over and over...
       LOGSPOUT: ignore
-###############################################################################
-# elasticsearch
-###############################################################################
-  elasticsearch:
-    image: elasticsearch:alpine
-    ports:
-      - '$ES_PORT:9200'
-    volumes:
-      - './data/elasticsearch:/usr/share/elasticsearch/data'
+    depends_on:
+      - elasticsearch
 ###############################################################################
 # kibana
 ###############################################################################
@@ -31,6 +33,8 @@ services:
     image: kibana
     ports:
       - '$KIBANA_PORT:5601'
+    depends_on:
+      - logstash
 ###############################################################################
 # cadvisor
 ###############################################################################
