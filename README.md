@@ -8,12 +8,12 @@ The first objective is to combine the monolith application and the microservices
 
 ![overview](./picture/overview.png)
 
-| Service       | Description                                                                                                      | Status          |
+| µService      | Description                                                                                                      | Status          |
 | :------------ | :--------------------------------------------------------------------------------------------------------------- | :-------------: |
 | Alert         | Sends alert messages based on business rules (contract deadlines, unpaid rents...)                               | Not available   |
+| API Gateway   | To define                                                                                                        | Dev in progress |
 | cAdvisor      | [Container Advisor](https://github.com/google/cadvisor)                                                          | Available       |
 | Elastic Stack | [Elasticsearch Logstash Kibana](https://www.elastic.co//products) handles logs and monitors containers and hosts | Available       |
-| API Gateway   | To define                                                                                                        | Dev in progress |
 | Loca          | The monolith application [Loca](https://github.com/camelaissani/loca)                                            | Dev in progress |
 | Mail          | Generates and sends email                                                                                        | Not available   |
 | Messages      | [Kafka](https://kafka.apache.org/) message brokers                                                               | Available       |
