@@ -34,7 +34,7 @@ stop() {
     echo "Stoping microrealestate services..."
     docker-compose $compose_files_argument stop
     echo ""
-    echo "Containers stoped (^_^)"
+    echo "Containers stopped (^_^)"
 }
 
 display_help() {
