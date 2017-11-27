@@ -13,7 +13,6 @@ export_ports() {
 }
 
 status() {
-    export_ports
     docker-compose $compose_files_argument ps
 }
 
