@@ -14,10 +14,10 @@ The first objective is to combine the monolith application and the microservices
 | API Gateway   | To define                                                                                                        | Dev in progress |
 | cAdvisor      | [Container Advisor](https://github.com/google/cadvisor)                                                          | Available       |
 | Elastic Stack | [Elasticsearch Logstash Kibana](https://www.elastic.co//products) handles logs and monitors containers and hosts | Available       |
-| Loca          | The monolith application [Loca](https://github.com/camelaissani/loca)                                            | Dev in progress |
-| Mail          | Generates and sends email                                                                                        | Not available   |
-| Messages      | [Kafka](https://kafka.apache.org/) message brokers                                                               | Available       |
-| PDF           | Generates PDF documents (letters, contracts, invoices...)                                                        | Not available   |
+| Loca            | The monolith application [Loca](https://github.com/camelaissani/loca)                                            | Dev in progress |
+| EMailer         | Generates and sends emails                                                                                        | Not available   |
+| Messages        | message broker                                                               | Available       |
+| PDFGenerator    | Generates PDF documents (letters, contracts, invoices...)                                                        | Not available   |
 | Text          | Generates and texts (cash balance, alerts...)                                                                    | Not available   |
 
 
