@@ -1,0 +1,127 @@
+version: '3.3'
+services:
+###############################################################################
+# MongoDB
+###############################################################################
+  mongo:
+    image: mongo
+    ports:
+    - '27017:27017'
+    networks:
+      - net
+    logging:
+      driver: 'syslog'
+      options:
+        tag: '{{.Name}}/{{.ID}}'
+        syslog-facility: 'daemon'
+        syslog-address: 'udp://localhost:$LOGSTASH_PORT'
+    depends_on:
+      - kibana
+###############################################################################
+# RabbitMQ
+###############################################################################
+  rabbitmq:
+    image: rabbitmq:3-management
+    hostname: 'rabbitmq'
+    environment:
+      RABBITMQ_DEFAULT_USER: '$RABBITMQ_USER'
+      RABBITMQ_DEFAULT_PASS: '$RABBITMQ_PASS'
+    ports:
+      - '$RABBITMQ_PORT:5672'
+      - '$RABBITMQ_MANAGEMENT_PORT:15672'
+    labels:
+      NAME: "rabbitmq1"
+    networks:
+      - net
+    logging:
+      driver: 'syslog'
+      options:
+        tag: '{{.Name}}/{{.ID}}'
+        syslog-facility: 'daemon'
+        syslog-address: 'udp://localhost:$LOGSTASH_PORT'
+    depends_on:
+      - kibana
+###############################################################################
+# PDFGenerator
+###############################################################################
+  pdfgenerator:
+    build: https://github.com/microrealestate/pdfgenerator.git
+    environment:
+      PORT: '$PDFGENERATOR_PORT'
+      LOGGER_LEVEL: '$LOGGER_LEVEL'
+      PRODUCTIVE: '$PRODUCTIVE'
+      BASE_DB_URL: '$BASE_DB_URL'
+      DB_URL: '$PDFGENERATOR_DB_URL'
+    expose:
+      - '$PDFGENERATOR_PORT'
+    networks:
+      - net
+    logging:
+      driver: syslog
+      options:
+        syslog-address: 'udp://localhost:$LOGSTASH_PORT'
+        tag: '{{.Name}}/{{.ID}}'
+    depends_on:
+      - mongo
+      - kibana
+###############################################################################
+# Emailer
+###############################################################################
+  emailer:
+    build: https://github.com/microrealestate/emailer.git
+    environment:
+      PORT: '$EMAILER_PORT'
+      LOGGER_LEVEL: '$LOGGER_LEVEL'
+      PRODUCTIVE: '$PRODUCTIVE'
+      BASE_DB_URL: '$BASE_DB_URL'
+      DB_URL: '$EMAILER_DB_URL'
+      PDFGENERATOR_URL: '$PDFGENERATOR_URL'
+      MAILGUN_API_KEY: '$MAILGUN_API_KEY'
+      MAILGUN_DOMAIN: '$MAILGUN_DOMAIN'
+      EMAIL_FROM: '$EMAIL_FROM'
+      EMAIL_REPLY_TO: '$EMAIL_REPLY_TO'
+      EMAIL_BCC: '$EMAIL_BCC'
+    expose:
+      - '$EMAILER_PORT'
+    networks:
+      - net
+    logging:
+      driver: syslog
+      options:
+        syslog-address: 'udp://localhost:$LOGSTASH_PORT'
+        tag: '{{.Name}}/{{.ID}}'
+    depends_on:
+      - mongo
+      - pdfgenerator
+      - kibana
+###############################################################################
+# Loca (Front/Back-end)
+###############################################################################
+  loca:
+    build: https://github.com/camelaissani/loca.git
+    environment:
+      LOGGER_LEVEL: '$LOGGER_LEVEL'
+      PRODUCTIVE: '$PRODUCTIVE'
+      BASE_DB_URL: '$BASE_DB_URL'
+      CONFIG_DIR: '$CONFIG_DIR'
+      DEMOMODE: '$DEMOMODE'
+      EMAILER_URL: '$EMAILER_URL'
+    ports:
+      - '$LOCA_PORT:8081'
+    networks:
+      - net
+    logging:
+      driver: syslog
+      options:
+        syslog-address: 'udp://localhost:$LOGSTASH_PORT'
+        tag: '{{.Name}}/{{.ID}}'
+    depends_on:
+      - mongo
+      - emailer
+      - kibana
+###############################################################################
+# microservices network
+###############################################################################
+networks:
+  net:
+    driver: bridge
