@@ -32,5 +32,7 @@ In a second stage, the monolith application will be broken in microservices.
 ```shell
 $ ./mre start
 ```
+> First start takes time as few docker images are built
+
 > `mre` is a bash script. It doesn't work on windows.
 
