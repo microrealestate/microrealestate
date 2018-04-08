@@ -37,7 +37,7 @@ $ git clone https://github.com/microrealestate/microrealestate.git
 ```shell
 $ ./mre start
 ```
-> First start takes time as few docker images are built
+> Startup takes time as a few docker images are built.
 
 > `mre` is a bash script. It doesn't work on windows.
 
