@@ -104,7 +104,7 @@ services:
       PRODUCTIVE: '$PRODUCTIVE'
       BASE_DB_URL: '$BASE_DB_URL'
       CONFIG_DIR: '$CONFIG_DIR'
-      DEMOMODE: '$DEMOMODE'
+      DEMO_MODE: '$DEMO_MODE'
       EMAILER_URL: '$EMAILER_URL'
     ports:
       - '$LOCA_PORT:8081'
