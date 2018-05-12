@@ -1,49 +1,36 @@
 #!/bin/bash
-COMPOSE_FILES=("monitoring" "microservices")
 
-compose_files_argument=$(printf " -f ./docker-compose.%s.yml" "${COMPOSE_FILES[@]}")
+PROD_COMPOSE_FILES=("monitoring" "microservices.base" "microservices.prod")
+DEV_COMPOSE_FILES=("microservices.base" "microservices.dev")
 
-export_ports() {
-    # Elastic stack
-    export KIBANA_PORT=9000
-    export CADVISOR_PORT=9100
-    export ES_PORT=9200
-    export LOGSTASH_PORT=5000
-    # RabbitMQ
-    export RABBITMQ_USER="guest"
-    export RABBITMQ_PASS="guest"
-    export RABBITMQ_PORT=5672
-    export RABBITMQ_MANAGEMENT_PORT=8100
-    # Microservices
-    export LOGGER_LEVEL="debug"
-    export PRODUCTIVE=false
-    export BASE_DB_URL="mongodb://mongo/demodb"
-    ## pdfgenerator
-    export PDFGENERATOR_PORT=8200
-    export PDFGENERATOR_DB_URL="mongodb://mongo/pdfdb"
-    ## emailer
-    export EMAILER_PORT=8300
-    export EMAILER_DB_URL="mongodb://mongo/emaildb"
-    export PDFGENERATOR_URL="http://pdfgenerator:$PDFGENERATOR_PORT/pdfgenerator"
-    export MAILGUN_API_KEY="your_api_key"
-    export MAILGUN_DOMAIN="mg.example.com"
-    export EMAIL_FROM="Example <noreply@example.com>"
-    export EMAIL_REPLY_TO="customer-service@example.com"
-    export EMAIL_BCC="manager1@example.com,manager2@example.com"
-    ## loca
-    export CONFIG_DIR="" # default
-    export LOCA_PORT=8080
-    export DEMO_MODE=true
-    export EMAILER_URL="http://emailer:$EMAILER_PORT/emailer"
+prod_compose_files_argument=$(printf " -f ./docker-compose.%s.yml" "${PROD_COMPOSE_FILES[@]}")
+dev_compose_files_argument=$(printf " -f ./docker-compose.%s.yml" "${DEV_COMPOSE_FILES[@]}")
+
+# environment variables are in .env files
+initEnv() {
+    while read LINE; do
+        if  [[ $LINE != \#* ]] && [[ $LINE != "" ]];
+        then
+        eval "export $LINE"
+        fi
+    done < $1
 }
 
+
 status() {
-    docker-compose $compose_files_argument ps
+    docker-compose $prod_compose_files_argument ps
+}
+
+dev() {
+    echo "Starting microrealestate..."
+    initEnv dev.env
+    docker-compose $dev_compose_files_argument up --build
 }
 
 start() {
     echo "Starting microrealestate..."
-    docker-compose $compose_files_argument up -d --build > /dev/null
+    initEnv prod.env
+    docker-compose $prod_compose_files_argument up -d --force-recreate > /dev/null
     status
     echo ""
     echo "Front-end             http://localhost:$LOCA_PORT"
@@ -54,17 +41,18 @@ start() {
 
 stop() {
     echo "Stoping microrealestate..."
-    docker-compose $compose_files_argument stop > /dev/null
+    docker-compose $prod_compose_files_argument stop > /dev/null
     status
 }
 
 display_help() {
-    echo "Usage: $0 [option...] {status|start|stop|restart}" >&2
+    echo "Usage: $0 [option...] {dev|status|start|stop|restart}" >&2
 }
 
-export_ports
-
 case "$1" in
+    dev)
+        dev
+        ;;
     status)
         status
         ;;
