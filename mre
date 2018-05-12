@@ -16,15 +16,15 @@ initEnv() {
     done < $1
 }
 
-
-status() {
-    docker-compose $prod_compose_files_argument ps
-}
-
 dev() {
     echo "Starting microrealestate..."
     initEnv dev.env
     docker-compose $dev_compose_files_argument up --build
+}
+
+status() {
+    initEnv prod.env
+    docker-compose $prod_compose_files_argument ps
 }
 
 start() {
@@ -41,6 +41,7 @@ start() {
 
 stop() {
     echo "Stoping microrealestate..."
+    initEnv prod.env
     docker-compose $prod_compose_files_argument stop > /dev/null
     status
 }
