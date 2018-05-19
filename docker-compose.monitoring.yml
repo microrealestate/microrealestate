@@ -4,20 +4,22 @@ services:
 # elasticsearch
 ###############################################################################
   elasticsearch:
-    image: elasticsearch:alpine
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.2.4
     ports:
       - '$ES_PORT:9200'
     volumes:
       - './data/elasticsearch:/usr/share/elasticsearch/data'
+    environment:
+      - discovery.type=single-node
 ###############################################################################
 # logstash
 ###############################################################################
   logstash:
-    image: logstash:alpine
+    image: docker.elastic.co/logstash/logstash:6.2.4
     command: -f /logstash/pipeline.conf
     ports:
-      - '$LOGSTASH_PORT:5000'
-      - '$LOGSTASH_PORT:5000/udp'
+      - '$LOGSTASH_TCP_PORT:5000/tcp'
+      - '$LOGSTASH_UDP_PORT:5001/udp'
     volumes:
       - './config/logstash:/logstash'
     environment:
@@ -30,7 +32,7 @@ services:
 # kibana
 ###############################################################################
   kibana:
-    image: kibana
+    image: docker.elastic.co/kibana/kibana:6.2.4
     ports:
       - '$KIBANA_PORT:5601'
     depends_on:
