@@ -27,7 +27,7 @@ status() {
 
 start() {
     echo "Starting microrealestate..."
-    docker-compose $prod_compose_files_argument up -d --force-recreate # > /dev/null
+    docker-compose $prod_compose_files_argument up -d # > /dev/null
     local res=$?;
     if [ $res -ne 0 ]; then
         stop
