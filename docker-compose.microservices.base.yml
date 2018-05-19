@@ -16,8 +16,8 @@ services:
     image: rabbitmq:3-management
     hostname: 'rabbitmq'
     environment:
-      RABBITMQ_DEFAULT_USER: '$RABBITMQ_USER'
-      RABBITMQ_DEFAULT_PASS: '$RABBITMQ_PASS'
+      - RABBITMQ_DEFAULT_USER=$RABBITMQ_USER
+      - RABBITMQ_DEFAULT_PASS=$RABBITMQ_PASS
     ports:
       - '$RABBITMQ_PORT:5672'
       - '$RABBITMQ_MANAGEMENT_PORT:15672'
@@ -32,11 +32,12 @@ services:
     build: https://github.com/microrealestate/pdfgenerator.git
     image: mre/pdfgenerator
     environment:
-      PORT: '$PDFGENERATOR_PORT'
-      LOGGER_LEVEL: '$LOGGER_LEVEL'
-      PRODUCTIVE: '$PRODUCTIVE'
-      BASE_DB_URL: '$BASE_DB_URL'
-      DB_URL: '$PDFGENERATOR_DB_URL'
+      - NODE_ENV
+      - PORT=$PDFGENERATOR_PORT
+      - LOGGER_LEVEL=$LOGGER_LEVEL
+      - PRODUCTIVE=$PRODUCTIVE
+      - BASE_DB_URL=$BASE_DB_URL
+      - DB_URL=$PDFGENERATOR_DB_URL
     expose:
       - '$PDFGENERATOR_PORT'
     networks:
@@ -50,17 +51,18 @@ services:
     build: https://github.com/microrealestate/emailer.git
     image: mre/emailer
     environment:
-      PORT: '$EMAILER_PORT'
-      LOGGER_LEVEL: '$LOGGER_LEVEL'
-      PRODUCTIVE: '$PRODUCTIVE'
-      BASE_DB_URL: '$BASE_DB_URL'
-      DB_URL: '$EMAILER_DB_URL'
-      PDFGENERATOR_URL: '$PDFGENERATOR_URL'
-      MAILGUN_API_KEY: '$MAILGUN_API_KEY'
-      MAILGUN_DOMAIN: '$MAILGUN_DOMAIN'
-      EMAIL_FROM: '$EMAIL_FROM'
-      EMAIL_REPLY_TO: '$EMAIL_REPLY_TO'
-      EMAIL_BCC: '$EMAIL_BCC'
+      - NODE_ENV
+      - PORT=$EMAILER_PORT
+      - LOGGER_LEVEL=$LOGGER_LEVEL
+      - PRODUCTIVE=$PRODUCTIVE
+      - BASE_DB_URL=$BASE_DB_URL
+      - DB_URL=$EMAILER_DB_URL
+      - PDFGENERATOR_URL=$PDFGENERATOR_URL
+      - MAILGUN_API_KEY=$MAILGUN_API_KEY
+      - MAILGUN_DOMAIN=$MAILGUN_DOMAIN
+      - EMAIL_FROM=$EMAIL_FROM
+      - EMAIL_REPLY_TO=$EMAIL_REPLY_TO
+      - EMAIL_BCC=$EMAIL_BCC
     expose:
       - '$EMAILER_PORT'
     networks:
@@ -75,12 +77,13 @@ services:
     build: https://github.com/camelaissani/loca.git
     image: mre/loca
     environment:
-      LOGGER_LEVEL: '$LOGGER_LEVEL'
-      PRODUCTIVE: '$PRODUCTIVE'
-      BASE_DB_URL: '$BASE_DB_URL'
-      CONFIG_DIR: '$CONFIG_DIR'
-      DEMO_MODE: '$DEMO_MODE'
-      EMAILER_URL: '$EMAILER_URL'
+      - NODE_ENV
+      - LOGGER_LEVEL=$LOGGER_LEVEL
+      - PRODUCTIVE=$PRODUCTIVE
+      - BASE_DB_URL=$BASE_DB_URL
+      - CONFIG_DIR=$CONFIG_DIR
+      - DEMO_MODE=$DEMO_MODE
+      - EMAILER_URL=$EMAILER_URL
     ports:
       - '$LOCA_PORT:8081'
     networks:

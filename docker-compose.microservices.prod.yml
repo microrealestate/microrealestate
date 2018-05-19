@@ -9,7 +9,7 @@ services:
       options:
         tag: '{{.Name}}/{{.ID}}'
         syslog-facility: 'daemon'
-        syslog-address: 'udp://localhost:$LOGSTASH_PORT'
+        syslog-address: 'udp://localhost:$LOGSTASH_UDP_PORT'
     depends_on:
       - kibana
 ###############################################################################
@@ -21,7 +21,7 @@ services:
       options:
         tag: '{{.Name}}/{{.ID}}'
         syslog-facility: 'daemon'
-        syslog-address: 'udp://localhost:$LOGSTASH_PORT'
+        syslog-address: 'udp://localhost:$LOGSTASH_UDP_PORT'
     depends_on:
       - kibana
 ###############################################################################
@@ -31,7 +31,7 @@ services:
     logging:
       driver: syslog
       options:
-        syslog-address: 'udp://localhost:$LOGSTASH_PORT'
+        syslog-address: 'udp://localhost:$LOGSTASH_UDP_PORT'
         tag: '{{.Name}}/{{.ID}}'
     depends_on:
       - mongo
@@ -43,7 +43,7 @@ services:
     logging:
       driver: syslog
       options:
-        syslog-address: 'udp://localhost:$LOGSTASH_PORT'
+        syslog-address: 'udp://localhost:$LOGSTASH_UDP_PORT'
         tag: '{{.Name}}/{{.ID}}'
     depends_on:
       - mongo
@@ -56,7 +56,7 @@ services:
     logging:
       driver: syslog
       options:
-        syslog-address: 'udp://localhost:$LOGSTASH_PORT'
+        syslog-address: 'udp://localhost:$LOGSTASH_UDP_PORT'
         tag: '{{.Name}}/{{.ID}}'
     depends_on:
       - mongo
