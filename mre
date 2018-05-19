@@ -18,32 +18,34 @@ initEnv() {
 
 dev() {
     echo "Starting microrealestate..."
-    initEnv dev.env
     docker-compose $dev_compose_files_argument up --build
 }
 
 status() {
-    initEnv prod.env
     docker-compose $prod_compose_files_argument ps
 }
 
 start() {
     echo "Starting microrealestate..."
-    initEnv prod.env
-    docker-compose $prod_compose_files_argument up -d --force-recreate > /dev/null
-    status
-    echo ""
-    echo "Front-end             http://localhost:$LOCA_PORT"
-    echo "kibana                http://localhost:$KIBANA_PORT"
-    echo "cadvisor              http://localhost:$CADVISOR_PORT"
-    echo "rabbitmq Management   http://localhost:$RABBITMQ_MANAGEMENT_PORT"
+    docker-compose $prod_compose_files_argument up -d --force-recreate # > /dev/null
+    local res=$?;
+    if [ $res -ne 0 ]; then
+        stop
+        echo "ERROR: Fail to start microrealestate" >&2
+    else
+        status
+        echo ""
+        echo "Front-end             http://localhost:$LOCA_PORT"
+        echo "kibana                http://localhost:$KIBANA_PORT"
+        echo "cadvisor              http://localhost:$CADVISOR_PORT"
+        echo "rabbitmq Management   http://localhost:$RABBITMQ_MANAGEMENT_PORT"
+    fi
+    return $res
 }
 
 stop() {
     echo "Stoping microrealestate..."
-    initEnv prod.env
-    docker-compose $prod_compose_files_argument stop > /dev/null
-    status
+    docker-compose $prod_compose_files_argument rm -sf > /dev/null
 }
 
 display_help() {
@@ -52,18 +54,23 @@ display_help() {
 
 case "$1" in
     dev)
+        initEnv dev.env
         dev
         ;;
     status)
+        initEnv prod.env
         status
         ;;
     start)
+        initEnv prod.env
         start
         ;;
     stop)
+        initEnv prod.env
         stop
         ;;
     restart)
+        initEnv prod.env
         stop
         start
         ;;
