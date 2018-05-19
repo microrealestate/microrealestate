@@ -27,6 +27,9 @@ status() {
 
 start() {
     echo "Starting microrealestate..."
+    if [ ! -d ./data/elasticsearch ]; then
+        mkdir -p ./data/elasticsearch;
+    fi
     docker-compose $prod_compose_files_argument up -d # > /dev/null
     local res=$?;
     if [ $res -ne 0 ]; then
