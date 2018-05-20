@@ -1,0 +1,9 @@
+[submodule "loca"]
+	path = loca
+	url = git@github.com:camelaissani/loca.git
+[submodule "emailer"]
+	path = emailer
+	url = git@github.com:microrealestate/emailer.git
+[submodule "pdfgenerator"]
+	path = pdfgenerator
+	url = git@github.com:microrealestate/pdfgenerator.git

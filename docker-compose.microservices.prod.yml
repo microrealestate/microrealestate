@@ -7,9 +7,9 @@ services:
     logging:
       driver: 'syslog'
       options:
-        tag: '{{.Name}}/{{.ID}}'
-        syslog-facility: 'daemon'
         syslog-address: 'udp://localhost:$LOGSTASH_UDP_PORT'
+        tag: '{{.Name}}/{{.ID}}'
+      #   syslog-facility: 'daemon'
     depends_on:
       - kibana
 ###############################################################################
@@ -19,9 +19,9 @@ services:
     logging:
       driver: 'syslog'
       options:
-        tag: '{{.Name}}/{{.ID}}'
-        syslog-facility: 'daemon'
         syslog-address: 'udp://localhost:$LOGSTASH_UDP_PORT'
+        tag: '{{.Name}}/{{.ID}}'
+      #   syslog-facility: 'daemon'
     depends_on:
       - kibana
 ###############################################################################
