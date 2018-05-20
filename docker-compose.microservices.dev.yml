@@ -5,30 +5,30 @@ services:
 ###############################################################################
   pdfgenerator:
     build:
-      context: ../pdfgenerator
+      context: ./pdfgenerator
       dockerfile: dev.Dockerfile
     volumes:
-      - ../pdfgenerator:/usr/app
+      - ./pdfgenerator:/usr/app
       - /usr/app/node_modules
 ###############################################################################
 # Emailer
 ###############################################################################
   emailer:
     build:
-      context: ../emailer
+      context: ./emailer
       dockerfile: dev.Dockerfile
     volumes:
-      - ../emailer:/usr/app
+      - ./emailer:/usr/app
       - /usr/app/node_modules
 ###############################################################################
 # Loca (Front/Back-end)
 ###############################################################################
   loca:
     build:
-      context: ../loca
+      context: ./loca
       dockerfile: dev.Dockerfile
     volumes:
-      - ../loca:/usr/app
+      - ./loca:/usr/app
       - /usr/app/node_modules
     ports:
       - '$LOCA_LIVE_RELOAD_PORT:9091'
