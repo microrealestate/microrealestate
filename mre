@@ -30,6 +30,9 @@ start() {
     if [ ! -d ./data/elasticsearch ]; then
         mkdir -p ./data/elasticsearch;
     fi
+    if [ ! -d ./data/mongodb ]; then
+        mkdir -p ./data/mongodb;
+    fi
     docker-compose $prod_compose_files_argument up -d # > /dev/null
     local res=$?;
     if [ $res -ne 0 ]; then
