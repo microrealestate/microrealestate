@@ -30,7 +30,7 @@ In a second stage, the monolith application will be broken in microservices.
 
 ### Clone the GitHub repository
 ```shell
-$ git clone https://github.com/microrealestate/microrealestate.git
+$ git clone --recursive https://github.com/microrealestate/microrealestate.git
 ```
 
 ### Start the application
