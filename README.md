@@ -39,5 +39,19 @@ $ ./mre start
 ```
 > Startup takes time as a few docker images are built.
 
-> `mre` is a bash script. It doesn't work on windows.
+At the end, it displays the application links:
 
+```shell
+Front-end             http://localhost:8080
+kibana                http://localhost:9000
+cadvisor              http://localhost:9100
+rabbitmq Management   http://localhost:8100
+```
+
+### Start the application in development mode
+
+```shell
+$ ./mre dev
+```
+
+> `mre` is a bash script. It doesn't work on windows.
