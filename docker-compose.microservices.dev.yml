@@ -32,3 +32,4 @@ services:
       - /usr/app/node_modules
     ports:
       - '$LOCA_LIVE_RELOAD_PORT:9091'
+      - '$LOCA_BACKEND_DEBUG_PORT:9229'
