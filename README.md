@@ -1,3 +1,5 @@
+[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/microrealestate)
+
 # Microrealestate
 
 Microrealestate is a set of microservices which work together to offer an open source application for property management.
