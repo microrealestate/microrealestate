@@ -7,10 +7,32 @@
         {
             "type": "node",
             "request": "attach",
-            "name": "Docker: Attach to Node",
+            "name": "Docker: Attach to Loca",
             "port": 9229,
             "address": "localhost",
             "localRoot": "${workspaceFolder}/loca",
+            "remoteRoot": "/usr/app/",
+            "protocol": "inspector",
+            "restart": true
+        },
+        {
+            "type": "node",
+            "request": "attach",
+            "name": "Docker: Attach to Emailer",
+            "port": 9228,
+            "address": "localhost",
+            "localRoot": "${workspaceFolder}/emailer",
+            "remoteRoot": "/usr/app/",
+            "protocol": "inspector",
+            "restart": true
+        },
+        {
+            "type": "node",
+            "request": "attach",
+            "name": "Docker: Attach to PdfGenerator",
+            "port": 9227,
+            "address": "localhost",
+            "localRoot": "${workspaceFolder}/pdfgenerator",
             "remoteRoot": "/usr/app/",
             "protocol": "inspector",
             "restart": true
