@@ -61,6 +61,7 @@ display_help() {
 case "$1" in
     dev)
         initEnv dev.env
+        initEnv .env
         dev
         ;;
     status)
