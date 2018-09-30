@@ -32,7 +32,7 @@ services:
 ###############################################################################
   pdfgenerator:
     build: https://github.com/microrealestate/pdfgenerator.git
-    image: mre/pdfgenerator
+    image: mre/pdfgenerator:latest
     environment:
       - NODE_ENV
       - PORT=$PDFGENERATOR_PORT
@@ -51,7 +51,7 @@ services:
 ###############################################################################
   emailer:
     build: https://github.com/microrealestate/emailer.git
-    image: mre/emailer
+    image: mre/emailer:latest
     environment:
       - NODE_ENV
       - PORT=$EMAILER_PORT
@@ -77,7 +77,7 @@ services:
 ###############################################################################
   loca:
     build: https://github.com/camelaissani/loca.git
-    image: mre/loca
+    image: mre/loca:latest
     environment:
       - NODE_ENV
       - LOGGER_LEVEL=$LOGGER_LEVEL
