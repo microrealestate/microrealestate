@@ -30,16 +30,23 @@ In a second stage, the monolith application will be broken in microservices.
 ### Prerequisite
 - Docker and docker-compose installed
 
+> The `mre` bash script is uses for building, running the application.
+> It doesn't work on windows.
+
 ### Clone the GitHub repository
 ```shell
 $ git clone --recursive https://github.com/microrealestate/microrealestate.git
+```
+
+### Build the application
+```shell
+$ ./mre build
 ```
 
 ### Start the application
 ```shell
 $ ./mre start
 ```
-> Startup takes time as a few docker images are built.
 
 At the end, it displays the application links:
 
@@ -56,4 +63,28 @@ rabbitmq Management   http://localhost:8100
 $ ./mre dev
 ```
 
-> `mre` is a bash script. It doesn't work on windows.
+### Debugging the application
+
+You would need to have the latest version of [VS Code](https://code.visualstudio.com/) installed.
+
+Then bring up the Debug view, click on the Debug icon in the **Activity Bar** on the side of VS Code. You can also use the keyboard shortcut `Ctrl+Shift+D`.
+
+![Activity Bar](https://code.visualstudio.com/assets/docs/editor/debugging/debugicon.png)
+
+In a terminal launch the application in development mode:
+
+```shell
+$ ./mre dev
+```
+
+Next, go to the debug bar:
+
+![Activity Bar](https://code.visualstudio.com/assets/docs/editor/debugging/launch-configuration.png)
+
+Then select one of these values to attach the VS Code debugger to the application:
+
+- `Docker: Attach to Loca` (The web application)
+- `Docker: Attach to Emailer` (Generates and sends emails)
+- `Docker: Attach to PdfGenerator` (Generates PDF documents)
+
+For more information about VS Code debugging go [here](https://code.visualstudio.com/Docs/editor/debugging#_debug-actions)
