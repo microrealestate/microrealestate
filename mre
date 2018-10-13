@@ -6,7 +6,7 @@ DEV_COMPOSE_FILES=("microservices.base" "microservices.dev")
 prod_compose_files_argument=$(printf " -f ./docker-compose.%s.yml" "${PROD_COMPOSE_FILES[@]}")
 dev_compose_files_argument=$(printf " -f ./docker-compose.%s.yml" "${DEV_COMPOSE_FILES[@]}")
 
-# environment variables are in .env files
+# environment variables are in *.env files
 initEnv() {
     while read LINE; do
         if  [[ $LINE != \#* ]] && [[ $LINE != "" ]];
@@ -23,6 +23,11 @@ dev() {
 
 status() {
     docker-compose $prod_compose_files_argument ps
+}
+
+build() {
+    echo "Building microrealestate..."
+    docker-compose $prod_compose_files_argument build
 }
 
 start() {
@@ -55,7 +60,7 @@ stop() {
 }
 
 display_help() {
-    echo "Usage: $0 [option...] {dev|status|start|stop|restart}" >&2
+    echo "Usage: $0 [option...] {dev|build|status|start|stop|restart}" >&2
 }
 
 case "$1" in
@@ -67,6 +72,10 @@ case "$1" in
     status)
         initEnv prod.env
         status
+        ;;
+    build)
+        initEnv prod.env
+        build
         ;;
     start)
         initEnv prod.env
