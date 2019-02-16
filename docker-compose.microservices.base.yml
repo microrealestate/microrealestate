@@ -87,7 +87,7 @@ services:
       - DEMO_MODE=$DEMO_MODE
       - EMAILER_URL=$EMAILER_URL
     ports:
-      - '$LOCA_PORT:8081'
+      - '$LOCA_PORT:8080'
     networks:
       - net
     depends_on:
