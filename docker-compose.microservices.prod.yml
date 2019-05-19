@@ -15,15 +15,16 @@ services:
 ###############################################################################
 # RabbitMQ
 ###############################################################################
-  rabbitmq:
-    logging:
-      driver: 'syslog'
-      options:
-        syslog-address: 'udp://localhost:$LOGSTASH_UDP_PORT'
-        tag: '{{.Name}}/{{.ID}}'
-      #   syslog-facility: 'daemon'
-    depends_on:
-      - kibana
+  # Don't need RabbitMQ for now
+  # rabbitmq:
+  #   logging:
+  #     driver: 'syslog'
+  #     options:
+  #       syslog-address: 'udp://localhost:$LOGSTASH_UDP_PORT'
+  #       tag: '{{.Name}}/{{.ID}}'
+  #     #   syslog-facility: 'daemon'
+  #   depends_on:
+  #     - kibana
 ###############################################################################
 # PDFGenerator
 ###############################################################################
