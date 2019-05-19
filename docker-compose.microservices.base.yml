@@ -14,19 +14,20 @@ services:
 ###############################################################################
 # RabbitMQ
 ###############################################################################
-  rabbitmq:
-    image: rabbitmq:3-management
-    hostname: 'rabbitmq'
-    environment:
-      - RABBITMQ_DEFAULT_USER=$RABBITMQ_USER
-      - RABBITMQ_DEFAULT_PASS=$RABBITMQ_PASS
-    ports:
-      - '$RABBITMQ_PORT:5672'
-      - '$RABBITMQ_MANAGEMENT_PORT:15672'
-    labels:
-      NAME: "rabbitmq1"
-    networks:
-      - net
+  # Don't need RabbitMQ for now
+  # rabbitmq:
+  #   image: rabbitmq:3-management
+  #   hostname: 'rabbitmq'
+  #   environment:
+  #     - RABBITMQ_DEFAULT_USER=$RABBITMQ_USER
+  #     - RABBITMQ_DEFAULT_PASS=$RABBITMQ_PASS
+  #   ports:
+  #     - '$RABBITMQ_PORT:5672'
+  #     - '$RABBITMQ_MANAGEMENT_PORT:15672'
+  #   labels:
+  #     NAME: "rabbitmq1"
+  #   networks:
+  #     - net
 ###############################################################################
 # PDFGenerator
 ###############################################################################
