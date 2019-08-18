@@ -31,11 +31,17 @@ In a second stage, the monolith application will be broken in microservices.
 - Docker and docker-compose installed
 
 > The `mre` bash script is uses for building, running the application.
-> It doesn't work on windows.
+
+> :warning: **It doesn't work on windows.** [Please help wanted](https://github.com/microrealestate/microrealestate/issues/6).
 
 ### Clone the GitHub repository
 ```shell
 $ git clone --recursive https://github.com/microrealestate/microrealestate.git
+```
+
+### Go to the microrealestate
+```shell
+$ cd microrealestate
 ```
 
 ### Build the application
@@ -57,13 +63,11 @@ cadvisor              http://localhost:9100
 rabbitmq Management   http://localhost:8100
 ```
 
-### Start the application in development mode
+### Run the user interface
 
-```shell
-$ ./mre dev
-```
+Take to your favorite internet navigator and go to this link: http://localhost:8080
 
-### Debugging the application
+## Debugging the application
 
 You would need to have the latest version of [VS Code](https://code.visualstudio.com/) installed.
 
