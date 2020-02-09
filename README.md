@@ -60,12 +60,11 @@ At the end, it displays the application links:
 Front-end             http://localhost:8080
 kibana                http://localhost:9000
 cadvisor              http://localhost:9100
-rabbitmq Management   http://localhost:8100
 ```
 
 ### Run the user interface
 
-Take to your favorite internet navigator and go to this link: http://localhost:8080
+Take your favorite internet navigator and go to this link: http://localhost:8080
 
 ## Debugging the application
 
