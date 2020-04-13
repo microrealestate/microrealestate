@@ -4,7 +4,7 @@ services:
 # MongoDB
 ###############################################################################
   mongo:
-    image: mongo
+    image: mongo:3.6
     ports:
       - '27017:27017'
     volumes:
@@ -32,7 +32,6 @@ services:
 # PDFGenerator
 ###############################################################################
   pdfgenerator:
-    build: https://github.com/microrealestate/pdfgenerator.git
     image: mre/pdfgenerator:latest
     environment:
       - NODE_ENV
@@ -51,7 +50,6 @@ services:
 # Emailer
 ###############################################################################
   emailer:
-    build: https://github.com/microrealestate/emailer.git
     image: mre/emailer:latest
     environment:
       - NODE_ENV
@@ -77,7 +75,6 @@ services:
 # Loca (Front/Back-end)
 ###############################################################################
   loca:
-    build: https://github.com/camelaissani/loca.git
     image: mre/loca:latest
     environment:
       - NODE_ENV

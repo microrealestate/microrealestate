@@ -18,7 +18,8 @@ initEnv() {
 
 dev() {
     echo "Starting microrealestate..."
-    docker-compose $dev_compose_files_argument up --build
+    docker-compose $dev_compose_files_argument rm --stop --force
+    docker-compose $dev_compose_files_argument up --build --remove-orphans
 }
 
 status() {
@@ -27,7 +28,8 @@ status() {
 
 build() {
     echo "Building microrealestate..."
-    docker-compose $prod_compose_files_argument build
+    docker-compose $prod_compose_files_argument rm --stop --force
+    docker-compose $prod_compose_files_argument build --no-cache
 }
 
 start() {
@@ -38,7 +40,7 @@ start() {
     if [ ! -d ./data/mongodb ]; then
         mkdir -p ./data/mongodb;
     fi
-    docker-compose $prod_compose_files_argument up -d # > /dev/null
+    docker-compose $prod_compose_files_argument up -d --force-recreate --remove-orphans # > /dev/null
     local res=$?;
     if [ $res -ne 0 ]; then
         stop
