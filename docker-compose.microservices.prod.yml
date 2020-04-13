@@ -29,6 +29,9 @@ services:
 # PDFGenerator
 ###############################################################################
   pdfgenerator:
+    build:
+      context: ./pdfgenerator
+      dockerfile: Dockerfile
     logging:
       driver: syslog
       options:
@@ -41,6 +44,9 @@ services:
 # Emailer
 ###############################################################################
   emailer:
+    build:
+      context: ./emailer
+      dockerfile: Dockerfile
     logging:
       driver: syslog
       options:
@@ -54,6 +60,9 @@ services:
 # Loca (Front/Back-end)
 ###############################################################################
   loca:
+    build:
+      context: ./loca
+      dockerfile: Dockerfile
     logging:
       driver: syslog
       options:
