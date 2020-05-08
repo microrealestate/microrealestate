@@ -67,7 +67,7 @@ start() {
 }
 
 stop() {
-    echo "Stoping microrealestate..."
+    echo "Stopping microrealestate..."
     docker-compose $prod_compose_files_argument rm -sf > /dev/null
 }
 
@@ -82,6 +82,7 @@ case "$1" in
         configDev;;
     config-prod)
         initEnv prod.env
+        initEnv .env
         configProd;;
     dev)
         initEnv dev.env
@@ -90,22 +91,27 @@ case "$1" in
         ;;
     status)
         initEnv prod.env
+        initEnv .env
         status
         ;;
     build)
         initEnv prod.env
+        initEnv .env
         build
         ;;
     start)
         initEnv prod.env
+        initEnv .env
         start
         ;;
     stop)
         initEnv prod.env
+        initEnv .env
         stop
         ;;
     restart)
         initEnv prod.env
+        initEnv .env
         stop
         start
         ;;
