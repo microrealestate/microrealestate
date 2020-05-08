@@ -16,6 +16,16 @@ initEnv() {
     done < $1
 }
 
+configDev() {
+    echo "checking dev config..."
+    docker-compose $dev_compose_files_argument config
+}
+
+configProd() {
+    echo "checking prod config..."
+    docker-compose $prod_compose_files_argument config
+}
+
 dev() {
     echo "Starting microrealestate..."
     docker-compose $dev_compose_files_argument rm --stop --force
@@ -48,10 +58,10 @@ start() {
     else
         status
         echo ""
-        echo "Front-end             http://localhost:$LOCA_PORT"
+        echo "Front-end             http://localhost:$FRONTEND_PORT"
         echo "kibana                http://localhost:$KIBANA_PORT"
         echo "cadvisor              http://localhost:$CADVISOR_PORT"
-        echo "rabbitmq Management   http://localhost:$RABBITMQ_MANAGEMENT_PORT"
+        # echo "rabbitmq Management   http://localhost:$RABBITMQ_MANAGEMENT_PORT"
     fi
     return $res
 }
@@ -62,10 +72,17 @@ stop() {
 }
 
 display_help() {
-    echo "Usage: $0 [option...] {dev|build|status|start|stop|restart}" >&2
+    echo "Usage: $0 [option...] {dev|build|status|start|stop|restart|config-dev|config-prod}" >&2
 }
 
 case "$1" in
+    config-dev)
+        initEnv dev.env
+        initEnv .env
+        configDev;;
+    config-prod)
+        initEnv prod.env
+        configProd;;
     dev)
         initEnv dev.env
         initEnv .env

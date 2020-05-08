@@ -18,6 +18,17 @@
         {
             "type": "node",
             "request": "attach",
+            "name": "Docker: Attach to Authenticator",
+            "port": 9226,
+            "address": "localhost",
+            "localRoot": "${workspaceFolder}/authenticator",
+            "remoteRoot": "/usr/app/",
+            "protocol": "inspector",
+            "restart": true
+        },
+        {
+            "type": "node",
+            "request": "attach",
             "name": "Docker: Attach to Emailer",
             "port": 9228,
             "address": "localhost",
