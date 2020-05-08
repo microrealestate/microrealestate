@@ -1,9 +1,33 @@
 version: '3.3'
 services:
 ###############################################################################
-# MongoDB
+# Redis
+###############################################################################
+  redis:
+    logging:
+      driver: 'syslog'
+      options:
+        syslog-address: 'udp://localhost:$LOGSTASH_UDP_PORT'
+        tag: '{{.Name}}/{{.ID}}'
+      #   syslog-facility: 'daemon'
+    depends_on:
+      - kibana
+###############################################################################
+# Mongo
 ###############################################################################
   mongo:
+    logging:
+      driver: 'syslog'
+      options:
+        syslog-address: 'udp://localhost:$LOGSTASH_UDP_PORT'
+        tag: '{{.Name}}/{{.ID}}'
+      #   syslog-facility: 'daemon'
+    depends_on:
+      - kibana
+###############################################################################
+# NGINX
+###############################################################################
+  nginx:
     logging:
       driver: 'syslog'
       options:
@@ -25,6 +49,22 @@ services:
   #     #   syslog-facility: 'daemon'
   #   depends_on:
   #     - kibana
+###############################################################################
+# Authenticator
+###############################################################################
+  authenticator:
+    build:
+      context: ./authenticator
+      dockerfile: Dockerfile
+    logging:
+      driver: syslog
+      options:
+        syslog-address: 'udp://localhost:$LOGSTASH_UDP_PORT'
+        tag: '{{.Name}}/{{.ID}}'
+    depends_on:
+      - redis
+      - mongo
+      - kibana
 ###############################################################################
 # PDFGenerator
 ###############################################################################

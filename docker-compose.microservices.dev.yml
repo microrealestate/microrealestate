@@ -1,6 +1,18 @@
 version: '3.3'
 services:
 ###############################################################################
+# Authenticator
+###############################################################################
+  authenticator:
+    build:
+      context: ./authenticator
+      dockerfile: dev.Dockerfile
+    volumes:
+      - ./authenticator:/usr/app
+      - /usr/app/node_modules
+    ports:
+      - '$AUTHENTICATOR_DEBUG_PORT:9226'
+###############################################################################
 # PDFGenerator
 ###############################################################################
   pdfgenerator:
