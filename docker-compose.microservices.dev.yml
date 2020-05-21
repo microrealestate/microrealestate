@@ -1,6 +1,12 @@
 version: '3.3'
 services:
 ###############################################################################
+# NGINX
+###############################################################################
+  nginx:
+    volumes:
+      - ./config/nginx/etc/conf.d/dev.conf:/etc/nginx/conf.d/default.template
+###############################################################################
 # Authenticator
 ###############################################################################
   authenticator:
@@ -49,3 +55,14 @@ services:
     ports:
       - '$LOCA_BACKEND_DEBUG_PORT:9229'
       - '$LOCA_BROWSER_SYNC_UI_PORT:3001'
+###############################################################################
+# Frontend
+###############################################################################
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: dev.Dockerfile
+    volumes:
+      - ./frontend:/usr/app
+      - /usr/app/node_modules
+      - /usr/app/public
