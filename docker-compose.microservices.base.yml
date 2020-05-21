@@ -32,21 +32,23 @@ services:
   nginx:
     image: nginx:1.17
     volumes:
-      - ./config/nginx/etc/conf.d/default.conf:/etc/nginx/conf.d/default.template
+      - ./config/nginx/etc/conf.d/prod.conf:/etc/nginx/conf.d/default.template
     ports:
-      - '$FRONTEND_PORT:$FRONTEND_PORT'
+      - '$NGINX_PORT:$NGINX_PORT'
     environment:
+      - FRONTEND_PORT=$FRONTEND_PORT
       - LOCA_PORT=$LOCA_PORT
       - AUTHENTICATOR_PORT=$AUTHENTICATOR_PORT
-      - FRONTEND_PORT=$FRONTEND_PORT
+      - NGINX_PORT=$NGINX_PORT
     command:
       - 'bin/bash'
       - '-c'
-      - "envsubst '$${LOCA_PORT},$${AUTHENTICATOR_PORT},$${FRONTEND_PORT}' < /etc/nginx/conf.d/default.template > /etc/nginx/conf.d/default.conf && cat /etc/nginx/conf.d/default.conf && exec nginx -g 'daemon off;'"
+      - "envsubst '$${NGINX_PORT},$${LOCA_PORT},$${AUTHENTICATOR_PORT},$${FRONTEND_PORT}' < /etc/nginx/conf.d/default.template > /etc/nginx/conf.d/default.conf && cat /etc/nginx/conf.d/default.conf && exec nginx -g 'daemon off;'"
     networks:
       - net
     depends_on:
       - loca
+      - frontend
 ###############################################################################
 # RabbitMQ
 ###############################################################################
@@ -78,7 +80,9 @@ services:
       - TOKEN_DB_PASSWORD=$AUTHENTICATOR_TOKEN_DB_PASSWORD
       - ACCESS_TOKEN_SECRET=$AUTHENTICATOR_ACCESS_TOKEN_SECRET
       - REFRESH_TOKEN_SECRET=$AUTHENTICATOR_REFRESH_TOKEN_SECRET
+      - RESET_TOKEN_SECRET=$AUTHENTICATOR_RESET_TOKEN_SECRET
       - BASE_DB_URL=$BASE_DB_URL
+      - EMAILER_URL=$EMAILER_URL
     expose:
       - '$AUTHENTICATOR_PORT'
     networks:
@@ -86,6 +90,7 @@ services:
     depends_on:
       - redis
       - mongo
+      - emailer
 ###############################################################################
 # PDFGenerator
 ###############################################################################
@@ -136,6 +141,7 @@ services:
     image: mre/loca:latest
     environment:
       - NODE_ENV
+      - NGINX_PORT=$NGINX_PORT
       - PORT=$LOCA_PORT
       - LOGGER_LEVEL=$LOGGER_LEVEL
       - PRODUCTIVE=$PRODUCTIVE
@@ -152,6 +158,24 @@ services:
       - authenticator
       - emailer
 ###############################################################################
+# Frontend
+###############################################################################
+  frontend:
+    image: mre/frontend:latest
+    environment:
+      - NODE_ENV
+      - PORT=$FRONTEND_PORT
+      - LOGGER_LEVEL=$LOGGER_LEVEL
+      - APP_NAME=$APP_NAME
+      - API_URL=$API_URL
+    expose:
+      - '$FRONTEND_PORT'
+    networks:
+      - net
+    depends_on:
+      - loca
+      - authenticator
+  ###############################################################################
 # microservices network
 ###############################################################################
 networks:

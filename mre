@@ -58,7 +58,7 @@ start() {
     else
         status
         echo ""
-        echo "Front-end             http://localhost:$FRONTEND_PORT"
+        echo "Front-end             http://localhost:$NGINX_PORT"
         echo "kibana                http://localhost:$KIBANA_PORT"
         echo "cadvisor              http://localhost:$CADVISOR_PORT"
         # echo "rabbitmq Management   http://localhost:$RABBITMQ_MANAGEMENT_PORT"

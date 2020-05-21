@@ -62,8 +62,6 @@ services:
         syslog-address: 'udp://localhost:$LOGSTASH_UDP_PORT'
         tag: '{{.Name}}/{{.ID}}'
     depends_on:
-      - redis
-      - mongo
       - kibana
 ###############################################################################
 # PDFGenerator
@@ -78,7 +76,6 @@ services:
         syslog-address: 'udp://localhost:$LOGSTASH_UDP_PORT'
         tag: '{{.Name}}/{{.ID}}'
     depends_on:
-      - mongo
       - kibana
 ###############################################################################
 # Emailer
@@ -93,8 +90,6 @@ services:
         syslog-address: 'udp://localhost:$LOGSTASH_UDP_PORT'
         tag: '{{.Name}}/{{.ID}}'
     depends_on:
-      - mongo
-      - pdfgenerator
       - kibana
 ###############################################################################
 # Loca (Front/Back-end)
@@ -109,6 +104,17 @@ services:
         syslog-address: 'udp://localhost:$LOGSTASH_UDP_PORT'
         tag: '{{.Name}}/{{.ID}}'
     depends_on:
-      - mongo
-      - emailer
       - kibana
+###############################################################################
+# Frontend
+###############################################################################
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    logging:
+      driver: syslog
+      options:
+        syslog-address: 'udp://localhost:$LOGSTASH_UDP_PORT'
+        tag: '{{.Name}}/{{.ID}}'
+

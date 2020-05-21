@@ -10,3 +10,6 @@
 [submodule "pdfgenerator"]
 	path = pdfgenerator
 	url = https://github.com/microrealestate/pdfgenerator.git
+[submodule "frontend"]
+	path = frontend
+	url = https://github.com/microrealestate/frontend.git
