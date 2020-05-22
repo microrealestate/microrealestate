@@ -117,4 +117,5 @@ services:
       options:
         syslog-address: 'udp://localhost:$LOGSTASH_UDP_PORT'
         tag: '{{.Name}}/{{.ID}}'
-
+    depends_on:
+      - kibana
