@@ -149,6 +149,7 @@ services:
       - CONFIG_DIR=$CONFIG_DIR
       - DEMO_MODE=$DEMO_MODE
       - EMAILER_URL=$EMAILER_URL
+      - RESTORE_DB=$RESTORE_DB
     expose:
       - '$LOCA_PORT'
     networks:
