@@ -37,38 +37,44 @@ status() {
 }
 
 build() {
-    echo "Building microrealestate..."
-    docker-compose $prod_compose_files_argument rm --stop --force
-    docker-compose $prod_compose_files_argument build --no-cache
+    echo "Building microrealestate $1..."
+    docker-compose $prod_compose_files_argument rm --stop --force $1
+    docker-compose $prod_compose_files_argument build --no-cache $1
 }
 
 start() {
-    echo "Starting microrealestate..."
+    echo "Starting microrealestate $1..."
     if [ ! -d ./data/elasticsearch ]; then
         mkdir -p ./data/elasticsearch;
     fi
     if [ ! -d ./data/mongodb ]; then
         mkdir -p ./data/mongodb;
     fi
-    docker-compose $prod_compose_files_argument up -d --force-recreate --remove-orphans # > /dev/null
+    if [ -n "$1" ]; then
+        docker-compose $prod_compose_files_argument up -d $1 # > /dev/null
+    else
+        docker-compose $prod_compose_files_argument up -d --force-recreate --remove-orphans # > /dev/null
+    fi
     local res=$?;
     if [ $res -ne 0 ]; then
         stop
-        echo "ERROR: Fail to start microrealestate" >&2
+        echo "ERROR: Fail to start microrealestate $1" >&2
     else
-        status
-        echo ""
-        echo "Front-end             http://localhost:$NGINX_PORT"
-        echo "kibana                http://localhost:$KIBANA_PORT"
-        echo "cadvisor              http://localhost:$CADVISOR_PORT"
-        # echo "rabbitmq Management   http://localhost:$RABBITMQ_MANAGEMENT_PORT"
+        if [ -z "$1" ]; then
+            status
+            echo ""
+            echo "Front-end             http://localhost:$NGINX_PORT"
+            echo "kibana                http://localhost:$KIBANA_PORT"
+            echo "cadvisor              http://localhost:$CADVISOR_PORT"
+            # echo "rabbitmq Management   http://localhost:$RABBITMQ_MANAGEMENT_PORT"
+        fi
     fi
     return $res
 }
 
 stop() {
-    echo "Stopping microrealestate..."
-    docker-compose $prod_compose_files_argument rm -sf > /dev/null
+    echo "Stopping microrealestate $1..."
+    docker-compose $prod_compose_files_argument rm -sf $1 > /dev/null
 }
 
 display_help() {
@@ -97,23 +103,23 @@ case "$1" in
     build)
         initEnv prod.env
         initEnv .env
-        build
+        build $2
         ;;
     start)
         initEnv prod.env
         initEnv .env
-        start
+        start $2
         ;;
     stop)
         initEnv prod.env
         initEnv .env
-        stop
+        stop $2
         ;;
     restart)
         initEnv prod.env
         initEnv .env
-        stop
-        start
+        stop $2
+        start $2
         ;;
     -h | --help)
         display_help
