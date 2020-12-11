@@ -8,12 +8,14 @@ dev_compose_files_argument=$(printf " -f ./docker-compose.%s.yml" "${DEV_COMPOSE
 
 # environment variables are in *.env files
 initEnv() {
-    while read LINE; do
-        if  [[ $LINE != \#* ]] && [[ $LINE != "" ]];
-        then
-        eval "export $LINE"
-        fi
-    done < $1
+    if test -f "$1"; then
+        while read LINE; do
+            if  [[ $LINE != \#* ]] && [[ $LINE != "" ]];
+            then
+            eval "export $LINE"
+            fi
+        done < $1
+    fi
 }
 
 configDev() {
