@@ -3,39 +3,39 @@ services:
 ###############################################################################
 # Redis
 ###############################################################################
-  redis:
-    logging:
-      driver: 'syslog'
-      options:
-        syslog-address: 'udp://localhost:$LOGSTASH_UDP_PORT'
-        tag: '{{.Name}}/{{.ID}}'
-      #   syslog-facility: 'daemon'
-    depends_on:
-      - kibana
+  # redis:
+  #   logging:
+  #     driver: 'syslog'
+  #     options:
+  #       syslog-address: 'udp://localhost:$LOGSTASH_UDP_PORT'
+  #       tag: '{{.Name}}/{{.ID}}'
+  #     #   syslog-facility: 'daemon'
+  #   depends_on:
+  #     - kibana
 ###############################################################################
 # Mongo
 ###############################################################################
-  mongo:
-    logging:
-      driver: 'syslog'
-      options:
-        syslog-address: 'udp://localhost:$LOGSTASH_UDP_PORT'
-        tag: '{{.Name}}/{{.ID}}'
-      #   syslog-facility: 'daemon'
-    depends_on:
-      - kibana
+  # mongo:
+  #   logging:
+  #     driver: 'syslog'
+  #     options:
+  #       syslog-address: 'udp://localhost:$LOGSTASH_UDP_PORT'
+  #       tag: '{{.Name}}/{{.ID}}'
+  #     #   syslog-facility: 'daemon'
+  #   depends_on:
+  #     - kibana
 ###############################################################################
 # NGINX
 ###############################################################################
-  nginx:
-    logging:
-      driver: 'syslog'
-      options:
-        syslog-address: 'udp://localhost:$LOGSTASH_UDP_PORT'
-        tag: '{{.Name}}/{{.ID}}'
-      #   syslog-facility: 'daemon'
-    depends_on:
-      - kibana
+  # nginx:
+  #   logging:
+  #     driver: 'syslog'
+  #     options:
+  #       syslog-address: 'udp://localhost:$LOGSTASH_UDP_PORT'
+  #       tag: '{{.Name}}/{{.ID}}'
+  #     #   syslog-facility: 'daemon'
+  #   depends_on:
+  #     - kibana
 ###############################################################################
 # RabbitMQ
 ###############################################################################
@@ -56,13 +56,13 @@ services:
     build:
       context: ./authenticator
       dockerfile: Dockerfile
-    logging:
-      driver: syslog
-      options:
-        syslog-address: 'udp://localhost:$LOGSTASH_UDP_PORT'
-        tag: '{{.Name}}/{{.ID}}'
-    depends_on:
-      - kibana
+    # logging:
+    #   driver: syslog
+    #   options:
+    #     syslog-address: 'udp://localhost:$LOGSTASH_UDP_PORT'
+    #     tag: '{{.Name}}/{{.ID}}'
+    # depends_on:
+    #   - kibana
 ###############################################################################
 # PDFGenerator
 ###############################################################################
@@ -70,13 +70,13 @@ services:
     build:
       context: ./pdfgenerator
       dockerfile: Dockerfile
-    logging:
-      driver: syslog
-      options:
-        syslog-address: 'udp://localhost:$LOGSTASH_UDP_PORT'
-        tag: '{{.Name}}/{{.ID}}'
-    depends_on:
-      - kibana
+    # logging:
+    #   driver: syslog
+    #   options:
+    #     syslog-address: 'udp://localhost:$LOGSTASH_UDP_PORT'
+    #     tag: '{{.Name}}/{{.ID}}'
+    # depends_on:
+    #   - kibana
 ###############################################################################
 # Emailer
 ###############################################################################
@@ -84,13 +84,13 @@ services:
     build:
       context: ./emailer
       dockerfile: Dockerfile
-    logging:
-      driver: syslog
-      options:
-        syslog-address: 'udp://localhost:$LOGSTASH_UDP_PORT'
-        tag: '{{.Name}}/{{.ID}}'
-    depends_on:
-      - kibana
+    # logging:
+    #   driver: syslog
+    #   options:
+    #     syslog-address: 'udp://localhost:$LOGSTASH_UDP_PORT'
+    #     tag: '{{.Name}}/{{.ID}}'
+    # depends_on:
+    #   - kibana
 ###############################################################################
 # Loca (Front/Back-end)
 ###############################################################################
@@ -98,13 +98,13 @@ services:
     build:
       context: ./loca
       dockerfile: Dockerfile
-    logging:
-      driver: syslog
-      options:
-        syslog-address: 'udp://localhost:$LOGSTASH_UDP_PORT'
-        tag: '{{.Name}}/{{.ID}}'
-    depends_on:
-      - kibana
+    # logging:
+    #   driver: syslog
+    #   options:
+    #     syslog-address: 'udp://localhost:$LOGSTASH_UDP_PORT'
+    #     tag: '{{.Name}}/{{.ID}}'
+    # depends_on:
+    #   - kibana
 ###############################################################################
 # Frontend
 ###############################################################################
@@ -112,10 +112,10 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    logging:
-      driver: syslog
-      options:
-        syslog-address: 'udp://localhost:$LOGSTASH_UDP_PORT'
-        tag: '{{.Name}}/{{.ID}}'
-    depends_on:
-      - kibana
+    # logging:
+    #   driver: syslog
+    #   options:
+    #     syslog-address: 'udp://localhost:$LOGSTASH_UDP_PORT'
+    #     tag: '{{.Name}}/{{.ID}}'
+    # depends_on:
+    #   - kibana

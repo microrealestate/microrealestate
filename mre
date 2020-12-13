@@ -1,6 +1,7 @@
 #!/bin/bash
 
-PROD_COMPOSE_FILES=("monitoring" "microservices.base" "microservices.prod")
+# PROD_COMPOSE_FILES=("monitoring" "microservices.base" "microservices.prod")
+PROD_COMPOSE_FILES=("microservices.base" "microservices.prod")
 DEV_COMPOSE_FILES=("microservices.base" "microservices.dev")
 
 prod_compose_files_argument=$(printf " -f ./docker-compose.%s.yml" "${PROD_COMPOSE_FILES[@]}")
@@ -66,8 +67,8 @@ start() {
             status
             echo ""
             echo "Front-end             http://localhost:$NGINX_PORT"
-            echo "kibana                http://localhost:$KIBANA_PORT"
-            echo "cadvisor              http://localhost:$CADVISOR_PORT"
+            # echo "kibana                http://localhost:$KIBANA_PORT"
+            # echo "cadvisor              http://localhost:$CADVISOR_PORT"
             # echo "rabbitmq Management   http://localhost:$RABBITMQ_MANAGEMENT_PORT"
         fi
     fi
