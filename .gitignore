@@ -1,3 +1,4 @@
 data
-
 .env
+.vscode/ipch
+.vscode/settings.json
