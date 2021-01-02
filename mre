@@ -47,9 +47,9 @@ build() {
 
 start() {
     echo "Starting microrealestate $1..."
-    if [ ! -d ./data/elasticsearch ]; then
-        mkdir -p ./data/elasticsearch;
-    fi
+    # if [ ! -d ./data/elasticsearch ]; then
+    #     mkdir -p ./data/elasticsearch;
+    # fi
     if [ ! -d ./data/mongodb ]; then
         mkdir -p ./data/mongodb;
     fi
