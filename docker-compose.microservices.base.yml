@@ -100,8 +100,7 @@ services:
       - NODE_ENV
       - PORT=$PDFGENERATOR_PORT
       - LOGGER_LEVEL=$LOGGER_LEVEL
-      - BASE_DB_URL=$BASE_DB_URL
-      - DB_URL=$PDFGENERATOR_DB_URL
+      - MONGO_URL=$BASE_DB_URL
     expose:
       - '$PDFGENERATOR_PORT'
     networks:
