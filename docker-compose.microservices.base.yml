@@ -49,6 +49,7 @@ services:
     depends_on:
       - loca
       - frontend
+      - authenticator
 ###############################################################################
 # RabbitMQ
 ###############################################################################
@@ -157,8 +158,8 @@ services:
       - net
     depends_on:
       - mongo
-      - authenticator
       - emailer
+      - pdfgenerator
 ###############################################################################
 # Frontend
 ###############################################################################
@@ -170,18 +171,19 @@ services:
       - LOGGER_LEVEL=$LOGGER_LEVEL
       - APP_NAME=$APP_NAME
       - API_URL=$API_URL
-      - AUTHENTICATOR_URL=$AUTHENTICATOR_URL
-      - LOCA_URL=$LOCA_URL
+      - DOCKER_API_URL=$DOCKER_API_URL
     expose:
       - '$FRONTEND_PORT'
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
     networks:
       - net
     depends_on:
       - loca
       - authenticator
-  ###############################################################################
-# microservices network
-###############################################################################
+# ###############################################################################
+# # microservices network
+# ###############################################################################
 networks:
   net:
     driver: bridge
