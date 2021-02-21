@@ -31,9 +31,7 @@ In a second stage, the monolith application will be broken in microservices.
 ### Prerequisite
 - Docker and docker-compose installed
 
-> The `mre` bash script is uses for building, running the application.
-
-> :warning: **It doesn't work on windows.** [Please help wanted](https://github.com/microrealestate/microrealestate/issues/6).
+> The `mre` bash script is uses for building, running the application. If running on Windows use `mre.ps1`.
 
 ### Clone the GitHub repository
 ```shell
