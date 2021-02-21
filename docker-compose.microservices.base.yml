@@ -170,6 +170,7 @@ services:
       - PORT=$FRONTEND_PORT
       - LOGGER_LEVEL=$LOGGER_LEVEL
       - APP_NAME=$APP_NAME
+      - BASE_PATH=$BASE_PATH
       - API_URL=$API_URL
       - DOCKER_API_URL=$DOCKER_API_URL
     expose:
