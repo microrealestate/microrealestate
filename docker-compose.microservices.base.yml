@@ -173,6 +173,7 @@ services:
       - BASE_PATH=$BASE_PATH
       - API_URL=$API_URL
       - DOCKER_API_URL=$DOCKER_API_URL
+      - DEMO_MODE=$DEMO_MODE
     expose:
       - '$FRONTEND_PORT'
     extra_hosts:
