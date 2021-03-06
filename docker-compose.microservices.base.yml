@@ -84,6 +84,7 @@ services:
       - RESET_TOKEN_SECRET=$AUTHENTICATOR_RESET_TOKEN_SECRET
       - BASE_DB_URL=$BASE_DB_URL
       - EMAILER_URL=$EMAILER_URL
+      - SIGNUP=$SIGNUP
     expose:
       - '$AUTHENTICATOR_PORT'
     networks:
@@ -174,6 +175,7 @@ services:
       - API_URL=$API_URL
       - DOCKER_API_URL=$DOCKER_API_URL
       - DEMO_MODE=$DEMO_MODE
+      - SIGNUP=$SIGNUP
     expose:
       - '$FRONTEND_PORT'
     extra_hosts:
