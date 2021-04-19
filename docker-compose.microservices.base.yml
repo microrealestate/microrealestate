@@ -116,6 +116,7 @@ services:
     image: mre/emailer:latest
     environment:
       - NODE_ENV
+      - ALLOW_EMAIL_SENDING=$ALLOW_EMAIL_SENDING
       - PORT=$EMAILER_PORT
       - LOGGER_LEVEL=$LOGGER_LEVEL
       - APP_NAME=$APP_NAME
