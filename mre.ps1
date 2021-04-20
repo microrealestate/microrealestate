@@ -77,7 +77,8 @@ function Start-Environment($1) {
         if (([String]::IsNullOrWhiteSpace($1))) {
             Read-Environment
             Write-Output ""
-            Write-Output "Front-end               http://localhost:$Env:NGINX_PORT"
+            Write-Output "front-end                 http://localhost:$Env:NGINX_PORT/app"
+            Write-Output "Deprecated front-end      http://localhost:$Env:NGINX_PORT"
             # Write-Output "kibana                http://localhost:$Env:KIBANA_PORT"
             # Write-Output "cadvisor              http://localhost:$Env:CADVISOR_PORT"
             # Write-Output "rabbitmq Management   http://localhost:$Env:RABBITMQ_MANAGEMENT_PORT"
@@ -91,13 +92,13 @@ function Stop-Environment {
     Invoke-Expression -Command "docker-compose $prod_compose_files_argument rm -sf $1"
 }
 
-function Write-Help 
+function Write-Help
 {
     Write-Output "Usage: $0 [option...] {dev|build|status|start|stop|restart|config-dev|config-prod}"
 }
 
 switch ($args[0]) {
-    config-dev { 
+    config-dev {
         Initialize-Environment dev.env
         Initialize-Environment .env
         Confirm-Development
