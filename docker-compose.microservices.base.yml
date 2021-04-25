@@ -27,23 +27,6 @@ services:
     networks:
       - net
 ###############################################################################
-# Vault
-###############################################################################
-  vault:
-    image: vault:1.7.0
-    expose:
-      - '$VAULT_PORT'
-    restart: always
-    volumes:
-      - ./data/vault/logs:/vault/logs
-      - ./data/vault/file:/vault/file
-      - ./config/vault/prod.json:/vault/config/vault.json
-    cap_add:
-      - IPC_LOCK
-    entrypoint: vault server -config=/vault/config/vault.json
-    networks:
-      - net
-###############################################################################
 # NGINX
 ###############################################################################
   nginx:
@@ -120,13 +103,11 @@ services:
       - PORT=$PDFGENERATOR_PORT
       - LOGGER_LEVEL=$LOGGER_LEVEL
       - MONGO_URL=$BASE_DB_URL
-      - VAULT_URL=$VAULT_URL
     expose:
       - '$PDFGENERATOR_PORT'
     networks:
       - net
     depends_on:
-      - vault
       - mongo
 ###############################################################################
 # Emailer
@@ -141,7 +122,6 @@ services:
       - APP_NAME=$APP_NAME
       - APP_URL=$APP_URL
       - MONGO_URL=$BASE_DB_URL
-      - VAULT_URL=$VAULT_URL
       - PDFGENERATOR_URL=$PDFGENERATOR_URL
       - MAILGUN_API_KEY=$MAILGUN_API_KEY
       - MAILGUN_DOMAIN=$MAILGUN_DOMAIN
@@ -153,7 +133,6 @@ services:
     networks:
       - net
     depends_on:
-      - vault
       - mongo
       - pdfgenerator
 ###############################################################################
@@ -173,7 +152,6 @@ services:
       - EMAILER_URL=$EMAILER_URL
       - PDFGENERATOR_URL=$PDFGENERATOR_URL
       - RESTORE_DB=$RESTORE_DB
-      - VAULT_URL=$VAULT_URL
       - ACCESS_TOKEN_SECRET=$AUTHENTICATOR_ACCESS_TOKEN_SECRET
       - REFRESH_TOKEN_SECRET=$AUTHENTICATOR_REFRESH_TOKEN_SECRET
     expose:
@@ -181,7 +159,6 @@ services:
     networks:
       - net
     depends_on:
-      - vault
       - mongo
       - emailer
       - pdfgenerator
