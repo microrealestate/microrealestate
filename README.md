@@ -2,29 +2,37 @@
 
 # Microrealestate
 
-Microrealestate is a set of microservices which work together to offer an open source application for property management.
+## Features
 
-This application draws its fundamentals from a monolithic application: [Loca](https://github.com/camelaissani/loca)
+This project is a set of services and a web application to help the landlords manage their properties: buildings, flats, offices, meeting rooms, car parks, letter boxes...
 
-The first objective is to combine the monolith application and the microservices to provide new functionalities.
+The main functionalities of this project are:
 
-![overview](./picture/overview.png)
+- Gather all information of the properties and the tenants in one place
+- Create rent leases from templates
+- Follow the rents month after month and manage the recovery of the amounts not received
+- Create custom documents (letters, emails) to easily communicate with tenants
+- Manage the real estate business with several collaborators and organizations
 
-| µService                                                              | Description                                                                                                      | Status          |
-| :-------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------- | :-------------: |
-| Alert                                                                 | Sends alert messages based on business rules (contract deadlines, unpaid rents...)                               | Not available   |
-| API Gateway                                                           | [NGINX](https://github.com/microrealestate/authenticator.git)                                                    | Available       |
-| [Authenticator](https://github.com/microrealestate/authenticator)     | Handles login/logout and tokens management                                                                       | Dev in progress |
-| cAdvisor                                                              | [Container Advisor](https://github.com/google/cadvisor)                                                          | Available       |
-| Elastic Stack                                                         | [Elasticsearch Logstash Kibana](https://www.elastic.co//products) handles logs and monitors containers and hosts | Available       |
-| [EMailer](https://github.com/microrealestate/emailer)                 | Generates and sends emails with [mailgun](https://www.mailgun.com/)                                              | Available       |
-| [Loca](https://github.com/camelaissani/loca)                          | The web application                                                                                              | Available       |
-| Messages                                                              | message broker                                                                                                   | Not available   |
-| [PDFGenerator](https://github.com/microrealestate/pdfgenerator)       | Generates PDF documents (letters, contracts, invoices...)                                                        | Available       |
-| Text                                                                  | Generates and texts (cash balance, alerts...)                                                                    | Not available   |
+## Screenshots
+
+ Rents page                | Send notices, receipt by email  | Pay a rent             |
+:-------------------------:|:-------------------------------:|:----------------------:|
+[<img src="./picture/rents.png" alt="drawing" width="350"/>](./picture/rents.png) | [<img src="./picture/sendmassemails.png" alt="drawing" width="350"/>](./picture/sendmassemails.png) | [<img src="./picture/payment.png" alt="drawing" width="350"/>](./picture/payment.png)
+
+ Tenants page              | Tenant details                 |
+:-------------------------:|:------------------------------:|
+[<img src="./picture/tenants.png" alt="drawing" width="350"/>](./picture/tenants.png) | [<img src="./picture/tenantcontract.png" alt="drawing" width="350"/>](./picture/tenantcontract.png)
+
+ Properties page           | Property details               |
+:-------------------------:|:------------------------------:|
+[<img src="./picture/properties.png" alt="drawing" width="350"/>](./picture/properties.png) | [<img src="./picture/property.png" alt="drawing" width="350"/>](./picture/property.png)
 
 
-In a second stage, the monolith application will be broken in microservices.
+ Landlord page             | Template leases                | Author a contract           | Members                        |
+:-------------------------:|:------------------------------:|:---------------------------:|:------------------------------:|
+[<img src="./picture/landlord.png" alt="drawing" width="350"/>](./picture/landlord.png) | [<img src="./picture/leases.png" alt="drawing" width="350"/>](./picture/leases.png) | [<img src="./picture/contracttemplate.png" alt="drawing" width="350"/>](./picture/contracttemplate.png) | [<img src="./picture/members.png" alt="drawing" width="350"/>](./picture/members.png)
+
 
 ## Getting started
 
@@ -56,37 +64,25 @@ $ ./mre start
 At the end, it displays the application links:
 
 ```shell
-Front-end             http://localhost:8080
-kibana                http://localhost:9000
-cadvisor              http://localhost:9100
+Front-end                 http://localhost:8080/app
+Deprecated Front-end      http://localhost:8080
 ```
 
 ### Run the user interface
 
-Take your favorite internet navigator and go to this link: http://localhost:8080
+Take your favorite internet navigator and go to this link: http://localhost:8080/app
 
-## Debugging the application
+## Community
 
-You would need to have the latest version of [VS Code](https://code.visualstudio.com/) installed.
+* Contribute on [Issues](https://github.com/microrealestate/microrealestate/issues)
+* [Run and debug the application](./DEVELOPER.MD)
 
-Then bring up the Debug view, click on the Debug icon in the **Activity Bar** on the side of VS Code. You can also use the keyboard shortcut `Ctrl+Shift+D`.
+## Contact
 
-![Activity Bar](https://code.visualstudio.com/assets/docs/editor/debugging/debugicon.png)
+* LinkedIn: [www.linkedin.com/in/caissani](https://www.linkedin.com/in/caissani/)
+* twitter: [@camelaissani](https://twitter.com/camelaissani)
+* website: https://www.nuageprive.fr/
 
-In a terminal launch the application in development mode:
+## License
 
-```shell
-$ ./mre dev
-```
-
-Next, go to the debug bar:
-
-![Activity Bar](https://code.visualstudio.com/assets/docs/editor/debugging/launch-configuration.png)
-
-Then select one of these values to attach the VS Code debugger to the application:
-
-- `Docker: Attach to Loca` (The web application)
-- `Docker: Attach to Emailer` (Generates and sends emails)
-- `Docker: Attach to PdfGenerator` (Generates PDF documents)
-
-For more information about VS Code debugging go [here](https://code.visualstudio.com/Docs/editor/debugging#_debug-actions)
+MIT License
