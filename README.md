@@ -4,7 +4,7 @@
 
 ## Features
 
-This project is a set of services and a web application to help the landlords manage their properties: buildings, flats, offices, meeting rooms, car parks, letter boxes...
+This project is a set of services and a web application to help the landlords to manage their properties: buildings, flats, offices, meeting rooms, car parks, letter boxes...
 
 The main functionalities of this project are:
 
