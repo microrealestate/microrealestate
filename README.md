@@ -16,23 +16,18 @@ The main functionalities of this project are:
 
 ## Screenshots
 
- Rents page                | Send notices, receipt by email  | Pay a rent             |
-:-------------------------:|:-------------------------------:|:----------------------:|
-[<img src="./picture/rents.png" alt="drawing" width="350"/>](./picture/rents.png) | [<img src="./picture/sendmassemails.png" alt="drawing" width="350"/>](./picture/sendmassemails.png) | [<img src="./picture/payment.png" alt="drawing" width="350"/>](./picture/payment.png)
-
- Tenants page              | Tenant details                 |
-:-------------------------:|:------------------------------:|
-[<img src="./picture/tenants.png" alt="drawing" width="350"/>](./picture/tenants.png) | [<img src="./picture/tenantcontract.png" alt="drawing" width="350"/>](./picture/tenantcontract.png)
-
- Properties page           | Property details               |
-:-------------------------:|:------------------------------:|
-[<img src="./picture/properties.png" alt="drawing" width="350"/>](./picture/properties.png) | [<img src="./picture/property.png" alt="drawing" width="350"/>](./picture/property.png)
-
-
- Landlord page             | Template leases                | Author a contract           | Members                        |
-:-------------------------:|:------------------------------:|:---------------------------:|:------------------------------:|
-[<img src="./picture/landlord.png" alt="drawing" width="350"/>](./picture/landlord.png) | [<img src="./picture/leases.png" alt="drawing" width="350"/>](./picture/leases.png) | [<img src="./picture/contracttemplate.png" alt="drawing" width="350"/>](./picture/contracttemplate.png) | [<img src="./picture/members.png" alt="drawing" width="350"/>](./picture/members.png)
-
+|                           |                                 |                        |
+|:-------------------------:|:-------------------------------:|:----------------------:|
+| **Rents page**                | **Send notices, receipt by email**  | **Pay a rent**             |
+| [<img src="./picture/rents.png" alt="drawing" width="350"/>](./picture/rents.png) | [<img src="./picture/sendmassemails.png" alt="drawing" width="350"/>](./picture/sendmassemails.png) | [<img src="./picture/payment.png" alt="drawing" width="350"/>](./picture/payment.png) |
+| **Tenants page**              | **Tenant details**                 | |
+| [<img src="./picture/tenants.png" alt="drawing" width="350"/>](./picture/tenants.png) | [<img src="./picture/tenantcontract.png" alt="drawing" width="350"/>](./picture/tenantcontract.png) | |
+| **Properties page**           | **Property details**               | |
+| [<img src="./picture/properties.png" alt="drawing" width="350"/>](./picture/properties.png) | [<img src="./picture/property.png" alt="drawing" width="350"/>](./picture/property.png)| |
+| **Landlord page**             | **Template leases**                | **Author a contract**          |
+| [<img src="./picture/landlord.png" alt="drawing" width="350"/>](./picture/landlord.png) | [<img src="./picture/leases.png" alt="drawing" width="350"/>](./picture/leases.png) | [<img src="./picture/contracttemplate.png" alt="drawing" width="350"/>](./picture/contracttemplate.png) |
+| **Members**                        | |
+| [<img src="./picture/members.png" alt="drawing" width="350"/>](./picture/members.png) | |
 
 ## Getting started
 
@@ -75,7 +70,7 @@ Take your favorite internet navigator and go to this link: http://localhost:8080
 ## Community
 
 * Contribute on [Issues](https://github.com/microrealestate/microrealestate/issues)
-* [Run and debug the application](./DEVELOPER.MD)
+* [Run and debug the application](./DEVELOPER.md)
 
 ## Contact
 

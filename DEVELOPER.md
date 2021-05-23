@@ -10,7 +10,7 @@ The first objective is to combine the monolith application and the microservices
 
 | µService                                                              | Description                                                                                                      | Status          |
 | :-------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------- | :-------------: |
-| [API Gateway](./config/nginx)                                         | Routes HTTP requests to the services (NGINX)                                                                     | Available       |
+| [API Gateway](./config/nginx/etc/conf.d)                              | Routes HTTP requests to the services (NGINX)                                                                     | Available       |
 | [Frontend](https://github.com/microrealestate/frontend)               | The web application                                                                                              | Dev in progress |
 | [Authenticator](https://github.com/microrealestate/authenticator)     | Handles login/logout and tokens management                                                                       | Available       |
 | [EMailer](https://github.com/microrealestate/emailer)                 | Generates and sends emails with [mailgun](https://www.mailgun.com/)                                              | Available       |
