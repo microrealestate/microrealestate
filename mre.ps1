@@ -20,7 +20,7 @@ function Initialize-Environment($envFile) {
                 # (matching only first '=' aka return exactly 2 sub strings)
                 $lineSplit = $line -split '=',2
                 # Add it as environment variable
-                [System.Environment]::SetEnvironmentVariable($lineSplit[0], $lineSplit[1])
+                [System.Environment]::SetEnvironmentVariable($lineSplit[0], [System.Environment]::ExpandEnvironmentVariables($lineSplit[1].Replace("$`{", "%").Replace("}", "%")))
             }
         }
     }
