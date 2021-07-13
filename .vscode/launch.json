@@ -7,10 +7,10 @@
         {
             "type": "node",
             "request": "attach",
-            "name": "Docker: Attach to Loca",
-            "port": 9229,
+            "name": "Docker: Attach to API",
+            "port": 9230,
             "address": "localhost",
-            "localRoot": "${workspaceFolder}/loca",
+            "localRoot": "${workspaceFolder}/api",
             "remoteRoot": "/usr/app/",
             "protocol": "inspector",
             "restart": true

@@ -13,3 +13,6 @@
 [submodule "frontend"]
 	path = frontend
 	url = https://github.com/microrealestate/frontend.git
+[submodule "api"]
+	path = api
+	url = https://github.com/microrealestate/api.git
