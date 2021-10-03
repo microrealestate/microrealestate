@@ -104,6 +104,8 @@ services:
       - PORT=$PDFGENERATOR_PORT
       - LOGGER_LEVEL=$LOGGER_LEVEL
       - MONGO_URL=$BASE_DB_URL
+      - CIPHER_KEY=$CIPHER_KEY
+      - CIPHER_IV_KEY=$CIPHER_IV_KEY
     expose:
       - "$PDFGENERATOR_PORT"
     networks:
