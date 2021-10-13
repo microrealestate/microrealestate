@@ -1,4 +1,5 @@
 data
+cli/node_modules
 .env
 .vscode/ipch
 .vscode/settings.json

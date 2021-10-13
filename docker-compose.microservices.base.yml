@@ -119,7 +119,7 @@ services:
     image: mre/emailer:latest
     environment:
       - NODE_ENV
-      - ALLOW_EMAIL_SENDING=$ALLOW_EMAIL_SENDING
+      - ALLOW_SENDING_EMAILS=$ALLOW_SENDING_EMAILS
       - PORT=$EMAILER_PORT
       - LOGGER_LEVEL=$LOGGER_LEVEL
       - APP_NAME=$APP_NAME
@@ -221,7 +221,7 @@ services:
     networks:
       - net
     depends_on:
-      - loca
+      - api
       - authenticator
 ###############################################################################
 # microservices network
