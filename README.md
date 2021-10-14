@@ -2,17 +2,17 @@
 
 # Microrealestate
 
+The application which helps the landlords to manage their property rents.
+
 ## Features
 
-This project is a set of services and a web application to help the landlords to manage their properties: buildings, flats, offices, meeting rooms, car parks, letter boxes...
+The main functionalities are:
 
-The main functionalities of this project are:
-
-- Gather all information of the properties and the tenants in one place
+- Store information of the properties and the tenants in one place
 - Create rent leases from templates
-- Follow the rents month after month and manage the recovery of the amounts not received
-- Create custom documents (letters, emails) to easily communicate with tenants
-- Manage the real estate business with several collaborators and organizations
+- Follow the rent payments and manage the rent overdues
+- Create custom documents to communicate with tenants
+- Manage the real estate business with several collaborators and in different organizations
 
 ## Screenshots
 
@@ -34,7 +34,7 @@ The main functionalities of this project are:
 ### Prerequisite
 - Docker and docker-compose installed
 
-> The `mre` bash script is uses for building, running the application. If running on Windows use `mre.ps1`.
+> The `mre` bash script is uses for building, running the application. If running on Windows use `mre.exe` on Mac `mre-macos`.
 
 ### Clone the GitHub repository
 ```shell
@@ -56,11 +56,10 @@ $ ./mre build
 $ ./mre start
 ```
 
-At the end, it displays the application links:
+Once the application is ready, the message bellow is displayed:
 
 ```shell
 Front-end                 http://localhost:8080/app
-Deprecated Front-end      http://localhost:8080
 ```
 
 ### Run the user interface

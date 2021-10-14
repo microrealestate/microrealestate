@@ -10,7 +10,7 @@
   },
   "bin": "src/index.js",
   "pkg": {
-    "assets": "node_modules/figlet/fonts/*.flf",
+    "assets": "node_modules/figlet/fonts/Standard.flf",
     "targets": [
       "node12-linux-x64",
       "node12-macos-x64",
