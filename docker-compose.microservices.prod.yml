@@ -92,21 +92,6 @@ services:
     # depends_on:
     #   - kibana
   ###############################################################################
-  # Loca (Front/Back-end)
-  ###############################################################################
-  loca:
-    build:
-      context: ./loca
-      dockerfile: Dockerfile
-    # logging:
-    #   driver: syslog
-    #   options:
-    #     syslog-address: 'udp://localhost:$LOGSTASH_UDP_PORT'
-    #     tag: '{{.Name}}/{{.ID}}'
-    # depends_on:
-    #   - kibana
-
-  ###############################################################################
   # api
   ###############################################################################
   api:

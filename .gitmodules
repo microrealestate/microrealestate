@@ -1,6 +1,3 @@
-[submodule "loca"]
-	path = loca
-	url = https://github.com/camelaissani/loca.git
 [submodule "authenticator"]
 	path = authenticator
 	url = https://github.com/microrealestate/authenticator.git
