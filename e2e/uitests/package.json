@@ -1,0 +1,16 @@
+{
+  "name": "e2e",
+  "version": "1.0.0",
+  "description": "MicroRealEstate e2e tests",
+  "scripts": {
+    "cypress:open": "cypress open"
+  },
+  "author": "Camel Aissani",
+  "license": "MIT",
+  "devDependencies": {
+    "cypress": "9.0.0",
+    "eslint": "8.2.0",
+    "eslint-plugin-cypress": "2.12.1",
+    "prettier": "2.4.1"
+  }
+}

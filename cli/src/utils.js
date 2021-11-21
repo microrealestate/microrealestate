@@ -92,6 +92,8 @@ const runCompose = async (
     'docker-compose.microservices.base.yml',
     '-f',
     'docker-compose.microservices.dev.yml',
+    '-f',
+    'docker-compose.microservices.test.yml',
   ];
 
   await runCommand(

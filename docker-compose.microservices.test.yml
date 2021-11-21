@@ -1,0 +1,25 @@
+version: "3.3"
+services:
+  resetservice:
+    build:
+      context: ./e2e/resetservice
+      dockerfile: dev.Dockerfile
+    environment:
+      - NODE_ENV
+      - PORT=$RESETSERVICE_PORT
+      - LOGGER_LEVEL=$LOGGER_LEVEL
+      - TOKEN_DB_URL=$AUTHENTICATOR_TOKEN_DB_URL
+      - TOKEN_DB_PASSWORD=$AUTHENTICATOR_TOKEN_DB_PASSWORD
+      - MONGO_URL=$BASE_DB_URL
+    volumes:
+      - ./e2e/resetservice:/usr/app
+      - /usr/app/node_modules
+    expose:
+      - "$RESETSERVICE_PORT"
+    ports:
+      - "$RESETSERVICE_DEBUG_PORT:9225"
+    networks:
+      - net
+    depends_on:
+      - redis
+      - mongo

@@ -47,6 +47,17 @@
             "remoteRoot": "/usr/app/",
             "protocol": "inspector",
             "restart": true
+        },
+        {
+            "type": "node",
+            "request": "attach",
+            "name": "Docker: Attach to ResetService",
+            "port": 9225,
+            "address": "localhost",
+            "localRoot": "${workspaceFolder}/e2e/resetservice",
+            "remoteRoot": "/usr/app/",
+            "protocol": "inspector",
+            "restart": true
         }
     ]
 }
