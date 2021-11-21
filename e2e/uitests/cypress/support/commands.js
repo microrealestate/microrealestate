@@ -33,10 +33,27 @@ Cypress.Commands.add('signin', (email, password) => {
   cy.get('[data-cy=submit]').click();
 });
 
+Cypress.Commands.add('signout', () => {
+  cy.get('[data-cy=signout]').click();
+});
+
 Cypress.Commands.add('registerUSer', (firstName, lastName, email, password) => {
   cy.get('input[name=firstName]').type(firstName);
   cy.get('input[name=lastName]').type(lastName);
   cy.get('input[name=email]').type(email);
   cy.get('input[name=password]').type(password);
   cy.get('[data-cy=submit]').click();
+});
+
+Cypress.Commands.add('navToPage', (pageName) => {
+  cy.get(`[data-cy=${pageName}Nav]`).click();
+});
+
+Cypress.Commands.add('muiSelect', (selector, value) => {
+  cy.get(selector).parent().click();
+  cy.get('.MuiList-root').contains(value).click();
+});
+
+Cypress.Commands.add('checkUrl', (url) => {
+  cy.url({ timeout: 8000 }).should('include', url);
 });
