@@ -7,8 +7,9 @@ class RedisClient {
     return new Promise((resolve, reject) => {
       this.client = redis.createClient(url, options);
 
-      this.flushdb = promisify(this.client.flushdb).bind(this.client);
-
+      //this.flushdb = promisify(this.client.flushdb).bind(this.client);
+      this.del = promisify(this.client.del).bind(this.client);
+      this.keys = promisify(this.client.keys).bind(this.client);
       this.client.on('error', reject);
       this.client.on('ready', resolve);
     });

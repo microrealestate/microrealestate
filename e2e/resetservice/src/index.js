@@ -94,8 +94,29 @@ async function startService() {
   app.delete('/reset', (req, res) => {
     const dropDB = async () => {
       try {
-        await mongoose.connection.db.dropDatabase();
-        await redisClient.flushdb();
+        await Promise.all(
+          [
+            'accounts',
+            'contracts',
+            'documents',
+            'emails',
+            'landloards',
+            'leases',
+            'occupants',
+            'properties',
+            'realms',
+            'templates',
+          ].map((collection) =>
+            mongoose.connection.db
+              .dropCollection(collection)
+              .catch(console.error)
+          )
+        );
+
+        const keys = await redisClient.keys('*');
+        if (keys?.length) {
+          await Promise.all(keys.map((key) => redisClient.del(key)));
+        }
       } catch (error) {
         console.log(error);
         logger.error(error);
