@@ -1,4 +1,8 @@
 {
   "viewportWidth": 1200,
-  "viewportHeight": 1200
+  "viewportHeight": 1200,
+  "baseUrl": "http://localhost:8080/app",
+  "env": {
+    "API_BASEURL": "http://localhost:8080"
+  }
 }
