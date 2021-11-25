@@ -23,8 +23,8 @@
 //
 // -- This will overwrite an existing command --
 // Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
-Cypress.Commands.add('resetAppData', (baseUrl) => {
-  cy.request('DELETE', `${baseUrl}/api/reset`);
+Cypress.Commands.add('resetAppData', (apiBaseUrl) => {
+  cy.request('DELETE', `${apiBaseUrl}/api/reset`);
 });
 
 Cypress.Commands.add('signin', (email, password) => {

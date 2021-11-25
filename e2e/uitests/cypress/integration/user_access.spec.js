@@ -1,25 +1,30 @@
-const APP_BASEURL = 'http://localhost:8080';
-
 const firstName = 'John';
 const lastName = 'Doe';
 const email = 'jdoe@test.com';
 const password = 'test1234';
 
+import i18n from '../support/i18n';
+
 describe('User access', () => {
   before(() => {
-    cy.resetAppData(APP_BASEURL);
+    cy.resetAppData(Cypress.env('API_BASEURL'));
   });
 
   it('Register a user', () => {
-    cy.visit(`${APP_BASEURL}/app/signup`);
+    cy.visit('/signup');
     cy.get('[data-cy=signin]').click();
     cy.get('[data-cy=signup]').click();
     cy.registerUSer(firstName, lastName, email, password);
-    cy.checkUrl('/app/signin');
+    cy.checkUrl('/signin');
 
     cy.signin(email, password);
-    cy.checkUrl('/app/firstaccess');
-    cy.contains('Welcome John Doe!');
+    cy.checkUrl('/firstaccess');
+    cy.contains(
+      i18n.getFixedT('en')('Welcome {{firstName}} {{lastName}}!', {
+        firstName,
+        lastName,
+      })
+    );
     cy.get('input[name=name]').type("John's properties");
     cy.muiSelect('input[name=locale]', 'Français (France)');
     cy.muiSelect('input[name=currency]', 'Euro (€)');
@@ -44,46 +49,61 @@ describe('User access', () => {
   });
 
   it('Check page navigation', () => {
-    cy.visit(`${APP_BASEURL}/app/`);
+    cy.visit('/');
     cy.signin(email, password);
 
     cy.navToPage('rents');
     const now = new Date();
     cy.checkUrl(`/rents/${now.getFullYear()}.${now.getMonth() + 1}`);
+    cy.contains(i18n.getFixedT('fr-FR')('Rents'));
+    cy.contains(i18n.getFixedT('fr-FR')('Send mass emails'));
 
     cy.navToPage('tenants');
     cy.checkUrl('/tenants');
+    cy.contains(i18n.getFixedT('fr-FR')('Tenants'));
+    cy.contains(i18n.getFixedT('fr-FR')('New tenant'));
 
     cy.navToPage('properties');
     cy.checkUrl('/properties');
+    cy.contains(i18n.getFixedT('fr-FR')('Properties'));
+    cy.contains(i18n.getFixedT('fr-FR')('New property'));
 
     cy.navToPage('settings');
     cy.checkUrl('/settings');
+    cy.contains(i18n.getFixedT('fr-FR')('Landlord'));
+    cy.contains(i18n.getFixedT('fr-FR')('Billing'));
+    cy.contains(i18n.getFixedT('fr-FR')('Contracts'));
+    cy.contains(i18n.getFixedT('fr-FR')('Collaborators'));
+    cy.contains(i18n.getFixedT('fr-FR')('Third-parties'));
 
     cy.navToPage('dashboard');
     cy.checkUrl('/dashboard');
+    cy.contains(
+      i18n.getFixedT('fr-FR')('Welcome {{firstName}}', { firstName })
+    );
 
     cy.signout();
+    cy.checkUrl('/signin');
   });
 
   it('Incorrect email or password', () => {
-    cy.visit(`${APP_BASEURL}/app/`);
+    cy.visit('/');
     cy.signin('demo@demo.com', 'demo');
     cy.get('.MuiAlert-message').should(
       'have.text',
-      'Incorrect email or password'
+      i18n.getFixedT('en')('Incorrect email or password')
     );
   });
 
   it('User already registered', () => {
-    cy.visit(`${APP_BASEURL}/app/signup`);
+    cy.visit('/signup');
     cy.get('[data-cy=signin]').click();
     cy.get('[data-cy=signup]').click();
     cy.registerUSer(firstName, lastName, email, password);
-    cy.checkUrl('/app/signup');
+    cy.checkUrl('/signup');
     cy.get('.MuiAlert-message').should(
       'have.text',
-      'This user is already registered'
+      i18n.getFixedT('en')('This user is already registered')
     );
   });
 });
