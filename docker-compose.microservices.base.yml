@@ -39,7 +39,6 @@ services:
       - FRONTEND_PORT=$FRONTEND_PORT
       - AUTHENTICATOR_PORT=$AUTHENTICATOR_PORT
       - PDFGENERATOR_PORT=$PDFGENERATOR_PORT
-      - RESETSERVICE_PORT=$RESETSERVICE_PORT
       - API_PORT=$API_PORT
       - NGINX_PORT=$NGINX_PORT
     command:
@@ -51,24 +50,6 @@ services:
     depends_on:
       - frontend
       - authenticator
-  ###############################################################################
-  # RabbitMQ
-  ###############################################################################
-  # Don't need RabbitMQ for now
-  # rabbitmq:
-  #   image: rabbitmq:3-management
-  #   hostname: 'rabbitmq'
-  #   environment:
-  #     - RABBITMQ_DEFAULT_USER=$RABBITMQ_USER
-  #     - RABBITMQ_DEFAULT_PASS=$RABBITMQ_PASS
-  #   expose:
-  #     - '$RABBITMQ_PORT'
-  #   ports:
-  #     - '$RABBITMQ_MANAGEMENT_PORT:15672'
-  #   labels:
-  #     NAME: "rabbitmq1"
-  #   networks:
-  #     - net
   ###############################################################################
   # Authenticator
   ###############################################################################

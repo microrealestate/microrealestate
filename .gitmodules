@@ -1,15 +1,15 @@
 [submodule "authenticator"]
-	path = authenticator
+	path = services/authenticator
 	url = https://github.com/microrealestate/authenticator.git
 [submodule "emailer"]
-	path = emailer
+	path = services/emailer
 	url = https://github.com/microrealestate/emailer.git
 [submodule "pdfgenerator"]
-	path = pdfgenerator
+	path = services/pdfgenerator
 	url = https://github.com/microrealestate/pdfgenerator.git
 [submodule "frontend"]
-	path = frontend
+	path = webapps/landlord
 	url = https://github.com/microrealestate/frontend.git
 [submodule "api"]
-	path = api
+	path = services/api
 	url = https://github.com/microrealestate/api.git

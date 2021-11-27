@@ -1,5 +1,3 @@
-[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/microrealestate)
-
 # Microrealestate
 
 The application which helps the landlords to manage their property rents.
@@ -19,20 +17,20 @@ The main functionalities are:
 |                           |                                 |                        |
 |:-------------------------:|:-------------------------------:|:----------------------:|
 | **Rents page**                | **Send notices, receipt by email**  | **Pay a rent**             |
-| [<img src="./picture/rents.png" alt="drawing" width="350"/>](./picture/rents.png) | [<img src="./picture/sendmassemails.png" alt="drawing" width="350"/>](./picture/sendmassemails.png) | [<img src="./picture/payment.png" alt="drawing" width="350"/>](./picture/payment.png) |
+| [<img src="./documentation/pictures/rents.png" alt="drawing" width="350"/>](./documentation/pictures/rents.png) | [<img src="./documentation/pictures/sendmassemails.png" alt="drawing" width="350"/>](./documentation/pictures/sendmassemails.png) | [<img src="./documentation/pictures/payment.png" alt="drawing" width="350"/>](./documentation/pictures/payment.png) |
 | **Tenants page**              | **Tenant details**                 | |
-| [<img src="./picture/tenants.png" alt="drawing" width="350"/>](./picture/tenants.png) | [<img src="./picture/tenantcontract.png" alt="drawing" width="350"/>](./picture/tenantcontract.png) | |
+| [<img src="./documentation/pictures/tenants.png" alt="drawing" width="350"/>](./documentation/pictures/tenants.png) | [<img src="./documentation/pictures/tenantcontract.png" alt="drawing" width="350"/>](./documentation/pictures/tenantcontract.png) | |
 | **Properties page**           | **Property details**               | |
-| [<img src="./picture/properties.png" alt="drawing" width="350"/>](./picture/properties.png) | [<img src="./picture/property.png" alt="drawing" width="350"/>](./picture/property.png)| |
+| [<img src="./documentation/pictures/properties.png" alt="drawing" width="350"/>](./documentation/pictures/properties.png) | [<img src="./documentation/pictures/property.png" alt="drawing" width="350"/>](./documentation/pictures/property.png)| |
 | **Landlord page**             | **Template leases**                | **Author a contract**          |
-| [<img src="./picture/landlord.png" alt="drawing" width="350"/>](./picture/landlord.png) | [<img src="./picture/leases.png" alt="drawing" width="350"/>](./picture/leases.png) | [<img src="./picture/contracttemplate.png" alt="drawing" width="350"/>](./picture/contracttemplate.png) |
+| [<img src="./documentation/pictures/landlord.png" alt="drawing" width="350"/>](./documentation/pictures/landlord.png) | [<img src="./documentation/pictures/leases.png" alt="drawing" width="350"/>](./documentation/pictures/leases.png) | [<img src="./documentation/pictures/contracttemplate.png" alt="drawing" width="350"/>](./documentation/pictures/contracttemplate.png) |
 | **Members**                        | |
-| [<img src="./picture/members.png" alt="drawing" width="350"/>](./picture/members.png) | |
+| [<img src="./documentation/pictures/members.png" alt="drawing" width="350"/>](./documentation/pictures/members.png) | |
 
 ## Getting started
 
 ### Prerequisite
-- Docker and docker-compose installed
+- [Docker and docker-compose installed](https://docs.docker.com/compose/install/)
 
 > The `mre` bash script is uses for building, running the application. If running on Windows use `mre.exe` on Mac `mre-macos`.
 
@@ -69,7 +67,13 @@ Take your favorite internet navigator and go to this link: http://localhost:8080
 ## Community
 
 * Contribute on [Issues](https://github.com/microrealestate/microrealestate/issues)
-* [Run and debug the application](./DEVELOPER.md)
+* [Run and debug the application](./documentation/DEVELOPER.md)
+
+## Donation
+
+Support me to work on this project and to enjoy one coffee or two :raised_hands:
+
+[![Donate](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub)](https://github.com/sponsors/camelaissani)
 
 ## Contact
 
