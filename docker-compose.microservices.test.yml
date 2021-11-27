@@ -1,8 +1,11 @@
 version: "3.3"
 services:
+  nginx:
+    environment:
+      - RESETSERVICE_PORT=$RESETSERVICE_PORT
   resetservice:
     build:
-      context: ./e2e/resetservice
+      context: ./services/resetservice
       dockerfile: dev.Dockerfile
     environment:
       - NODE_ENV
@@ -12,7 +15,7 @@ services:
       - TOKEN_DB_PASSWORD=$AUTHENTICATOR_TOKEN_DB_PASSWORD
       - MONGO_URL=$BASE_DB_URL
     volumes:
-      - ./e2e/resetservice:/usr/app
+      - ./services/resetservice:/usr/app
       - /usr/app/node_modules
     expose:
       - "$RESETSERVICE_PORT"

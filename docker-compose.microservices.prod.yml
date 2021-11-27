@@ -54,7 +54,7 @@ services:
   ###############################################################################
   authenticator:
     build:
-      context: ./authenticator
+      context: ./services/authenticator
       dockerfile: Dockerfile
     # logging:
     #   driver: syslog
@@ -68,7 +68,7 @@ services:
   ###############################################################################
   pdfgenerator:
     build:
-      context: ./pdfgenerator
+      context: ./services/pdfgenerator
       dockerfile: Dockerfile
     # logging:
     #   driver: syslog
@@ -82,7 +82,7 @@ services:
   ###############################################################################
   emailer:
     build:
-      context: ./emailer
+      context: ./services/emailer
       dockerfile: Dockerfile
     # logging:
     #   driver: syslog
@@ -96,7 +96,7 @@ services:
   ###############################################################################
   api:
     build:
-      context: ./api
+      context: ./services/api
       dockerfile: Dockerfile
     # logging:
     #   driver: syslog
@@ -110,7 +110,7 @@ services:
   ###############################################################################
   frontend:
     build:
-      context: ./frontend
+      context: ./webapps/landlord
       dockerfile: Dockerfile
     # logging:
     #   driver: syslog
