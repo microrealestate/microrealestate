@@ -1,0 +1,42 @@
+<div class="paymentinfo">
+	<strong><%= _.t('PAYMENT METHODS') %></strong>
+    <div class="columns">
+        <div>
+            ­<br><u><%= _.t('By bank transfer') %></u>
+            <br><%= _.t('Our bank information') %>
+            <br><%= landlord.bankInfo.name %>
+            <br><%= _.t('IBAN') %> <%= landlord.bankInfo.iban %>
+            <br> &nbsp;
+            <br><u><%= _.t('By cash') %></u>
+            <br><%= _.t('Contact {{name}}', { name: landlord.hasContact ? landlord.contacts[0].name : ''}) %>
+            <br><%= _.t('Phone {{phone}}', { phone: landlord.hasContact ? landlord.contacts[0].phone1 : '' }) %><%= landlord.hasContact && landlord.contacts[0].phone2 ? ' - '+landlord.contacts[0].phone2:'' %>
+            <br><%= _.t('Email {{email}}', { email: landlord.hasContact ? landlord.contacts[0].email : '' })  %>
+        </div>
+        <div>
+            <br><u><%= _.t('By bank cheque') %></u>
+            <% if (landlord.isCompany) { %>
+                <br><%= _.t('Please make cheque payable to {{companyName}} {{legalStructure}} and mail it at', {
+                    companyName: landlord.name,
+                    legalStructure: landlord.hasCompanyInfo ? landlord.companyInfo.legalStructure : ''
+                })%>
+            <% } else { %>
+                <br><%= _.t('Please make cheque payable to {{name}} and mail it at', {
+                    name: landlord.name
+                })%>
+            <% } %>
+            <% if (landlord.hasAddress) { -%>
+                <br><%= landlord.addresses[0].street1 %>
+                <% if (landlord.addresses[0].street2) { %>
+                    <br><%= landlord.addresses[0].street2 %>
+                <% } %>
+                <br><%= landlord.addresses[0].zipCode %> <%= landlord.addresses[0].city %>
+                <% if (landlord.addresses[0].state) { %>
+                    <br><%= landlord.addresses[0].state %>
+                <% } %>
+                <% if (landlord.addresses[0].country) { %>
+                    <br><%= landlord.addresses[0].country %>
+                <% } %>
+            <% } -%>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+	<%- include('partials/htmlhead.ejs') %>
+	<body>
+		<% tenant.rents.forEach(function(rent) { %>
+			<div class="page">
+				<%- include('partials/header.ejs') %>
+
+				<%- include('partials/customeraddress.ejs') %>
+
+				<%- include('partials/customerreference.ejs', { rent: rent }) %>
+
+				<%- include('partials/placeanddate.ejs') %>
+
+				<div class="title"><%=_.t('Rent call')%></div>
+
+				<div class="limit">
+					<%=_.t('The total amount of {{amount}} was expected to be paid on {{date}}.',
+						{
+							amount: _.formatNumber(rent.total.grandTotal, 'currency'),
+							date: _.formatDate(rent.dueDate, 'LL')
+						})
+					%>
+				</div>
+
+				<div class="items">
+					<table>
+
+					<%- include('partials/invoicebody', { rent: rent }) %>
+
+					<%- include('partials/rentcalltotal', { rent: rent }) %>
+
+					</table>
+				</div>
+
+				<%- include('partials/paymentmodalities') %>
+
+				<%- include('partials/footer') %>
+
+				<div class="rubber-stamp red">
+					<%=_.t('Last reminder')%><br><%=_.t('Before eviction')%>
+				</div>
+			</div>
+		<% }); %>
+	</body>
+</html>

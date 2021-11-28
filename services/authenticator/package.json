@@ -1,0 +1,50 @@
+{
+  "name": "authenticator",
+  "version": "1.0.0",
+  "description": "Authenticator service",
+  "main": "./src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon -w src --inspect=0.0.0.0:9226 ./src/index.js",
+    "lint": "eslint ./ --ext js",
+    "prepare": "husky install"
+  },
+  "lint-staged": {
+    "**/*": "prettier --write --ignore-unknown"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/microrealestate/authenticator.git"
+  },
+  "keywords": [
+    "jwt",
+    "token",
+    "refresh token",
+    "authentication"
+  ],
+  "author": "Camel Aissani",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/microrealestate/authenticator/issues"
+  },
+  "homepage": "https://github.com/microrealestate/authenticator#readme",
+  "devDependencies": {
+    "eslint": "7.32.0",
+    "husky": "6.0.0",
+    "lint-staged": "11.0.0",
+    "nodemon": "2.0.3",
+    "prettier": "2.3.0"
+  },
+  "dependencies": {
+    "axios": "0.23.0",
+    "bcrypt": "5.0.1",
+    "cookie-parser": "1.4.5",
+    "express": "4.17.1",
+    "express-winston": "2.6.0",
+    "jsonwebtoken": "8.5.1",
+    "locale": "0.1.0",
+    "mongoose": "5.12.3",
+    "redis": "3.1.1",
+    "winston": "2.4.4"
+  }
+}

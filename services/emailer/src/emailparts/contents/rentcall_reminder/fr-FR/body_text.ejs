@@ -1,0 +1,71 @@
+<%-landlord.name%>
+<% if (landlord.hasAddress) { -%>
+<%-landlord.addresses[0].street1%>
+<%if (landlord.addresses[0].street2) {-%>
+<%-landlord.addresses[0].street2%>
+<%}-%>
+<%-landlord.addresses[0].zipCode%> <%-landlord.addresses[0].city%>
+<%if (landlord.addresses[0].state) {-%>
+<%-landlord.addresses[0].state%>
+<%}-%>
+<%if (landlord.addresses[0].country) {-%>
+<%-landlord.addresses[0].country%>
+<%}-%>
+<%}-%>
+
+
+                                              <%-tenant.name%>
+                                              <%-tenant.street1%>
+<%if (tenant.street2) {-%>
+                                              <%-tenant.street2%>
+<%}-%>
+                                              <%-tenant.zipCode%> <%-tenant.city%>
+
+
+
+Bonjour,
+
+Sauf erreur de notre part, nous vous informons que nous sommes toujours en attente du règlement de votre loyer du mois de <%- _.formatTerm(period, tenant.contract.lease.timeRange) %>.
+
+Nous vous remercions de bien vouloir procéder au paiement de la somme de <%- _.formatNumber(tenant.rents[0].total.grandTotal, 'currency') %> dans les plus brefs delais.
+
+Ci-dessous les modalités de paiement :
+
+Par virement bancaire
+Nos coordonnées bancaires
+<% if (landlord.hasBankInfo) { -%>
+<%- landlord.bankInfo.name %>
+IBAN : <%-landlord.bankInfo.iban%>
+<%}-%>
+
+Par chèque bancaire ou postal
+Etablissez votre chèque à l'ordre de <%-landlord.name%> et à envoyer à l'adresse suivante :
+<%-landlord.name%>
+<% if (landlord.hasAddress) { -%>
+<%-landlord.addresses[0].street1%>
+<%if (landlord.addresses[0].street2) {-%>
+<%-landlord.addresses[0].street2%>
+<%}-%>
+<%-landlord.addresses[0].zipCode%> <%-landlord.addresses[0].city%>
+<%if (landlord.addresses[0].state) {-%>
+<%-landlord.addresses[0].state%>
+<%}-%>
+<%if (landlord.addresses[0].country) {-%>
+<%-landlord.addresses[0].country%>
+<%}-%>
+<%}-%>
+
+Par espèce
+Contactez <%-landlord.hasContact ? landlord.contacts[0].name : ''%>
+Par téléphone au <%-landlord.hasContact ? landlord.contacts[0].phone1 : ''%><% landlord.hasContact && landlord.contacts[0].phone2 ? ' / ' + landlord.contacts[0].phone2 : '' %>
+Par E-mail à <%-landlord.hasContact ? landlord.contacts[0].email : ''%>
+
+Nous restons à votre disposition pour tout complément d'information.
+
+Cordialement,
+
+<%-landlord.name%>
+<% if (landlord.hasContact) { -%>
+<%-landlord.contacts[0].phone1%><%if (landlord.contacts[0].phone2) {%> / <%-landlord.contacts[0].phone2%> <%}%>
+<%-landlord.contacts[0].email%>
+<%}-%>

@@ -1,0 +1,15 @@
+<div class="footer">
+    <% if (landlord.isCompany) { %>
+        <%= _.t( !landlord.companyInfo.capital ?
+                    '{{companyName}}, {{legalStructure}} - EIN: {{ein}}' :
+                    '{{companyName}}, {{legalStructure}} - EIN: {{ein}} - capital of {{capital}}', {
+                companyName: landlord.name,
+                legalStructure: landlord.companyInfo.legalStructure,
+                ein: landlord.companyInfo.ein,
+                capital: _.formatNumber(landlord.companyInfo.capital, 'currency'),
+            })
+        %>
+    <% } else { %>
+        <%= landlord.name %>
+    <% } %>
+</div>

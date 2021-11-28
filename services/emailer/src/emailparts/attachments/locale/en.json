@@ -1,0 +1,10 @@
+{
+  "short_invoice": "I",
+  "short_rentcall": "R",
+  "short_rentcall_reminder": "R",
+  "short_rentcall_last_reminder": "R",
+  "invoice": "Rent receipt",
+  "rentcall": "Payment notice",
+  "rentcall_reminder": "Payment notice (reminder)",
+  "rentcall_last_reminder": "Payment notice (last reminder)"
+}

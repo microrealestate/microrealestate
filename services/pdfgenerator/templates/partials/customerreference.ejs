@@ -1,0 +1,22 @@
+<div class="reference">
+    <table>
+    	<tr>
+            <td class="label"><%=_.t('Entry date')%></td>
+            <td><%= _.formatDate(tenant.contract.beginDate, 'LL') %></td>
+        </tr>
+        <tr>
+            <td class="label"><%=_.t('Billing reference')%></td>
+            <td><%= rent.billingReference %></td>
+        </tr>
+        <tr>
+            <td class="label"><%=_.t('Rental period')%></td>
+            <td><%= _.formatTerm(rent.period, tenant.contract.lease.timeRange) %></td>
+        </tr>
+        <% if (landlord.isCompany && landlord.companyInfo.vatNumber) { %>
+            <tr>
+                <td class="label"><%=_.t('VAT number')%></td>
+                <td><%= landlord.companyInfo.vatNumber %></td>
+            </tr>
+        <% } %>
+    </table>
+</div>

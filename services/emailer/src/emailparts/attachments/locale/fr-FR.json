@@ -1,0 +1,10 @@
+{
+  "short_invoice": "Q",
+  "short_rentcall": "A",
+  "short_rentcall_reminder": "A",
+  "short_rentcall_last_reminder": "A",
+  "invoice": "Quittance",
+  "rentcall": "Avis d'échéance",
+  "rentcall_reminder": "Avis d'échéance (rappel)",
+  "rentcall_last_reminder": "Avis d'échéance (dernier rappel)"
+}

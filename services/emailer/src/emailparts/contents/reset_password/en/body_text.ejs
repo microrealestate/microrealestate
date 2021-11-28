@@ -1,0 +1,14 @@
+Hi <%- firstname %>,
+
+Someone requested to reset your password of your <%- config.APP_NAME %> account.
+
+Click on the link below, to create a new password:
+
+<%- `${config.APP_URL}/resetpassword/${token}` %>
+
+If this link doesn't work, copy it in your browser address bar.
+
+If you don't request this, you can ignore this email. Your password won't change until you create a new password.
+
+Regards,
+The <%- config.APP_NAME %> team
