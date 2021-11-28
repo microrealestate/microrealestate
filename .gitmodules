@@ -1,4 +1,0 @@
-[submodule "frontend"]
-	path = webapps/landlord
-	url = https://github.com/microrealestate/frontend.git
-
