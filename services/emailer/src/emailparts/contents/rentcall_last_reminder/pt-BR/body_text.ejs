@@ -1,0 +1,75 @@
+<%-landlord.name%>
+<% if (landlord.hasAddress) { -%>
+<%-landlord.addresses[0].street1%>
+<%if (landlord.addresses[0].street2) {-%>
+<%-landlord.addresses[0].street2%>
+<%}-%>
+<%-landlord.addresses[0].zipCode%> <%-landlord.addresses[0].city%>
+<%if (landlord.addresses[0].state) {-%>
+<%-landlord.addresses[0].state%>
+<%}-%>
+<%if (landlord.addresses[0].country) {-%>
+<%-landlord.addresses[0].country%>
+<%}-%>
+<%}-%>
+
+
+                                              <%-tenant.name%>
+                                              <%-tenant.street1%>
+<%if (tenant.street2) {-%>
+                                              <%-tenant.street2%>
+<%}-%>
+                                              <%-tenant.zipCode%> <%-tenant.city%>
+
+
+
+Hello,
+
+We would like to point out that our business relations with <%if (landlord.isCompany) { %>your company<% } else { %>you<% } %> are stated in a contract signed <%- _.formatDate(tenant.contract.beginDate, 'LL') %>.
+
+In this contract, it is explicitly indicated that <%- tenant.name %> is obliged to pay in advance and monthly its rents to <%- (landlord.hasCompanyInfo ? landlord.companyInfo.legalStructure + ' ' : '') + landlord.name %>.
+
+Although, until now, one or more rents are not settled. The amount of unpaid rents is <%- _.formatNumber(tenant.rents[0].total.grandTotal, 'currency') %>.
+
+We would be grateful if you could proceed to the payment of your rent debts in the following 10 days, otherwise we will engage an eviction procedure.
+
+Payment modalities:
+
+By transfer
+Bank details
+<% if (landlord.hasBankInfo) { -%>
+<%- landlord.bankInfo.name %>
+IBAN: <%-landlord.bankInfo.iban%>
+<%}-%>
+
+By cheque
+Write your cheque to the order of <%-landlord.name%> and send it to the following address:
+<%-landlord.name%>
+<% if (landlord.hasAddress) { -%>
+<%-landlord.addresses[0].street1%>
+<%if (landlord.addresses[0].street2) {-%>
+<%-landlord.addresses[0].street2%>
+<%}-%>
+<%-landlord.addresses[0].zipCode%> <%-landlord.addresses[0].city%>
+<%if (landlord.addresses[0].state) {-%>
+<%-landlord.addresses[0].state%>
+<%}-%>
+<%if (landlord.addresses[0].country) {-%>
+<%-landlord.addresses[0].country%>
+<%}-%>
+<%}-%>
+
+By cash
+Contact: <%-landlord.hasContact ? landlord.contacts[0].name : ''%>
+Phone: <%-landlord.hasContact ? landlord.contacts[0].phone1 : ''%><% landlord.hasContact && landlord.contacts[0].phone2 ? ' / ' + landlord.contacts[0].phone2 : '' %>
+Email: <%-landlord.hasContact ? landlord.contacts[0].email : ''%>
+
+We are at your service for any further information you may need.
+
+Regards,
+
+<%-landlord.name%>
+<% if (landlord.hasContact) { -%>
+<%-landlord.contacts[0].phone1%><%if (landlord.contacts[0].phone2) {%> / <%-landlord.contacts[0].phone2%> <%}%>
+<%-landlord.contacts[0].email%>
+<%}-%>

@@ -1,0 +1,75 @@
+<%-landlord.name%>
+<% if (landlord.hasAddress) { -%>
+<%-landlord.addresses[0].street1%>
+<%if (landlord.addresses[0].street2) {-%>
+<%-landlord.addresses[0].street2%>
+<%}-%>
+<%-landlord.addresses[0].zipCode%> <%-landlord.addresses[0].city%>
+<%if (landlord.addresses[0].state) {-%>
+<%-landlord.addresses[0].state%>
+<%}-%>
+<%if (landlord.addresses[0].country) {-%>
+<%-landlord.addresses[0].country%>
+<%}-%>
+<%}-%>
+
+
+                                              <%-tenant.name%>
+                                              <%-tenant.street1%>
+<%if (tenant.street2) {-%>
+                                              <%-tenant.street2%>
+<%}-%>
+                                              <%-tenant.zipCode%> <%-tenant.city%>
+
+
+
+Madame, Monsieur,
+
+Nous vous rappelons que nos relations commerciales avec <%if (landlord.isCompany) { %>votre société<% } else { %>vous<% } %> sont liées par un bail signé le <%- _.formatDate(tenant.contract.beginDate, 'LL') %>.
+
+Dans ce bail, il est explicitement indiqué que <%- tenant.name %> s'oblige à payer d'avance, la location d'un ou plusieurs bureaux, à la société <%- landlord.name + ' ' + (landlord.hasCompanyInfo ? landlord.companyInfo.legalStructure : '') %>, tous les mois, le premier jour de chaque mois (chapitre Loyers - article II)
+
+Or, à ce jour, un ou plusieurs loyers n'ont pas été réglés représentant un montant de <%- _.formatNumber(tenant.rents[0].total.grandTotal, 'currency') %>.
+
+Nous vous remercions de bien vouloir procéder au paiement de vos loyers dans les 10 jours suivants cet email sous peine de demande de recouvrement par un huissier de justice.
+
+Ci-dessous les modalités de paiement :
+
+Par virement bancaire
+Nos coordonnées bancaires
+<% if (landlord.hasBankInfo) { -%>
+<%- landlord.bankInfo.name %>
+IBAN : <%-landlord.bankInfo.iban%>
+<%}-%>
+
+Par chèque bancaire ou postal
+Etablissez votre chèque à l'ordre de <%-landlord.name%> et à envoyer à l'adresse suivante :
+<%-landlord.name%>
+<% if (landlord.hasAddress) { -%>
+<%-landlord.addresses[0].street1%>
+<%if (landlord.addresses[0].street2) {-%>
+<%-landlord.addresses[0].street2%>
+<%}-%>
+<%-landlord.addresses[0].zipCode%> <%-landlord.addresses[0].city%>
+<%if (landlord.addresses[0].state) {-%>
+<%-landlord.addresses[0].state%>
+<%}-%>
+<%if (landlord.addresses[0].country) {-%>
+<%-landlord.addresses[0].country%>
+<%}-%>
+<%}-%>
+
+Par espèce
+Contactez <%-landlord.hasContact ? landlord.contacts[0].name : ''%>
+Par téléphone au <%-landlord.hasContact ? landlord.contacts[0].phone1 : ''%><% landlord.hasContact && landlord.contacts[0].phone2 ? ' / ' + landlord.contacts[0].phone2 : '' %>
+Par E-mail à <%-landlord.hasContact ? landlord.contacts[0].email : ''%>
+
+Nous restons à votre disposition pour tout complément d'information.
+
+Cordialement,
+
+<%-landlord.name%>
+<% if (landlord.hasContact) { -%>
+<%-landlord.contacts[0].phone1%><%if (landlord.contacts[0].phone2) {%> / <%-landlord.contacts[0].phone2%> <%}%>
+<%-landlord.contacts[0].email%>
+<%}-%>

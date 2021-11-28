@@ -1,0 +1,15 @@
+Bonjour <%- firstname %>,
+
+Vous avez demandé une réinitialisation de mot de passe de votre compte <%- config.APP_NAME %>.
+
+Cliquez sur le lien pour créer un nouveau mot de passe :
+
+<%- `${config.APP_URL}/resetpassword/${token}` %>
+
+Si ce lien ne fonctionne pas, copiez-le directement dans la barre d'adresse de votre navigateur.
+
+
+Si vous n'êtes pas à l'origine de cette demande, vous pouvez simplement ignorer cet email. Votre mot de passe ne changera pas tant que vous n'avez pas créé un nouveau.
+
+Cordialement,
+L'équipe <%- config.APP_NAME %>

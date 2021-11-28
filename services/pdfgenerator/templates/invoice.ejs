@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+ 	<%- include('/partials/htmlhead.ejs') %>
+	<body>
+		<% tenant.rents.forEach(function(rent) { %>
+			<div class="page invoice">
+				<%- include('partials/header.ejs') %>
+
+				<%- include('partials/customeraddress.ejs') %>
+
+				<%- include('partials/placeanddate.ejs') %>
+
+				<div class="title"><%=_.t('Invoice')%></div>
+
+				<%- include('partials/customerreference.ejs', { rent: rent }) %>
+
+				<div class="items">
+					<table>
+					<%- include('partials/invoicebody.ejs', { rent: rent }) %>
+
+					<%- include('partials/invoicetotal.ejs', { rent: rent }) %>
+					</table>
+				</div>
+				<%- include('partials/footer.ejs') %>
+			</div>
+		<% }); %>
+	</body>
+</html>

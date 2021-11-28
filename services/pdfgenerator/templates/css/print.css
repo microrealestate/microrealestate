@@ -1,0 +1,294 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  border: none;
+  font: 10pt 'Tahoma';
+}
+
+.page {
+  position: relative;
+  border: none;
+  width: 210mm;
+  height: 297mm;
+}
+h1,
+h2,
+h3 {
+  margin: 0;
+  padding: 0;
+}
+table {
+  border: none;
+  border-collapse: collapse;
+}
+span,
+span:focus,
+span:active {
+  border: 2px solid #ccc;
+  outline: none;
+  padding: 2px;
+  background-color: #ffffe0;
+}
+span.error {
+  border: 2px solid red;
+}
+.logo {
+  position: absolute;
+  top: 10mm;
+  left: 10mm;
+}
+.logo h1 {
+  display: inline-block;
+  font-size: 18pt;
+  color: #330066;
+}
+.logo img {
+  display: inline-block;
+}
+.contact {
+  border-top: 2pt solid #555;
+  margin: 2pt 0 0 0;
+  padding: 5pt 0 0 0;
+}
+.customer {
+  position: absolute;
+  top: 45mm;
+  left: 105mm;
+}
+.customer h3 {
+  margin-bottom: 5pt;
+}
+.object {
+  position: absolute;
+  top: 105mm;
+  left: 10mm;
+}
+.certificate .object {
+  position: absolute;
+  top: 105mm;
+  left: 10mm;
+  right: 10mm;
+  padding: 5pt;
+  border: 2pt solid #555;
+  text-align: center;
+  text-transform: uppercase;
+  font-size: 15.5pt;
+  font-weight: bold;
+}
+.contract .object {
+  position: absolute;
+  top: 75mm;
+  left: 10mm;
+  right: 10mm;
+  padding: 15pt;
+  border: 2pt solid #555;
+  text-align: center;
+  text-transform: uppercase;
+  font-size: 15.5pt;
+  font-weight: bold;
+  background-color: #ccc;
+}
+.contract .object small {
+  font-weight: normal;
+  text-transform: none;
+  font-style: italic;
+}
+.contract .items {
+  top: 10mm;
+  font-size: 11.5pt;
+  line-height: 15pt;
+}
+.contract .items table {
+  border: 1pt solid #555;
+}
+.contract .items table th {
+  vertical-align: middle;
+}
+.contract .items table td {
+  vertical-align: middle;
+}
+.contract .items table tr {
+  border: none;
+}
+.contract .items small {
+  font-size: 8pt;
+}
+.contract:first-child .items {
+  top: 100mm;
+}
+.contract .footer {
+  font-size: 8pt;
+}
+.title {
+  position: absolute;
+  top: 94.7mm;
+  left: 105mm;
+  color: #333;
+  font-weight: bold;
+  font-size: 14pt;
+  text-transform: uppercase;
+  letter-spacing: 2pt;
+}
+.title .invoice {
+  top: 100mm;
+}
+.limit {
+  position: absolute;
+  top: 110mm;
+  left: 10mm;
+}
+.paymentinfo {
+  position: absolute;
+  top: 230mm;
+  left: 10mm;
+  width: 100%;
+  font-size: 9pt;
+}
+.paymentinfo .columns {
+  display: flex;
+  flex-direction: row;
+}
+.paymentinfo .columns div {
+  width: 50%;
+}
+.footer {
+  position: absolute;
+  bottom: 10mm;
+  left: 10mm;
+  right: 10mm;
+}
+.txtAlignRight,
+.subtotal,
+.total,
+.due {
+  text-align: right;
+  white-space: nowrap;
+}
+.reference {
+  position: absolute;
+  top: 80mm;
+  left: 10mm;
+}
+.reference table {
+  width: 200pt;
+  font-size: 9pt;
+}
+.reference td {
+  padding: 2pt;
+  text-align: right;
+}
+.reference td.label {
+  text-align: left;
+  font-size: 9pt;
+  white-space: nowrap;
+}
+.reference table td,
+.reference table th {
+  padding: 2pt;
+  margin: 0;
+}
+.today {
+  position: absolute;
+  top: 80mm;
+  left: 105mm;
+  font: 10pt 'Tahoma';
+  text-align: left;
+}
+.items {
+  position: absolute;
+  top: 120mm;
+  left: 10mm;
+  width: 190mm;
+}
+.items table {
+  border-top: 1pt solid #555;
+  border-bottom: 1pt solid #555;
+  width: 100%;
+}
+.items tbody {
+  font-size: 9pt;
+}
+.items th {
+  border-right: 1pt solid #555;
+  border-bottom: 1pt solid #555;
+}
+.items th:first-child {
+  border-left: 1pt solid #555;
+}
+.items td {
+  padding-right: 10pt;
+  border-right: 1pt solid #555;
+  vertical-align: top;
+}
+.items td:first-child {
+  border-left: 1pt solid #555;
+}
+.items td.description {
+  width: 220pt;
+  padding-left: 10pt;
+}
+.items td.total-line {
+  border-right: none;
+  text-align: left;
+  padding-left: 10pt;
+  border-left: 1pt solid #555;
+  border-top: 1pt solid #555;
+}
+.items td.total-value {
+  border-left: none;
+  border-top: 1pt solid #555;
+}
+.items td.blank:last-child {
+  border-bottom: 1pt solid #555;
+}
+.certificate .items {
+  font-size: 14pt;
+  line-height: 26pt;
+}
+.certificate .signature {
+  font-size: 10pt;
+  line-height: normal;
+}
+.rubber-stamp {
+  position: absolute;
+  top: 65mm;
+  left: 20mm;
+  font-size: 15.5pt;
+  font-weight: bold;
+  text-align: center;
+  border-radius: 10pt;
+  border: 2.8pt solid #555;
+  padding: 5pt;
+  font-family: 'Vollkorn', serif;
+  text-transform: uppercase;
+  transform: rotate(-20deg);
+  transform-origin: bottom left;
+}
+.red {
+  color: #d00;
+  border-color: #d00;
+}
+.text-right {
+  text-align: right;
+}
+@page {
+  size: A4 portrait;
+  margin: 0;
+}
+@media print {
+  span,
+  span:focus,
+  span:active {
+    border: none;
+    padding: 0;
+    background-color: transparent;
+  }
+  .printbutton {
+    display: none;
+  }
+}

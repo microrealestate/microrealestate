@@ -1,0 +1,32 @@
+<div class="logo">
+    <img src="<%= logoUrl %>">
+    <h1><%= landlord.name %></h1>
+    <% if(landlord.hasAddress) { -%>
+        <div >
+            <%= landlord.addresses[0].street1 %>
+            <% if (landlord.addresses[0].street2) { %>
+                <br><%= landlord.addresses[0].street2 %>
+            <% } %>
+            <br><%= landlord.addresses[0].zipCode %> <%= landlord.addresses[0].city %>
+            <% if (landlord.addresses[0].state) { %>
+                <br><%= landlord.addresses[0].state %>
+            <% } %>
+            <% if (landlord.addresses[0].country) { %>
+                <br><%= landlord.addresses[0].country %>
+            <% } %>
+        </div>
+    <% } -%>
+    <% for (contact in landlord.contacts) { %>
+        <div class="contact">
+            <% if (contact.phone1) { %>
+                <%= _.t('Phone: {{phoneNumber}}', { phoneNumber: contact.phone1 }) %><br>
+            <% } %>
+            <% if (contact.phone2) { %>
+                <%= _.t('Phone: {{phoneNumber}}', { phoneNumber: contact.phone2 }) %><br>
+            <% } %>
+            <% if (contact.email) { %>
+                <%= _.t('Email: {{email}}', { email: contact.email }) %><br>
+            <% } %>
+        </div>
+    <% } %>
+</div>

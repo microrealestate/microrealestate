@@ -1,0 +1,17 @@
+<div class="customer">
+	<h3><%= tenant.name %></h3>
+	<% if (tenant.isCompany) { %>
+		<%= tenant.companyInfo.legalRepresentative %>
+	<% } %>
+	<br><%= tenant.addresses[0].street1 %>
+	<% if (tenant.addresses[0].street2) { %>
+    	<br><%= tenant.addresses[0].street2 %>
+    <% } %>
+	<br><%= tenant.addresses[0].zipCode %> <%= tenant.addresses[0].city %>
+	<% if (tenant.addresses[0].state) { %>
+		<br><%= tenant.addresses[0].state %>
+	<% } %>
+	<% if (tenant.addresses[0].country) { %>
+		<br><%= tenant.addresses[0].country %>
+	<% } %>
+</div>

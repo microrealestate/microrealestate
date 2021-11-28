@@ -1,0 +1,53 @@
+{
+  "name": "pdfgenerator",
+  "version": "1.0.0",
+  "description": "Generates PDF documents (letters, contracts, invoices...)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js",
+    "dev": "nodemon -w src -w data -w templates -w index.js -e js,ejs,css,png --inspect=0.0.0.0:9227 index.js",
+    "lint": "eslint ./ --ext js",
+    "prepare": "husky install"
+  },
+  "lint-staged": {
+    "**/*": "prettier --write --ignore-unknown"
+  },
+  "keywords": [
+    "microrealestate",
+    "realestate",
+    "document",
+    "pdf"
+  ],
+  "author": "Camel Aissani",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/microrealestate/pdfgenerator/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/microrealestate/pdfgenerator.git"
+  },
+  "dependencies": {
+    "ejs": "3.1.6",
+    "express": "4.17.1",
+    "express-winston": "2.6.0",
+    "file-url": "3.0.0",
+    "handlebars": "4.7.7",
+    "i18n": "0.13.3",
+    "jsonwebtoken": "8.5.1",
+    "locale": "0.1.0",
+    "moment": "2.29.1",
+    "mongodb": "3.6.6",
+    "mongoose": "5.12.8",
+    "puppeteer": "10.4.0",
+    "winston": "2.4.4"
+  },
+  "devDependencies": {
+    "eslint": "7.26.0",
+    "husky": "6.0.0",
+    "lint-staged": "11.0.0",
+    "nodemon": "2.0.7",
+    "prettier": "2.3.0"
+  }
+}
