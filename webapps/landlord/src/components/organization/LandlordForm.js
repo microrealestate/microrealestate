@@ -101,7 +101,7 @@ const LandlordForm = observer(({ onSubmit, onSubmitted }) => {
 
       if (updatedSettings.isCompany) {
         updatedSettings.companyInfo = {
-          ...store.organization.selected.companyInfo,
+          ...(store.organization.selected?.companyInfo || {}),
           name: settings.company,
           ein: settings.ein,
           legalRepresentative: settings.legalRepresentative,
