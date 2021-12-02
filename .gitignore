@@ -1,5 +1,17 @@
-data
-cli/node_modules
+node_modules
+tmp
+
+./data
 .env
 .vscode/ipch
 .vscode/settings.json
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Rest client vscode plugin
+*.rest
+
+deploy-*.sh
