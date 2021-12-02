@@ -37,13 +37,41 @@ Cypress.Commands.add('signout', () => {
   cy.get('[data-cy=signout]').click();
 });
 
-Cypress.Commands.add('registerUSer', (firstName, lastName, email, password) => {
+Cypress.Commands.add('registerUser', (firstName, lastName, email, password) => {
   cy.get('input[name=firstName]').type(firstName);
   cy.get('input[name=lastName]').type(lastName);
   cy.get('input[name=email]').type(email);
   cy.get('input[name=password]').type(password);
   cy.get('[data-cy=submit]').click();
 });
+
+Cypress.Commands.add(
+  'registerLandlord',
+  (
+    name,
+    localeTxt,
+    currencyTxt,
+    companyName,
+    legalRepresentative,
+    legalStructure,
+    ein,
+    capital
+  ) => {
+    cy.get('[data-cy=companyFalse]').click();
+    cy.get('input[name=name]').type(name);
+    cy.muiSelect('input[name=locale]', localeTxt);
+    cy.muiSelect('input[name=currency]', currencyTxt);
+    if (companyName) {
+      cy.get('[data-cy=companyTrue]').click();
+      cy.get('input[name=legalRepresentative]').type(legalRepresentative);
+      cy.get('input[name=legalStructure]').type(legalStructure);
+      cy.get('input[name=company]').type(companyName);
+      cy.get('input[name=ein]').type(ein);
+      cy.get('input[name=capital]').type(capital);
+    }
+    cy.get('[data-cy=submit]').click();
+  }
+);
 
 Cypress.Commands.add('navToPage', (pageName) => {
   cy.get(`[data-cy=${pageName}Nav]`).click();
