@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "The MicroRealEstate CLI",
   "main": "src/index.js",
+  "private": true,
   "scripts": {
     "start": "node src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1",

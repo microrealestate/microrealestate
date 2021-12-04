@@ -73,7 +73,7 @@ const RentBar = memo(function RentBar({ rent }) {
   );
 });
 
-const Steps = memo(({ rent }) => {
+const Steps = memo(function Steps({ rent }) {
   const { t } = useTranslation('common');
   const classes = useStyles();
 

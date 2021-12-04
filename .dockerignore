@@ -1,0 +1,5 @@
+./data
+node_modules
+documentation
+mre*
+docker-compose*

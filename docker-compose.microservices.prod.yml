@@ -37,25 +37,12 @@ services:
   #   depends_on:
   #     - kibana
   ###############################################################################
-  # RabbitMQ
-  ###############################################################################
-  # Don't need RabbitMQ for now
-  # rabbitmq:
-  #   logging:
-  #     driver: 'syslog'
-  #     options:
-  #       syslog-address: 'udp://localhost:$LOGSTASH_UDP_PORT'
-  #       tag: '{{.Name}}/{{.ID}}'
-  #     #   syslog-facility: 'daemon'
-  #   depends_on:
-  #     - kibana
-  ###############################################################################
   # Authenticator
   ###############################################################################
   authenticator:
     build:
-      context: ./services/authenticator
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: services/authenticator/Dockerfile
     # logging:
     #   driver: syslog
     #   options:
@@ -68,8 +55,8 @@ services:
   ###############################################################################
   pdfgenerator:
     build:
-      context: ./services/pdfgenerator
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: services/pdfgenerator/Dockerfile
     # logging:
     #   driver: syslog
     #   options:
@@ -82,8 +69,8 @@ services:
   ###############################################################################
   emailer:
     build:
-      context: ./services/emailer
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: services/emailer/Dockerfile
     # logging:
     #   driver: syslog
     #   options:
@@ -96,8 +83,8 @@ services:
   ###############################################################################
   api:
     build:
-      context: ./services/api
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: services/api/Dockerfile
     # logging:
     #   driver: syslog
     #   options:
@@ -110,8 +97,8 @@ services:
   ###############################################################################
   frontend:
     build:
-      context: ./webapps/landlord
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: webapps/landlord/Dockerfile
     # logging:
     #   driver: syslog
     #   options:

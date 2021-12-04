@@ -1,9 +1,12 @@
-FROM node:14-slim
+FROM node:16-slim
 
 WORKDIR /usr/app
 
-COPY . .
+COPY package.json .
+COPY yarn.lock .
+COPY common common
+COPY services/emailer services/emailer
 
-RUN npm install --silent
+RUN yarn workspace emailer install
 
-CMD npm run dev
+CMD yarn workspace emailer run dev

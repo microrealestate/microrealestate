@@ -1,4 +1,4 @@
-FROM node:14-slim
+FROM node:16-slim
 
 RUN apt-get update \
     && apt-get install -y wget gnupg
@@ -8,7 +8,7 @@ RUN apt-get update \
 RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
     && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' \
     && apt-get update \
-    && apt-get install -y google-chrome-unstable fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-kacst ttf-freefont \
+    && apt-get install -y google-chrome-unstable fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-kacst fonts-freefont-ttf \
       --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
@@ -18,17 +18,18 @@ ENV CHROME_BIN="google-chrome"
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
 
 WORKDIR /usr/app
-COPY data data
-COPY src src
-COPY templates templates
-COPY index.js .
+COPY common common
+COPY services/pdfgenerator/data services/pdfgenerator/data
+COPY services/pdfgenerator/src services/pdfgenerator/src
+COPY services/pdfgenerator/templates services/pdfgenerator/templates
+COPY services/pdfgenerator/index.js services/pdfgenerator/.
+COPY services/pdfgenerator/package.json services/pdfgenerator/.
+COPY services/pdfgenerator/LICENSE services/pdfgenerator/.
 COPY package.json .
-COPY package-lock.json .
-COPY LICENSE .
+COPY yarn.lock .
 
-RUN npm set progress=false && \
-    npm config set depth 0 && \
-    npm install forever -g --silent && \
-    npm ci --silent --only production
+RUN yarn global add forever && \
+    yarn workspace pdfgenerator install --production && \
+    yarn cache clean
 
-CMD forever ./index.js
+CMD forever services/pdfgenerator/index.js

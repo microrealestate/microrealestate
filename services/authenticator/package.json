@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Authenticator service",
   "main": "./src/index.js",
+  "private": true,
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon -w src --inspect=0.0.0.0:9226 ./src/index.js",
@@ -12,10 +13,6 @@
   "lint-staged": {
     "**/*": "prettier --write --ignore-unknown"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/microrealestate/authenticator.git"
-  },
   "keywords": [
     "jwt",
     "token",
@@ -24,10 +21,6 @@
   ],
   "author": "Camel Aissani",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/microrealestate/authenticator/issues"
-  },
-  "homepage": "https://github.com/microrealestate/authenticator#readme",
   "devDependencies": {
     "eslint": "7.32.0",
     "husky": "6.0.0",
