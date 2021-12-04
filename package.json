@@ -1,0 +1,35 @@
+{
+  "name": "microrealestate",
+  "version": "1.0.0-alpha.1",
+  "description": "The application which helps the landlords to manage their property rents.",
+  "main": "index.js",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/microrealestate/microrealestate.git"
+  },
+  "keywords": [
+    "property management",
+    "real-estate",
+    "rents",
+    "tenants",
+    "landlord",
+    "open-source"
+  ],
+  "author": "Camel Aissani",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/microrealestate/microrealestate/issues"
+  },
+  "homepage": "https://github.com/microrealestate/microrealestate#readme",
+  "workspaces": [
+    "./webapps/*",
+    "./services/*",
+    "./e2e",
+    "./cli"
+  ],
+  "scripts": {
+    "start": "echo \"\nStart the application by running './mre start' for linux/windows OR './mre-macos start' for mac\n\" && exit 1",
+    "dev": "echo \"\nRun the application in DEV mode by running './mre dev' for linux/windows OR './mre-macos dev' for mac\n\" && exit 1"
+  }
+}

@@ -11,11 +11,13 @@ services:
   ###############################################################################
   authenticator:
     build:
-      context: ./services/authenticator
-      dockerfile: dev.Dockerfile
+      context: .
+      dockerfile: services/authenticator/dev.Dockerfile
     volumes:
-      - ./services/authenticator:/usr/app
+      - ./common:/usr/app/common
+      - ./services/authenticator:/usr/app/services/authenticator
       - /usr/app/node_modules
+      - /usr/app/services/authenticator/node_modules
     ports:
       - "$AUTHENTICATOR_DEBUG_PORT:9226"
   ###############################################################################
@@ -23,11 +25,13 @@ services:
   ###############################################################################
   pdfgenerator:
     build:
-      context: ./services/pdfgenerator
-      dockerfile: dev.Dockerfile
+      context: .
+      dockerfile: services/pdfgenerator/dev.Dockerfile
     volumes:
-      - ./services/pdfgenerator:/usr/app
+      - ./common:/usr/app/common
+      - ./services/pdfgenerator:/usr/app/services/pdfgenerator
       - /usr/app/node_modules
+      - /usr/app/services/pdfgenerator/node_modules
     ports:
       - "$PDFGENERATOR_DEBUG_PORT:9227"
   ###############################################################################
@@ -35,11 +39,13 @@ services:
   ###############################################################################
   emailer:
     build:
-      context: ./services/emailer
-      dockerfile: dev.Dockerfile
+      context: .
+      dockerfile: services/emailer/dev.Dockerfile
     volumes:
-      - ./services/emailer:/usr/app
+      - ./common:/usr/app/common
+      - ./services/emailer:/usr/app/services/emailer
       - /usr/app/node_modules
+      - /usr/app/services/emailer/node_modules
     ports:
       - "$EMAILER_DEBUG_PORT:9228"
   ###############################################################################
@@ -47,11 +53,13 @@ services:
   ###############################################################################
   api:
     build:
-      context: ./services/api
-      dockerfile: dev.Dockerfile
+      context: .
+      dockerfile: services/api/dev.Dockerfile
     volumes:
-      - ./services/api:/usr/app
+      - ./common:/usr/app/common
+      - ./services/api:/usr/app/services/api
       - /usr/app/node_modules
+      - /usr/app/services/api/node_modules
     ports:
       - "$API_DEBUG_PORT:9230"
   ###############################################################################
@@ -59,9 +67,11 @@ services:
   ###############################################################################
   frontend:
     build:
-      context: ./webapps/landlord
-      dockerfile: dev.Dockerfile
+      context: .
+      dockerfile: webapps/landlord/dev.Dockerfile
     volumes:
-      - ./webapps/landlord:/usr/app
+      - ./common:/usr/app/common
+      - ./webapps/landlord:/usr/app/webapps/landlord
+      - /usr/app/webapps/landlord/public
       - /usr/app/node_modules
-      - /usr/app/public
+      - /usr/app/webapps/landlord/node_modules

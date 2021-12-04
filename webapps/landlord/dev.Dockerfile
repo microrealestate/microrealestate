@@ -1,24 +1,26 @@
-FROM node:14-slim
+FROM node:16-slim
 
 RUN apt-get update
 
 WORKDIR /usr/app
 
-COPY public public
-COPY locales locales
-COPY src src
-COPY .eslintrc.json .
-COPY i18n.json .
-COPY next.config.js .
 COPY package.json .
-COPY package-lock.json .
-COPY LICENSE .
+COPY yarn.lock .
+COPY common common
+COPY webapps/landlord/public webapps/landlord/public
+COPY webapps/landlord/locales webapps/landlord/locales
+COPY webapps/landlord/src webapps/landlord/src
+COPY webapps/landlord/.eslintrc.json webapps/landlord
+COPY webapps/landlord/i18n.json webapps/landlord
+COPY webapps/landlord/next.config.js webapps/landlord
+COPY webapps/landlord/package.json webapps/landlord
+COPY webapps/landlord/LICENSE webapps/landlord
 
 ARG BASE_PATH
 ENV BASE_PATH $BASE_PATH
 
 ENV NEXT_TELEMETRY_DISABLED=1
 
-RUN npm ci --silent
+RUN yarn workspace landlord install
 
-ENTRYPOINT npm run dev -- -p $PORT
+CMD yarn workspace landlord run dev -p $PORT

@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Generates PDF documents (letters, contracts, invoices...)",
   "main": "index.js",
+  "private": true,
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node index.js",
@@ -21,13 +22,6 @@
   ],
   "author": "Camel Aissani",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/microrealestate/pdfgenerator/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/microrealestate/pdfgenerator.git"
-  },
   "dependencies": {
     "ejs": "3.1.6",
     "express": "4.17.1",

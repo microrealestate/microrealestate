@@ -1,17 +1,15 @@
-FROM node:14-slim
-
-RUN apt-get update && \
-    apt-get install -y wget gnupg
+FROM node:16-slim
 
 WORKDIR /usr/app
-COPY src src
+COPY common common
+COPY services/emailer/src services/emailer/src
+COPY services/emailer/package.json services/emailer/.
+COPY services/emailer/LICENSE services/emailer/.
 COPY package.json .
-COPY package-lock.json .
-COPY LICENSE .
+COPY yarn.lock .
 
-RUN npm set progress=false && \
-    npm config set depth 0 && \
-    npm install forever -g --silent && \
-    npm ci --silent --only=production
+RUN yarn global add forever && \
+    yarn workspace emailer install --production && \
+    yarn cache clean
 
-CMD forever ./src/index.js
+CMD forever services/emailer/src/index.js

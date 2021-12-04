@@ -35,7 +35,10 @@ import moment from 'moment';
 import { nanoid } from 'nanoid';
 import useTranslation from 'next-translate/useTranslation';
 
-const TableToolbar = memo(({ selected = [], onSend = () => {} }) => {
+const TableToolbar = memo(function TableToolbar({
+  selected = [],
+  onSend = () => {},
+}) {
   const { t } = useTranslation('common');
   const [sendingEmail, setSendingEmail] = useState({
     rentcall: '',

@@ -1,13 +1,12 @@
-FROM node:14-slim
-
-RUN apt-get update \
-    && apt-get install -y build-essential \
-    && apt-get install -y python
+FROM node:16-slim
 
 WORKDIR /usr/app
 
-COPY . .
+COPY package.json .
+COPY yarn.lock .
+COPY common common
+COPY services/authenticator services/authenticator
 
-RUN npm install --silent
+RUN yarn workspace authenticator install
 
-CMD npm run dev
+CMD yarn workspace authenticator run dev
