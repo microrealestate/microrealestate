@@ -93,7 +93,7 @@ class RealmModel extends Model {
         callback(null, null);
       } else {
         const realmsFound = realms.filter((realm) =>
-          realm.members.map(({ email }) => email).includes(email)
+          realm.members?.map(({ email }) => email).includes(email)
         );
         callback(null, realmsFound);
       }
