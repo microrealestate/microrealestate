@@ -11,10 +11,9 @@
   "devDependencies": {
     "eslint": "8.2.0",
     "eslint-plugin-cypress": "2.12.1",
-    "har-validator": "5.1.5",
     "i18next": "21.5.3",
     "prettier": "2.4.1",
-    "cypress": "9.1.0"
+    "cypress": "9.1.1"
   },
   "dependencies": {}
 }
