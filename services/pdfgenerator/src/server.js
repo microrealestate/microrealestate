@@ -2,7 +2,7 @@ const express = require('express');
 const locale = require('locale');
 const expressWinston = require('express-winston');
 const logger = require('winston');
-const db = require('../data');
+const mongoosedb = require('@mre/common/models/db');
 const pdf = require('./pdf');
 const config = require('./config');
 const routes = require('./routes');
@@ -17,7 +17,7 @@ async function exit(code = 0) {
 }
 
 process.on('SIGINT', async () => {
-  exit(0);
+  await exit(0);
 });
 
 async function start() {
@@ -73,7 +73,7 @@ async function start() {
 
   try {
     // Connect to Mongo
-    await db.start();
+    await mongoosedb.connect();
 
     // Start pdf engine
     await pdf.start();
@@ -83,11 +83,8 @@ async function start() {
     await app.listen(http_port).on('error', (error) => {
       throw new Error(error);
     });
+    config.log();
     logger.debug(`Rest API listening on port ${http_port}`);
-    logger.debug('Rest API ready');
-    logger.info(`NODE_ENV ${process.env.NODE_ENV}`);
-    logger.info(`Mode productive ${!!config.PRODUCTIVE}`);
-    logger.info(`Databases ${config.MONGO_URL}`);
     logger.info('PdfGenerator ready');
   } catch (exc) {
     logger.error(exc.message);

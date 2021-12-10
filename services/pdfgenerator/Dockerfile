@@ -18,11 +18,10 @@ ENV CHROME_BIN="google-chrome"
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
 
 WORKDIR /usr/app
-COPY common common
+COPY services/common services/common
 COPY services/pdfgenerator/data services/pdfgenerator/data
 COPY services/pdfgenerator/src services/pdfgenerator/src
 COPY services/pdfgenerator/templates services/pdfgenerator/templates
-COPY services/pdfgenerator/index.js services/pdfgenerator/.
 COPY services/pdfgenerator/package.json services/pdfgenerator/.
 COPY services/pdfgenerator/LICENSE services/pdfgenerator/.
 COPY package.json .
@@ -32,4 +31,4 @@ RUN yarn global add forever && \
     yarn workspace pdfgenerator install --production && \
     yarn cache clean
 
-CMD forever services/pdfgenerator/index.js
+CMD forever services/pdfgenerator/src/index.js

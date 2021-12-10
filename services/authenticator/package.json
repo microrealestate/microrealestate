@@ -6,7 +6,7 @@
   "private": true,
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon -w src --inspect=0.0.0.0:9226 ./src/index.js",
+    "dev": "nodemon -w ../common -w src --inspect=0.0.0.0:9226 ./src/index.js",
     "lint": "eslint ./ --ext js",
     "prepare": "husky install"
   },
@@ -29,15 +29,14 @@
     "prettier": "2.3.0"
   },
   "dependencies": {
-    "axios": "0.23.0",
+    "@mre/common": "*",
+    "axios": "0.24.0",
     "bcrypt": "5.0.1",
     "cookie-parser": "1.4.5",
     "express": "4.17.1",
     "express-winston": "2.6.0",
     "jsonwebtoken": "8.5.1",
     "locale": "0.1.0",
-    "mongoose": "5.12.3",
-    "redis": "3.1.1",
     "winston": "2.4.4"
   }
 }

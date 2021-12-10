@@ -2,10 +2,14 @@ const express = require('express');
 const cookieParser = require('cookie-parser');
 const expressWinston = require('express-winston');
 const logger = require('winston');
-const mongoose = require('mongoose');
+const mongoosedb = require('@mre/common/models/db');
 const config = require('./config');
-const redisClient = require('./redisclient');
+const redis = require('@mre/common/models/redis');
 const apiRouter = require('./apirouter');
+
+process.on('SIGINT', () => {
+  process.exit(0);
+});
 
 const startApplication = async (apiRouter) => {
   // configure default logger
@@ -67,24 +71,14 @@ const startApplication = async (apiRouter) => {
   return app;
 };
 
-process.on('SIGINT', async () => {
-  await Promise.all[(redisClient.quit(), mongoose.disconnect())];
-  process.exit(0);
-});
-
 ///////////////////////////////////////////////////////////////////////////////
 //  Main
 ///////////////////////////////////////////////////////////////////////////////
 (async () => {
   // Connect to Redis
   try {
-    await redisClient.connect(
-      config.TOKEN_DB_URL,
-      config.TOKEN_DB_PASSWORD
-        ? { password: config.TOKEN_DB_PASSWORD }
-        : undefined
-    );
-    await redisClient.monitor();
+    await redis.connect();
+    await redis.monitor();
   } catch (exc) {
     logger.error(exc);
     process.exit(1);
@@ -92,28 +86,30 @@ process.on('SIGINT', async () => {
 
   // Connect to Mongo
   try {
-    await mongoose.connect(config.BASE_DB_URL, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    await mongoosedb.connect();
   } catch (exc) {
     logger.error(exc);
-    await redisClient.quit();
+    try {
+      await redis.disconnect();
+    } catch(error) {
+      logger.error(error);
+    }
     process.exit(1);
   }
 
   // Run server
   try {
     await startApplication(apiRouter);
+    config.log();
     logger.debug(`Rest API listening on port ${config.PORT}`);
-    logger.info(`NODE_ENV ${process.env.NODE_ENV}`);
-    logger.info(
-      `Databases ${[config.TOKEN_DB_URL, config.BASE_DB_URL].join(', ')}`
-    );
     logger.info('Authenticator service ready');
   } catch (exc) {
     logger.error(exc.message);
-    await Promise.all[(redisClient.quit(), mongoose.disconnect())];
+    try {
+      await Promise.all[(redis.disconnect(), mongoosedb.disconnect())];
+    } catch(error) {
+      logger.error(error);
+    }
     process.exit(1);
   }
 })();

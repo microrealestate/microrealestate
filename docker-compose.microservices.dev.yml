@@ -14,7 +14,7 @@ services:
       context: .
       dockerfile: services/authenticator/dev.Dockerfile
     volumes:
-      - ./common:/usr/app/common
+      - ./services/common:/usr/app/services/common
       - ./services/authenticator:/usr/app/services/authenticator
       - /usr/app/node_modules
       - /usr/app/services/authenticator/node_modules
@@ -28,7 +28,7 @@ services:
       context: .
       dockerfile: services/pdfgenerator/dev.Dockerfile
     volumes:
-      - ./common:/usr/app/common
+      - ./services/common:/usr/app/services/common
       - ./services/pdfgenerator:/usr/app/services/pdfgenerator
       - /usr/app/node_modules
       - /usr/app/services/pdfgenerator/node_modules
@@ -42,7 +42,7 @@ services:
       context: .
       dockerfile: services/emailer/dev.Dockerfile
     volumes:
-      - ./common:/usr/app/common
+      - ./services/common:/usr/app/services/common
       - ./services/emailer:/usr/app/services/emailer
       - /usr/app/node_modules
       - /usr/app/services/emailer/node_modules
@@ -56,7 +56,7 @@ services:
       context: .
       dockerfile: services/api/dev.Dockerfile
     volumes:
-      - ./common:/usr/app/common
+      - ./services/common:/usr/app/services/common
       - ./services/api:/usr/app/services/api
       - /usr/app/node_modules
       - /usr/app/services/api/node_modules
@@ -70,7 +70,7 @@ services:
       context: .
       dockerfile: webapps/landlord/dev.Dockerfile
     volumes:
-      - ./common:/usr/app/common
+      - ./services/common:/usr/app/services/common
       - ./webapps/landlord:/usr/app/webapps/landlord
       - /usr/app/webapps/landlord/public
       - /usr/app/node_modules

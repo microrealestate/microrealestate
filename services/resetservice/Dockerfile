@@ -1,7 +1,7 @@
 FROM node:16-slim
 
 WORKDIR /usr/app
-COPY common common
+COPY services/common services/common
 COPY services/resetservice/src services/resetservice/src
 COPY services/resetservice/package.json services/resetservice/.
 COPY package.json .

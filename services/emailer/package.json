@@ -7,7 +7,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node ./src/index.js",
-    "dev": "nodemon -w src --inspect=0.0.0.0:9228 ./src/index.js",
+    "dev": "nodemon -w ../common -w src --inspect=0.0.0.0:9228 ./src/index.js",
     "lint": "eslint ./ --ext js",
     "prepare": "husky install"
   },
@@ -31,7 +31,7 @@
     "mailgun-js": "0.22.0",
     "moment": "2.29.1",
     "mongodb": "3.5.6",
-    "mongoose": "5.12.3",
+    "@mre/common": "*",
     "winston": "2.4.4"
   },
   "devDependencies": {

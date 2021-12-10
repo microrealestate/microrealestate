@@ -9,7 +9,7 @@ const propertyManager = require('./managers/propertymanager');
 const ownerManager = require('./managers/ownermanager');
 const accountingManager = require('./managers/accountingmanager');
 const emailManager = require('./managers/emailmanager');
-const { needAccessToken, checkOrganization } = require('./utils/middlewares');
+const { needAccessToken, checkOrganization } = require('@mre/common/utils/middlewares');
 const router = express.Router();
 
 // protect the api access by checking the access token

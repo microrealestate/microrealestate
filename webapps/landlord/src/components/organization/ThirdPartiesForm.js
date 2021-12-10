@@ -28,11 +28,11 @@ const ThirdPartiesForm = observer(({ onSubmit }) => {
       domain: store.organization.selected.thirdParties?.mailgun?.domain || '',
       fromEmail:
         store.organization.selected.thirdParties?.mailgun?.fromEmail ||
-        store.organization.selected?.contacts?.[0].email ||
+        store.organization.selected?.contacts?.[0]?.email ||
         '',
       replyToEmail:
         store.organization.selected.thirdParties?.mailgun?.replyToEmail ||
-        store.organization.selected?.contacts?.[0].email ||
+        store.organization.selected?.contacts?.[0]?.email ||
         '',
       // applicationKeyId:
       //   store.organization.selected.thirdParties?.b2?.applicationKeyId,

@@ -1,6 +1,6 @@
 const logger = require('winston');
 const config = require('./config');
-const Email = require('./model/email');
+const Email = require('@mre/common/models/email');
 const emailData = require('./emaildata');
 const emailRecipients = require('./emailrecipients');
 const emailContent = require('./emailcontent');

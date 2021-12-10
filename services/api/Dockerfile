@@ -7,7 +7,7 @@ RUN apt-get update -qq && \
     apt-get install -qqy mongodb-org-tools
 
 WORKDIR /usr/app
-COPY common common
+COPY services/common services/common
 COPY services/api/src services/api/src
 COPY services/api/bkp/demodb services/api/bkp/demodb
 COPY services/api/scripts services/api/scripts

@@ -3,32 +3,7 @@ const logger = require('winston');
 const moment = require('moment');
 const config = require('../src/config');
 
-const Tenant = require('../src/model/tenant');
-let connection;
-
-process.on('SIGINT', async () => {
-  exit();
-});
-
-async function start() {
-  if (!connection) {
-    logger.debug(`db connecting to ${config.MONGO_URL}...`);
-    connection = await mongoose.connect(config.MONGO_URL, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    logger.debug('db ready');
-  }
-}
-
-async function exit() {
-  if (connection) {
-    logger.debug('db disconnecting...');
-    await mongoose.disconnect();
-    connection = null;
-    logger.debug('db disconnected');
-  }
-}
+const Tenant = require('@microrealestate/common/models/tenant');
 
 async function getRentsData(params) {
   const { id: tenantId, term } = params;
@@ -125,6 +100,5 @@ async function getRentsData(params) {
 }
 
 module.exports = {
-  start,
   getRentsData,
 };

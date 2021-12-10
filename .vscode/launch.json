@@ -10,7 +10,7 @@
             "name": "Docker: Attach to API",
             "port": 9230,
             "address": "localhost",
-            "localRoot": "${workspaceFolder}/api",
+            "localRoot": "${workspaceFolder}/",
             "remoteRoot": "/usr/app/",
             "protocol": "inspector",
             "restart": true
@@ -21,7 +21,7 @@
             "name": "Docker: Attach to Authenticator",
             "port": 9226,
             "address": "localhost",
-            "localRoot": "${workspaceFolder}/authenticator",
+            "localRoot": "${workspaceFolder}/",
             "remoteRoot": "/usr/app/",
             "protocol": "inspector",
             "restart": true
@@ -32,7 +32,7 @@
             "name": "Docker: Attach to Emailer",
             "port": 9228,
             "address": "localhost",
-            "localRoot": "${workspaceFolder}/emailer",
+            "localRoot": "${workspaceFolder}/",
             "remoteRoot": "/usr/app/",
             "protocol": "inspector",
             "restart": true
@@ -43,7 +43,7 @@
             "name": "Docker: Attach to PdfGenerator",
             "port": 9227,
             "address": "localhost",
-            "localRoot": "${workspaceFolder}/pdfgenerator",
+            "localRoot": "${workspaceFolder}/",
             "remoteRoot": "/usr/app/",
             "protocol": "inspector",
             "restart": true
@@ -54,7 +54,7 @@
             "name": "Docker: Attach to ResetService",
             "port": 9225,
             "address": "localhost",
-            "localRoot": "${workspaceFolder}/e2e/resetservice",
+            "localRoot": "${workspaceFolder}/",
             "remoteRoot": "/usr/app/",
             "protocol": "inspector",
             "restart": true

@@ -1,7 +1,7 @@
 FROM node:16-slim
 
 WORKDIR /usr/app
-COPY common common
+COPY services/common services/common
 COPY services/authenticator/src services/authenticator/src
 COPY services/authenticator/LICENSE services/authenticator/.
 COPY services/authenticator/package.json services/authenticator/.

@@ -6,7 +6,7 @@ WORKDIR /usr/app
 
 COPY package.json .
 COPY yarn.lock .
-COPY common common
+COPY services/common services/common
 COPY webapps/landlord/public webapps/landlord/public
 COPY webapps/landlord/locales webapps/landlord/locales
 COPY webapps/landlord/src webapps/landlord/src

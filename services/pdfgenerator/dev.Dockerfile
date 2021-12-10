@@ -21,7 +21,7 @@ WORKDIR /usr/app
 
 COPY package.json .
 COPY yarn.lock .
-COPY common common
+COPY services/common services/common
 COPY services/pdfgenerator services/pdfgenerator
 
 RUN yarn workspace pdfgenerator install

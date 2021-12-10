@@ -1,6 +1,6 @@
 const mailgun = require('mailgun-js');
 const config = require('./config');
-const crypto = require('./utils/crypto');
+const crypto = require('@mre/common/utils/crypto');
 
 const sendEmail = (email, data) => {
   let mgConfig;

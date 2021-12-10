@@ -1,5 +1,5 @@
 const moment = require('moment');
-const Tenant = require('../../../model/tenant');
+const Tenant = require('@mre/common/models/tenant');
 
 module.exports = {
   get: async (tenantId, params) => {

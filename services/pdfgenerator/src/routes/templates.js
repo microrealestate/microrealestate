@@ -1,5 +1,5 @@
 const express = require('express');
-const Template = require('../model/template');
+const Template = require('@mre/common/models/template');
 
 /**
  * route: /templates
