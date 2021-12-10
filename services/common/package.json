@@ -1,0 +1,16 @@
+{
+  "name": "@mre/common",
+  "version": "1.0.0",
+  "description": "Common modules required for the MicroRealEstate application'",
+  "author": "Camel Aissani",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "axios": "0.22.0",
+    "bcrypt": "5.0.1",
+    "jsonwebtoken": "8.5.1",
+    "mongoose": "5.13.10",
+    "redis": "3.1.1",
+    "winston": "2.4.4"
+  }
+}

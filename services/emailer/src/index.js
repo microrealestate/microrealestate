@@ -4,10 +4,10 @@ const bodyParser = require('body-parser');
 const expressWinston = require('express-winston');
 const logger = require('winston');
 const config = require('./config');
-const db = require('./model');
+const mongoosedb = require('@mre/common/models/db');
 const apiRouter = require('./apirouter');
 
-require('./utils/httpinterceptors')();
+require('@mre/common/utils/httpinterceptors')();
 
 const startApplication = async (apiRouter) => {
   if (!fs.existsSync(config.TEMPORARY_DIRECTORY)) {
@@ -62,7 +62,7 @@ const startApplication = async (apiRouter) => {
   return app;
 };
 
-process.on('SIGINT', async () => {
+process.on('SIGINT', () => {
   process.exit(0);
 });
 
@@ -78,8 +78,7 @@ process.on('SIGINT', async () => {
 
   // Connect to Mongo
   try {
-    await db.start();
-    //await db.migrate();
+    await mongoosedb.connect();
   } catch (exc) {
     logger.error(exc);
     process.exit(1);
@@ -88,13 +87,8 @@ process.on('SIGINT', async () => {
   try {
     // Run server
     await startApplication(apiRouter);
+    config.log();
     logger.debug(`Rest API listening on port ${config.PORT}`);
-    logger.info(`NODE_ENV ${process.env.NODE_ENV}`);
-    logger.info(`ALLOW_SENDING_EMAILS ${config.ALLOW_SENDING_EMAILS}`);
-    logger.info(
-      `Databases ${config.MONGO_URL} ${config.DEPRECATED_DB_URL || ''}`
-    );
-    logger.info(`MailGun domain ${config.MAILGUN.domain}`);
     logger.info('Emailer service ready');
   } catch (exc) {
     logger.error(exc.message);

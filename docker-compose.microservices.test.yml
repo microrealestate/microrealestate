@@ -15,7 +15,7 @@ services:
       - TOKEN_DB_PASSWORD=$AUTHENTICATOR_TOKEN_DB_PASSWORD
       - MONGO_URL=$BASE_DB_URL
     volumes:
-      - ./common:/usr/app/common
+      - ./services/common:/usr/app/services/common
       - ./services/resetservice:/usr/app/services/resetservice
       - /usr/app/node_modules
       - /usr/app/services/resetservice/node_modules

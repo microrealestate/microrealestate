@@ -1,49 +1,13 @@
 const express = require('express');
-const mongoose = require('mongoose');
+const mongoosedb = require('@mre/common/models/db');
 const expressWinston = require('express-winston');
 const logger = require('winston');
 const config = require('./config');
-const redisClient = require('./redisclient');
+const redis = require('@mre/common/models/redis');
 
-process.on('SIGINT', async () => {
-  await Promise.all([disconnectRedis(), disconnectMongo()]);
+process.on('SIGINT', () => {
   process.exit(0);
 });
-
-let connection;
-async function connectMongo() {
-  if (!connection) {
-    logger.debug(`db connecting to ${config.MONGO_URL}...`);
-    connection = await mongoose.connect(config.MONGO_URL, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    logger.debug('Mongo ready');
-  }
-}
-
-async function disconnectMongo() {
-  if (connection) {
-    await mongoose.disconnect();
-  }
-}
-
-async function connectRedis() {
-  logger.debug(`db connecting to ${config.TOKEN_DB_URL}...`);
-  await redisClient.connect(
-    config.TOKEN_DB_URL,
-    config.TOKEN_DB_PASSWORD
-      ? { password: config.TOKEN_DB_PASSWORD }
-      : undefined
-  );
-  logger.debug('Redis ready');
-}
-
-async function disconnectRedis() {
-  if (redisClient.client) {
-    await redisClient.quit();
-  }
-}
 
 async function startService() {
   // configure default logger
@@ -107,15 +71,15 @@ async function startService() {
             'realms',
             'templates',
           ].map((collection) =>
-            mongoose.connection.db
+            mongoosedb.connection()
               .dropCollection(collection)
               .catch(console.error)
           )
         );
 
-        const keys = await redisClient.keys('*');
+        const keys = await redis.keys('*');
         if (keys?.length) {
-          await Promise.all(keys.map((key) => redisClient.del(key)));
+          await Promise.all(keys.map((key) => redis.del(key)));
         }
       } catch (error) {
         console.log(error);
@@ -133,19 +97,23 @@ async function startService() {
 
   try {
     // Connect to DB
-    await Promise.all([connectMongo(), connectRedis()]);
+    await Promise.all([mongoosedb.connect(), redis.connect()]);
 
     // Run server
     const http_port = config.PORT;
     await app.listen(http_port).on('error', (error) => {
       throw new Error(error);
     });
+    config.log();
     logger.debug(`Reset service listening on port ${http_port}`);
-    logger.info(`Databases ${config.MONGO_URL}`);
     logger.info('Reset service ready');
   } catch (exc) {
     logger.error(exc.message);
-    await Promise.all([disconnectRedis(), disconnectMongo()]);
+    try {
+      await Promise.all([redis.disconnect(), mongoosedb.disconnect()]);
+    } catch(error) {
+      logger.error(error);
+    }
     process.exit(1);
   }
 }

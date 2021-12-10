@@ -3,7 +3,7 @@ FROM node:16-slim
 # RUN apt-get update
 
 WORKDIR /usr/app
-COPY common common
+COPY services/common services/common
 COPY webapps/landlord/public webapps/landlord/public
 COPY webapps/landlord/locales webapps/landlord/locales
 COPY webapps/landlord/src webapps/landlord/src

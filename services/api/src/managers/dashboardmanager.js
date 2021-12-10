@@ -1,6 +1,6 @@
 const moment = require('moment');
-const TenantModel = require('../models/mongoose/tenant');
-const PropertyModel = require('../models/mongoose/property');
+const TenantModel = require('@mre/common/models/tenant');
+const PropertyModel = require('@mre/common/models/property');
 
 function all(req, res) {
   const fetch = async () => {

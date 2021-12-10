@@ -1,7 +1,8 @@
 const mongoose = require('mongoose');
+const Realm = require('./realm');
 
 const TemplateSchema = mongoose.Schema({
-  realmId: { type: String, ref: 'Realm' },
+  realmId: { type: String, ref: Realm },
   name: String,
   type: String,
   description: String,

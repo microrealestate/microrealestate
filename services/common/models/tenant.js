@@ -1,9 +1,7 @@
 const mongoose = require('mongoose');
 const Realm = require('./realm');
 const Property = require('./property');
-
-// Needed as used in model as ref
-require('./lease');
+const Lease = require('./lease');
 
 const TenantSchema = mongoose.Schema({
   // Organization
@@ -37,7 +35,7 @@ const TenantSchema = mongoose.Schema({
   // contract
   reference: String,
   contract: String,
-  leaseId: { type: String, ref: 'Lease' },
+  leaseId: { type: String, ref: Lease },
   beginDate: String,
   endDate: String, //"30/11/2013",
   terminationDate: String,

@@ -1,7 +1,8 @@
 const mongoose = require('mongoose');
+const Realm = require('./realm');
 
 const PropertySchema = mongoose.Schema({
-  realmId: { type: String, ref: 'Realm' },
+  realmId: { type: String, ref: Realm },
   //occupant: ObjectId,
   //occupantLabel: String,
 

@@ -1,4 +1,4 @@
-const Account = require('../../../model/account');
+const Account = require('@mre/common/models/account');
 
 module.exports = {
   get: async (email, params) => {

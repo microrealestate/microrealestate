@@ -3,16 +3,21 @@ const logger = require('winston');
 const config = require('./config');
 const server = require('./server');
 const db = require('./models/db');
-const mongoosedb = require('./models/mongoose/db');
+const mongoosedb = require('@mre/common/models/db');
 const restoredb = require('../scripts/mongorestore');
-const migratedb = require('../scripts/migration');
+// const migratedb = require('../scripts/migration');
 
-require('./utils/httpinterceptors')();
+require('@mre/common/utils/httpinterceptors')();
+
+process.on('SIGINT', () => {
+  //TODO disconnect db (mongojs)
+  process.exit(0);
+});
 
 async function startService() {
   try {
     await db.init();
-    await mongoosedb.start();
+    await mongoosedb.connect();
 
     if (config.restoreDatabase) {
       await restoredb();
@@ -33,6 +38,11 @@ async function startService() {
     });
   } catch (err) {
     logger.error(err);
+    try {
+      await mongoosedb.disconnect();
+    } catch(error) {
+      logger.error(error);
+    }
     process.exit(1);
   }
 }

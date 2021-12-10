@@ -52,16 +52,16 @@ module.exports = {
   init() {
     if (!db) {
       return new Promise((resolve, reject) => {
-        logger.debug(`connecting database ${config.database}...`);
-        db = mongojs(config.database, collections);
+        logger.debug(`connecting database ${config.MONGO_URL}...`);
+        db = mongojs(config.MONGO_URL, collections);
         db.listCollections(() => {}); // Run this command to force connection a this stage
         db.on('connect', function () {
-          logger.info(`connected to ${config.database}`);
+          logger.info(`connected to ${config.MONGO_URL}`);
           resolve(db);
         });
 
         db.on('error', function (err) {
-          logger.error(`cannot connect to ${config.database}`);
+          logger.error(`cannot connect to ${config.MONGO_URL}`);
           reject(err);
         });
       });

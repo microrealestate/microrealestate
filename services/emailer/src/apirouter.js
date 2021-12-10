@@ -1,7 +1,7 @@
 const express = require('express');
 const locale = require('locale');
 const logger = require('winston');
-const { needAccessToken, checkOrganization } = require('./utils/middlewares');
+const { needAccessToken, checkOrganization } = require('@mre/common/utils/middlewares');
 const emailer = require('./emailer');
 const config = require('./config');
 

@@ -5,8 +5,8 @@ const axios = require('axios');
 const locale = require('locale');
 const logger = require('winston');
 const config = require('./config');
-const redisClient = require('./redisclient');
-const AccountModel = require('./models/account');
+const redis = require('@mre/common/models/redis');
+const AccountModel = require('@mre/common/models/account');
 
 const refreshTokenCookieAttributes = {
   httpOnly: true,
@@ -25,7 +25,7 @@ const _generateTokens = async (dbAccount) => {
   });
 
   // save tokens
-  await redisClient.set(refreshToken, accessToken);
+  await redis.set(refreshToken, accessToken);
 
   return {
     refreshToken,
@@ -34,7 +34,7 @@ const _generateTokens = async (dbAccount) => {
 };
 
 const _refreshTokens = async (oldRefreshToken) => {
-  const oldAccessToken = await redisClient.get(oldRefreshToken);
+  const oldAccessToken = await redis.get(oldRefreshToken);
   if (!oldAccessToken) {
     logger.error('refresh token not found in database');
     return {};
@@ -59,7 +59,7 @@ const _refreshTokens = async (oldRefreshToken) => {
 };
 
 const _clearTokens = async (refreshToken) => {
-  await redisClient.del(refreshToken);
+  await redis.del(refreshToken);
 };
 
 const apiRouter = express.Router();
@@ -182,7 +182,7 @@ apiRouter.post('/forgotpassword', async (req, res) => {
       const token = jwt.sign({ email }, config.RESET_TOKEN_SECRET, {
         expiresIn: '1h',
       });
-      await redisClient.set(token, email);
+      await redis.set(token, email);
 
       // send email
       await axios.post(
@@ -216,12 +216,12 @@ apiRouter.patch('/resetpassword', async (req, res) => {
     return res.status(422).json({ error: 'missing fields' });
   }
 
-  const email = await redisClient.get(resetToken);
+  const email = await redis.get(resetToken);
   if (!email) {
     return res.sendStatus(403);
   }
 
-  await redisClient.del(resetToken);
+  await redis.del(resetToken);
 
   try {
     jwt.verify(resetToken, config.RESET_TOKEN_SECRET);

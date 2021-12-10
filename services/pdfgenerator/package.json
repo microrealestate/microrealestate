@@ -7,7 +7,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node index.js",
-    "dev": "nodemon -w src -w data -w templates -w index.js -e js,ejs,css,png --inspect=0.0.0.0:9227 index.js",
+    "dev": "nodemon -w ../common -w src -w data -w templates -e js,ejs,css,png --inspect=0.0.0.0:9227 src/index.js",
     "lint": "eslint ./ --ext js",
     "prepare": "husky install"
   },
@@ -23,6 +23,7 @@
   "author": "Camel Aissani",
   "license": "MIT",
   "dependencies": {
+    "axios": "0.24.0",
     "ejs": "3.1.6",
     "express": "4.17.1",
     "express-winston": "2.6.0",
@@ -33,7 +34,7 @@
     "locale": "0.1.0",
     "moment": "2.29.1",
     "mongodb": "3.6.6",
-    "mongoose": "5.12.8",
+    "@mre/common": "*",
     "puppeteer": "10.4.0",
     "winston": "2.4.4"
   },

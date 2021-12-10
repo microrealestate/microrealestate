@@ -4,7 +4,7 @@ WORKDIR /usr/app
 
 COPY package.json .
 COPY yarn.lock .
-COPY common common
+COPY services/common services/common
 COPY services/emailer services/emailer
 
 RUN yarn workspace emailer install

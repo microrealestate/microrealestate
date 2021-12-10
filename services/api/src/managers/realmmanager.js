@@ -1,6 +1,6 @@
 const realmModel = require('../models/realm');
 const accountModel = require('../models/account');
-const crypto = require('../utils/crypto');
+const crypto = require('@mre/common/utils/crypto');
 
 const SECRET_PLACEHOLDER = '**********';
 

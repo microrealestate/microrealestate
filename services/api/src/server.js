@@ -4,7 +4,7 @@ const logger = require('winston');
 // configure default logger
 logger.remove(logger.transports.Console);
 logger.add(logger.transports.Console, {
-  level: config.loggerLevel,
+  level: config.LOGGER_LEVEL,
   colorize: true,
 });
 

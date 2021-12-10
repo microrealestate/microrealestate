@@ -7,7 +7,7 @@
   "scripts": {
     "test": "jest",
     "start": "node src/index.js",
-    "dev": "nodemon -w src --inspect=0.0.0.0:9230 ./src/index.js",
+    "dev": "nodemon -w ../common -w src --inspect=0.0.0.0:9230 ./src/index.js",
     "lint": "eslint ./ --ext js",
     "prepare": "husky install"
   },
@@ -23,10 +23,10 @@
     "express-winston": "2.6.0",
     "jsonwebtoken": "8.5.1",
     "method-override": "3.0.0",
+    "@mre/common": "*",
     "moment": "2.29.1",
     "mongobackup": "0.3.5",
     "mongojs": "3.1.0",
-    "mongoose": "5.13.10",
     "nanoid": "3.1.22",
     "sugar": "2.0.6",
     "winston": "2.4.4"

@@ -1,10 +1,10 @@
 const express = require('express');
 const Handlebars = require('handlebars');
 const moment = require('moment');
-const Document = require('../model/document');
-const Template = require('../model/template');
-const Tenant = require('../model/tenant');
-const Lease = require('../model/lease');
+const Document = require('@mre/common/models/document');
+const Template = require('@mre/common/models/template');
+const Tenant = require('@mre/common/models/tenant');
+const Lease = require('@mre/common/models/lease');
 const logger = require('winston');
 const pdf = require('../pdf');
 

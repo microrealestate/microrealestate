@@ -23,13 +23,14 @@
   },
   "homepage": "https://github.com/microrealestate/microrealestate#readme",
   "workspaces": [
-    "./webapps/*",
-    "./services/*",
-    "./e2e",
-    "./cli"
+    "webapps/*",
+    "services/*",
+    "e2e",
+    "cli"
   ],
   "scripts": {
     "start": "echo \"\nStart the application by running './mre start' for linux/windows OR './mre-macos start' for mac\n\" && exit 1",
-    "dev": "echo \"\nRun the application in DEV mode by running './mre dev' for linux/windows OR './mre-macos dev' for mac\n\" && exit 1"
+    "dev": "echo \"\nRun the application in DEV mode by running './mre dev' for linux/windows OR './mre-macos dev' for mac\n\" && exit 1",
+    "e2e": "yarn workspace e2e run cypress:open"
   }
 }
