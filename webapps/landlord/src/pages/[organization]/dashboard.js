@@ -15,16 +15,15 @@ import {
   Grid,
   List,
   ListItem,
+  makeStyles,
   Paper,
   Typography,
-  makeStyles,
 } from '@material-ui/core';
 import {
   CelebrationIllustration,
   WelcomeIllustration,
 } from '../../components/Illustrations';
 import { NumberFormat, useFormatNumber } from '../../utils/numberformat';
-import { StoreContext, getStoreInstance } from '../../store';
 import { useCallback, useContext, useMemo, useState } from 'react';
 import { useComponentMountedRef, useInterval } from '../../utils/hooks';
 
@@ -32,24 +31,25 @@ import ArrowRightAltIcon from '@material-ui/icons/ArrowRightAlt';
 import { DashboardCard } from '../../components/Cards';
 import DescriptionIcon from '@material-ui/icons/Description';
 import Loading from '../../components/Loading';
+import moment from 'moment';
+import { nanoid } from 'nanoid';
 import NewLeaseDialog from '../../components/organization/NewLeaseDialog';
 import NewPaymentDialog from '../../components/payment/NewPaymentDialog';
 import NewPropertyDialog from '../../components/properties/NewPropertyDialog';
 import NewTenantDialog from '../../components/tenants/NewTenantDialog';
+import { observer } from 'mobx-react-lite';
 import Page from '../../components/Page';
 import PeopleIcon from '@material-ui/icons/People';
 import ReceiptIcon from '@material-ui/icons/Receipt';
 import StopIcon from '@material-ui/icons/Stop';
+import { StoreContext } from '../../store';
 import TenantAvatar from '../../components/tenants/TenantAvatar';
 import TerminateLeaseDialog from '../../components/tenants/TerminateLeaseDialog';
-import VpnKeyIcon from '@material-ui/icons/VpnKey';
-import moment from 'moment';
-import { nanoid } from 'nanoid';
-import { observer } from 'mobx-react-lite';
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useTheme } from '@material-ui/styles';
 import useTranslation from 'next-translate/useTranslation';
+import VpnKeyIcon from '@material-ui/icons/VpnKey';
 import { withAuthentication } from '../../components/Authentication';
 
 const fetchDashboardData = async (store) => {
@@ -131,17 +131,6 @@ const Shortcuts = () => {
   const [openNewLeaseDialog, setOpenNewLeaseDialog] = useState(false);
   const [openNewPaymentDialog, setOpenNewPaymentDialog] = useState(false);
   const [openTerminateLease, setOpenTerminateLease] = useState(false);
-  const useStyles = makeStyles((theme) => ({
-    root: {
-      paddingTop: 10,
-      paddingBottom: 10,
-      color: theme.palette.info.contrastText,
-      backgroundColor: theme.palette.info.main,
-      '&:hover': {
-        background: theme.palette.info.dark,
-      },
-    },
-  }));
 
   const onCreateTenant = useCallback(
     async (tenant) => {
@@ -409,7 +398,7 @@ const MonthFigures = observer(() => {
             </Typography>
           </Box>
           <Paper>
-            {!!store.dashboard.data.topUnpaid?.length ? (
+            {store.dashboard.data.topUnpaid?.length ? (
               <List style={{ height: 296 }}>
                 {store.dashboard.data.topUnpaid.map(
                   ({ tenant, balance, rent }) => (

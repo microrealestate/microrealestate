@@ -40,7 +40,7 @@ async function startService() {
     logger.error(err);
     try {
       await mongoosedb.disconnect();
-    } catch(error) {
+    } catch (error) {
       logger.error(error);
     }
     process.exit(1);

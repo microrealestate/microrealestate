@@ -17,9 +17,9 @@ import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
+import moment from 'moment';
 import RequestError from '../RequestError';
 import { StoreContext } from '../../store';
-import moment from 'moment';
 import { toJS } from 'mobx';
 import useTranslation from 'next-translate/useTranslation';
 

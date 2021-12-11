@@ -11,12 +11,12 @@ import {
 import { memo, useCallback, useContext, useEffect, useState } from 'react';
 
 import { ElevationScroll } from './Scroll';
+import getConfig from 'next/config';
 import Loading from './Loading';
+import { observer } from 'mobx-react-lite';
 import OrganizationSwitcher from './organization/OrganizationSwitcher';
 import PowerSettingsNewIcon from '@material-ui/icons/PowerSettingsNew';
 import { StoreContext } from '../store';
-import getConfig from 'next/config';
-import { observer } from 'mobx-react-lite';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 

@@ -1,8 +1,8 @@
 import { Marker, Map as PigeonMap } from 'pigeon-maps';
 import { memo, useEffect, useState } from 'react';
 
-import { LocationIllustration } from './Illustrations';
 import axios from 'axios';
+import { LocationIllustration } from './Illustrations';
 import { useComponentMountedRef } from '../utils/hooks';
 import { useTheme } from '@material-ui/core';
 

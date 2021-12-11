@@ -7,16 +7,16 @@ import Drawer from '@material-ui/core/Drawer';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
+import { nanoid } from 'nanoid';
 import PeopleIcon from '@material-ui/icons/People';
 import ReceiptIcon from '@material-ui/icons/Receipt';
 import SettingsIcon from '@material-ui/icons/Settings';
 import { StoreContext } from '../store';
-import VpnKeyIcon from '@material-ui/icons/VpnKey';
-import { nanoid } from 'nanoid';
 import { useRouter } from 'next/router';
 import { useStyles } from '../styles/components/Nav.styles';
 import { useTimeout } from '../utils/hooks';
 import useTranslation from 'next-translate/useTranslation';
+import VpnKeyIcon from '@material-ui/icons/VpnKey';
 
 const MenuItem = memo(function MenuItem({
   item,

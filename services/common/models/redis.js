@@ -13,12 +13,12 @@ class RedisClient {
         }
         logger.debug(args.join(', '));
       });
- 
+
       //this.flushdb = promisify(this.client.flushdb).bind(this.client);
       this.get = promisify(this.client.get).bind(this.client);
       this.set = promisify(this.client.set).bind(this.client);
       this.del = promisify(this.client.del).bind(this.client);
-      this.keys = promisify(this.client.keys).bind(this.client)
+      this.keys = promisify(this.client.keys).bind(this.client);
       this.monitor = promisify(this.client.monitor).bind(this.client);
 
       this.client.on('error', reject);
@@ -50,9 +50,7 @@ const connect = async () => {
   logger.debug(`db connecting to ${config.REDIS_URL}...`);
   await redisClient.connect(
     config.REDIS_URL,
-    config.REDIS_PASSWORD
-      ? { password: config.REDIS_PASSWORD }
-      : undefined
+    config.REDIS_PASSWORD ? { password: config.REDIS_PASSWORD } : undefined
   );
   logger.debug('Redis ready');
 };
@@ -67,26 +65,26 @@ const get = async (...params) => {
 
 const set = async (...params) => {
   return await redisClient.set(...params);
-}
+};
 
 const del = async (...params) => {
   return await redisClient.del(...params);
-}
+};
 
 const keys = async (...params) => {
   return await redisClient.keys(...params);
-}
+};
 
 const disconnect = async () => {
   if (redisClient.client) {
     await redisClient.quit();
   }
-}
+};
 
 process.on('SIGINT', async () => {
   try {
     await disconnect();
-  } catch(error) {
+  } catch (error) {
     logger.error(error);
   }
 });
@@ -98,5 +96,5 @@ module.exports = {
   get,
   set,
   del,
-  keys
+  keys,
 };

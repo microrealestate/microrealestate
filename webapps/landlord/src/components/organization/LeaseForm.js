@@ -6,8 +6,8 @@ import { FormSection, FormTextField, SelectField, SubmitButton } from '../Form';
 import { useContext, useMemo } from 'react';
 
 import { ADMIN_ROLE } from '../../store/User';
-import { StoreContext } from '../../store';
 import { observer } from 'mobx-react-lite';
+import { StoreContext } from '../../store';
 import useTranslation from 'next-translate/useTranslation';
 
 const allowedRoles = [ADMIN_ROLE];

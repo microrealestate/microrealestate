@@ -12,5 +12,9 @@
     "mongoose": "5.13.10",
     "redis": "3.1.1",
     "winston": "2.4.4"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "format": "prettier --write '**/*.{js,jsx,ts,tsx,json,css}'"
   }
 }

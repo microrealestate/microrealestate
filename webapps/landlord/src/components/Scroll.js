@@ -1,5 +1,5 @@
-import { Slide, useScrollTrigger } from '@material-ui/core';
 import { cloneElement, memo } from 'react';
+import { Slide, useScrollTrigger } from '@material-ui/core';
 
 export const ElevationScroll = memo(function ElevationScroll({ children }) {
   const trigger = useScrollTrigger({

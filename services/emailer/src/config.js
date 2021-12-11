@@ -24,5 +24,5 @@ module.exports = {
     FROM: process.env.EMAIL_FROM || 'Example <noreply@example.com>',
     REPLY_TO: process.env.EMAIL_REPLY_TO || 'customer-service@example.com',
     BCC: process.env.EMAIL_BCC || 'manager1@example.com,manager2@example.com',
-  }
+  },
 };

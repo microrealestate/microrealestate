@@ -14,14 +14,14 @@ import {
 } from '@material-ui/core';
 import { memo, useCallback, useMemo } from 'react';
 
+import _ from 'lodash';
 import BalanceBar from './BalanceBar';
 import { CardRow } from '../Cards';
 import DownloadLink from '../DownloadLink';
-import { NumberFormat } from '../../utils/numberformat';
-import SendRentEmailMenu from './SendRentEmailMenu';
-import _ from 'lodash';
 import moment from 'moment';
+import { NumberFormat } from '../../utils/numberformat';
 import { observer } from 'mobx-react-lite';
+import SendRentEmailMenu from './SendRentEmailMenu';
 import { useStyles } from '../../styles/components/RentCards.styles';
 import useTranslation from 'next-translate/useTranslation';
 

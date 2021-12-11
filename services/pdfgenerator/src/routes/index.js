@@ -1,6 +1,9 @@
 const express = require('express');
 const config = require('../config');
-const { needAccessToken, checkOrganization } = require('@mre/common/utils/middlewares');
+const {
+  needAccessToken,
+  checkOrganization,
+} = require('@mre/common/utils/middlewares');
 const templates = require('./templates');
 const documents = require('./documents');
 

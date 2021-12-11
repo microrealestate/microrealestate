@@ -8,24 +8,24 @@ import {
   ListItem,
   ListItemAvatar,
   ListItemText,
+  makeStyles,
   Paper,
   Typography,
-  makeStyles,
 } from '@material-ui/core';
-import { StoreContext, getStoreInstance } from '../../../store';
+import { getStoreInstance, StoreContext } from '../../../store';
 import { memo, useCallback, useContext, useState } from 'react';
 
+import _ from 'lodash';
 import { EmptyIllustration } from '../../../components/Illustrations';
+import { isServer } from '../../../utils';
+import moment from 'moment';
+import { nanoid } from 'nanoid';
 import NewTenantDialog from '../../../components/tenants/NewTenantDialog';
+import { observer } from 'mobx-react-lite';
 import Page from '../../../components/Page';
 import PropertyIcon from '../../../components/properties/PropertyIcon';
 import SearchFilterBar from '../../../components/SearchFilterBar';
 import TenantAvatar from '../../../components/tenants/TenantAvatar';
-import _ from 'lodash';
-import { isServer } from '../../../utils';
-import moment from 'moment';
-import { nanoid } from 'nanoid';
-import { observer } from 'mobx-react-lite';
 import { toJS } from 'mobx';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';

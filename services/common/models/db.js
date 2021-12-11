@@ -22,12 +22,12 @@ const disconnect = async () => {
     connection = null;
     logger.debug('db disconnected');
   }
-}
+};
 
 process.on('SIGINT', async () => {
   try {
     await disconnect();
-  } catch(error) {
+  } catch (error) {
     console.error(error);
   }
 });
@@ -35,5 +35,5 @@ process.on('SIGINT', async () => {
 module.exports = {
   connect,
   disconnect,
-  connection: () => mongoose.connection.db
+  connection: () => mongoose.connection.db,
 };

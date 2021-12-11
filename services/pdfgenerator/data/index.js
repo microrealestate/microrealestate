@@ -1,7 +1,4 @@
-const mongoose = require('mongoose');
-const logger = require('winston');
 const moment = require('moment');
-const config = require('../src/config');
 
 const Tenant = require('@microrealestate/common/models/tenant');
 

@@ -7,7 +7,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon -w ../common -w src --inspect=0.0.0.0:9226 ./src/index.js",
-    "lint": "eslint ./ --ext js"
+    "lint": "eslint .",
+    "format": "prettier --write '**/*.{js,jsx,ts,tsx,json,css}'"
   },
   "keywords": [
     "jwt",
@@ -18,9 +19,7 @@
   "author": "Camel Aissani",
   "license": "MIT",
   "devDependencies": {
-    "eslint": "7.32.0",
-    "nodemon": "2.0.3",
-    "prettier": "2.3.0"
+    "nodemon": "2.0.3"
   },
   "dependencies": {
     "@mre/common": "*",

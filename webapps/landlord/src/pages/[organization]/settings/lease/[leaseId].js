@@ -1,18 +1,18 @@
 import { Breadcrumbs, Grid, Paper, Typography } from '@material-ui/core';
-import { StoreContext, getStoreInstance } from '../../../../store';
+import { getStoreInstance, StoreContext } from '../../../../store';
 import { memo, useCallback, useContext, useState } from 'react';
 
 import { ADMIN_ROLE } from '../../../../store/User';
 import ConfirmDialog from '../../../../components/ConfirmDialog';
 import DeleteIcon from '@material-ui/icons/Delete';
+import { isServer } from '../../../../utils';
 import LeaseForm from '../../../../components/organization/LeaseForm';
 import LeaseTemplatesCard from '../../../../components/organization/LeaseTemplatesCard';
 import Link from '../../../../components/Link';
+import { observer } from 'mobx-react-lite';
 import Page from '../../../../components/Page';
 import RequestError from '../../../../components/RequestError';
 import { RestrictButton } from '../../../../components/RestrictedComponents';
-import { isServer } from '../../../../utils';
-import { observer } from 'mobx-react-lite';
 import router from 'next/router';
 import { toJS } from 'mobx';
 import useTranslation from 'next-translate/useTranslation';
