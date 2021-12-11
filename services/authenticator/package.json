@@ -7,11 +7,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon -w ../common -w src --inspect=0.0.0.0:9226 ./src/index.js",
-    "lint": "eslint ./ --ext js",
-    "prepare": "husky install"
-  },
-  "lint-staged": {
-    "**/*": "prettier --write --ignore-unknown"
+    "lint": "eslint ./ --ext js"
   },
   "keywords": [
     "jwt",
@@ -23,8 +19,6 @@
   "license": "MIT",
   "devDependencies": {
     "eslint": "7.32.0",
-    "husky": "6.0.0",
-    "lint-staged": "11.0.0",
     "nodemon": "2.0.3",
     "prettier": "2.3.0"
   },

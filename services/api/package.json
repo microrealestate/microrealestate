@@ -8,11 +8,7 @@
     "test": "jest",
     "start": "node src/index.js",
     "dev": "nodemon -w ../common -w src --inspect=0.0.0.0:9230 ./src/index.js",
-    "lint": "eslint ./ --ext js",
-    "prepare": "husky install"
-  },
-  "lint-staged": {
-    "**/*": "prettier --write --ignore-unknown"
+    "lint": "eslint ./ --ext js"
   },
   "author": "Camel Aissani",
   "license": "MIT",
@@ -34,9 +30,7 @@
   "devDependencies": {
     "eslint": "7.26.0",
     "eslint-plugin-jest": "24.3.6",
-    "husky": "7.0.0",
     "jest": "27.0.6",
-    "lint-staged": "11.0.0",
     "nodemon": "2.0.12",
     "prettier": "2.3.0",
     "supertest": "6.1.3"

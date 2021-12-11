@@ -7,7 +7,6 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "prepare": "husky install",
     "generateStrings": "node scripts/extractlocalizedstrings.js"
   },
   "dependencies": {
@@ -48,17 +47,11 @@
     "eslint-config-next": "11.1.2",
     "eslint-config-prettier": "8.3.0",
     "fdir": "5.1.0",
-    "husky": "7.0.4",
-    "lint-staged": "11.2.6",
     "prettier": "2.4.1"
   },
   "babel": {
     "presets": [
       "next/babel"
     ]
-  },
-  "lint-staged": {
-    "*.js": "eslint --cache --fix",
-    "*.{js,css}": "prettier --write"
   }
 }
