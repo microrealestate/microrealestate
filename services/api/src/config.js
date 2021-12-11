@@ -15,5 +15,5 @@ module.exports = {
   signup: toBoolean(process.env.SIGNUP || false),
   restoreDatabase: toBoolean(process.env.RESTORE_DB || true),
   demoMode: toBoolean(process.env.DEMO_MODE || true),
-  EMAILER_URL: process.env.EMAILER_URL || 'http://localhost:8083/emailer'
+  EMAILER_URL: process.env.EMAILER_URL || 'http://localhost:8083/emailer',
 };

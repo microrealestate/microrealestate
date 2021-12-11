@@ -1,6 +1,7 @@
 import {
   Box,
   Button,
+  makeStyles,
   Paper,
   Table,
   TableBody,
@@ -8,22 +9,21 @@ import {
   TableHead,
   TableRow,
   Typography,
-  makeStyles,
   withStyles,
 } from '@material-ui/core';
-import { StoreContext, getStoreInstance } from '../../../store';
+import { getStoreInstance, StoreContext } from '../../../store';
 import { useCallback, useContext, useMemo, useState } from 'react';
 
 import { EmptyIllustration } from '../../../components/Illustrations';
+import { isServer } from '../../../utils';
+import { nanoid } from 'nanoid';
 import NewPropertyDialog from '../../../components/properties/NewPropertyDialog';
 import { NumberFormat } from '../../../utils/numberformat';
+import { observer } from 'mobx-react-lite';
 import Page from '../../../components/Page';
 import PropertyAvatar from '../../../components/properties/PropertyAvatar';
 import RequestError from '../../../components/RequestError';
 import SearchFilterBar from '../../../components/SearchFilterBar';
-import { isServer } from '../../../utils';
-import { nanoid } from 'nanoid';
-import { observer } from 'mobx-react-lite';
 import { toJS } from 'mobx';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';

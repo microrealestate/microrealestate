@@ -1,5 +1,5 @@
-.github
-coverage
+node_modules
 tmp
-*.min.css
+pdf_documents
+coverage
 *.md

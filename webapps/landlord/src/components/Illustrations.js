@@ -1,7 +1,7 @@
 import { Box, Typography } from '@material-ui/core';
 
-import Image from 'next/image';
 import getConfig from 'next/config';
+import Image from 'next/image';
 import useTranslation from 'next-translate/useTranslation';
 
 const {

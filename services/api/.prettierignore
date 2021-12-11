@@ -1,4 +1,3 @@
-.github
-coverage
+node_modules
 bkp
 *.md

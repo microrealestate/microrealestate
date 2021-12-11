@@ -23,14 +23,26 @@
   },
   "homepage": "https://github.com/microrealestate/microrealestate#readme",
   "workspaces": [
-    "webapps/*",
-    "services/*",
+    "cli",
     "e2e",
-    "cli"
+    "services/*",
+    "webapps/*"
   ],
   "scripts": {
-    "start": "echo \"\nStart the application by running './mre start' for linux/windows OR './mre-macos start' for mac\n\" && exit 1",
-    "dev": "echo \"\nRun the application in DEV mode by running './mre dev' for linux/windows OR './mre-macos dev' for mac\n\" && exit 1",
-    "e2e": "yarn workspace e2e run cypress:open"
+    "e2e": "yarn workspace e2e run cypress:open",
+    "format": "yarn workspaces run format",
+    "lint": "yarn workspaces run lint"
+  },
+  "devDependencies": {
+    "prettier": "2.5.1",
+    "eslint": "7.32.0",
+    "eslint-config-next": "12.0.3",
+    "eslint-config-prettier": "8.3.0",
+    "eslint-plugin-cypress": "2.12.1",
+    "eslint-plugin-jest": "25.3.0",
+    "eslint-plugin-import": "2.25.3",
+    "eslint-plugin-node": "11.1.0",
+    "eslint-plugin-promise": "5.2.0",
+    "eslint-plugin-standard": "5.0.0"
   }
 }

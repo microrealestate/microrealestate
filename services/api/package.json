@@ -8,7 +8,8 @@
     "test": "jest",
     "start": "node src/index.js",
     "dev": "nodemon -w ../common -w src --inspect=0.0.0.0:9230 ./src/index.js",
-    "lint": "eslint ./ --ext js"
+    "lint": "eslint .",
+    "format": "prettier --write '**/*.{js,jsx,ts,tsx,json,css}'"
   },
   "author": "Camel Aissani",
   "license": "MIT",
@@ -28,11 +29,8 @@
     "winston": "2.4.4"
   },
   "devDependencies": {
-    "eslint": "7.26.0",
-    "eslint-plugin-jest": "24.3.6",
     "jest": "27.0.6",
     "nodemon": "2.0.12",
-    "prettier": "2.3.0",
     "supertest": "6.1.3"
   }
 }

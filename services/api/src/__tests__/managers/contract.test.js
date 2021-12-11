@@ -173,7 +173,7 @@ describe('contract functionalities', () => {
     // before begin date of contract
     expect(() => {
       Contract.terminate(contract, '01/01/2016 00:00');
-    });
+    }).not.toThrow();
   });
 
   it('update termination date', () => {

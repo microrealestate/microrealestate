@@ -14,10 +14,10 @@ import { DashboardCard } from '../Cards';
 import DeleteIcon from '@material-ui/icons/Delete';
 import DescriptionIcon from '@material-ui/icons/DescriptionOutlined';
 import { EmptyIllustration } from '../Illustrations';
-import RichTextEditorDialog from '../RichTextEditor/RichTextEditorDialog';
-import { StoreContext } from '../../store';
 import { nanoid } from 'nanoid';
 import { observer } from 'mobx-react-lite';
+import RichTextEditorDialog from '../RichTextEditor/RichTextEditorDialog';
+import { StoreContext } from '../../store';
 import useTranslation from 'next-translate/useTranslation';
 
 const TemplateList = observer(({ onEdit, onDelete }) => {

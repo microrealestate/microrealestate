@@ -91,7 +91,7 @@ const startApplication = async (apiRouter) => {
     logger.error(exc);
     try {
       await redis.disconnect();
-    } catch(error) {
+    } catch (error) {
       logger.error(error);
     }
     process.exit(1);
@@ -107,7 +107,7 @@ const startApplication = async (apiRouter) => {
     logger.error(exc.message);
     try {
       await Promise.all[(redis.disconnect(), mongoosedb.disconnect())];
-    } catch(error) {
+    } catch (error) {
       logger.error(error);
     }
     process.exit(1);

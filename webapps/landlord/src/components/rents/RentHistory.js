@@ -1,7 +1,10 @@
 import { Box, Paper, Typography } from '@material-ui/core';
 import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 
+import { getPeriod } from './RentPeriod';
 import Loading from '../Loading';
+import moment from 'moment';
+import { nanoid } from 'nanoid';
 import { NumberFormat } from '../../utils/numberformat';
 import RequestError from '../RequestError';
 import { StoreContext } from '../../store';
@@ -10,9 +13,6 @@ import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
-import { getPeriod } from './RentPeriod';
-import moment from 'moment';
-import { nanoid } from 'nanoid';
 import useTranslation from 'next-translate/useTranslation';
 
 const RentHistory = ({ tenantId }) => {

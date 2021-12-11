@@ -4,16 +4,14 @@
   "description": "MicroRealEstate e2e tests",
   "private": true,
   "scripts": {
-    "cypress:open": "cypress open"
+    "cypress:open": "cypress open",
+    "lint": "eslint .",
+    "format": "prettier --write '**/*.{js,jsx,ts,tsx,json,css}'"
   },
   "author": "Camel Aissani",
   "license": "MIT",
   "devDependencies": {
-    "eslint": "8.2.0",
-    "eslint-plugin-cypress": "2.12.1",
     "i18next": "21.5.3",
-    "prettier": "2.4.1",
     "cypress": "9.1.1"
-  },
-  "dependencies": {}
+  }
 }

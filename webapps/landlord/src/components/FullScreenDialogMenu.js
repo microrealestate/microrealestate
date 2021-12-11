@@ -8,16 +8,16 @@ import {
   Toolbar,
   useTheme,
 } from '@material-ui/core';
-import { Fragment, forwardRef, useCallback, useState } from 'react';
+import { forwardRef, Fragment, useCallback, useState } from 'react';
 
 import Button from '@material-ui/core/Button';
 import CloseIcon from '@material-ui/icons/Close';
 import Dialog from '@material-ui/core/Dialog';
+import { hexToRgb } from '../styles/styles';
 import Loading from './Loading';
+import { nanoid } from 'nanoid';
 import Slide from '@material-ui/core/Slide';
 import Typography from '@material-ui/core/Typography';
-import { hexToRgb } from '../styles/styles';
-import { nanoid } from 'nanoid';
 import { useComponentMountedRef } from '../utils/hooks';
 
 const Transition = forwardRef(function Transition(props, ref) {

@@ -1,10 +1,10 @@
+# Project directories and files
 node_modules
 tmp
-
 /data
 .env
 .vscode/ipch
-.vscode/settings.json
+deploy-*.sh
 
 # Logs
 logs
@@ -13,5 +13,3 @@ npm-debug.log*
 
 # Rest client vscode plugin
 *.rest
-
-deploy-*.sh

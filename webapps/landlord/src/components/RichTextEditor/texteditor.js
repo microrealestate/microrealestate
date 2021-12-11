@@ -1,9 +1,9 @@
 import './TemplateField';
 import './TemplateLoopBlock';
 
-import Quill from 'quill';
 import { detect } from 'detect-browser';
 import getConfig from 'next/config';
+import Quill from 'quill';
 
 const {
   publicRuntimeConfig: { BASE_PATH },

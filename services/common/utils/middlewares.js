@@ -31,22 +31,23 @@ const needAccessToken = (accessTokenSecret) => {
 const checkOrganization = () => {
   return async (req, res, next) => {
     const organizationId = req.headers.organizationid;
-    
+
     // for the currennt user, add all subscribed organizations in request object
-    req.realms = (await Realm.find({'members': {$elemMatch: {email: req.user.email}}}))
-      .map(realm => {
-        const r = realm.toObject();
-        r._id = r._id.toString();
-        return r;
-      });
-    
+    req.realms = (
+      await Realm.find({ members: { $elemMatch: { email: req.user.email } } })
+    ).map((realm) => {
+      const r = realm.toObject();
+      r._id = r._id.toString();
+      return r;
+    });
+
     // skip organization checks when fetching them
-    if (req.path === '/realms') {  
+    if (req.path === '/realms') {
       return next();
     }
 
     // For other requests
-    
+
     // check if organizationid header exists
     if (!organizationId) {
       return res.sendStatus(404);
@@ -61,9 +62,8 @@ const checkOrganization = () => {
       return res.sendStatus(404);
     }
 
-    
     // current user is not a member of the organization
-    if (!req.realms.find(({_id}) => _id === req.realm._id)) {
+    if (!req.realms.find(({ _id }) => _id === req.realm._id)) {
       return res.sendStatus(404);
     }
 

@@ -20,7 +20,6 @@ import {
 } from '@material-ui/core';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import _ from 'lodash';
 import FieldBar from './FieldBar';
 import jsesc from 'jsesc';
 import PrintIcon from '@material-ui/icons/Print';

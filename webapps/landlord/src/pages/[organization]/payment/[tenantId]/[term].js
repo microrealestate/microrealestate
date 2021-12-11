@@ -12,9 +12,9 @@ import {
   withStyles,
 } from '@material-ui/core';
 import { CardRow, DashboardCard } from '../../../../components/Cards';
-import { StoreContext, getStoreInstance } from '../../../../store';
-import { TabPanel, useTabChangeHelper } from '../../../../components/Tabs';
+import { getStoreInstance, StoreContext } from '../../../../store';
 import { memo, useCallback, useContext, useMemo, useState } from 'react';
+import { TabPanel, useTabChangeHelper } from '../../../../components/Tabs';
 
 import AdditionalCostDiscountForm from '../../../../components/payment/AdditionalCostDiscountForm';
 import BalanceBar from '../../../../components/rents/BalanceBar';
@@ -23,8 +23,11 @@ import { EmptyIllustration } from '../../../../components/Illustrations';
 import FullScreenDialogButton from '../../../../components/FullScreenDialogButton';
 import HistoryIcon from '@material-ui/icons/History';
 import InternalNoteForm from '../../../../components/payment/InternalNoteForm';
+import { isServer } from '../../../../utils';
 import Link from '../../../../components/Link';
+import moment from 'moment';
 import { NumberFormat } from '../../../../utils/numberformat';
+import { observer } from 'mobx-react-lite';
 import Page from '../../../../components/Page';
 import PaymentForm from '../../../../components/payment/PaymentForm';
 import ReceiptIcon from '@material-ui/icons/Receipt';
@@ -32,9 +35,6 @@ import RentHistory from '../../../../components/rents/RentHistory';
 import RequestError from '../../../../components/RequestError';
 import SendIcon from '@material-ui/icons/Send';
 import SendRentEmailMenu from '../../../../components/rents/SendRentEmailMenu';
-import { isServer } from '../../../../utils';
-import moment from 'moment';
-import { observer } from 'mobx-react-lite';
 import { toJS } from 'mobx';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';

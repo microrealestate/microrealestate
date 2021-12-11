@@ -95,7 +95,7 @@ async function update(req, res) {
     };
   }
 
-  if (!!lease.active) {
+  if (!lease.active) {
     lease.active = lease.numberOfTerms > 0 && !!lease.timeRange;
   }
 

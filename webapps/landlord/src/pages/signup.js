@@ -6,13 +6,13 @@ import { FormTextField, SubmitButton } from '../components/Form';
 import React, { useContext, useState } from 'react';
 
 import ErrorPage from 'next/error';
+import getConfig from 'next/config';
 import Link from '../components/Link';
 import LocationCityIcon from '@material-ui/icons/LocationCity';
+import { observer } from 'mobx-react-lite';
 import Page from '../components/Page';
 import RequestError from '../components/RequestError';
 import { StoreContext } from '../store';
-import getConfig from 'next/config';
-import { observer } from 'mobx-react-lite';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 

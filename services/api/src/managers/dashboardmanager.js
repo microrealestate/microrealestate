@@ -125,7 +125,7 @@ function all(req, res) {
         };
         return acc;
       }, {});
-      revenues = Object.entries(
+      const revenues = Object.entries(
         allTenants.reduce((acc, { rents }) => {
           rents.forEach((rent) => {
             const termMoment = moment(rent.term, 'YYYYMMDDHH');

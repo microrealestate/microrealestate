@@ -71,7 +71,8 @@ async function startService() {
             'realms',
             'templates',
           ].map((collection) =>
-            mongoosedb.connection()
+            mongoosedb
+              .connection()
               .dropCollection(collection)
               .catch(console.error)
           )
@@ -111,7 +112,7 @@ async function startService() {
     logger.error(exc.message);
     try {
       await Promise.all([redis.disconnect(), mongoosedb.disconnect()]);
-    } catch(error) {
+    } catch (error) {
       logger.error(error);
     }
     process.exit(1);

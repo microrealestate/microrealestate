@@ -7,7 +7,8 @@
   "scripts": {
     "start": "node src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint ./ --ext js"
+    "lint": "eslint .",
+    "format": "prettier --write '**/*.{js,jsx,ts,tsx,json,css}'"
   },
   "bin": "src/index.js",
   "pkg": {
@@ -29,8 +30,5 @@
     "figlet": "1.5.2",
     "inquirer": "8.2.0",
     "minimist": "1.2.5"
-  },
-  "devDependencies": {
-    "eslint": "7.32.0"
   }
 }

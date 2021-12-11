@@ -12,9 +12,9 @@ import {
   withStyles,
 } from '@material-ui/core';
 import { CardRow, DashboardCard } from '../../../components/Cards';
-import { StoreContext, getStoreInstance } from '../../../store';
-import { TabPanel, useTabChangeHelper } from '../../../components/Tabs';
+import { getStoreInstance, StoreContext } from '../../../store';
 import { memo, useCallback, useContext, useMemo, useState } from 'react';
+import { TabPanel, useTabChangeHelper } from '../../../components/Tabs';
 
 import BillingForm from '../../../components/tenants/BillingForm';
 import ConfirmDialog from '../../../components/ConfirmDialog';
@@ -22,9 +22,12 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
 import FullScreenDialogButton from '../../../components/FullScreenDialogButton';
 import HistoryIcon from '@material-ui/icons/History';
+import { isServer } from '../../../utils';
 import LeaseContractForm from '../../../components/tenants/LeaseContractForm';
 import Link from '../../../components/Link';
+import moment from 'moment';
 import { NumberFormat } from '../../../utils/numberformat';
+import { observer } from 'mobx-react-lite';
 import Page from '../../../components/Page';
 import ReceiptIcon from '@material-ui/icons/Receipt';
 import RentHistory from '../../../components/rents/RentHistory';
@@ -35,9 +38,6 @@ import SubjectIcon from '@material-ui/icons/Subject';
 import TenantDocumentsCard from '../../../components/tenants/TenantDocumentsCard';
 import TenantForm from '../../../components/tenants/TenantForm';
 import TerminateLeaseDialog from '../../../components/tenants/TerminateLeaseDialog';
-import { isServer } from '../../../utils';
-import moment from 'moment';
-import { observer } from 'mobx-react-lite';
 import { toJS } from 'mobx';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';

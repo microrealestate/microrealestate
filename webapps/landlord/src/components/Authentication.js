@@ -1,13 +1,13 @@
-import { StoreContext, getStoreInstance } from '../store';
+import { getStoreInstance, StoreContext } from '../store';
 import { isServer, redirect } from '../utils';
 import { setAcceptLanguage, setOrganizationId } from '../utils/fetch';
 import { useContext, useEffect } from 'react';
 
 import Cookies from 'universal-cookie';
 import ErrorPage from 'next/error';
-import { Observer } from 'mobx-react-lite';
 import getConfig from 'next/config';
 import moment from 'moment';
+import { Observer } from 'mobx-react-lite';
 import { toJS } from 'mobx';
 
 const {
