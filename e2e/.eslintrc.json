@@ -1,0 +1,10 @@
+{
+  "plugins": ["cypress", "jest"],
+  "env": {
+    "cypress/globals": true,
+    "es2021": true
+  },
+  "rules": {
+    "jest/no-identical-title": "warn"
+  }
+}

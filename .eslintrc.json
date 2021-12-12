@@ -1,18 +1,12 @@
 {
-  "extends": ["eslint:recommended", "next", "prettier"],
-  "plugins": ["cypress", "jest", "import"],
-  "settings": {
-    "next": {
-      "rootDir": ["webapps/landlord"]
-    }
-  },
+  "extends": ["eslint:recommended", "prettier"],
+  "plugins": ["jest"],
   "env": {
-    "cypress/globals": true,
     "jest": true,
-    "es2021": true
+    "es2021": true,
+    "node": true
   },
   "rules": {
-    "jest/no-identical-title": "warn",
     "semi": "error",
     "quotes": ["error", "single", { "avoidEscape": true }],
     "no-unused-vars": [

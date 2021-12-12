@@ -4,7 +4,7 @@ RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2930ADAE8CAF505
 RUN echo "deb http://repo.mongodb.org/apt/debian stretch/mongodb-org/3.6 main" | tee /etc/apt/sources.list.d/mongodb-org-3.6.list
 RUN apt-get update -qq && \
     apt-get upgrade -qqy && \
-    apt-get install -qqy mongodb-org-tools
+    apt-get install -qqy mongodb-org-tools python3 make g++
 
 WORKDIR /usr/app
 COPY services/common services/common
