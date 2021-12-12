@@ -1,6 +1,6 @@
 const moment = require('moment');
 
-const Tenant = require('@microrealestate/common/models/tenant');
+const Tenant = require('@mre/common/models/tenant');
 
 async function getRentsData(params) {
   const { id: tenantId, term } = params;
