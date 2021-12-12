@@ -1,16 +1,15 @@
 FROM node:16-slim
 
-RUN apt-get update
-
 WORKDIR /usr/app
 
 COPY package.json .
 COPY yarn.lock .
+COPY .eslintrc.json .
 COPY services/common services/common
 COPY webapps/landlord/public webapps/landlord/public
 COPY webapps/landlord/locales webapps/landlord/locales
 COPY webapps/landlord/src webapps/landlord/src
-COPY webapps/landlord/.eslintrc.js webapps/landlord
+COPY webapps/landlord/.eslintrc.json webapps/landlord
 COPY webapps/landlord/i18n.json webapps/landlord
 COPY webapps/landlord/next.config.js webapps/landlord
 COPY webapps/landlord/package.json webapps/landlord
