@@ -33,16 +33,28 @@
     "format": "yarn workspaces run format",
     "lint": "yarn workspaces run lint"
   },
+  "lint-staged": {
+    "*.{js,ts,tsx, jsx}": [
+        "eslint --quiet --fix"
+    ],
+    "*.{json,md,html,js,jsx,ts,tsx}": [
+        "prettier --write"
+    ]
+  },
   "devDependencies": {
-    "prettier": "2.5.1",
     "eslint": "7.32.0",
     "eslint-config-next": "12.0.3",
     "eslint-config-prettier": "8.3.0",
     "eslint-plugin-cypress": "2.12.1",
-    "eslint-plugin-jest": "25.3.0",
     "eslint-plugin-import": "2.25.3",
+    "eslint-plugin-jest": "25.3.0",
     "eslint-plugin-node": "11.1.0",
     "eslint-plugin-promise": "5.2.0",
-    "eslint-plugin-standard": "5.0.0"
+    "eslint-plugin-standard": "5.0.0",
+    "prettier": "2.5.1"
+  },
+  "dependencies": {
+    "husky": "7.0.4",
+    "lint-staged": "12.1.2"
   }
 }
