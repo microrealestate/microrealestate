@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const logger = require('winston');
 
 module.exports = {
@@ -20,7 +21,8 @@ module.exports = {
   CIPHER_IV_KEY: process.env.CIPHER_IV_KEY,
 
   log: function log() {
-    const { log, ...escapedConfig } = this;
+    const { log, ...config } = this;
+    const escapedConfig = _.cloneDeep(config);
     escapedConfig.REDIS_PASSWORD = '****';
     escapedConfig.ACCESS_TOKEN_SECRET = '****';
     escapedConfig.REFRESH_TOKEN_SECRET = '****';
