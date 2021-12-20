@@ -5,7 +5,7 @@ const server = require('./server');
 const db = require('./models/db');
 const mongoosedb = require('@mre/common/models/db');
 const restoredb = require('../scripts/mongorestore');
-// const migratedb = require('../scripts/migration');
+const migratedb = require('../scripts/migration');
 
 require('@mre/common/utils/httpinterceptors')();
 
@@ -25,7 +25,7 @@ async function startService() {
     }
 
     // migrate db to the new models
-    // await migratedb();
+    await migratedb();
 
     server.listen(config.appHttpPort, () => {
       config.log();

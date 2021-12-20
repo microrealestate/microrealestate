@@ -1,58 +1,23 @@
+const logger = require('winston');
+const moment = require('moment');
+const mongoosedb = require('@mre/common/models/db');
+const Tenant = require('@mre/common/models/tenant');
+const Lease = require('@mre/common/models/lease');
 const db = require('../src/models/db');
 const accountModel = require('../src/models/account');
 const realmModel = require('../src/models/realm');
 const tenantModel = require('../src/models/occupant');
-const leaseModel = require('../src/models/lease');
+const tenant = require('@mre/common/models/tenant');
+
+async function _connectDb() {
+  await mongoosedb.connect();
+  await db.init();
+}
 
 const updateRealm = async (realm) => {
   return await new Promise((resolve, reject) => {
     try {
       realmModel.update(realm, (errors, saved) => {
-        if (errors) {
-          return reject(errors);
-        }
-        resolve(saved);
-      });
-    } catch (error) {
-      reject(error);
-    }
-  });
-};
-
-const addLease = async (realm, lease) => {
-  return await new Promise((resolve, reject) => {
-    try {
-      leaseModel.add(realm, lease, (errors, saved) => {
-        if (errors) {
-          return reject(errors);
-        }
-        resolve(saved);
-      });
-    } catch (error) {
-      reject(error);
-    }
-  });
-};
-
-const updateLease = async (realm, lease) => {
-  return await new Promise((resolve, reject) => {
-    try {
-      leaseModel.update(realm, lease, (errors, saved) => {
-        if (errors) {
-          return reject(errors);
-        }
-        resolve(saved);
-      });
-    } catch (error) {
-      reject(error);
-    }
-  });
-};
-
-const updateTenant = async (realm, tenant) => {
-  return await new Promise((resolve, reject) => {
-    try {
-      tenantModel.update(realm, tenant, (errors, saved) => {
         if (errors) {
           return reject(errors);
         }
@@ -109,25 +74,11 @@ const findAllTenants = (realm) => {
   });
 };
 
-const findAllLeases = (realm) => {
-  return new Promise((resolve, reject) => {
-    try {
-      leaseModel.findAll(realm, (errors, leases) => {
-        if (errors) {
-          return reject(errors);
-        }
-        resolve(leases);
-      });
-    } catch (error) {
-      reject(error);
-    }
-  });
-};
-
 // Main
 module.exports = async () => {
   try {
-    await db.init();
+    await _connectDb();
+
     const realms = (await findAllRealms()) || [];
     const accounts = (await findAllAccounts()) || [];
     const accountMap = accounts.reduce(
@@ -270,16 +221,19 @@ module.exports = async () => {
 
         let dbCustomLease;
         let dbFrench369Lease;
-        const leases = await findAllLeases(realm);
+        const leases = await Lease.find({
+          realmId: realm._id,
+        });
         const customLease = {
+          realmId: realm._id,
           name: 'custom',
           description: 'Monthly rents without time limit',
           timeRange: 'months',
           active: true,
           system: true,
-          archived: false,
         };
         const french369Lease = {
+          realmId: realm._id,
           name: '369',
           description: 'French business lease limited to 9 years',
           numberOfTerms: 108,
@@ -288,8 +242,9 @@ module.exports = async () => {
           system: false,
         };
         if (!leases || !leases.length) {
-          dbCustomLease = await addLease(realm, customLease);
-          dbFrench369Lease = await addLease(realm, french369Lease);
+          const results = await Lease.insertMany([customLease, french369Lease]);
+          dbCustomLease = results[0];
+          dbFrench369Lease = results[1];
         } else {
           dbCustomLease = leases.find(({ system }) => system === true);
           dbFrench369Lease = leases.find(
@@ -297,23 +252,54 @@ module.exports = async () => {
           );
 
           if (dbCustomLease) {
-            dbCustomLease = await updateLease(realm, {
-              ...dbCustomLease,
+            dbCustomLease = {
+              ...dbCustomLease.toObject(),
               ...customLease,
-            });
+            };
+            dbCustomLease = await Lease.replaceOne(
+              { _id: dbCustomLease._id },
+              dbCustomLease
+            );
           }
 
           if (dbFrench369Lease) {
-            dbFrench369Lease = await updateLease(realm, {
-              ...dbFrench369Lease,
+            dbFrench369Lease = {
+              ...dbFrench369Lease.toObject(),
               ...french369Lease,
-            });
+            };
+
+            await Lease.replaceOne(
+              { _id: dbFrench369Lease._id },
+              dbFrench369Lease
+            );
           }
         }
 
         const tenants = (await findAllTenants(realm)) || [];
         await Promise.all(
           tenants.map(async (dbTenant) => {
+            let beginDate = dbTenant.beginDate;
+            let endDate = dbTenant.endDate;
+            let terminationDate = dbTenant.terminationDate || null;
+
+            if (typeof tenant.beginDate === 'string') {
+              beginDate = moment(tenant.beginDate, 'DD/MM/YYYY').toDate();
+            }
+
+            if (typeof tenant.endDate === 'string') {
+              endDate = moment(tenant.endDate, 'DD/MM/YYYY').toDate();
+            }
+
+            if (
+              tenant.terminationDate &&
+              typeof tenant.terminationDate === 'string'
+            ) {
+              terminationDate = moment(
+                tenant.terminationDate,
+                'DD/MM/YYYY'
+              ).toDate();
+            }
+
             // add the leaseId property to tenant (occupant)
             let leaseId = dbTenant.leaseId;
             if (dbCustomLease && dbFrench369Lease) {
@@ -324,44 +310,47 @@ module.exports = async () => {
             }
 
             // update the properties to add the rent and expenses of properties
-            let properties = dbTenant.properties;
+            let properties = dbTenant.properties || [];
             properties.forEach((property) => {
-              if (property.expenses) {
-                return;
-              }
-              property.rent = property.property.price;
-              property.expenses = [];
+              if (!property.expenses) {
+                property.rent = property.property.price;
+                property.expenses = [];
 
-              if (!property.property.expense) {
-                return;
+                if (property.property.expense) {
+                  property.expenses = [
+                    {
+                      title: 'general expense',
+                      amount: property.property.expense,
+                    },
+                  ];
+                }
               }
 
-              property.expenses = [
-                {
-                  title: 'general expense',
-                  amount: property.property.expense,
-                },
-              ];
+              property.entryDate =
+                (property.entryDate &&
+                  moment(property.entryDate, 'DD/MM/YYYY').toDate()) ||
+                undefined;
+
+              property.exitDate =
+                (property.exitDate &&
+                  moment(property.exitDate, 'DD/MM/YYYY').toDate()) ||
+                undefined;
             });
 
-            await updateTenant(realm, {
-              ...dbTenant,
-              leaseId,
-              properties,
-            });
+            await Tenant.replaceOne(
+              { _id: dbTenant._id },
+              {
+                ...dbTenant,
+                realmId: realm._id,
+                beginDate,
+                endDate,
+                terminationDate,
+                leaseId,
+                properties,
+              }
+            );
           })
         );
-        // const utenants = await findAllTenants(realm);
-        // console.log(utenants.map(({contract, leaseId}) => ({contract, leaseId})));
-
-        // updatedRealm.tenants = tenants
-        //     .filter(({ terminationDate }) => !terminationDate)
-        //     .reduce((acc, { name, contacts }) => ([
-        //         ...acc,
-        //         ...contacts.map(contact => ({ tenant: name, ...contact }))
-        //     ]), [])
-        //     .filter(({ email }) => !!email);
-
         return updatedRealm;
       })
     );
@@ -370,6 +359,6 @@ module.exports = async () => {
       updatedRealms.map((updatedRealm) => updateRealm(updatedRealm))
     );
   } catch (error) {
-    console.error(error);
+    logger.error(error);
   }
 };

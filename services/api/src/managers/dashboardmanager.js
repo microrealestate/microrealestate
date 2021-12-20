@@ -1,3 +1,4 @@
+const logger = require('winston');
 const moment = require('moment');
 const TenantModel = require('@mre/common/models/tenant');
 const PropertyModel = require('@mre/common/models/property');
@@ -17,8 +18,8 @@ function all(req, res) {
       });
       const activeTenants = allTenants.reduce((acc, tenant) => {
         const terminationMoment = tenant.terminationDate
-          ? moment(tenant.terminationDate, 'DD/MM/YYYY')
-          : moment(tenant.endDate, 'DD/MM/YYYY');
+          ? moment(tenant.terminationDate)
+          : moment(tenant.endDate);
 
         if (terminationMoment.isAfter(now, 'day')) {
           acc.push(tenant);
@@ -174,7 +175,7 @@ function all(req, res) {
         revenues,
       });
     } catch (error) {
-      console.error(error);
+      logger.error(error);
       return res.status(500).json({
         errors: ['An error occured when computing dashboard data'],
       });

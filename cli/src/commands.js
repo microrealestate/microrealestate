@@ -33,7 +33,7 @@ const displayHeader = () => {
 const build = async () => {
   try {
     await runCompose(
-      ['build', '--no-cache'],
+      ['build', '--no-cache', '--force-rm', '--quiet'],
       { runMode: 'prod' },
       {},
       'building containers...'
@@ -82,7 +82,7 @@ const dev = async () => {
   try {
     initDirectories();
     await runCompose(
-      ['up', '--build', '--remove-orphans'],
+      ['up', '--build', '--force-recreate', '--remove-orphans', '--no-color'],
       {
         runMode: 'dev',
       },

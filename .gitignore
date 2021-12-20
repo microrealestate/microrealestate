@@ -11,5 +11,8 @@ logs
 *.log
 npm-debug.log*
 
+# test coverage
+coverage
+
 # Rest client vscode plugin
 *.rest

@@ -3,6 +3,7 @@ const { customAlphabet } = require('nanoid');
 const moment = require('moment');
 const FD = require('./frontdata');
 const Contract = require('./contract');
+const Tenant = require('@mre/common/models/tenant');
 const occupantModel = require('../models/occupant');
 const propertyModel = require('../models/property');
 const documentModel = require('../models/document');
@@ -59,8 +60,12 @@ function add(req, res) {
     if (occupant.properties) {
       occupant.properties.forEach((item) => {
         item.property = propertyMap[item.propertyId];
-        item.entryDate = item.entryDate || occupant.beginDate;
-        item.exitDate = item.exitDate || occupant.endDate;
+        item.entryDate =
+          (item.entryDate && moment(item.entryDate, 'DD/MM/YYYY').toDate()) ||
+          occupant.beginDate;
+        item.exitDate =
+          (item.exitDate && moment(item.exitDate, 'DD/MM/YYYY').toDate()) ||
+          occupant.endDate;
         item.rent = item.rent || item.property.price;
         item.expenses =
           item.expenses ||
@@ -143,8 +148,8 @@ function update(req, res) {
           if (dbOccupant.properties) {
             dbOccupant.properties.forEach((dbItem) => {
               if (dbItem.propertyId === item.propertyId) {
-                dbItem.property._id = dbItem.property._id.toString();
                 itemToKeep = dbItem;
+                delete itemToKeep._id;
               }
             });
           }
@@ -154,8 +159,16 @@ function update(req, res) {
               property: propertyMap[item.propertyId],
             };
           }
-          itemToKeep.entryDate = item.entryDate || occupant.beginDate;
-          itemToKeep.exitDate = item.exitDate || occupant.endDate;
+          if (!itemToKeep.property) {
+            itemToKeep.property = propertyMap[itemToKeep.propertyId];
+          }
+          itemToKeep.property._id = String(itemToKeep.property._id);
+          itemToKeep.entryDate =
+            (item.entryDate && moment(item.entryDate, 'DD/MM/YYYY').toDate()) ||
+            occupant.beginDate;
+          itemToKeep.exitDate =
+            (item.exitDate && moment(item.exitDate, 'DD/MM/YYYY').toDate()) ||
+            occupant.endDate;
           itemToKeep.rent = item.rent || itemToKeep.property.price;
           itemToKeep.expenses =
             item.expenses ||
@@ -169,15 +182,19 @@ function update(req, res) {
 
       // Build rents from contract
       occupant.rents = [];
-      if (occupant.beginDate && occupant.endDate && occupant.properties) {
+      if (
+        occupant.beginDate &&
+        occupant.endDate &&
+        occupant.properties?.length
+      ) {
         try {
           const contract = {
             begin: dbOccupant.beginDate,
             end: dbOccupant.endDate,
             frequency: occupant.frequency || 'months',
             terms: Math.ceil(
-              moment(dbOccupant.endDate, 'DD/MM/YYYY').diff(
-                moment(dbOccupant.beginDate, 'DD/MM/YYYY'),
+              moment(dbOccupant.endDate).diff(
+                moment(dbOccupant.beginDate),
                 'months',
                 true
               )
@@ -193,7 +210,7 @@ function update(req, res) {
             end: occupant.endDate,
             termination: occupant.terminationDate,
             properties: occupant.properties,
-            frequency: occupant.frequency,
+            frequency: occupant.frequency || 'months',
           };
           if (occupant.vatRatio !== undefined) {
             modification.vatRate = occupant.vatRatio;
@@ -326,38 +343,42 @@ async function remove(req, res) {
 
     res.sendStatus(200);
   } catch (error) {
-    console.error(error);
+    logger.error(error);
     res.status(500).json({
-      errors: ['a problem occured when deleting occupants'],
+      errors: ['a problem occured when deleting tenants'],
     });
   }
 }
 
-function all(req, res) {
-  const realm = req.realm;
-  occupantModel.findAll(realm, (errors, occupants) => {
-    if (errors && errors.length > 0) {
-      return res.status(500).json({
-        errors: errors,
+async function all(req, res) {
+  try {
+    const tenants = await Tenant.find({ realmId: req.realm._id })
+      .populate('properties.propertyId')
+      .sort({
+        name: 1,
       });
-    }
-
-    res.json(occupants.map((occupant) => FD.toOccupantData(occupant)));
-  });
+    res.json(tenants.map((tenant) => FD.toOccupantData(tenant)));
+  } catch (error) {
+    logger.error(error);
+    res.status(500).json({
+      errors: ['an error occurred when fetching the tenants in db'],
+    });
+  }
 }
 
-function one(req, res) {
-  const realm = req.realm;
+async function one(req, res) {
   const occupantId = req.params.id;
-  occupantModel.findOne(realm, occupantId, (errors, dbOccupant) => {
-    if (errors && errors.length > 0) {
-      return res.status(404).json({
-        errors: errors,
-      });
-    }
-
-    res.json(FD.toOccupantData(dbOccupant));
-  });
+  try {
+    const tenant = await Tenant.findOne({
+      realmId: req.realm._id,
+      _id: occupantId,
+    }).populate('properties.propertyId');
+    res.json(FD.toOccupantData(tenant));
+  } catch (error) {
+    return res.status(500).json({
+      errors: ['an error occurred when fetching a tenant from db'],
+    });
+  }
 }
 
 function overview(req, res) {
@@ -379,10 +400,7 @@ function overview(req, res) {
     if (occupants) {
       result.countAll = occupants.length;
       result = occupants.reduce((acc, occupant) => {
-        const endMoment = moment(
-          occupant.terminationDate || occupant.endDate,
-          'DD/MM/YYYY'
-        );
+        const endMoment = moment(occupant.terminationDate || occupant.endDate);
         if (endMoment.isBefore(currentDate, 'day')) {
           acc.countInactive++;
         } else {

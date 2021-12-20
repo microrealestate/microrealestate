@@ -4,8 +4,8 @@ const Contract = require('../../managers/contract');
 describe('contract functionalities', () => {
   it('create contract', () => {
     const contract = Contract.create({
-      begin: '01/01/2017 00:00',
-      end: '31/12/2025 23:59',
+      begin: Date.parse('2017-01-01T00:00:00'),
+      end: Date.parse('2025-12-31T23:59:59'),
       frequency: 'months',
       properties: [{}, {}],
     });
@@ -15,16 +15,16 @@ describe('contract functionalities', () => {
 
     expect(() => {
       Contract.create({
-        begin: '01/01/2017 00:00',
-        end: '01/01/2017 03:00',
+        begin: Date.parse('2017-01-01T00:00:00'),
+        end: Date.parse('2017-01-01T03:00:00'),
         frequency: 'hours',
       });
     }).toThrow();
 
     expect(() => {
       Contract.create({
-        begin: '01/01/2017 00:00',
-        end: '01/01/2016 03:00',
+        begin: Date.parse('2017-01-01T00:00:00'),
+        end: Date.parse('2016-01-01T03:00:00'),
         frequency: 'hours',
         properties: [{}, {}],
       });
@@ -44,32 +44,32 @@ describe('contract functionalities', () => {
 
     expect(() => {
       c1 = Contract.create({
-        begin: '01/01/2017 00:00',
-        end: '01/01/2017 03:00',
+        begin: Date.parse('2017-01-01T00:00:00'),
+        end: Date.parse('2017-01-01T03:00:00'),
         frequency: 'hours',
         properties: [{}, {}],
       });
       c2 = Contract.create({
-        begin: '01/01/2017 00:00',
-        end: '31/01/2017 23:59',
+        begin: Date.parse('2017-01-01T00:00:00'),
+        end: Date.parse('2017-01-31T23:59:59'),
         frequency: 'days',
         properties: [{}, {}],
       });
       c3 = Contract.create({
-        begin: '01/01/2017 00:00',
-        end: '14/01/2017 23:59',
+        begin: Date.parse('2017-01-01T00:00:00'),
+        end: Date.parse('2017-01-14T23:59:59'),
         frequency: 'weeks',
         properties: [{}, {}],
       });
       c4 = Contract.create({
-        begin: '01/01/2017 00:00',
-        end: '31/12/2017 23:59',
+        begin: Date.parse('2017-01-01T00:00:00'),
+        end: Date.parse('2017-12-31T23:59:59'),
         frequency: 'months',
         properties: [{}, {}],
       });
       c5 = Contract.create({
-        begin: '01/01/2017 00:00',
-        end: '31/12/2025 23:59',
+        begin: Date.parse('2017-01-01T00:00:00'),
+        end: Date.parse('2025-12-31T23:59:59'),
         frequency: 'years',
         properties: [{}, {}],
       });
@@ -83,8 +83,8 @@ describe('contract functionalities', () => {
 
     expect(() => {
       Contract.create({
-        begin: '01/01/2017 00:00',
-        end: '01/01/2017 03:00',
+        begin: Date.parse('2017-01-01T00:00:00'),
+        end: Date.parse('2017-01-01T03:00:00'),
         frequency: 'blabla',
         properties: [{}, {}],
       });
@@ -93,8 +93,8 @@ describe('contract functionalities', () => {
 
   it('renew contract based on initial number of terms', () => {
     const contract = Contract.create({
-      begin: '01/01/2017 00:00',
-      end: '31/12/2025 23:59',
+      begin: Date.parse('2017-01-01T00:00:00'),
+      end: Date.parse('2025-12-31T23:59:59'),
       frequency: 'months',
       properties: [{}, {}],
     });
@@ -106,18 +106,20 @@ describe('contract functionalities', () => {
 
   it('update contract change duration', () => {
     const contract = Contract.create({
-      begin: '01/01/2017 00:00',
-      end: '31/12/2025 23:59',
+      begin: Date.parse('2017-01-01T00:00:00'),
+      end: Date.parse('2025-12-31T23:59:59'),
       frequency: 'months',
       properties: [{}, {}],
     });
-    const newContract = Contract.update(contract, { end: '31/03/2026 23:59' });
+    const newContract = Contract.update(contract, {
+      end: Date.parse('2026-03-31T23:59:59'),
+    });
 
     expect(newContract.terms).toEqual(108 + 3); // incorrect number of terms
     expect(newContract.rents.length).toEqual(108 + 3); // incorrect number of rents
 
     const newContract2 = Contract.update(contract, {
-      begin: '01/01/2018 00:00',
+      begin: Date.parse('2018-01-01T00:00:00'),
     });
     expect(newContract2.terms).toEqual(108 - 12); // incorrect number of terms
     expect(newContract2.rents.length).toEqual(108 - 12); // incorrect number of rents
@@ -125,17 +127,19 @@ describe('contract functionalities', () => {
 
   it('update contract which has a payment', () => {
     const contract = Contract.create({
-      begin: '01/01/2017 00:00',
-      end: '31/12/2025 23:59',
+      begin: Date.parse('2017-01-01T00:00:00'),
+      end: Date.parse('2025-12-31T23:59:59'),
       frequency: 'months',
       properties: [{}, {}],
     });
-    Contract.payTerm(contract, '01/01/2017 00:00', {
+    Contract.payTerm(contract, '201701010000', {
       payments: [{ amount: 200 }],
       debts: [{ description: 'extra', amount: 100 }],
       discounts: [{ origin: 'settlement', description: '', amount: 100 }],
     });
-    const newContract = Contract.update(contract, { end: '31/03/2026 23:59' });
+    const newContract = Contract.update(contract, {
+      end: Date.parse('2026-03-31T23:59:59'),
+    });
 
     expect(newContract.terms).toEqual(108 + 3); // incorrect number of terms
     expect(newContract.rents.length).toEqual(108 + 3); // incorrect number of rents
@@ -152,94 +156,110 @@ describe('contract functionalities', () => {
 
   it('terminate contract', () => {
     const contract = Contract.create({
-      begin: '01/01/2017 00:00',
-      end: '31/12/2025 23:59',
+      begin: Date.parse('2017-01-01T00:00:00'),
+      end: Date.parse('2025-12-31T23:59:59'),
       frequency: 'months',
       properties: [{}, {}],
     });
-    const newContract = Contract.terminate(contract, '31/12/2017 23:59');
+    const newContract = Contract.terminate(
+      contract,
+      Date.parse('2017-12-31T23:59:59')
+    );
 
     expect(newContract.terms).toEqual(108); // incorrect number of terms
     expect(newContract.rents.length).toEqual(12); // incorrect number of rents
-    expect(newContract.begin).toBe('01/01/2017 00:00'); // begin contract date incorrect
-    expect(newContract.end).toBe('31/12/2025 23:59'); // end contract date incorrect
-    expect(newContract.termination).toBe('31/12/2017 23:59'); // termination contract date incorrect
+    expect(newContract.begin).toBe(Date.parse('2017-01-01T00:00:00')); // begin contract date incorrect
+    expect(newContract.end).toBe(Date.parse('2025-12-31T23:59:59')); // end contract date incorrect
+    expect(newContract.termination).toBe(Date.parse('2017-12-31T23:59:59')); // termination contract date incorrect
 
     // after end date of contract
     expect(() => {
-      Contract.terminate(contract, '31/12/2026 23:59');
+      Contract.terminate(contract, Date.parse('2026-12-31T23:59:59'));
     }).toThrow();
 
     // before begin date of contract
     expect(() => {
-      Contract.terminate(contract, '01/01/2016 00:00');
-    }).not.toThrow();
+      Contract.terminate(contract, Date.parse('2016-01-01T00:00:00'));
+    }).toThrow();
   });
 
   it('update termination date', () => {
     const contract = Contract.create({
-      begin: '01/01/2017 00:00',
-      end: '31/12/2025 23:59',
+      begin: Date.parse('2017-01-01T00:00:00'),
+      end: Date.parse('2025-12-31T23:59:59'),
       frequency: 'months',
       properties: [{}, {}],
     });
-    const tmpContract = Contract.terminate(contract, '31/12/2017 23:59');
-    const longerContract = Contract.terminate(tmpContract, '31/12/2018 23:59');
+    const tmpContract = Contract.terminate(
+      contract,
+      Date.parse('2017-12-31T23:59:59')
+    );
+    const longerContract = Contract.terminate(
+      tmpContract,
+      Date.parse('2018-12-31T23:59:59')
+    );
 
     expect(longerContract.terms).toEqual(108); // incorrect number of terms
     expect(longerContract.rents.length).toEqual(24); // incorrect number of rents
-    expect(longerContract.begin).toBe('01/01/2017 00:00'); // begin contract date incorrect
-    expect(longerContract.end).toBe('31/12/2025 23:59'); // end contract date incorrect
-    expect(longerContract.termination).toBe('31/12/2018 23:59'); // termination contract date incorrect
+    expect(longerContract.begin).toBe(Date.parse('2017-01-01T00:00:00')); // begin contract date incorrect
+    expect(longerContract.end).toBe(Date.parse('2025-12-31T23:59:59')); // end contract date incorrect
+    expect(longerContract.termination).toBe(Date.parse('2018-12-31T23:59:59')); // termination contract date incorrect
 
     const shorterContract = Contract.terminate(
       longerContract,
-      '30/06/2017 23:59'
+      Date.parse('2017-06-30T23:59:59')
     );
     expect(shorterContract.terms).toEqual(108); // incorrect number of terms
     expect(shorterContract.rents.length).toEqual(6); // incorrect number of rents
-    expect(shorterContract.begin).toBe('01/01/2017 00:00'); // begin contract date incorrect
-    expect(shorterContract.end).toBe('31/12/2025 23:59'); // end contract date incorrect
-    expect(shorterContract.termination).toBe('30/06/2017 23:59'); // termination contract date incorrect
+    expect(shorterContract.begin).toBe(Date.parse('2017-01-01T00:00:00')); // begin contract date incorrect
+    expect(shorterContract.end).toBe(Date.parse('2025-12-31T23:59:59')); // end contract date incorrect
+    expect(shorterContract.termination).toBe(Date.parse('2017-06-30T23:59:59')); // termination contract date incorrect
   });
 
   it('terminate contract and change contract duration', () => {
     const contract = Contract.create({
-      begin: '01/01/2017 00:00',
-      end: '31/12/2025 23:59',
+      begin: Date.parse('2017-01-01T00:00:00'),
+      end: Date.parse('2025-12-31T23:59:59'),
       frequency: 'months',
       properties: [{}, {}],
     });
-    const terminateContract = Contract.terminate(contract, '31/12/2017 23:59');
+    const terminateContract = Contract.terminate(
+      contract,
+      Date.parse('2017-12-31T23:59:59')
+    );
     const newContract = Contract.update(terminateContract, {
-      end: '31/03/2026 23:59',
+      end: Date.parse('2026-03-31T23:59:59'),
     });
 
     expect(newContract.terms).toEqual(108 + 3); // incorrect number of terms
     expect(newContract.rents.length).toEqual(12); // incorrect number of rents
-    expect(newContract.begin).toBe('01/01/2017 00:00'); // begin contract date incorrect
-    expect(newContract.end).toBe('31/03/2026 23:59'); // end contract date incorrect
-    expect(newContract.termination).toBe('31/12/2017 23:59'); // termination contract date incorrect
+    expect(newContract.begin).toBe(Date.parse('2017-01-01T00:00:00')); // begin contract date incorrect
+    expect(newContract.end).toBe(Date.parse('2026-03-31T23:59:59')); // end contract date incorrect
+    expect(newContract.termination).toBe(Date.parse('2017-12-31T23:59:59')); // termination contract date incorrect
 
     // termination date after end contract
     expect(() => {
-      Contract.update(terminateContract, { end: '30/12/2017 23:59' });
+      Contract.update(terminateContract, {
+        end: Date.parse('2017-12-30T23:59:59'),
+      });
     }).toThrow();
 
     // termination date before begin contract
     expect(() => {
-      Contract.update(terminateContract, { begin: '01/01/2018 23:59' });
+      Contract.update(terminateContract, {
+        begin: Date.parse('2018-01-01T23:59:59'),
+      });
     }).toThrow();
   });
 
   it('pay a term', () => {
     const contract = Contract.create({
-      begin: '01/01/2017 00:00',
-      end: '31/12/2025 23:59',
+      begin: Date.parse('2017-01-01T00:00:00'),
+      end: Date.parse('2025-12-31T23:59:59'),
       frequency: 'months',
       properties: [{}, {}],
     });
-    Contract.payTerm(contract, '01/12/2025 00:00', {
+    Contract.payTerm(contract, '202512010000', {
       payments: [{ amount: 200 }],
       discounts: ['discount'],
     });
@@ -254,14 +274,14 @@ describe('contract functionalities', () => {
     expect(contract.rents.length).toEqual(108); // incorrect number of rents
 
     expect(() => {
-      Contract.payTerm(contract, '01/12/2026 00:00', {
+      Contract.payTerm(contract, '202612010000', {
         payments: [{ amount: 200 }],
         discounts: ['discount'],
       });
     }).toThrow();
 
     expect(() => {
-      Contract.payTerm(contract, '01/12/2016 00:00', {
+      Contract.payTerm(contract, '201612010000', {
         payments: [{ amount: 200 }],
         discounts: ['discount'],
       });
@@ -270,12 +290,12 @@ describe('contract functionalities', () => {
 
   it('pay first term', () => {
     const contract = Contract.create({
-      begin: '01/01/2017 00:00',
-      end: '31/12/2025 23:59',
+      begin: Date.parse('2017-01-01T00:00:00'),
+      end: Date.parse('2025-12-31T23:59:59'),
       frequency: 'months',
       properties: [{}, {}],
     });
-    Contract.payTerm(contract, '01/01/2017 00:00', {
+    Contract.payTerm(contract, '201701010000', {
       payments: [{ amount: 200 }],
       discounts: ['discount'],
     });
@@ -290,12 +310,12 @@ describe('contract functionalities', () => {
 
   it('pay last term', () => {
     const contract = Contract.create({
-      begin: '01/01/2017 00:00',
-      end: '31/12/2025 23:59',
+      begin: Date.parse('2017-01-01T00:00:00'),
+      end: Date.parse('2025-12-31T23:59:59'),
       frequency: 'months',
       properties: [{}, {}],
     });
-    Contract.payTerm(contract, '01/12/2025 00:00', {
+    Contract.payTerm(contract, '202512010000', {
       payments: [{ amount: 200 }],
       discounts: ['discount'],
     });
@@ -310,14 +330,14 @@ describe('contract functionalities', () => {
 
   it('pay a term in reverse chronological order', () => {
     const contract = Contract.create({
-      begin: '01/01/2020 00:00',
-      end: '31/12/2020 23:59',
+      begin: Date.parse('2020-01-01T00:00:00'),
+      end: Date.parse('2020-12-31T23:59:59'),
       frequency: 'months',
       vatRate: 0.2,
       properties: [
         {
-          entryDate: '01/01/2020',
-          exitDate: '31/12/2020',
+          entryDate: Date.parse('2020-01-01T00:00:00'),
+          exitDate: Date.parse('2020-12-31T23:59:59'),
           property: {
             name: 'office1',
             price: 100,
@@ -333,19 +353,19 @@ describe('contract functionalities', () => {
       contract.rents.find((rent) => rent.term === 2020020100).total.balance
     ).toEqual(termAmount);
 
-    Contract.payTerm(contract, '01/05/2020 00:00', {
+    Contract.payTerm(contract, '202005010000', {
       payments: [{ amount: termAmount }],
     });
-    Contract.payTerm(contract, '01/04/2020 00:00', {
+    Contract.payTerm(contract, '202004010000', {
       payments: [{ amount: termAmount }],
     });
-    Contract.payTerm(contract, '01/03/2020 00:00', {
+    Contract.payTerm(contract, '202003010000', {
       payments: [{ amount: termAmount }],
     });
-    Contract.payTerm(contract, '01/02/2020 00:00', {
+    Contract.payTerm(contract, '202002010000', {
       payments: [{ amount: termAmount }],
     });
-    Contract.payTerm(contract, '01/01/2020 00:00', {
+    Contract.payTerm(contract, '202001010000', {
       payments: [{ amount: termAmount }],
     });
 
@@ -356,19 +376,19 @@ describe('contract functionalities', () => {
 
   it('pay a term and update contract duration', () => {
     const contract = Contract.create({
-      begin: '01/01/2017 00:00',
-      end: '31/12/2025 23:59',
+      begin: Date.parse('2017-01-01T00:00:00'),
+      end: Date.parse('2025-12-31T23:59:59'),
       frequency: 'months',
       properties: [{}, {}],
     });
-    Contract.payTerm(contract, '01/12/2025 00:00', {
+    Contract.payTerm(contract, '202512010000', {
       payments: [{ amount: 200 }],
       discounts: ['discount'],
     });
 
     const newContract = Contract.update(contract, {
-      begin: '01/01/2019 00:00',
-      end: '31/12/2025 23:59',
+      begin: Date.parse('2019-01-01T00:00:00'),
+      end: Date.parse('2025-12-31T23:59:59'),
     });
     expect(
       newContract.rents.find((rent) => rent.term === 2025120100).payments[0]
@@ -378,16 +398,16 @@ describe('contract functionalities', () => {
     // payment out of contract time frame
     expect(() => {
       Contract.update(contract, {
-        begin: '01/01/2019 00:00',
-        end: '31/12/2024 23:59',
+        begin: Date.parse('2019-01-01T00:00:00'),
+        end: Date.parse('2024-12-31T23:59:59'),
       });
     }).toThrow();
   });
 
   it('pay terms and update contract properties', () => {
     const p1 = {
-      entryDate: '01/01/2020',
-      exitDate: '31/12/2020',
+      entryDate: Date.parse('2020-01-01T00:00:00'),
+      exitDate: Date.parse('2020-12-31T23:59:59'),
       property: {
         name: 'office1',
         price: 300,
@@ -405,28 +425,28 @@ describe('contract functionalities', () => {
     termP1 *= 1.2; // VAT
 
     const contract = Contract.create({
-      begin: '01/01/2020 00:00',
-      end: '31/12/2020 23:59',
+      begin: Date.parse('2020-01-01T00:00:00'),
+      end: Date.parse('2020-12-31T23:59:59'),
       frequency: 'months',
       vatRate: 0.2,
       properties: [p1],
     });
-    Contract.payTerm(contract, '01/01/2020 00:00', {
+    Contract.payTerm(contract, '202001010000', {
       payments: [{ amount: 372 }],
     });
-    Contract.payTerm(contract, '01/02/2020 00:00', {
+    Contract.payTerm(contract, '202002010000', {
       payments: [{ amount: 372 }],
     });
-    Contract.payTerm(contract, '01/03/2020 00:00', {
+    Contract.payTerm(contract, '202003010000', {
       payments: [{ amount: 372 }],
     });
-    Contract.payTerm(contract, '01/04/2020 00:00', {
+    Contract.payTerm(contract, '202004010000', {
       payments: [{ amount: 372 }],
     });
-    Contract.payTerm(contract, '01/05/2020 00:00', {
+    Contract.payTerm(contract, '202005010000', {
       payments: [{ amount: 372 }],
     });
-    Contract.payTerm(contract, '01/06/2020 00:00', {
+    Contract.payTerm(contract, '202006010000', {
       payments: [{ amount: 372 }],
     });
 
@@ -445,8 +465,8 @@ describe('contract functionalities', () => {
 
     // update contract with a new properties
     const p2 = {
-      entryDate: '01/02/2020',
-      exitDate: '31/12/2020',
+      entryDate: Date.parse('2020-02-01T00:00:00'),
+      exitDate: Date.parse('2020-12-31T23:59:59'),
       property: {
         name: 'office',
         price: 320,
@@ -487,12 +507,12 @@ describe('contract functionalities', () => {
 
   it('pay a term and renew', () => {
     const contract = Contract.create({
-      begin: '01/01/2017 00:00',
-      end: '31/12/2025 23:59',
+      begin: Date.parse('2017-01-01T00:00:00'),
+      end: Date.parse('2025-12-31T23:59:59'),
       frequency: 'months',
       properties: [{}, {}],
     });
-    Contract.payTerm(contract, '01/12/2025 00:00', {
+    Contract.payTerm(contract, '202512010000', {
       payments: [{ amount: 200 }],
       discounts: ['discount'],
     });
@@ -511,8 +531,8 @@ describe('contract functionalities', () => {
 
   it('compute terms', () => {
     const property = {
-      entryDate: '01/01/2020',
-      exitDate: '31/08/2020',
+      entryDate: Date.parse('2020-01-01T00:00:00'),
+      exitDate: Date.parse('2020-08-31T23:59:59'),
       property: {
         name: 'mon bureau',
         price: 300,
@@ -530,8 +550,8 @@ describe('contract functionalities', () => {
     rentAmountProperty1 *= 1.2; // VAT
 
     const contract = Contract.create({
-      begin: '01/01/2020 00:00',
-      end: '31/12/2020 23:59',
+      begin: Date.parse('2020-01-01T00:00:00'),
+      end: Date.parse('2020-12-31T23:59:59'),
       frequency: 'months',
       vatRate: 0.2,
       properties: [property],
@@ -554,8 +574,8 @@ describe('contract functionalities', () => {
 
   it('compute terms of two properties', () => {
     const p1 = {
-      entryDate: '01/01/2020',
-      exitDate: '31/12/2020',
+      entryDate: Date.parse('2020-01-01T00:00:00'),
+      exitDate: Date.parse('2020-12-31T23:59:59'),
       property: {
         name: 'office1',
         price: 300,
@@ -573,8 +593,8 @@ describe('contract functionalities', () => {
     termP1 *= 1.2; // VAT
 
     const p2 = {
-      entryDate: '01/07/2020',
-      exitDate: '31/12/2020',
+      entryDate: Date.parse('2020-07-01T00:00:00'),
+      exitDate: Date.parse('2020-12-31T23:59:59'),
       property: {
         name: 'office',
         price: 320,
@@ -592,8 +612,8 @@ describe('contract functionalities', () => {
     termP2 *= 1.2; // VAT
 
     const contract = Contract.create({
-      begin: '01/01/2020 00:00',
-      end: '31/12/2020 23:59',
+      begin: Date.parse('2020-01-01T00:00:00'),
+      end: Date.parse('2020-12-31T23:59:59'),
       frequency: 'months',
       vatRate: 0.2,
       properties: [p1, p2],

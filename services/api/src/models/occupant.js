@@ -22,10 +22,10 @@ class OccupantModel extends Model {
       contacts: Array,
       contract: String,
       leaseId: String,
-      beginDate: String,
-      endDate: String,
+      beginDate: Date,
+      endDate: Date,
       frequency: String,
-      terminationDate: String,
+      terminationDate: Date,
       guarantyPayback: Number,
       properties: Array, // [{ propertyId, property: { ... }, entryDate, exitDate, rent, expenses: [{title, amount}] }]
       guaranty: Number,

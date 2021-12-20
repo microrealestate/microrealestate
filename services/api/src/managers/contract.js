@@ -20,11 +20,11 @@ const create = (contract) => {
     throw Error('properties not defined or empty');
   }
 
-  const momentBegin = moment(contract.begin, 'DD/MM/YYYY HH:mm');
-  const momentEnd = moment(contract.end, 'DD/MM/YYYY HH:mm');
+  const momentBegin = moment(contract.begin);
+  const momentEnd = moment(contract.end);
   let momentTermination;
   if (contract.termination) {
-    momentTermination = moment(contract.termination, 'DD/MM/YYYY HH:mm');
+    momentTermination = moment(contract.termination);
     if (!momentTermination.isBetween(momentBegin, momentEnd, 'minutes', '[]')) {
       throw Error('termination date is out of the contract time frame');
     }
@@ -67,14 +67,11 @@ const update = (inputContract, modification) => {
     ...modification,
   };
 
-  const momentBegin = moment(modifiedContract.begin, 'DD/MM/YYYY HH:mm');
-  const momentEnd = moment(modifiedContract.end, 'DD/MM/YYYY HH:mm');
+  const momentBegin = moment(modifiedContract.begin);
+  const momentEnd = moment(modifiedContract.end);
   let momentTermination;
   if (modifiedContract.termination) {
-    momentTermination = moment(
-      modifiedContract.termination,
-      'DD/MM/YYYY HH:mm'
-    );
+    momentTermination = moment(modifiedContract.termination);
   }
 
   // Check possible lost payments
@@ -90,23 +87,17 @@ const update = (inputContract, modification) => {
     inputContract.rents
       .filter((rent) => _isPayment(rent))
       .forEach((paidRent) => {
-        payTerm(
-          updatedContract,
-          moment(String(paidRent.term), 'YYYYMMDDHH').format(
-            'DD/MM/YYYY HH:mm'
+        payTerm(updatedContract, paidRent.term, {
+          payments: paidRent.payments,
+          vats: paidRent.vats.filter((vat) => vat.origin === 'settlement'),
+          discounts: paidRent.discounts.filter(
+            (discount) => discount.origin === 'settlement'
           ),
-          {
-            payments: paidRent.payments,
-            vats: paidRent.vats.filter((vat) => vat.origin === 'settlement'),
-            discounts: paidRent.discounts.filter(
-              (discount) => discount.origin === 'settlement'
-            ),
-            debts: paidRent.debts.filter(
-              (debt) => debt.amount && debt.amount > 0
-            ),
-            description: paidRent.description,
-          }
-        );
+          debts: paidRent.debts.filter(
+            (debt) => debt.amount && debt.amount > 0
+          ),
+          description: paidRent.description,
+        });
       });
   }
 
@@ -114,14 +105,14 @@ const update = (inputContract, modification) => {
 };
 
 const renew = (contract) => {
-  const momentEnd = moment(contract.end, 'DD/MM/YYYY HH:mm');
+  const momentEnd = moment(contract.end);
   const momentNewEnd = moment(momentEnd).add(
     contract.terms,
     contract.frequency
   );
 
   return {
-    ...update(contract, { end: momentNewEnd.format('DD/MM/YYYY HH:mm') }),
+    ...update(contract, { end: momentNewEnd.toDate() }),
     terms: contract.terms,
   };
 };
@@ -134,12 +125,9 @@ const payTerm = (contract, term, settlements) => {
   if (!contract.rents || !contract.rents.length) {
     throw Error('cannot pay term, the rents were not generated');
   }
-  const current = moment(term, 'DD/MM/YYYY HH:mm');
-  const momentBegin = moment(contract.begin, 'DD/MM/YYYY HH:mm');
-  const momentEnd = moment(
-    contract.termination || contract.end,
-    'DD/MM/YYYY HH:mm'
-  );
+  const current = moment(term, 'YYYYMMDDHH');
+  const momentBegin = moment(contract.begin);
+  const momentEnd = moment(contract.termination || contract.end);
 
   if (!current.isBetween(momentBegin, momentEnd, contract.frequency, '[]')) {
     throw Error('payment term is out of the contract time frame');

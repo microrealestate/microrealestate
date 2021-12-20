@@ -7,7 +7,7 @@
   "scripts": {
     "test": "jest",
     "start": "node src/index.js",
-    "dev": "nodemon -w ../common -w src --inspect=0.0.0.0:9230 ./src/index.js",
+    "dev": "nodemon -w ../common -w scripts -w src --inspect=0.0.0.0:9230 ./src/index.js",
     "lint": "eslint .",
     "format": "prettier --write '**/*.{js,jsx,ts,tsx,json,css}'"
   },

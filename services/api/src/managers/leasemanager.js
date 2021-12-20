@@ -1,3 +1,4 @@
+const logger = require('winston');
 const leaseModel = require('../models/lease');
 const templateModel = require('../models/template');
 const occupantModel = require('../models/occupant');
@@ -78,7 +79,7 @@ async function update(req, res) {
     const dbLease = await new Promise((resolve /*, reject*/) => {
       leaseModel.findOne(realm, lease._id, async (errors, dbLease) => {
         if (errors && errors.length > 0) {
-          console.error(errors);
+          logger.error(errors);
           return resolve();
         }
         resolve(dbLease);
@@ -126,7 +127,7 @@ async function remove(req, res) {
       });
     }
   } catch (error) {
-    console.error(error);
+    logger.error(error);
     res.status(500).json({
       errors: ['a problem occured when deleting leases'],
     });
@@ -170,7 +171,7 @@ async function remove(req, res) {
         );
       });
     });
-    console.log(
+    logger.debug(
       templates.filter(({ linkedResourceIds }) => linkedResourceIds.length <= 1)
     );
 
@@ -232,7 +233,7 @@ async function remove(req, res) {
     ]);
     res.sendStatus(200);
   } catch (error) {
-    console.error(error);
+    logger.error(error);
     res.status(500).json(error);
   }
 }

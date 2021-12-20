@@ -29,10 +29,8 @@ module.exports = function (
 
   contract.properties
     .filter((property) => {
-      const entryMoment = moment(property.entryDate, 'DD/MM/YYYY').startOf(
-        'day'
-      );
-      const exitMoment = moment(property.exitDate, 'DD/MM/YYYY').endOf('day');
+      const entryMoment = moment(property.entryDate).startOf('day');
+      const exitMoment = moment(property.exitDate).endOf('day');
 
       return currentMoment.isBetween(
         entryMoment,
