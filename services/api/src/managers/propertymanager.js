@@ -42,12 +42,10 @@ function _toPropertiesData(realm, inputProperties, callback) {
                         currentProperty.propertyId === property._id.toString()
                     );
                     const beginDate = moment(
-                      occupant_property.entryDate,
-                      'DD/MM/YYYY'
+                      occupant_property.entryDate
                     ).startOf('day');
                     const lastBeginDate = moment(
-                      acc_property.entryDate,
-                      'DD/MM/YYYY'
+                      acc_property.entryDate
                     ).startOf('day');
                     if (beginDate.isAfter(lastBeginDate)) {
                       acc.occupant = occupant;
@@ -65,8 +63,8 @@ function _toPropertiesData(realm, inputProperties, callback) {
                   .includes(property._id)
               )
               .sort((occ1, occ2) => {
-                const m1 = moment(occ1.beginDate, 'DD/MM/YYYY');
-                const m2 = moment(occ2.beginDate, 'DD/MM/YYYY');
+                const m1 = moment(occ1.beginDate);
+                const m2 = moment(occ2.beginDate);
                 return m1.isBefore(m2) ? 1 : -1;
               })
           );

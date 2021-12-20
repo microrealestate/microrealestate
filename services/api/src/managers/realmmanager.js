@@ -1,3 +1,4 @@
+const logger = require('winston');
 const realmModel = require('../models/realm');
 const accountModel = require('../models/account');
 const crypto = require('@mre/common/utils/crypto');
@@ -167,7 +168,7 @@ module.exports = {
         });
       });
     } catch (error) {
-      console.error(error);
+      logger.error(error);
     }
 
     updatedRealm.members.forEach((member) => {

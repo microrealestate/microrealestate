@@ -89,7 +89,7 @@ const _getEmailStatus = async (
       return acc;
     }, {});
   } catch (error) {
-    console.error(error);
+    logger.error(error);
     if (config.demoMode) {
       logger.info('email status fallback workflow activated in demo mode');
       return {};
@@ -166,25 +166,25 @@ const _getRentsDataByTerm = async (
 const update = async (req, res) => {
   const realm = req.realm;
   const paymentData = rentModel.paymentSchema.filter(req.body);
-  const term = `01/${paymentData.month}/${paymentData.year} 00:00`;
+  const term = `${paymentData.year}${paymentData.month}0100`;
 
   try {
     res.json(await _updateByTerm(realm, term, paymentData));
   } catch (errors) {
-    console.error(errors);
+    logger.error(errors);
     res.status(500).json({ errors });
   }
 };
 
 const updateByTerm = async (req, res) => {
   const realm = req.realm;
-  const term = moment(req.params.term, 'YYYYMMDDHH').format('DD/MM/YYYY HH:00');
+  const term = req.params.term;
   const paymentData = rentModel.paymentSchema.filter(req.body);
 
   try {
     res.json(await _updateByTerm(realm, term, paymentData));
   } catch (errors) {
-    console.error(errors);
+    logger.error(errors);
     res.status(500).json({ errors });
   }
 };
@@ -266,9 +266,7 @@ const _updateByTerm = async (realm, term, paymentData) => {
   dbOccupant.rents = Contract.payTerm(contract, term, settlements).rents;
 
   return await new Promise((resolve, reject) => {
-    const termAsNumber = Number(
-      moment(term, 'DD/MM/YYYY HH:00').format('YYYYMMDDHH')
-    );
+    const termAsNumber = Number(term);
     occupantModel.update(realm, dbOccupant, (errors) => {
       if (errors) {
         return reject({ errors });

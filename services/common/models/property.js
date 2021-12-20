@@ -13,6 +13,7 @@ const PropertySchema = mongoose.Schema({
   phone: String,
   digicode: String,
   address: {
+    _id: false,
     street1: String,
     street2: String,
     zipCode: String,
@@ -24,7 +25,7 @@ const PropertySchema = mongoose.Schema({
   price: Number,
 
   // TODO moved in Occupant.properties model
-  expense: Number,
+  // expense: Number,
 
   // TODO to remove, replaced by address
   building: String,

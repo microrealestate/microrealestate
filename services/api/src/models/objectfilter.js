@@ -1,4 +1,5 @@
 const sugar = require('sugar');
+const moment = require('moment');
 const logger = require('winston');
 sugar.extend();
 
@@ -13,7 +14,16 @@ module.exports = class ObjectFilter {
       const value = data[key];
 
       if (typeof value != 'undefined') {
-        if (type === Boolean) {
+        if (type === Date) {
+          if (typeof value == 'string') {
+            const m = moment(value, 'DD/MM/YYYY');
+            if (m.isValid()) {
+              filteredData[key] = m.toDate();
+            }
+          } else if (value instanceof Date) {
+            filteredData[key] = value;
+          }
+        } else if (type === Boolean) {
           if (
             typeof value == 'string' &&
             (value === 'true' || value === 'false')

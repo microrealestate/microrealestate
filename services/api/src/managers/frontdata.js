@@ -364,6 +364,8 @@ function toOccupantData(inputOccupant) {
 
   // set default values for occupant
   Object.assign(occupant, {
+    beginDate: moment(occupant.beginDate).format('DD/MM/YYYY'),
+    endDate: moment(occupant.endDate).format('DD/MM/YYYY'),
     frequency: occupant.frequency || 'months',
     street1: occupant.street1 || '',
     street2: occupant.street2 || '',
@@ -380,6 +382,12 @@ function toOccupantData(inputOccupant) {
     expenses: 0,
     total: 0,
   });
+
+  if (occupant.terminationDate) {
+    occupant.terminationDate = moment(occupant.terminationDate).format(
+      'DD/MM/YYYY'
+    );
+  }
 
   occupant.contactEmails =
     occupant.contacts && occupant.contacts.length
@@ -418,17 +426,22 @@ function toOccupantData(inputOccupant) {
       expense: 0,
     };
     occupant.properties.forEach((item) => {
-      var property = item.property;
-      if (property.type === 'parking') {
-        occupant.parking.price += property.price;
-        if (property.expense) {
-          occupant.parking.expense += property.expense;
-        }
-      } else {
-        occupant.office.surface += property.surface;
-        occupant.office.price += property.price;
-        if (property.expense) {
-          occupant.office.expense += property.expense;
+      if (item.propertyId?._id) {
+        item.property = item.property || item.propertyId;
+        item.propertyId = item.propertyId._id;
+      }
+      if (item.property) {
+        if (item.property.type === 'parking') {
+          occupant.parking.price += item.property.price;
+          if (item.property.expense) {
+            occupant.parking.expense += item.property.expense;
+          }
+        } else {
+          occupant.office.surface += item.property.surface;
+          occupant.office.price += item.property.price;
+          if (item.property.expense) {
+            occupant.office.expense += item.property.expense;
+          }
         }
       }
       occupant.rental += item.rent || 0;
@@ -436,6 +449,12 @@ function toOccupantData(inputOccupant) {
         (item.expenses?.length &&
           item.expenses.reduce((acc, { amount }) => acc + amount, 0)) ||
         0;
+      if (item.entryDate) {
+        item.entryDate = moment(item.entryDate).format('DD/MM/YYYY');
+      }
+      if (item.exitDate) {
+        item.exitDate = moment(item.exitDate).format('DD/MM/YYYY');
+      }
     });
     occupant.preTaxTotal =
       occupant.rental + occupant.expenses - occupant.discount;
@@ -476,11 +495,8 @@ function toAccountingData(year, inputOccupants) {
 
   const occupants = JSON.parse(JSON.stringify(inputOccupants)).filter(
     (occupant) => {
-      const beginMoment = moment(occupant.beginDate, 'DD/MM/YYYY');
-      const endMoment = moment(
-        occupant.terminationDate || occupant.endDate,
-        'DD/MM/YYYY'
-      );
+      const beginMoment = moment(occupant.beginDate);
+      const endMoment = moment(occupant.terminationDate || occupant.endDate);
       return (
         beginMoment.isBetween(beginOfYear, endOfYear, 'day', '[]') ||
         endMoment.isBetween(beginOfYear, endOfYear, 'day', '[]') ||
@@ -501,8 +517,10 @@ function toAccountingData(year, inputOccupants) {
           properties: occupant.properties.map((p) => {
             return { name: p.property.name, type: p.property.type };
           }),
-          beginDate: occupant.beginDate,
-          endDate: occupant.terminationDate || occupant.endDate,
+          beginDate: moment(occupant.beginDate).format('DD/MM/YYYY'),
+          endDate: moment(occupant.terminationDate || occupant.endDate).format(
+            'DD/MM/YYYY'
+          ),
           deposit: occupant.guaranty,
           rents: termsOfYear.map((term) => {
             let currentRent = occupant.rents.find((rent) => rent.term === term);
@@ -519,7 +537,7 @@ function toAccountingData(year, inputOccupants) {
       entries: {
         occupants: occupants
           .filter((occupant) => {
-            const beginMoment = moment(occupant.beginDate, 'DD/MM/YYYY');
+            const beginMoment = moment(occupant.beginDate);
             return beginMoment.isBetween(beginOfYear, endOfYear, 'day', '[]');
           })
           .map((occupant) => {
@@ -529,7 +547,7 @@ function toAccountingData(year, inputOccupants) {
               properties: occupant.properties.map((p) => {
                 return { name: p.property.name, type: p.property.type };
               }),
-              beginDate: occupant.beginDate,
+              beginDate: moment(occupant.beginDate).format('DD/MM/YYYY'),
               deposit: occupant.guaranty,
             };
           }),
@@ -538,8 +556,7 @@ function toAccountingData(year, inputOccupants) {
         occupants: occupants
           .filter((occupant) => {
             const endMoment = moment(
-              occupant.terminationDate || occupant.endDate,
-              'DD/MM/YYYY'
+              occupant.terminationDate || occupant.endDate
             );
             return endMoment.isBetween(beginOfYear, endOfYear, 'day', '[]');
           })
@@ -552,6 +569,7 @@ function toAccountingData(year, inputOccupants) {
                 );
               })
               .reduce((acc, rent) => {
+                // TO FIX: acc not used ????
                 let balance = rent.total.grandTotal - rent.total.payment;
                 return balance !== 0 ? balance * -1 : balance;
               }, 0);
@@ -565,7 +583,9 @@ function toAccountingData(year, inputOccupants) {
               leaseBroken:
                 occupant.terminationDate &&
                 occupant.terminationDate !== occupant.endDate,
-              endDate: occupant.terminationDate || occupant.endDate,
+              endDate: moment(
+                occupant.terminationDate || occupant.endDate
+              ).format('DD/MM/YYYY'),
               deposit: occupant.guaranty,
               depositRefund: occupant.guarantyPayback,
               totalAmount: totalAmount,
@@ -617,9 +637,11 @@ function toProperty(inputProperty, inputOccupant, inputOccupants) {
   if (inputOccupant) {
     property = {
       ...property,
-      beginDate: inputOccupant.entryDate,
-      endDate: inputOccupant.exitDate,
-      lastBusyDay: inputOccupant.terminationDate || inputOccupant.endDate,
+      beginDate: moment(inputOccupant.entryDate).format('DD/MM/YYYY'),
+      endDate: moment(inputOccupant.exitDate).format('DD/MM/YYYY'),
+      lastBusyDay: moment(
+        inputOccupant.terminationDate || inputOccupant.endDate
+      ).format('DD/MM/YYYY'),
       occupantLabel: inputOccupant.name,
     };
     if (property.lastBusyDay) {
@@ -638,8 +660,10 @@ function toProperty(inputProperty, inputOccupant, inputOccupants) {
       return {
         id: occupant._id,
         name: occupant.name,
-        beginDate: occupant.beginDate,
-        endDate: occupant.terminationDate || occupant.endDate,
+        beginDate: moment(occupant.beginDate).format('DD/MM/YYYY'),
+        endDate: moment(occupant.terminationDate || occupant.endDate).format(
+          'DD/MM/YYYY'
+        ),
       };
     });
   }
