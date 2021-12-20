@@ -30,7 +30,7 @@ module.exports = {
 
     const momentToday = moment();
     const momentTerm = moment(params.term, 'YYYYMMDDHH');
-    const beginDate = moment(data.tenant.contract.beginDate, 'DD/MM/YYYY');
+    const beginDate = moment(data.tenant.contract.beginDate);
 
     let dueDate = moment(momentTerm);
     if (data.tenant.contract.lease.timeRange === 'years') {

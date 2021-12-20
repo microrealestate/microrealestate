@@ -19,7 +19,7 @@ module.exports = {
     const momentToday = moment();
 
     const { landlord, tenant, period } = await invoice.get(tenantId, params);
-    const beginDate = moment(tenant.contract.beginDate, 'DD/MM/YYYY');
+    const beginDate = moment(tenant.contract.beginDate);
 
     let dueDate = moment(momentTerm);
     if (tenant.contract.lease.timeRange === 'years') {
