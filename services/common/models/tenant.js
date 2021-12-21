@@ -16,6 +16,7 @@ const TenantSchema = mongoose.Schema({
   manager: String,
   legalForm: String,
   siret: String,
+  capital: Number,
 
   // address
   street1: String,
@@ -57,6 +58,7 @@ const TenantSchema = mongoose.Schema({
   vatRatio: Number,
   discount: Number,
   guaranty: Number,
+  guarantyPayback: Number,
 });
 
 module.exports = mongoose.model('Occupant', TenantSchema);
