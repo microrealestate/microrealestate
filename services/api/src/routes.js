@@ -64,6 +64,15 @@ propertiesRouter.delete('/:ids', propertyManager.remove);
 router.use('/properties', propertiesRouter);
 
 router.get('/accounting/:year', accountingManager.all);
+router.get(
+  '/csv/tenants/incoming/:year',
+  accountingManager.csv.incomingTenants
+);
+router.get(
+  '/csv/tenants/outgoing/:year',
+  accountingManager.csv.outgoingTenants
+);
+router.get('/csv/settlements/:year', accountingManager.csv.settlements);
 
 const ownerRouter = express.Router();
 ownerRouter.get('/', ownerManager.all);

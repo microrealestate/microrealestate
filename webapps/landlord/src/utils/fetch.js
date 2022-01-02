@@ -1,10 +1,10 @@
 import { isClient, isServer } from './index';
 
-import FileDownload from 'js-file-download';
-import { Mutex } from 'async-mutex';
 import axios from 'axios';
+import FileDownload from 'js-file-download';
 import getConfig from 'next/config';
 import { getStoreInstance } from '../store';
+import { Mutex } from 'async-mutex';
 
 const { publicRuntimeConfig, serverRuntimeConfig } = getConfig();
 let apiFetch;
@@ -197,7 +197,7 @@ export const buildFetchError = (error) => {
 };
 
 export const downloadDocument = async (endpoint, documentName) => {
-  const response = await apiFetcher().get(`/documents${endpoint}`, {
+  const response = await apiFetcher().get(endpoint, {
     responseType: 'blob',
   });
   FileDownload(response.data, documentName);

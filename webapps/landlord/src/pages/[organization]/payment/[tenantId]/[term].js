@@ -311,7 +311,7 @@ const RentPayment = observer(() => {
                           store.rent.selected.emailStatus.last.rentcall.sentDate
                         ).format('L hh:mm'),
                       })}
-                      url={`/rentcall/${store.rent.selected.occupant._id}/${store.rent.selected.term}`}
+                      url={`/documents/rentcall/${store.rent.selected.occupant._id}/${store.rent.selected.term}`}
                       documentName={`${store.rent.selected.occupant.name}-${t(
                         'first notice'
                       )}.pdf`}
@@ -330,7 +330,7 @@ const RentPayment = observer(() => {
                             .sentDate
                         ).format('L hh:mm'),
                       })}
-                      url={`/rentcall_reminder/${store.rent.selected.occupant._id}/${store.rent.selected.term}`}
+                      url={`/documents/rentcall_reminder/${store.rent.selected.occupant._id}/${store.rent.selected.term}`}
                       documentName={`${store.rent.selected.occupant.name}-${t(
                         'second notice'
                       )}.pdf`}
@@ -349,7 +349,7 @@ const RentPayment = observer(() => {
                             .rentcall_last_reminder.sentDate
                         ).format('L hh:mm'),
                       })}
-                      url={`/rentcall_last_reminder/${store.rent.selected.occupant._id}/${store.rent.selected.term}`}
+                      url={`/documents/rentcall_last_reminder/${store.rent.selected.occupant._id}/${store.rent.selected.term}`}
                       documentName={`${store.rent.selected.occupant.name}-${t(
                         'last notice'
                       )}.pdf`}
@@ -366,7 +366,7 @@ const RentPayment = observer(() => {
                           store.rent.selected.emailStatus.last.invoice.sentDate
                         ).format('L hh:mm'),
                       })}
-                      url={`/invoice/${store.rent.selected.occupant._id}/${store.rent.selected.term}`}
+                      url={`/documents/invoice/${store.rent.selected.occupant._id}/${store.rent.selected.term}`}
                       documentName={`${store.rent.selected.occupant.name}-${t(
                         'invoice'
                       )}.pdf`}

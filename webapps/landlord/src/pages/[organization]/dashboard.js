@@ -11,11 +11,9 @@ import {
 } from 'recharts';
 import {
   Box,
-  Button,
   Grid,
   List,
   ListItem,
-  makeStyles,
   Paper,
   Typography,
 } from '@material-ui/core';
@@ -41,6 +39,7 @@ import { observer } from 'mobx-react-lite';
 import Page from '../../components/Page';
 import PeopleIcon from '@material-ui/icons/People';
 import ReceiptIcon from '@material-ui/icons/Receipt';
+import ShortcutButton from '../../components/ShortcutButton';
 import StopIcon from '@material-ui/icons/Stop';
 import { StoreContext } from '../../store';
 import TenantAvatar from '../../components/tenants/TenantAvatar';
@@ -93,34 +92,6 @@ const TenantListItem = ({ tenant, balance, onClick }) => (
     </Box>
   </ListItem>
 );
-
-const ShortcutButton = ({ Icon, label, disabled, onClick }) => {
-  const useStyles = makeStyles((theme) => ({
-    root: {
-      paddingTop: 10,
-      paddingBottom: 10,
-      color: theme.palette.info.contrastText,
-      backgroundColor: theme.palette.info.main,
-      '&:hover': {
-        background: theme.palette.info.dark,
-      },
-    },
-  }));
-  const classes = useStyles();
-
-  return (
-    <Button
-      startIcon={<Icon style={{ fontSize: 30 }} />}
-      size="large"
-      className={classes.root}
-      fullWidth
-      disabled={!!disabled}
-      onClick={onClick}
-    >
-      {label}
-    </Button>
-  );
-};
 
 const Shortcuts = () => {
   const router = useRouter();

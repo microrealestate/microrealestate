@@ -1,8 +1,8 @@
 import { createContext, useEffect, useState } from 'react';
 import { isClient, isServer } from '../utils';
 
-import Store from './Store';
 import { enableStaticRendering } from 'mobx-react-lite';
+import Store from './Store';
 
 enableStaticRendering(isServer());
 

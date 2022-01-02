@@ -1,16 +1,17 @@
 import { makeObservable, observable } from 'mobx';
 import { setAccessToken, setOrganizationId } from '../utils/fetch';
 
+import Accounting from './Accounting';
 import Dashboard from './Dashboard';
 import Document from './Document';
 import Lease from './Lease';
+import moment from 'moment';
 import Organization from './Organization';
 import Property from './Property';
 import Rent from './Rent';
 import Template from './Template';
 import Tenant from './Tenant';
 import User from './User';
-import moment from 'moment';
 
 export default class Store {
   user = new User();
@@ -22,6 +23,7 @@ export default class Store {
   template = new Template();
   document = new Document();
   dashboard = new Dashboard();
+  accounting = new Accounting();
 
   constructor() {
     makeObservable(this, {
@@ -34,6 +36,7 @@ export default class Store {
       template: observable,
       document: observable,
       dashboard: observable,
+      accounting: observable,
     });
   }
 
@@ -68,6 +71,9 @@ export default class Store {
         items: [],
       },
       dashboard = {
+        data: {},
+      },
+      accounting = {
         data: {},
       },
     } = initialData;
@@ -116,5 +122,7 @@ export default class Store {
     this.document.selected = document.selected;
 
     this.dashboard.data = dashboard.data;
+
+    this.accounting.data = accounting.data;
   }
 }

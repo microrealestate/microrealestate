@@ -414,7 +414,7 @@ const RentTable = () => {
                             rent.emailStatus.last.rentcall.sentDate
                           ).format('LLLL'),
                         })}
-                        url={`/rentcall/${rent.occupant._id}/${rent.term}`}
+                        url={`/documents/rentcall/${rent.occupant._id}/${rent.term}`}
                         documentName={`${rent.occupant.name}-${t(
                           'first notice'
                         )}.pdf`}
@@ -431,7 +431,7 @@ const RentTable = () => {
                             rent.emailStatus.last.rentcall_reminder.sentDate
                           ).format('LLLL'),
                         })}
-                        url={`/rentcall_reminder/${rent.occupant._id}/${rent.term}`}
+                        url={`/documents/rentcall_reminder/${rent.occupant._id}/${rent.term}`}
                         documentName={`${rent.occupant.name}-${t(
                           'second notice'
                         )}.pdf`}
@@ -449,7 +449,7 @@ const RentTable = () => {
                               .sentDate
                           ).format('LLLL'),
                         })}
-                        url={`/rentcall_last_reminder/${rent.occupant._id}/${rent.term}`}
+                        url={`/documents/rentcall_last_reminder/${rent.occupant._id}/${rent.term}`}
                         documentName={`${rent.occupant.name}-${t(
                           'last notice'
                         )}.pdf`}
@@ -465,7 +465,7 @@ const RentTable = () => {
                             rent.emailStatus.last.invoice.sentDate
                           ).format('LLLL'),
                         })}
-                        url={`/invoice/${rent.occupant._id}/${rent.term}`}
+                        url={`/documents/invoice/${rent.occupant._id}/${rent.term}`}
                         documentName={`${rent.occupant.name}-${t(
                           'invoice'
                         )}.pdf`}

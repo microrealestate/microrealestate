@@ -1,0 +1,18 @@
+{
+  "cash": "Espèce",
+  "cheque": "Chèque",
+  "Contract begin date": "Date de début de contrat",
+  "Contract end date": "Date de fin de contract",
+  "Contract termination date": "Date de résiliation",
+  "Deposit": "Dépôt de garantie",
+  "Deposit: {{deposit}}": "Dépôt de garantie : {{deposit}}",
+  "Final balance": "Solde final",
+  "Last rent balance": "Solde des loyers",
+  "levy": "Prélèvement",
+  "Name": "Nom",
+  "Properties": "Biens",
+  "Reference": "Référence",
+  "Refunded deposit": "Remboursement du dépôt de garantie",
+  "Tenant": "Locataire",
+  "transfer": "Virement"
+}

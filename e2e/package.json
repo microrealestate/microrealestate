@@ -12,6 +12,6 @@
   "license": "MIT",
   "devDependencies": {
     "i18next": "21.5.3",
-    "cypress": "9.1.1"
+    "cypress": "9.2.0"
   }
 }

@@ -6,7 +6,7 @@ import ArrowRightIcon from '@material-ui/icons/ArrowRight';
 import { DatePicker } from '@material-ui/pickers';
 import moment from 'moment';
 
-const MonthPicker = ({ value, onChange }) => {
+const PeriodPicker = ({ value, period, format, onChange }) => {
   const [selectedPeriod, setSelectedPeriod] = useState(value);
 
   const _onPeriodChange = useCallback(
@@ -17,37 +17,37 @@ const MonthPicker = ({ value, onChange }) => {
     [onChange]
   );
 
-  const _onNextMonth = useCallback(() => {
-    const newPeriod = moment(selectedPeriod).add(1, 'months');
+  const _onNextPeriod = useCallback(() => {
+    const newPeriod = moment(selectedPeriod).add(1, period);
     _onPeriodChange(newPeriod);
-  }, [selectedPeriod, _onPeriodChange]);
+  }, [period, selectedPeriod, _onPeriodChange]);
 
-  const _onPreviousMonth = useCallback(() => {
-    const newPeriod = moment(selectedPeriod).subtract(1, 'months');
+  const _onPreviousPeriod = useCallback(() => {
+    const newPeriod = moment(selectedPeriod).subtract(1, period);
     _onPeriodChange(newPeriod);
-  }, [selectedPeriod, _onPeriodChange]);
+  }, [period, selectedPeriod, _onPeriodChange]);
 
   return (
     <Box display="flex" alignItems="center">
-      <IconButton onClick={_onPreviousMonth} aria-label="previous month">
+      <IconButton onClick={_onPreviousPeriod} aria-label="previous period">
         <ArrowLeftIcon />
       </IconButton>
       <DatePicker
         autoOk
-        views={['month']}
+        views={[period]}
         value={selectedPeriod}
         onChange={_onPeriodChange}
         size="small"
-        format="MMMM YYYY"
+        format={format}
         style={{
           width: 130,
         }}
       />
-      <IconButton onClick={_onNextMonth} aria-label="next month" size="small">
+      <IconButton onClick={_onNextPeriod} aria-label="next period" size="small">
         <ArrowRightIcon />
       </IconButton>
     </Box>
   );
 };
 
-export default memo(MonthPicker);
+export default memo(PeriodPicker);

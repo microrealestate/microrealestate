@@ -5,12 +5,12 @@ import { useCallback, useContext, useMemo } from 'react';
 import FullScreenDialogButton from '../../../../components/FullScreenDialogButton';
 import { isServer } from '../../../../utils';
 import moment from 'moment';
-import MonthPicker from '../../../../components/MonthPicker';
 import { nanoid } from 'nanoid';
 import { NumberFormat } from '../../../../utils/numberformat';
 import { observer } from 'mobx-react-lite';
 import Page from '../../../../components/Page';
 import { PageCard } from '../../../../components/Cards';
+import PeriodPicker from '../../../../components/PeriodPicker';
 import ReceiptIcon from '@material-ui/icons/Receipt';
 import RentCard from '../../../../components/rents/RentCard';
 import RentTable from '../../../../components/rents/RentTable';
@@ -35,7 +35,12 @@ const PeriodToolbar = ({ onChange }) => {
         </Typography>
       </Grid>
       <Grid item>
-        <MonthPicker value={rentPeriod} onChange={onChange} />
+        <PeriodPicker
+          format="MMM YYYY"
+          period="month"
+          value={rentPeriod}
+          onChange={onChange}
+        />
       </Grid>
     </Grid>
   );

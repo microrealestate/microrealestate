@@ -100,7 +100,12 @@ describe('User access', () => {
 
     cy.navToPage('rents');
     const now = new Date();
-    cy.checkUrl(`/rents/${now.getFullYear()}.${now.getMonth() + 1}`);
+    cy.checkUrl(
+      `/rents/${now.getFullYear()}.${String(now.getMonth() + 1).padStart(
+        2,
+        '0'
+      )}`
+    );
     cy.contains(i18n.getFixedT('fr-FR')('Rents'));
     cy.contains(i18n.getFixedT('fr-FR')('Send mass emails'));
 
@@ -113,6 +118,10 @@ describe('User access', () => {
     cy.checkUrl('/properties');
     cy.contains(i18n.getFixedT('fr-FR')('Properties'));
     cy.contains(i18n.getFixedT('fr-FR')('New property'));
+
+    cy.navToPage('accounting');
+    cy.checkUrl(`/accounting/${now.getFullYear()}`);
+    cy.contains(i18n.getFixedT('fr-FR')('Accounting'));
 
     cy.navToPage('settings');
     cy.checkUrl('/settings');

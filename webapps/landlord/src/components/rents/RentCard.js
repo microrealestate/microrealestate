@@ -188,7 +188,7 @@ const Steps = memo(function Steps({ rent }) {
           {firstNoticeSent && (
             <DownloadLink
               tooltipText={firstNoticeSentText}
-              url={`/rentcall/${rent.occupant._id}/${rent.term}`}
+              url={`/documents/rentcall/${rent.occupant._id}/${rent.term}`}
               documentName={`${rent.occupant.name}-${t('first notice')}.pdf`}
               color="textSecondary"
               variant="caption"
@@ -198,7 +198,7 @@ const Steps = memo(function Steps({ rent }) {
           {secondNoticeSent && (
             <DownloadLink
               tooltipText={secondNoticeSentText}
-              url={`/rentcall_reminder/${rent.occupant._id}/${rent.term}`}
+              url={`/documents/rentcall_reminder/${rent.occupant._id}/${rent.term}`}
               documentName={`${rent.occupant.name}-${t('second notice')}.pdf`}
               color="textSecondary"
               variant="caption"
@@ -208,7 +208,7 @@ const Steps = memo(function Steps({ rent }) {
           {lastNoticeSent && (
             <DownloadLink
               tooltipText={lastNoticeSentText}
-              url={`/rentcall_last_reminder/${rent.occupant._id}/${rent.term}`}
+              url={`/documents/rentcall_last_reminder/${rent.occupant._id}/${rent.term}`}
               documentName={`${rent.occupant.name}-${t('last notice')}.pdf`}
               color="textSecondary"
               variant="caption"
@@ -232,7 +232,7 @@ const Steps = memo(function Steps({ rent }) {
           {receiptSent && (
             <DownloadLink
               tooltipText={receiptSentText}
-              url={`/invoice/${rent.occupant._id}/${rent.term}`}
+              url={`/documents/invoice/${rent.occupant._id}/${rent.term}`}
               documentName={`${rent.occupant.name}-${t('invoice')}.pdf`}
               color="textSecondary"
               variant="caption"
