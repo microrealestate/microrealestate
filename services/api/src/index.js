@@ -1,9 +1,11 @@
 const logger = require('winston');
+const i18n = require('i18n');
+const path = require('path');
+const mongoosedb = require('@mre/common/models/db');
 
 const config = require('./config');
 const server = require('./server');
 const db = require('./models/db');
-const mongoosedb = require('@mre/common/models/db');
 const restoredb = require('../scripts/mongorestore');
 const migratedb = require('../scripts/migration');
 
@@ -12,6 +14,12 @@ require('@mre/common/utils/httpinterceptors')();
 process.on('SIGINT', () => {
   //TODO disconnect db (mongojs)
   process.exit(0);
+});
+
+i18n.configure({
+  locales: ['en', 'fr-FR', 'pt-BR'],
+  directory: path.join(__dirname, 'locales'),
+  updateFiles: false,
 });
 
 async function startService() {

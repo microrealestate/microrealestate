@@ -1,12 +1,13 @@
 import { ListItemIcon, Typography } from '@material-ui/core';
 import { memo, useCallback, useContext, useMemo, useState } from 'react';
 
-//import AccountBalanceWalletIcon from '@material-ui/icons/AccountBalanceWallet';
+import AccountBalanceWalletIcon from '@material-ui/icons/AccountBalanceWallet';
 import DashboardIcon from '@material-ui/icons/Dashboard';
 import Drawer from '@material-ui/core/Drawer';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
+import moment from 'moment';
 import { nanoid } from 'nanoid';
 import PeopleIcon from '@material-ui/icons/People';
 import ReceiptIcon from '@material-ui/icons/Receipt';
@@ -90,12 +91,12 @@ const Nav = () => {
         icon: <VpnKeyIcon />,
         dataCy: 'propertiesNav',
       },
-      // {
-      //   value: t('Accounting'),
-      //   pathname: '/accounting',
-      //   icon: <AccountBalanceWalletIcon />,
-      //   dataCy: 'accountingNav'
-      // },
+      {
+        value: t('Accounting'),
+        pathname: `/accounting/${moment().year()}`,
+        icon: <AccountBalanceWalletIcon />,
+        dataCy: 'accountingNav',
+      },
       {
         key: nanoid(),
         value: t('Settings'),
@@ -104,7 +105,7 @@ const Nav = () => {
         dataCy: 'settingsNav',
       },
     ],
-    []
+    [t]
   );
 
   const triggerOpen = useTimeout(() => {
