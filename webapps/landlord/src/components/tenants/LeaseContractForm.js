@@ -35,7 +35,7 @@ const validationSchema = Yup.object().shape({
     .of(
       Yup.object().shape({
         _id: Yup.string().required(),
-        rent: Yup.number().min(0),
+        rent: Yup.number().moreThan(0).required(),
         expense: Yup.object().shape({
           title: Yup.mixed().when('amount', {
             is: (val) => val > 0,
@@ -77,7 +77,7 @@ const validationSchema = Yup.object().shape({
   guarantyPayback: Yup.number().min(0),
 });
 
-const emptyExpense = { title: '', amount: 0 };
+const emptyExpense = { title: '', amount: '' };
 
 const emptyProperty = {
   _id: '',
@@ -184,7 +184,9 @@ const LeaseContractForm = observer((props) => {
           }
           return {
             propertyId: property._id,
-            rent: property.rent,
+            // hack to avoid passing a string in place of a number to the backend
+            // weird that formik doesn't handle this properly...
+            rent: Number(property.rent),
             expenses: property.expense.title ? [property.expense] : [],
             entryDate: property.entryDate?.format('DD/MM/YYYY'),
             exitDate: property.exitDate?.format('DD/MM/YYYY'),

@@ -75,11 +75,13 @@ const Billing = observer(({ readOnly, onSubmit }) => {
                     />
                   </Box>
                 )}
-              <FormTextField
-                label={t('Discount')}
-                name="discount"
-                disabled={readOnly}
-              />
+              {values.discount > 0 ? (
+                <FormTextField
+                  label={t('Discount')}
+                  name="discount"
+                  disabled={readOnly}
+                />
+              ) : null}
             </FormSection>
             {!readOnly && (
               <SubmitButton

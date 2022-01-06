@@ -159,20 +159,18 @@ const RentOverview = () => {
           noWrap
         />
       </CardRow>
-      <CardRow>
-        <Typography color="textSecondary" noWrap>
-          {t('Discount')}
-        </Typography>
-        <NumberFormat
-          color="textSecondary"
-          value={
-            store.tenant.selected.discount
-              ? store.tenant.selected.discount * -1
-              : store.tenant.selected.discount
-          }
-          noWrap
-        />
-      </CardRow>
+      {store.tenant.selected.discount > 0 ? (
+        <CardRow>
+          <Typography color="textSecondary" noWrap>
+            {t('Discount')}
+          </Typography>
+          <NumberFormat
+            color="textSecondary"
+            value={store.tenant.selected.discount * -1}
+            noWrap
+          />
+        </CardRow>
+      ) : null}
       {store.tenant.selected.isVat && (
         <>
           <Box pb={1}>
