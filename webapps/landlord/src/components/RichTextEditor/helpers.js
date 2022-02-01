@@ -64,15 +64,13 @@ export const handlePageBreaks = (editor) => {
 
   // Add the page breaks
   const pageCount = editorHeight / A4.height;
-  if (Math.floor(pageCount) > 1) {
-    for (let i = 1; i <= pageCount; i++) {
-      const pageBreakElement = document.createElement('div');
-      pageBreakElement.setAttribute('class', 'page-break');
-      pageBreakElement.style.top = `${
-        (i * A4.heightMM * DPI.y) / 25.4 - PAGE_BREAK_HEIGHT / 2
-      }px`;
-      WRAPPER_ELEMENT.append(pageBreakElement);
-    }
+  for (let i = 1; i <= pageCount; i++) {
+    const pageBreakElement = document.createElement('div');
+    pageBreakElement.setAttribute('class', 'page-break');
+    pageBreakElement.style.top = `${
+      (i * A4.heightMM * DPI.y) / 25.4 - PAGE_BREAK_HEIGHT / 2
+    }px`;
+    WRAPPER_ELEMENT.append(pageBreakElement);
   }
 };
 
