@@ -117,7 +117,8 @@ module.exports = {
     }
 
     if (
-      updatedRealm.name !== req.realm.name &&
+      updatedRealm.name.trim().toLowerCase() !==
+        req.realm.name.trim().toLowerCase() &&
       _isNameAlreadyTaken(updatedRealm, req.realms)
     ) {
       return res

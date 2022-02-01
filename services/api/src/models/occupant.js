@@ -10,6 +10,7 @@ class OccupantModel extends Model {
       company: String,
       legalForm: String,
       siret: String,
+      rcs: String,
       capital: Number,
       manager: String,
       name: String,

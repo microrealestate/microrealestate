@@ -32,6 +32,10 @@ const validationSchema = Yup.object().shape({
     is: 'true',
     then: Yup.string().required(),
   }),
+  dos: Yup.mixed().when('isCompany', {
+    is: 'true',
+    then: Yup.string(),
+  }),
   contacts: Yup.array().of(
     Yup.object().shape({
       contact: Yup.string().required(),
@@ -62,6 +66,7 @@ const TenantForm = observer(({ readOnly, onSubmit }) => {
     legalRepresentative: store.tenant.selected?.manager || '',
     legalStructure: store.tenant.selected?.legalForm || '',
     ein: store.tenant.selected?.siret || '',
+    dos: store.tenant.selected?.rcs || '',
     capital: store.tenant.selected?.capital || '',
     contacts: store.tenant.selected?.contacts?.length
       ? store.tenant.selected.contacts.map(
@@ -92,6 +97,7 @@ const TenantForm = observer(({ readOnly, onSubmit }) => {
         tenant.isCompany === 'true' ? tenant.legalRepresentative : tenant.name,
       legalForm: tenant.isCompany === 'true' ? tenant.legalStructure : '',
       siret: tenant.isCompany === 'true' ? tenant.ein : '',
+      rcs: tenant.isCompany === 'true' ? tenant.dos : '',
       capital: tenant.isCompany === 'true' ? tenant.capital : '',
       street1: tenant.address.street1,
       street2: tenant.address.street2 || '',
@@ -158,6 +164,11 @@ const TenantForm = observer(({ readOnly, onSubmit }) => {
                   <FormTextField
                     label={t('Employer Identification Number')}
                     name="ein"
+                    disabled={readOnly}
+                  />
+                  <FormTextField
+                    label={t('Administrative jurisdiction')}
+                    name="dos"
                     disabled={readOnly}
                   />
                   <FormTextField

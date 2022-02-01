@@ -16,6 +16,7 @@ const TenantSchema = mongoose.Schema({
   manager: String,
   legalForm: String,
   siret: String,
+  rcs: String,
   capital: Number,
 
   // address

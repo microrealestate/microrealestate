@@ -1,4 +1,24 @@
-.ql-editor {
+* {
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+}
+
+.editor-wrapper {
+  position: absolute;
+  top: 9rem;
+  width: 100%;
+  bottom: 0;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  padding-left: 1rem;
+  padding-right: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.ProseMirror {
+  position: relative;
   width: 209.9mm;
   min-height: 297mm;
   padding: 0 30mm;
@@ -8,50 +28,85 @@
   overflow: hidden;
 }
 
-.ql-container.ql-snow {
-  border: none;
+.ProseMirror blockquote {
+  padding-left: 1rem;
+  border-left: 2px solid rgba(13, 13, 13, 0.1);
 }
 
-.ql-toolbar.ql-snow {
-  padding: inherit;
-  border: none;
+.ProseMirror table {
+  border-collapse: collapse;
+  margin: 0;
+  overflow: hidden;
+  table-layout: fixed;
+  width: 100%;
 }
 
-.template-loop-block {
-  border-left: 4px solid #f0f0f0;
-  border-right: 4px solid #f0f0f0;
-  padding: 0 4px;
-}
-.template-loop-block[data-begin-loop] {
-  border-top: 4px solid #f0f0f0;
+.ProseMirror table th,
+.ProseMirror table td {
+  border: 1pt solid rgba(0, 0, 0, 0.8);
+  box-sizing: border-box;
+  min-width: 1em;
+  padding: 3px 5px;
+  position: relative;
+  vertical-align: top;
 }
 
-.template-loop-block[data-end-loop] {
-  border-bottom: 4px solid #f0f0f0;
+.ProseMirror table th {
+  background-color: #f1f3f5;
+  font-weight: bold;
+  text-align: left;
+}
+
+.ProseMirror table td.selectedCell:after {
+  background: rgba(200, 200, 255, 0.4);
+  content: '';
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  pointer-events: none;
+  position: absolute;
+  z-index: 2;
+}
+
+.ProseMirror table td.column-resize-handle {
+  background-color: #adf;
+  bottom: -2px;
+  position: absolute;
+  right: -2px;
+  pointer-events: none;
+  top: 0;
+  width: 4px;
+}
+
+.ProseMirror table p {
+  margin: 0;
+}
+
+.ProseMirror .template {
+  background-color: #e0e0e0;
+  font-size: 0.8125rem;
+  padding: 1px 6px;
+  border-radius: 16px;
+}
+
+.tableWrapper {
+  padding: 1rem 0;
+  overflow-x: auto;
+}
+
+.resize-cursor {
+  cursor: ew-resize;
+  cursor: col-resize;
+}
+
+.ProseMirror-focused:focus {
+  outline: none;
 }
 
 .page-break {
-  z-index: 1;
   position: absolute;
-  width: 209.9mm;
-  height: 2px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  border-top: 1px dotted gray;
-  border-bottom: 1px dotted gray;
-  color: gray;
-
-  font-size: 7px;
-
-  pointer-events: none;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  -moz-backface-visibility: hidden;
-}
-
-@page {
-  margin: 0 30mm;
+  width: 210mm;
+  height: 40px;
+  background-color: rgba(0, 0, 0, 0.12);
 }
