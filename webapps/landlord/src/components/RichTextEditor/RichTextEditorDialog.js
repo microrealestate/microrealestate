@@ -11,6 +11,7 @@ const RichTextEditor = dynamic(import('./RichTextEditor'), {
 const StyledDialog = withStyles(() => ({
   paperFullScreen: {
     backgroundColor: grayColor[10],
+    overflow: 'hidden',
   },
 }))(Dialog);
 

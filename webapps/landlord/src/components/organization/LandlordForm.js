@@ -34,6 +34,10 @@ const validationSchema = Yup.object().shape({
     is: 'true',
     then: Yup.string().required(),
   }),
+  dos: Yup.mixed().when('isCompany', {
+    is: 'true',
+    then: Yup.string(),
+  }),
   capital: Yup.mixed().when('isCompany', {
     is: 'true',
     then: Yup.number().moreThan(0).required(),
@@ -85,6 +89,7 @@ const LandlordForm = observer(({ onSubmit, onSubmitted }) => {
         store.organization.selected?.companyInfo?.legalStructure || '',
       company: store.organization.selected?.companyInfo?.name || '',
       ein: store.organization.selected?.companyInfo?.ein || '',
+      dos: store.organization.selected?.companyInfo?.dos || '',
       capital: store.organization.selected?.companyInfo?.capital || '',
     }),
     [store.organization.selected]
@@ -104,6 +109,7 @@ const LandlordForm = observer(({ onSubmit, onSubmitted }) => {
           ...(store.organization.selected?.companyInfo || {}),
           name: settings.company,
           ein: settings.ein,
+          dos: settings.dos,
           legalRepresentative: settings.legalRepresentative,
           legalStructure: settings.legalStructure,
           capital: settings.capital,
@@ -196,6 +202,11 @@ const LandlordForm = observer(({ onSubmit, onSubmitted }) => {
                   <FormTextField
                     label={t('Employer Identification Number')}
                     name="ein"
+                    onlyRoles={allowedRoles}
+                  />
+                  <FormTextField
+                    label={t('Administrative jurisdiction')}
+                    name="dos"
                     onlyRoles={allowedRoles}
                   />
                   <FormTextField

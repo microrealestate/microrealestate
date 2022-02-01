@@ -5,6 +5,7 @@ const Document = require('@mre/common/models/document');
 const Template = require('@mre/common/models/template');
 const Tenant = require('@mre/common/models/tenant');
 const Lease = require('@mre/common/models/lease');
+const Format = require('@mre/common/utils/format');
 const logger = require('winston');
 const pdf = require('../pdf');
 
@@ -34,6 +35,34 @@ async function _getTemplateValues(organization, tenantId, leaseId) {
     })
   )?.toObject();
 
+  // compute rent, expenses and surface from properties
+  const PropertyGlobals = tenant.properties.reduce(
+    (acc, { rent, expenses = [], property: { surface } }) => {
+      acc.rentAmount += rent;
+      acc.expensesAmount +=
+        expenses.reduce((sum, { amount }) => {
+          sum += amount;
+          return sum;
+        }, 0) || 0;
+      acc.surface += surface;
+      return acc;
+    },
+    { rentAmount: 0, expensesAmount: 0, surface: 0 }
+  );
+
+  const landlordCompanyInfo = organization.companyInfo
+    ? {
+        ...organization.companyInfo,
+        capital: organization.companyInfo.capital
+          ? Format.formatCurrency(
+              organization.locale,
+              organization.currency,
+              organization.companyInfo.capital
+            )
+          : '',
+      }
+    : null;
+
   moment.locale(organization.locale);
   const today = moment();
   const templateValues = {
@@ -46,7 +75,7 @@ async function _getTemplateValues(organization, tenantId, leaseId) {
       name: organization.name,
       contact: organization.contacts?.[0] || {},
       address: organization.addresses?.[0] || {},
-      companyInfo: organization.companyInfo,
+      companyInfo: landlordCompanyInfo,
     },
 
     tenant: {
@@ -55,7 +84,13 @@ async function _getTemplateValues(organization, tenantId, leaseId) {
       companyInfo: {
         legalRepresentative: tenant?.manager,
         legalStructure: tenant?.legalForm,
-        capital: tenant?.capital,
+        capital: tenant?.capital
+          ? Format.formatCurrency(
+              organization.locale,
+              organization.currency,
+              tenant.capital
+            )
+          : '',
         ein: tenant?.siret,
         dos: tenant?.rcs,
       },
@@ -77,29 +112,25 @@ async function _getTemplateValues(organization, tenantId, leaseId) {
         })) || [],
     },
 
-    properties: tenant?.properties.map(
-      ({
-        propertyId: {
-          type,
-          name,
-          description,
-          address,
-          surface,
-          phone,
-          digicode,
-          price,
-        },
-      }) => ({
-        type,
-        name,
-        description,
-        address,
-        surface,
-        phone,
-        digicode,
-        rent: price,
-      })
-    ),
+    properties: {
+      total: {
+        surface: Format.formatNumber(
+          organization.locale,
+          PropertyGlobals.surface
+        ),
+        rentAmount: Format.formatCurrency(
+          organization.locale,
+          organization.currency,
+          PropertyGlobals.rentAmount
+        ),
+        expensesAmount: Format.formatCurrency(
+          organization.locale,
+          organization.currency,
+          PropertyGlobals.expensesAmount
+        ),
+      },
+      list: tenant?.properties,
+    },
 
     lease: {
       name: lease?.name,
@@ -108,13 +139,31 @@ async function _getTemplateValues(organization, tenantId, leaseId) {
       timeRange: lease?.timeRange,
       beginDate: moment(tenant.beginDate).format('LL'),
       endDate: moment(tenant.endDate).format('LL'),
-      rentAmount: '????',
-      expenses: '?????',
-      deposit: tenant.guaranty || 0,
+      deposit: Format.formatCurrency(
+        organization.locale,
+        organization.currency,
+        tenant.guaranty || 0
+      ),
     },
   };
-
   return templateValues;
+}
+
+function _resolveTemplates(element, templateValues) {
+  if (element.content) {
+    element.content = element.content.map((childElement) =>
+      _resolveTemplates(childElement, templateValues)
+    );
+  }
+
+  if (element.type === 'template') {
+    element.type = 'text';
+    element.text = Handlebars.compile(element.attrs.id)(templateValues) || ' '; // empty text node are not allowed in tiptap editor
+    // TODO check if this doesn't open XSS issues
+    element.text = element.text.replace(/&#x27;/g, "'");
+    delete element.attrs;
+  }
+  return element;
 }
 
 /**
@@ -219,15 +268,10 @@ documentsApi.post('/', async (req, res) => {
 
       documentToCreate.name = dataSet.name || template.name;
       documentToCreate.type = dataSet.type || template.type;
-      documentToCreate.contents = {
-        ops: template.contents.ops.reduce((acc, op) => {
-          if (typeof op.insert === 'string') {
-            op.insert = Handlebars.compile(op.insert)(templateValues);
-          }
-          acc.push(op);
-          return acc;
-        }, []),
-      };
+      documentToCreate.contents = _resolveTemplates(
+        template.contents,
+        templateValues
+      );
     } catch (error) {
       console.error(error);
       return res.status(500).json({

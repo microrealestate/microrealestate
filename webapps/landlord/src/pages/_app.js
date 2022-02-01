@@ -1,6 +1,5 @@
 import 'moment/locale/fr';
 import 'moment/locale/pt';
-import 'quill/dist/quill.snow.css';
 import '../components/RichTextEditor/richtexteditor.css';
 
 import * as Yup from 'yup';
@@ -54,6 +53,10 @@ const MyApp = memo(function MyApp(props) {
           name="viewport"
           content="minimum-scale=1, initial-scale=1, width=device-width"
         />
+        <link
+          href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css"
+          rel="stylesheet"
+        ></link>
       </Head>
       <ThemeProvider theme={theme}>
         {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}

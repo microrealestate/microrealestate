@@ -8,7 +8,6 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import moment from 'moment';
-import { nanoid } from 'nanoid';
 import PeopleIcon from '@material-ui/icons/People';
 import ReceiptIcon from '@material-ui/icons/Receipt';
 import SettingsIcon from '@material-ui/icons/Settings';
@@ -64,41 +63,42 @@ const Nav = () => {
   const menuItems = useMemo(
     () => [
       {
-        key: nanoid(),
+        key: 'dashboard',
         value: t('Dashboard'),
         pathname: '/dashboard',
         icon: <DashboardIcon />,
         dataCy: 'dashboardNav',
       },
       {
-        key: nanoid(),
+        key: 'rents',
         value: t('Rents'),
         pathname: '/rents/[yearMonth]',
         icon: <ReceiptIcon />,
         dataCy: 'rentsNav',
       },
       {
-        key: nanoid(),
+        key: 'tenants',
         value: t('Tenants'),
         pathname: '/tenants',
         icon: <PeopleIcon />,
         dataCy: 'tenantsNav',
       },
       {
-        key: nanoid(),
+        key: 'properties',
         value: t('Properties'),
         pathname: '/properties',
         icon: <VpnKeyIcon />,
         dataCy: 'propertiesNav',
       },
       {
+        key: 'accounting',
         value: t('Accounting'),
         pathname: `/accounting/${moment().year()}`,
         icon: <AccountBalanceWalletIcon />,
         dataCy: 'accountingNav',
       },
       {
-        key: nanoid(),
+        key: 'settings',
         value: t('Settings'),
         pathname: '/settings',
         icon: <SettingsIcon />,

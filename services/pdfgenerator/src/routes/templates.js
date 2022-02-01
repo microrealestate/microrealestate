@@ -197,67 +197,72 @@ templatesApi.get('/fields', (req, res) => {
     },
     {
       _id: 'properties_name',
-      marker: '{{properties.[0].name}}',
+      marker: '{{properties.list.[0].name}}',
       type: 'string',
     },
     {
       _id: 'properties_description',
-      marker: '{{properties.[0].description}}',
+      marker: '{{properties.list.[0].description}}',
       type: 'string',
     },
     {
       _id: 'properties_type',
-      marker: '{{properties.[0].type}}',
+      marker: '{{properties.list.[0].type}}',
       type: 'string',
     },
     {
       _id: 'properties_surface',
-      marker: '{{properties.[0].surface}}',
+      marker: '{{properties.list.[0].surface}}',
+      type: 'surface',
+    },
+    {
+      _id: 'properties_total_surface',
+      marker: '{{properties.total.surface}}',
       type: 'surface',
     },
     {
       _id: 'properties_rent',
-      marker: '{{properties.[0].rent}}',
+      marker: '{{properties.list.[0].rent}}',
       type: 'amount',
     },
     {
       _id: 'properties_phone',
-      marker: '{{properties.[0].phone}}',
+      marker: '{{properties.list.[0].phone}}',
       type: 'string',
     },
     {
       _id: 'properties_digicode',
-      marker: '{{properties.[0].digicode}}',
+      marker: '{{properties.list.[0].digicode}}',
       type: 'string',
     },
     {
       _id: 'properties_address_street1',
-      marker: '{{properties.[0].address.street1}}',
+      marker: '{{properties.list.[0].address.street1}}',
       type: 'string',
     },
     {
       _id: 'properties_address_street2',
-      marker: '{{properties.[0].address.street2}}',
+      marker: '{{properties.list.[0].address.street2}}',
       type: 'string',
     },
     {
       _id: 'properties_address_city',
-      marker: '{{properties.[0].address.city}}',
+      marker: '{{properties.list.[0].address.city}}',
       type: 'string',
     },
     {
       _id: 'properties_address_state',
-      marker: '{{properties.[0].address.state}}',
+      marker: '{{properties.list.[0].address.state}}',
       type: 'string',
     },
     {
       _id: 'properties_address_country',
-      marker: '{{properties.[0].address.country}}',
+      marker: '{{properties.list.[0].address.country}}',
       type: 'string',
     },
     {
       _id: 'properties_address_zipCode',
-      marker: '{{properties.[0].address.zipCode}}',
+      marker: '{{properties.list.[0].address.zipCode}}',
       type: 'string',
     },
     {
@@ -278,6 +283,16 @@ templatesApi.get('/fields', (req, res) => {
     {
       _id: 'lease_deposit',
       marker: '{{lease.deposit}}',
+      type: 'amount',
+    },
+    {
+      _id: 'lease_rentAmount',
+      marker: '{{properties.total.rentAmount}}',
+      type: 'amount',
+    },
+    {
+      _id: 'lease_expensesAmount',
+      marker: '{{properties.total.expensesAmount}}',
       type: 'amount',
     },
   ]);

@@ -65,7 +65,7 @@ const LeaseTemplatesCard = () => {
       store.template.items.find(({ _id }) => _id === editTemplate._id)
     );
     return store.template.selected.contents;
-  }, [store.template.items, editTemplate]);
+  }, [store.template, editTemplate]);
 
   const onSaveTemplate = useCallback(
     async (title, contents, html) => {
@@ -129,7 +129,7 @@ const LeaseTemplatesCard = () => {
         }
       }
     },
-    [editTemplate, store.lease.selected]
+    [editTemplate, store.template, store.lease.selected]
   );
 
   const onDeleteTemplate = useCallback(async () => {
