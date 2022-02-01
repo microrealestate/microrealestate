@@ -129,7 +129,33 @@ async function _getTemplateValues(organization, tenantId, leaseId) {
           PropertyGlobals.expensesAmount
         ),
       },
-      list: tenant?.properties,
+      list: tenant?.properties.map(
+        ({
+          propertyId: {
+            name,
+            description,
+            type,
+            surface,
+            phone,
+            address,
+            digicode,
+            price,
+          },
+        }) => ({
+          name,
+          description,
+          type,
+          rent: Format.formatCurrency(
+            organization.locale,
+            organization.currency,
+            price
+          ),
+          surface: Format.formatNumber(organization.locale, surface),
+          phone,
+          address,
+          digicode,
+        })
+      ),
     },
 
     lease: {
