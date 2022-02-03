@@ -8,7 +8,7 @@ import {
   SubmitButton,
 } from '../Form';
 import { Form, Formik } from 'formik';
-import React, { useContext, useState } from 'react';
+import React, { useCallback, useContext, useState } from 'react';
 
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
@@ -17,6 +17,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import RequestError from '../RequestError';
 import { StoreContext } from '../../store';
 import { toJS } from 'mobx';
+import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 
 const validationSchema = Yup.object().shape({
@@ -34,61 +35,78 @@ const initialValues = {
   isCopyFrom: false,
 };
 
-const NewTenantDialog = ({ open, setOpen, onConfirm }) => {
+const NewTenantDialog = ({ open, setOpen, fromDashboard = false }) => {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
+  const router = useRouter();
   const [error, setError] = useState('');
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setOpen(false);
-  };
+  }, [setOpen]);
 
-  const _onSubmit = async (tenantPart) => {
-    let tenant = {
-      name: tenantPart.name,
-      company: tenantPart.name,
-    };
-    if (tenantPart.isCopyFrom) {
-      const {
-        _id,
-        reference,
-        name,
-        manager,
-        terminated,
-        beginDate,
-        endDate,
-        terminationDate,
-        properties,
-        discount,
-        guaranty,
-        ...originalTenant
-      } = toJS(
-        store.tenant.items.find(({ _id }) => tenantPart.copyFrom === _id)
-      );
-
-      tenant = {
-        ...originalTenant,
-        ...tenant,
+  const _onSubmit = useCallback(
+    async (tenantPart) => {
+      let tenant = {
+        name: tenantPart.name,
+        company: tenantPart.name,
       };
-    }
+      if (tenantPart.isCopyFrom) {
+        const {
+          _id,
+          reference,
+          name,
+          manager,
+          terminated,
+          beginDate,
+          endDate,
+          terminationDate,
+          properties,
+          discount,
+          guaranty,
+          ...originalTenant
+        } = toJS(
+          store.tenant.items.find(({ _id }) => tenantPart.copyFrom === _id)
+        );
 
-    const { status, data } = await store.tenant.create(tenant);
-    if (status !== 200) {
-      switch (status) {
-        case 422:
-          return setError(t('Tenant name is missing'));
-        case 403:
-          return setError(t('You are not allowed to add a tenant'));
-        case 409:
-          return setError(t('The tenant already exists'));
-        default:
-          return setError(t('Something went wrong'));
+        tenant = {
+          ...originalTenant,
+          ...tenant,
+        };
       }
-    }
 
-    handleClose(false);
-    await onConfirm(data);
-  };
+      const { status, data } = await store.tenant.create(tenant);
+      if (status !== 200) {
+        switch (status) {
+          case 422:
+            return setError(t('Tenant name is missing'));
+          case 403:
+            return setError(t('You are not allowed to add a tenant'));
+          case 409:
+            return setError(t('The tenant already exists'));
+          default:
+            return setError(t('Something went wrong'));
+        }
+      }
+
+      handleClose();
+
+      store.tenant.setSelected(data);
+      await router.push(
+        fromDashboard
+          ? `/${store.organization.selected.name}/tenants/${data._id}/1`
+          : `/${store.organization.selected.name}/tenants/${data._id}`
+      );
+    },
+    [
+      t,
+      router,
+      handleClose,
+      store.organization?.selected?.name,
+      store.tenant,
+      fromDashboard,
+    ]
+  );
 
   const tenants = store.tenant.items
     // remove duplicates from tenant list

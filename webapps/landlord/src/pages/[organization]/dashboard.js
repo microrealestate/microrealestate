@@ -94,7 +94,6 @@ const TenantListItem = ({ tenant, balance, onClick }) => (
 );
 
 const Shortcuts = () => {
-  const router = useRouter();
   const store = useContext(StoreContext);
   const { t } = useTranslation('common');
   const [openNewTenantDialog, setOpenNewTenantDialog] = useState(false);
@@ -102,36 +101,6 @@ const Shortcuts = () => {
   const [openNewLeaseDialog, setOpenNewLeaseDialog] = useState(false);
   const [openNewPaymentDialog, setOpenNewPaymentDialog] = useState(false);
   const [openTerminateLease, setOpenTerminateLease] = useState(false);
-
-  const onCreateTenant = useCallback(
-    async (tenant) => {
-      store.tenant.setSelected(tenant);
-      await router.push(
-        `/${store.organization.selected.name}/tenants/${tenant._id}`
-      );
-    },
-    [store.organization.selected.name, store.tenant]
-  );
-
-  const onCreateProperty = useCallback(
-    async (property) => {
-      store.property.setSelected(property);
-      await router.push(
-        `/${store.organization.selected.name}/properties/${property._id}`
-      );
-    },
-    [store.organization.selected.name, store.property]
-  );
-
-  const onCreateLease = useCallback(
-    async (lease) => {
-      store.lease.setSelected(lease);
-      await router.push(
-        `/${store.organization.selected.name}/settings/lease/${lease._id}`
-      );
-    },
-    [store.lease, store.organization.selected.name]
-  );
 
   const tenantsNotTerminated = useMemo(
     () => store.tenant.items.filter((t) => !t.terminated),
@@ -193,21 +162,22 @@ const Shortcuts = () => {
             <NewTenantDialog
               open={openNewTenantDialog}
               setOpen={setOpenNewTenantDialog}
-              onConfirm={onCreateTenant}
+              fromDashboard={true}
             />
             <NewPropertyDialog
               open={openNewPropertyDialog}
               setOpen={setOpenNewPropertyDialog}
-              onConfirm={onCreateProperty}
+              fromDashboard={true}
             />
             <NewLeaseDialog
               open={openNewLeaseDialog}
               setOpen={setOpenNewLeaseDialog}
-              onConfirm={onCreateLease}
+              fromDashboard={true}
             />
             <NewPaymentDialog
               open={openNewPaymentDialog}
               setOpen={setOpenNewPaymentDialog}
+              fromDashboard={true}
             />
             <TerminateLeaseDialog
               open={openTerminateLease}

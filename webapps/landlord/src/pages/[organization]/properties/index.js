@@ -49,11 +49,14 @@ const Properties = observer(() => {
   const router = useRouter();
   const classes = useStyles();
 
-  const filters = useMemo(() => [
-    { id: '', label: t('All') },
-    { id: 'vacant', label: t('Vacant') },
-    { id: 'occupied', label: t('Occupied') },
-  ]);
+  const filters = useMemo(
+    () => [
+      { id: '', label: t('All') },
+      { id: 'vacant', label: t('Vacant') },
+      { id: 'occupied', label: t('Occupied') },
+    ],
+    [t]
+  );
 
   const onSearch = useCallback(
     (status, searchText) => {
@@ -65,16 +68,6 @@ const Properties = observer(() => {
   const onNewProperty = useCallback(() => {
     setOpenNewPropertyDialog(true);
   }, []);
-
-  const onCreateProperty = useCallback(
-    async (property) => {
-      store.property.setSelected(property);
-      await router.push(
-        `/${store.organization.selected.name}/properties/${property._id}`
-      );
-    },
-    [store.organization.selected.name, store.property]
-  );
 
   const onClick = useCallback(
     async (property) => {
@@ -196,7 +189,6 @@ const Properties = observer(() => {
       <NewPropertyDialog
         open={openNewPropertyDialog}
         setOpen={setOpenNewPropertyDialog}
-        onConfirm={onCreateProperty}
       />
     </Page>
   );

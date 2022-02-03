@@ -1,14 +1,14 @@
-import { Breadcrumbs, Grid, Paper, Typography } from '@material-ui/core';
 import { getStoreInstance, StoreContext } from '../../../../store';
-import { memo, useCallback, useContext, useState } from 'react';
+import { Grid, Paper } from '@material-ui/core';
+import { useCallback, useContext, useState } from 'react';
 
 import { ADMIN_ROLE } from '../../../../store/User';
+import BreadcrumbBar from '../../../../components/BreadcrumbBar';
 import ConfirmDialog from '../../../../components/ConfirmDialog';
 import DeleteIcon from '@material-ui/icons/Delete';
 import { isServer } from '../../../../utils';
 import LeaseForm from '../../../../components/organization/LeaseForm';
 import LeaseTemplatesCard from '../../../../components/organization/LeaseTemplatesCard';
-import Link from '../../../../components/Link';
 import { observer } from 'mobx-react-lite';
 import Page from '../../../../components/Page';
 import RequestError from '../../../../components/RequestError';
@@ -18,29 +18,16 @@ import { toJS } from 'mobx';
 import useTranslation from 'next-translate/useTranslation';
 import { withAuthentication } from '../../../../components/Authentication';
 
-const BreadcrumbBar = memo(function BreadcrumbBar({
-  backPath,
-  currentPageName,
-}) {
-  const { t } = useTranslation('common');
-
-  return (
-    <Breadcrumbs aria-label="breadcrumb">
-      <Link color="inherit" href={backPath}>
-        {t('Settings')}
-      </Link>
-      <Typography variant="h6" noWrap>
-        {currentPageName}
-      </Typography>
-    </Breadcrumbs>
-  );
-});
-
 const Lease = observer(() => {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const [error, setError] = useState('');
   const [removeLease, setRemoveLease] = useState(false);
+  const {
+    query: {
+      param: [, backToDashboard],
+    },
+  } = router;
 
   const onLeaseAddUpdate = useCallback(
     async (leasePart) => {
@@ -75,7 +62,7 @@ const Lease = observer(() => {
         }
       }
     },
-    [setError, store.lease]
+    [t, setError, store.lease]
   );
 
   const onLeaseRemove = useCallback(async () => {
@@ -93,14 +80,19 @@ const Lease = observer(() => {
       }
     }
     router.push(`/${store.organization.selected.name}/settings#leases`);
-  }, [setError, store.lease, store.organization.selected.name]);
+  }, [t, setError, store.lease, store.organization.selected.name]);
 
   return (
     <Page
       PrimaryToolbar={
         <BreadcrumbBar
-          currentPageName={store.lease.selected?.name || t('New contract')}
-          backPath={`/${store.organization.selected.name}/settings#leases`}
+          backPath={
+            backToDashboard
+              ? `/${store.organization.selected.name}/dashboard`
+              : `/${store.organization.selected.name}/settings#leases`
+          }
+          backPage={backToDashboard ? t('Dashboard') : t('Settings')}
+          currentPage={store.lease.selected?.name || t('New contract')}
         />
       }
       SecondaryToolbar={
@@ -149,7 +141,9 @@ const Lease = observer(() => {
 Lease.getInitialProps = async (context) => {
   console.log('Lease.getInitialProps');
   const store = isServer() ? context.store : getStoreInstance();
-  const { leaseId } = context.query;
+  const {
+    param: [leaseId],
+  } = context.query;
 
   const responses = await Promise.all([
     store.lease.fetchOne(leaseId),

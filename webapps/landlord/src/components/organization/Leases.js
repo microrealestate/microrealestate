@@ -13,13 +13,11 @@ import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
-import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 
 const Leases = observer(({ setError }) => {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
-  const router = useRouter();
   const [openNewLeaseDialog, setOpenNewLeaseDialog] = useState(false);
 
   const onLeaseChange = useCallback(
@@ -42,17 +40,7 @@ const Leases = observer(({ setError }) => {
         }
       }
     },
-    [setError, store.lease]
-  );
-
-  const onCreateLease = useCallback(
-    async (lease) => {
-      store.lease.setSelected(lease);
-      await router.push(
-        `/${store.organization.selected.name}/settings/lease/${lease._id}`
-      );
-    },
-    [store.lease, store.organization.selected.name]
+    [setError, store.lease, t]
   );
 
   return (
@@ -138,7 +126,6 @@ const Leases = observer(({ setError }) => {
       <NewLeaseDialog
         open={openNewLeaseDialog}
         setOpen={setOpenNewLeaseDialog}
-        onConfirm={onCreateLease}
       />
     </FormSection>
   );

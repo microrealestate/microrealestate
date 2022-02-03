@@ -1,6 +1,5 @@
 import {
   Box,
-  Breadcrumbs,
   Divider,
   Grid,
   List,
@@ -13,18 +12,18 @@ import {
 } from '@material-ui/core';
 import { CardRow, DashboardCard } from '../../../../components/Cards';
 import { getStoreInstance, StoreContext } from '../../../../store';
-import { memo, useCallback, useContext, useMemo, useState } from 'react';
 import { TabPanel, useTabChangeHelper } from '../../../../components/Tabs';
+import { useCallback, useContext, useMemo, useState } from 'react';
 
 import AdditionalCostDiscountForm from '../../../../components/payment/AdditionalCostDiscountForm';
 import BalanceBar from '../../../../components/rents/BalanceBar';
+import BreadcrumbBar from '../../../../components/BreadcrumbBar';
 import DownloadLink from '../../../../components/DownloadLink';
 import { EmptyIllustration } from '../../../../components/Illustrations';
 import FullScreenDialogButton from '../../../../components/FullScreenDialogButton';
 import HistoryIcon from '@material-ui/icons/History';
 import InternalNoteForm from '../../../../components/payment/InternalNoteForm';
 import { isServer } from '../../../../utils';
-import Link from '../../../../components/Link';
 import moment from 'moment';
 import { NumberFormat } from '../../../../utils/numberformat';
 import { observer } from 'mobx-react-lite';
@@ -39,24 +38,6 @@ import { toJS } from 'mobx';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 import { withAuthentication } from '../../../../components/Authentication';
-
-const BreadcrumbBar = memo(function BreadcrumbBar({ backPath }) {
-  const { t } = useTranslation('common');
-  const store = useContext(StoreContext);
-
-  return (
-    <Breadcrumbs aria-label="breadcrumb">
-      <Link color="inherit" href={backPath}>
-        {t('Rents of {{date}}', {
-          date: store.rent._period.format('MMM YYYY'),
-        })}
-      </Link>
-      <Typography variant="h6" noWrap>
-        {store.rent.selected.occupant.name}
-      </Typography>
-    </Breadcrumbs>
-  );
-});
 
 const StyledListItem = withStyles(() => ({
   root: {
@@ -207,17 +188,24 @@ const RentPayment = observer(() => {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const router = useRouter();
+  const {
+    param: [term, backToDashboard],
+  } = router.query;
   const [error /*setError*/] = useState('');
 
   const backPath = useMemo(() => {
-    let backPath = `/${store.organization.selected.name}/rents/${store.rent.period}`;
-    if (store.rent.filters.searchText || store.rent.filters.status) {
-      backPath = `${backPath}?search=${encodeURIComponent(
-        store.rent.filters.searchText
-      )}&status=${encodeURIComponent(store.rent.filters.status)}`;
+    let backPath = `/${store.organization.selected.name}/dashboard`;
+    if (!backToDashboard) {
+      backPath = `/${store.organization.selected.name}/rents/${store.rent.period}`;
+      if (store.rent.filters.searchText || store.rent.filters.status) {
+        backPath = `${backPath}?search=${encodeURIComponent(
+          store.rent.filters.searchText
+        )}&status=${encodeURIComponent(store.rent.filters.status)}`;
+      }
     }
     return backPath;
   }, [
+    backToDashboard,
     store.organization.selected.name,
     store.rent.filters.searchText,
     store.rent.filters.status,
@@ -226,8 +214,6 @@ const RentPayment = observer(() => {
 
   const onSubmit = useCallback(
     async (paymentPart) => {
-      const { term } = router.query;
-
       const payment = {
         _id: store.rent.selected._id,
         month: store.rent.selected.month,
@@ -248,11 +234,25 @@ const RentPayment = observer(() => {
         console.error(error);
       }
     },
-    [router.query, store.rent]
+    [term, store.rent]
   );
 
   return (
-    <Page PrimaryToolbar={<BreadcrumbBar backPath={backPath} />}>
+    <Page
+      PrimaryToolbar={
+        <BreadcrumbBar
+          backPath={backPath}
+          backPage={
+            backToDashboard
+              ? t('Dashboard')
+              : t('Rents of {{date}}', {
+                  date: store.rent._period.format('MMM YYYY'),
+                })
+          }
+          currentPage={store.rent.selected.occupant.name}
+        />
+      }
+    >
       <RequestError error={error} />
       <Grid container spacing={5}>
         <Grid item sm={12} md={8}>
@@ -389,7 +389,10 @@ const RentPayment = observer(() => {
 RentPayment.getInitialProps = async (context) => {
   console.log('RentPayment.getInitialProps');
   const store = isServer() ? context.store : getStoreInstance();
-  const { tenantId, term } = context.query;
+  const {
+    tenantId,
+    param: [term],
+  } = context.query;
 
   const { status, data } = await store.rent.fetchOneTenantRent(tenantId, term);
   if (status !== 200) {

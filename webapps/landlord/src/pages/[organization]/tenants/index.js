@@ -171,7 +171,6 @@ const Tenants = observer(() => {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const [openNewTenantDialog, setOpenNewTenantDialog] = useState(false);
-  const router = useRouter();
 
   const onSearch = useCallback(
     (status, searchText) => {
@@ -183,16 +182,6 @@ const Tenants = observer(() => {
   const onNewTenant = useCallback(() => {
     setOpenNewTenantDialog(true);
   }, []);
-
-  const onCreateTenant = useCallback(
-    async (tenant) => {
-      store.tenant.setSelected(tenant);
-      await router.push(
-        `/${store.organization.selected.name}/tenants/${tenant._id}`
-      );
-    },
-    [store.organization.selected.name, store.tenant]
-  );
 
   return (
     <Page
@@ -226,7 +215,6 @@ const Tenants = observer(() => {
       <NewTenantDialog
         open={openNewTenantDialog}
         setOpen={setOpenNewTenantDialog}
-        onConfirm={onCreateTenant}
       />
     </Page>
   );

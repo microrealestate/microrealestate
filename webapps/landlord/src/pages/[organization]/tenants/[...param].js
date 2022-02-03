@@ -1,6 +1,5 @@
 import {
   Box,
-  Breadcrumbs,
   Button,
   Divider,
   Grid,
@@ -13,10 +12,11 @@ import {
 } from '@material-ui/core';
 import { CardRow, DashboardCard } from '../../../components/Cards';
 import { getStoreInstance, StoreContext } from '../../../store';
-import { memo, useCallback, useContext, useMemo, useState } from 'react';
 import { TabPanel, useTabChangeHelper } from '../../../components/Tabs';
+import { useCallback, useContext, useMemo, useState } from 'react';
 
 import BillingForm from '../../../components/tenants/BillingForm';
+import BreadcrumbBar from '../../../components/BreadcrumbBar';
 import ConfirmDialog from '../../../components/ConfirmDialog';
 import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
@@ -24,7 +24,6 @@ import FullScreenDialogButton from '../../../components/FullScreenDialogButton';
 import HistoryIcon from '@material-ui/icons/History';
 import { isServer } from '../../../utils';
 import LeaseContractForm from '../../../components/tenants/LeaseContractForm';
-import Link from '../../../components/Link';
 import moment from 'moment';
 import { NumberFormat } from '../../../utils/numberformat';
 import { observer } from 'mobx-react-lite';
@@ -42,22 +41,6 @@ import { toJS } from 'mobx';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 import { withAuthentication } from '../../../components/Authentication';
-
-const BreadcrumbBar = memo(function BreadcrumbBar({ backPath }) {
-  const { t } = useTranslation('common');
-  const store = useContext(StoreContext);
-
-  return (
-    <Breadcrumbs aria-label="breadcrumb">
-      <Link color="inherit" href={backPath}>
-        {t('Tenants')}
-      </Link>
-      <Typography variant="h6" noWrap>
-        {store.tenant.selected.name}
-      </Typography>
-    </Breadcrumbs>
-  );
-});
 
 const WarningTypography = withStyles((theme) => {
   return {
@@ -265,16 +248,24 @@ const Tenant = observer(() => {
   const [openConfirmDeleteTenant, setOpenConfirmDeleteTenant] = useState(false);
   const [openConfirmEditTenant, setOpenConfirmEditTenant] = useState(false);
   const [editContract, setEditContract] = useState(false);
+  const {
+    query: {
+      param: [, backToDashboard],
+    },
+  } = router;
 
   const backPath = useMemo(() => {
-    let backPath = `/${store.organization.selected.name}/tenants`;
-    if (store.tenant.filters.searchText || store.tenant.filters.status) {
-      backPath = `${backPath}?search=${encodeURIComponent(
-        store.tenant.filters.searchText
-      )}&status=${encodeURIComponent(store.tenant.filters.status)}`;
+    let backPath = `/${store.organization.selected.name}/dashboard`;
+    if (!backToDashboard) {
+      backPath = `/${store.organization.selected.name}/tenants`;
+      if (store.tenant.filters.searchText || store.tenant.filters.status) {
+        backPath = `${backPath}?search=${encodeURIComponent(
+          store.tenant.filters.searchText
+        )}&status=${encodeURIComponent(store.tenant.filters.status)}`;
+      }
     }
     return backPath;
-  }, [store.organization.selected, store.tenant.filters]);
+  }, [backToDashboard, store.organization.selected, store.tenant.filters]);
 
   const onDeleteTenant = useCallback(async () => {
     setError('');
@@ -296,7 +287,7 @@ const Tenant = observer(() => {
     }
 
     await router.push(backPath);
-  }, [backPath, store.tenant]);
+  }, [t, router, backPath, store.tenant]);
 
   const onSubmit = useCallback(
     async (tenantPart) => {
@@ -353,7 +344,7 @@ const Tenant = observer(() => {
         );
       }
     },
-    [store.organization.selected.name, store.tenant]
+    [t, router, store.organization.selected.name, store.tenant]
   );
 
   const showTerminateLeaseButton = useMemo(
@@ -429,7 +420,13 @@ const Tenant = observer(() => {
 
   return (
     <Page
-      PrimaryToolbar={<BreadcrumbBar backPath={backPath} />}
+      PrimaryToolbar={
+        <BreadcrumbBar
+          backPath={backPath}
+          backPage={backToDashboard ? t('Dashboard') : t('Tenants')}
+          currentPage={store.tenant.selected.name}
+        />
+      }
       SecondaryToolbar={
         <Grid container spacing={2}>
           <Grid item>
@@ -577,7 +574,7 @@ Tenant.getInitialProps = async (context) => {
   console.log('Tenant.getInitialProps');
   const store = isServer() ? context.store : getStoreInstance();
   const tenantId = isServer()
-    ? context.query.tenantId
+    ? context.query.param[0]
     : store.tenant.selected._id;
 
   const responses = await Promise.all([
