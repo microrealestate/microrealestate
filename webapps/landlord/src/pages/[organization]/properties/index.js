@@ -9,7 +9,6 @@ import {
   TableHead,
   TableRow,
   Typography,
-  withStyles,
 } from '@material-ui/core';
 import { getStoreInstance, StoreContext } from '../../../store';
 import { useCallback, useContext, useMemo, useState } from 'react';
@@ -28,6 +27,7 @@ import { toJS } from 'mobx';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 import { withAuthentication } from '../../../components/Authentication';
+import { withStyles } from '@material-ui/core/styles';
 
 const useStyles = makeStyles((theme) => ({
   vacant: {

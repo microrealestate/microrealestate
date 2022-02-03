@@ -8,7 +8,6 @@ import {
   Tabs,
   Tooltip,
   Typography,
-  withStyles,
 } from '@material-ui/core';
 import { CardRow, DashboardCard } from '../../../components/Cards';
 import { getStoreInstance, StoreContext } from '../../../store';
@@ -41,6 +40,7 @@ import { toJS } from 'mobx';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 import { withAuthentication } from '../../../components/Authentication';
+import { withStyles } from '@material-ui/core/styles';
 
 const WarningTypography = withStyles((theme) => {
   return {

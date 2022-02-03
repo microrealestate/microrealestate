@@ -1,5 +1,5 @@
 import { AppBar, Box, Grid } from '@material-ui/core';
-import React, { useCallback } from 'react';
+import React, { memo, useCallback } from 'react';
 
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
@@ -51,6 +51,7 @@ const FullScreenDialogButton = ({
         open={open}
         onClose={handleClose}
         TransitionComponent={Transition}
+        keepMounted
       >
         <AppBar position="sticky">
           <Toolbar>
@@ -88,4 +89,4 @@ const FullScreenDialogButton = ({
   );
 };
 
-export default FullScreenDialogButton;
+export default memo(FullScreenDialogButton);

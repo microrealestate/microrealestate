@@ -32,7 +32,7 @@ import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 import VerticalAlignBottomIcon from '@material-ui/icons/VerticalAlignBottom';
 import { withAuthentication } from '../../../components/Authentication';
-import { withStyles } from '@material-ui/styles';
+import { withStyles } from '@material-ui/core/styles';
 
 const PeriodToolbar = () => {
   const { t } = useTranslation('common');
