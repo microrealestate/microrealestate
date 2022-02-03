@@ -12,6 +12,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import RequestError from '../RequestError';
 import { StoreContext } from '../../store';
 import types from './types';
+import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 
 const validationSchema = Yup.object().shape({
@@ -26,9 +27,10 @@ const initialValues = {
   rent: '',
 };
 
-const NewPropertyDialog = ({ open, setOpen, onConfirm }) => {
+const NewPropertyDialog = ({ open, setOpen, fromDashboard = false }) => {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
+  const router = useRouter();
   const [error, setError] = useState('');
 
   const handleClose = useCallback(() => {
@@ -56,10 +58,16 @@ const NewPropertyDialog = ({ open, setOpen, onConfirm }) => {
         }
       }
 
-      handleClose(false);
-      await onConfirm(data);
+      handleClose();
+
+      store.property.setSelected(data);
+      await router.push(
+        fromDashboard
+          ? `/${store.organization.selected.name}/properties/${data._id}/1`
+          : `/${store.organization.selected.name}/properties/${data._id}`
+      );
     },
-    [handleClose, onConfirm, store.property]
+    [t, router, handleClose, store.organization, store.property, fromDashboard]
   );
 
   const propertyTypes = useMemo(
@@ -69,7 +77,7 @@ const NewPropertyDialog = ({ open, setOpen, onConfirm }) => {
         value: type.id,
         label: t(type.labelId),
       })),
-    []
+    [t]
   );
 
   return (

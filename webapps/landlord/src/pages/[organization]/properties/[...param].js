@@ -1,6 +1,5 @@
 import {
   Box,
-  Breadcrumbs,
   Button,
   Grid,
   List,
@@ -15,14 +14,14 @@ import {
 } from '@material-ui/core';
 import { CardRow, DashboardCard } from '../../../components/Cards';
 import { getStoreInstance, StoreContext } from '../../../store';
-import { memo, useCallback, useContext, useMemo, useState } from 'react';
 import { TabPanel, useTabChangeHelper } from '../../../components/Tabs';
+import { useCallback, useContext, useMemo, useState } from 'react';
 
+import BreadcrumbBar from '../../../components/BreadcrumbBar';
 import ConfirmDialog from '../../../components/ConfirmDialog';
 import DeleteIcon from '@material-ui/icons/Delete';
 import HistoryIcon from '@material-ui/icons/History';
 import { isServer } from '../../../utils';
-import Link from '../../../components/Link';
 import Map from '../../../components/Map';
 import moment from 'moment';
 import { nanoid } from 'nanoid';
@@ -37,22 +36,6 @@ import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 import VpnKeyIcon from '@material-ui/icons/VpnKey';
 import { withAuthentication } from '../../../components/Authentication';
-
-const BreadcrumbBar = memo(function BreadcrumbBar({ backPath }) {
-  const { t } = useTranslation('common');
-  const store = useContext(StoreContext);
-
-  return (
-    <Breadcrumbs aria-label="breadcrumb">
-      <Link color="inherit" href={backPath}>
-        {t('Properties')}
-      </Link>
-      <Typography variant="h6" noWrap>
-        {store.property.selected.name}
-      </Typography>
-    </Breadcrumbs>
-  );
-});
 
 const PropertyOverview = observer(() => {
   const store = useContext(StoreContext);
@@ -125,15 +108,24 @@ const Property = observer(() => {
   const [openConfirmDeleteProperty, setOpenConfirmDeleteProperty] =
     useState(false);
 
+  const {
+    query: {
+      param: [, backToDashboard],
+    },
+  } = router;
+
   const backPath = useMemo(() => {
-    let backPath = `/${store.organization.selected.name}/properties`;
-    if (store.property.filters.searchText || store.property.filters.status) {
-      backPath = `${backPath}?search=${encodeURIComponent(
-        store.property.filters.searchText
-      )}&status=${encodeURIComponent(store.property.filters.status)}`;
+    let backPath = `/${store.organization.selected.name}/dashboard`;
+    if (!backToDashboard) {
+      backPath = `/${store.organization.selected.name}/properties`;
+      if (store.property.filters.searchText || store.property.filters.status) {
+        backPath = `${backPath}?search=${encodeURIComponent(
+          store.property.filters.searchText
+        )}&status=${encodeURIComponent(store.property.filters.status)}`;
+      }
     }
     return backPath;
-  }, [store.organization.selected, store.property.filters]);
+  }, [backToDashboard, store.organization.selected, store.property.filters]);
 
   const onConfirmDeleteProperty = useCallback(() => {
     setOpenConfirmDeleteProperty(true);
@@ -159,7 +151,7 @@ const Property = observer(() => {
     }
 
     await router.push(backPath);
-  }, [backPath, store.property]);
+  }, [t, router, backPath, store.property]);
 
   const onSubmit = useCallback(
     async (propertyPart) => {
@@ -204,12 +196,18 @@ const Property = observer(() => {
         );
       }
     },
-    [store.organization.selected.name, store.property]
+    [t, router, store.organization.selected.name, store.property]
   );
 
   return (
     <Page
-      PrimaryToolbar={<BreadcrumbBar backPath={backPath} />}
+      PrimaryToolbar={
+        <BreadcrumbBar
+          backPath={backPath}
+          backPage={backToDashboard ? t('Dashboard') : t('Properties')}
+          currentPage={store.property.selected.name}
+        />
+      }
       SecondaryToolbar={
         <Grid container spacing={2}>
           <Grid item>
@@ -269,7 +267,7 @@ Property.getInitialProps = async (context) => {
   console.log('Property.getInitialProps');
   const store = isServer() ? context.store : getStoreInstance();
   const propertyId = isServer()
-    ? context.query.propertyId
+    ? context.query.param[0]
     : store.property.selected._id;
 
   const response = await store.property.fetch();

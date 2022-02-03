@@ -7,7 +7,7 @@ import {
   Select,
   Typography,
 } from '@material-ui/core';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
@@ -19,7 +19,7 @@ import { useComponentMountedRef } from '../../utils/hooks';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 
-const NewPaymentDialog = ({ open, setOpen }) => {
+const NewPaymentDialog = ({ open, setOpen, fromDashboard = false }) => {
   const { t } = useTranslation('common');
   const router = useRouter();
   const store = useContext(StoreContext);
@@ -48,16 +48,26 @@ const NewPaymentDialog = ({ open, setOpen }) => {
     setSelectedRent(event.target.value);
   };
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setOpen(false);
-  };
+  }, [setOpen]);
 
-  const onSubmit = async () => {
+  const onSubmit = useCallback(async () => {
+    handleClose();
     store.rent.setSelected(selectedRent);
     await router.push(
-      `/${store.organization.selected.name}/payment/${selectedRent.occupant._id}/${selectedRent.term}`
+      fromDashboard
+        ? `/${store.organization.selected.name}/payment/${selectedRent.occupant._id}/${selectedRent.term}/1`
+        : `/${store.organization.selected.name}/payment/${selectedRent.occupant._id}/${selectedRent.term}`
     );
-  };
+  }, [
+    router,
+    handleClose,
+    selectedRent,
+    store.organization?.selected?.name,
+    store.rent,
+    fromDashboard,
+  ]);
 
   return (
     <Dialog

@@ -10,20 +10,20 @@ export const useTabChangeHelper = (hashes) => {
 
   useEffect(() => {
     const hash = router.asPath.split('#')?.[1];
-    if (hash) {
+    if (hash && hashes.includes(hash)) {
       setTabSelectedIndex(hashes.indexOf(hash));
     } else {
       router.push(`#${hashes[0]}`, null, { shallow: true });
     }
     setTabsReady(true);
-  }, [hashes]);
+  }, [router, hashes]);
 
   const handleTabChange = useCallback(
     (event, newValue) => {
       router.push(`#${hashes[newValue]}`, null, { shallow: true });
       setTabSelectedIndex(newValue);
     },
-    [hashes]
+    [router, hashes]
   );
 
   return { handleTabChange, tabSelectedIndex, tabsReady };
