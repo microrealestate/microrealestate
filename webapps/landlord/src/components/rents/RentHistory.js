@@ -1,10 +1,17 @@
 import { Box, Paper, Typography } from '@material-ui/core';
-import { useContext, useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  memo,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
 import { getPeriod } from './RentPeriod';
+import Link from '../Link';
 import Loading from '../Loading';
 import moment from 'moment';
-import { nanoid } from 'nanoid';
 import { NumberFormat } from '../../utils/numberformat';
 import RequestError from '../RequestError';
 import { StoreContext } from '../../store';
@@ -15,7 +22,56 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import useTranslation from 'next-translate/useTranslation';
 
-const RentHistory = ({ tenantId }) => {
+const NavTableRow = React.forwardRef(function NavTableRow(
+  { tenantId, tenant, rent, selected, backToDashboard = false },
+  ref
+) {
+  const { t } = useTranslation('common');
+  const store = useContext(StoreContext);
+
+  return (
+    <TableRow ref={ref} key={rent.term} hover selected={selected} size="small">
+      <TableCell>
+        <Link
+          color="inherit"
+          variant="body1"
+          underline="always"
+          href={
+            backToDashboard
+              ? `/${store.organization.selected.name}/payment/${tenantId}/${rent.term}/1`
+              : `/${store.organization.selected.name}/payment/${tenantId}/${rent.term}`
+          }
+        >
+          {getPeriod(t, rent.term, tenant.occupant.frequency)}
+        </Link>
+      </TableCell>
+      <TableCell align="right">
+        <NumberFormat
+          variant="body1"
+          value={rent.totalWithoutBalanceAmount + rent.promo - rent.extracharge}
+        />
+      </TableCell>
+      <TableCell align="right">
+        {rent.extracharge > 0 && (
+          <NumberFormat variant="body1" value={rent.extracharge} />
+        )}
+      </TableCell>
+      <TableCell align="right">
+        {rent.promo > 0 && <NumberFormat variant="body1" value={rent.promo} />}
+      </TableCell>
+      <TableCell align="right">
+        {rent.payment > 0 && (
+          <NumberFormat variant="body1" value={rent.payment} withColor />
+        )}
+      </TableCell>
+      <TableCell align="right">
+        <NumberFormat variant="body1" value={rent.newBalance} />
+      </TableCell>
+    </TableRow>
+  );
+});
+
+const RentHistory = ({ tenantId, backToDashboard = false }) => {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const [loading, setLoading] = useState(true);
@@ -40,7 +96,7 @@ const RentHistory = ({ tenantId }) => {
     };
 
     fetchTenantRents();
-  }, []);
+  }, [tenantId, store.rent]);
 
   useEffect(() => {
     if (!loading) {
@@ -98,52 +154,15 @@ const RentHistory = ({ tenantId }) => {
                 {tenant?.rents?.map((rent) => {
                   const isSelected = String(rent.term) === selectedTerm;
                   return (
-                    <TableRow
-                      key={nanoid()}
-                      hover
+                    <NavTableRow
+                      key={rent.term}
                       ref={isSelected ? selectedRowRef : null}
+                      tenantId={tenantId}
+                      tenant={tenant}
+                      rent={rent}
                       selected={isSelected}
-                      size="small"
-                    >
-                      <TableCell>
-                        {getPeriod(t, rent.term, tenant.occupant.frequency)}
-                      </TableCell>
-                      <TableCell align="right">
-                        <NumberFormat
-                          variant="body1"
-                          value={
-                            rent.totalWithoutBalanceAmount +
-                            rent.promo -
-                            rent.extracharge
-                          }
-                        />
-                      </TableCell>
-                      <TableCell align="right">
-                        {rent.extracharge > 0 && (
-                          <NumberFormat
-                            variant="body1"
-                            value={rent.extracharge}
-                          />
-                        )}
-                      </TableCell>
-                      <TableCell align="right">
-                        {rent.promo > 0 && (
-                          <NumberFormat variant="body1" value={rent.promo} />
-                        )}
-                      </TableCell>
-                      <TableCell align="right">
-                        {rent.payment > 0 && (
-                          <NumberFormat
-                            variant="body1"
-                            value={rent.payment}
-                            withColor
-                          />
-                        )}
-                      </TableCell>
-                      <TableCell align="right">
-                        <NumberFormat variant="body1" value={rent.newBalance} />
-                      </TableCell>
-                    </TableRow>
+                      backToDashboard={backToDashboard}
+                    />
                   );
                 })}
               </TableBody>
@@ -155,4 +174,4 @@ const RentHistory = ({ tenantId }) => {
   );
 };
 
-export default RentHistory;
+export default memo(RentHistory);

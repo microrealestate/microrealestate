@@ -1,7 +1,7 @@
-import { Typography, withStyles } from '@material-ui/core';
-
 import { StoreContext } from '../store';
+import { Typography } from '@material-ui/core';
 import { useContext } from 'react';
+import { withStyles } from '@material-ui/core/styles';
 
 export const formatNumber = (
   locale = 'en',

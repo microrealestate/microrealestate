@@ -8,7 +8,6 @@ import {
   Tab,
   Tabs,
   Typography,
-  withStyles,
 } from '@material-ui/core';
 import { CardRow, DashboardCard } from '../../../../components/Cards';
 import { getStoreInstance, StoreContext } from '../../../../store';
@@ -38,6 +37,7 @@ import { toJS } from 'mobx';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 import { withAuthentication } from '../../../../components/Authentication';
+import { withStyles } from '@material-ui/core/styles';
 
 const StyledListItem = withStyles(() => ({
   root: {
@@ -275,7 +275,10 @@ const RentPayment = observer(() => {
                   cancelButtonLabel={t('Close')}
                   showCancel
                 >
-                  <RentHistory tenantId={store.rent.selected.occupant._id} />
+                  <RentHistory
+                    tenantId={store.rent.selected.occupant._id}
+                    backToDashboard={backToDashboard}
+                  />
                 </FullScreenDialogButton>
               }
             >
