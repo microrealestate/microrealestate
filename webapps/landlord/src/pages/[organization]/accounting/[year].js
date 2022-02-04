@@ -21,7 +21,6 @@ import { EmptyIllustration } from '../../../components/Illustrations';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import Loading from '../../../components/Loading';
 import moment from 'moment';
-import { nanoid } from 'nanoid';
 import { NumberFormat } from '../../../utils/numberformat';
 import { observer } from 'mobx-react-lite';
 import Page from '../../../components/Page';
@@ -123,20 +122,21 @@ const TenantsTableWrapper = ({
 
 const PropertiesList = ({ properties }) => {
   return properties.map(({ _id, name, type }) => (
-    <Box key={_id} display="flex" alignItems="center" mb={1} nowrap>
+    <Box key={_id} display="flex" alignItems="center" mb={1}>
       <PropertyIcon type={type} />
       <Typography noWrap={true}>{name}</Typography>
     </Box>
   ));
 };
 
-const SettlementList = ({ settlements }) => {
+const SettlementList = ({ month, tenantId, settlements }) => {
   const { t } = useTranslation('common');
 
   return settlements
-    ? settlements.map(({ date, amount, type }) =>
-        amount > 0 ? (
-          <Box key={nanoid()} alignItems="center" mb={1} noWrap={true}>
+    ? settlements.map((settlement, index) => {
+        const { date, amount, type } = settlement;
+        return amount > 0 ? (
+          <Box key={`${tenantId}_${month}_${index}`} alignItems="center" mb={1}>
             <Typography variant="body2" noWrap={true}>
               {moment(date).format('L')}
             </Typography>
@@ -145,8 +145,8 @@ const SettlementList = ({ settlements }) => {
             </Typography>
             <NumberFormat value={amount} variant="body2" withColor />
           </Box>
-        ) : null
-      )
+        ) : null;
+      })
     : null;
 };
 
@@ -313,13 +313,20 @@ const Settlements = ({ id, onCSVClick }) => {
                     {moment(settlement.endDate).format('L')}
                   </Typography>
                 </StyledTableCell>
-                {months.map((m, index) => (
-                  <StyledTableCell key={m} align="center">
-                    <SettlementList
-                      settlements={settlement.settlements[index]}
-                    />
-                  </StyledTableCell>
-                ))}
+                {months.map((m, index) => {
+                  return (
+                    <StyledTableCell
+                      key={`${settlement.tenantId}_${index}`}
+                      align="center"
+                    >
+                      <SettlementList
+                        tenantId={settlement.tenantId}
+                        month={index}
+                        settlements={settlement.settlements[index]}
+                      />
+                    </StyledTableCell>
+                  );
+                })}
               </TableRow>
             ))}
           </TableBody>

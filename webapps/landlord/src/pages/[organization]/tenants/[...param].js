@@ -215,9 +215,9 @@ const TenantTabs = ({ onSubmit /*, setError*/, readOnly }) => {
           onChange={handleTabChange}
           aria-label="Tenant tabs"
         >
-          <Tab label={t('Tenant')} />
-          <Tab label={t('Contract')} />
-          <Tab label={t('Billing')} />
+          <Tab label={t('Tenant')} wrapped />
+          <Tab label={t('Contract')} wrapped />
+          <Tab label={t('Billing')} wrapped />
         </Tabs>
         <TabPanel value={tabSelectedIndex} index={0}>
           <TenantForm onSubmit={onSubmit} readOnly={readOnly} />

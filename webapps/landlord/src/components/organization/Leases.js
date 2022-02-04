@@ -4,7 +4,6 @@ import React, { useCallback, useContext, useState } from 'react';
 import { ADMIN_ROLE } from '../../store/User';
 import { FormSection } from '../Form';
 import Link from '../Link';
-import { nanoid } from 'nanoid';
 import NewLeaseDialog from './NewLeaseDialog';
 import { observer } from 'mobx-react-lite';
 import { RestrictButton } from '../RestrictedComponents';
@@ -76,7 +75,7 @@ const Leases = observer(({ setError }) => {
           <TableBody>
             {(store.lease.items || []).map((lease) => {
               return (
-                <TableRow key={nanoid()} size="small">
+                <TableRow key={lease._id} size="small">
                   <TableCell>
                     {lease.system ? (
                       <Typography noWrap>{t(lease.name)}</Typography>

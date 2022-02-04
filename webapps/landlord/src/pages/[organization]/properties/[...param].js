@@ -24,7 +24,6 @@ import HistoryIcon from '@material-ui/icons/History';
 import { isServer } from '../../../utils';
 import Map from '../../../components/Map';
 import moment from 'moment';
-import { nanoid } from 'nanoid';
 import { NumberFormat } from '../../../utils/numberformat';
 import { observer } from 'mobx-react-lite';
 import Page from '../../../components/Page';
@@ -76,7 +75,7 @@ const OccupancyHistory = () => {
             endDate: moment(occupant.endDate, 'DD/MM/YYYY').format('LL'),
           });
           return (
-            <ListItem key={nanoid()}>
+            <ListItem key={occupant.id}>
               <ListItemAvatar>
                 <TenantAvatar tenant={occupant} />
               </ListItemAvatar>
@@ -233,7 +232,7 @@ const Property = observer(() => {
                 onChange={handleTabChange}
                 aria-label="Property tabs"
               >
-                <Tab label={t('Property')} />
+                <Tab label={t('Property')} wrapped />
               </Tabs>
               <TabPanel value={tabSelectedIndex} index={0}>
                 <PropertyForm onSubmit={onSubmit} />

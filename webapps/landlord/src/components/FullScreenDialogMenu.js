@@ -15,7 +15,6 @@ import CloseIcon from '@material-ui/icons/Close';
 import Dialog from '@material-ui/core/Dialog';
 import { hexToRgb } from '../styles/styles';
 import Loading from './Loading';
-import { nanoid } from 'nanoid';
 import Slide from '@material-ui/core/Slide';
 import Typography from '@material-ui/core/Typography';
 import { useComponentMountedRef } from '../utils/hooks';
@@ -110,48 +109,52 @@ const FullScreenDialogMenu = ({
                 acc.add(category);
                 return acc;
               }, new Set())
-            ).map((category, index) => (
-              <Fragment key={nanoid()}>
-                {!!category && (
-                  <Box pt={index === 0 ? 0 : 3} pb={3}>
-                    <Typography variant="subtitle1" gutterBottom>
-                      {category}
-                    </Typography>
-                    <Divider />
+            ).map((category, index) => {
+              return (
+                <Fragment key={category}>
+                  {!!category && (
+                    <Box pt={index === 0 ? 0 : 3} pb={3}>
+                      <Typography variant="subtitle1" gutterBottom>
+                        {category}
+                      </Typography>
+                      <Divider />
+                    </Box>
+                  )}
+                  <Box display="flex" flexWrap="wrap">
+                    {menuItems
+                      .filter((item) => item.category === category)
+                      .map((menuItem) => {
+                        const {
+                          label,
+                          description,
+                          illustration,
+                          badgeContent,
+                          badgeColor,
+                          value,
+                        } = menuItem;
+
+                        return (
+                          <Box
+                            key={`${category}_${value}`}
+                            width={300}
+                            pr={2}
+                            pb={2}
+                            onClick={() => handleMenuClick(value)}
+                          >
+                            <CardMenuItem
+                              label={label}
+                              description={description}
+                              illustration={illustration}
+                              badgeContent={badgeContent}
+                              badgeColor={badgeColor}
+                            />
+                          </Box>
+                        );
+                      })}
                   </Box>
-                )}
-                <Box display="flex" flexWrap="wrap">
-                  {menuItems
-                    .filter((item) => item.category === category)
-                    .map(
-                      ({
-                        label,
-                        description,
-                        illustration,
-                        badgeContent,
-                        badgeColor,
-                        value,
-                      }) => (
-                        <Box
-                          key={nanoid()}
-                          width={300}
-                          pr={2}
-                          pb={2}
-                          onClick={() => handleMenuClick(value)}
-                        >
-                          <CardMenuItem
-                            label={label}
-                            description={description}
-                            illustration={illustration}
-                            badgeContent={badgeContent}
-                            badgeColor={badgeColor}
-                          />
-                        </Box>
-                      )
-                    )}
-                </Box>
-              </Fragment>
-            ))}
+                </Fragment>
+              );
+            })}
           </Box>
           {runningAction && (
             <Box

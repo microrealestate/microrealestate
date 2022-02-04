@@ -5,7 +5,6 @@ import { useCallback, useContext, useMemo } from 'react';
 import FullScreenDialogButton from '../../../../components/FullScreenDialogButton';
 import { isServer } from '../../../../utils';
 import moment from 'moment';
-import { nanoid } from 'nanoid';
 import { NumberFormat } from '../../../../utils/numberformat';
 import { observer } from 'mobx-react-lite';
 import Page from '../../../../components/Page';
@@ -67,7 +66,7 @@ const Rents = observer(() => {
       );
       store.rent.setFilters({ status, searchText });
     },
-    [store.organization.selected.name]
+    [/*router, store.rent,*/ store.organization.selected.name]
   );
 
   const onPeriodChange = useCallback(
@@ -77,7 +76,7 @@ const Rents = observer(() => {
         `/${store.organization.selected.name}/rents/${store.rent.period}`
       );
     },
-    [store.organization.selected.name]
+    [/*router, store.rent,*/ store.organization.selected.name]
   );
 
   const onEdit = useCallback(
@@ -87,7 +86,7 @@ const Rents = observer(() => {
         `/${store.organization.selected.name}/payment/${rent.occupant._id}/${store.rent.selected.term}`
       );
     },
-    [store.organization.selected.name]
+    [/*router, store.rent,*/ store.organization.selected.name]
   );
 
   const filters = useMemo(
@@ -173,7 +172,7 @@ const Rents = observer(() => {
       )}
       <Grid container spacing={3}>
         {store.rent.filteredItems.map((rent) => (
-          <Grid key={nanoid()} item xs={12} md={4}>
+          <Grid key={rent._id} item xs={12} md={4}>
             <RentCard rent={rent} onEdit={onEdit} />
           </Grid>
         ))}

@@ -20,10 +20,8 @@ import {
   useState,
 } from 'react';
 
-import { autorun } from 'mobx';
 import DownloadLink from '../DownloadLink';
 import moment from 'moment';
-import { nanoid } from 'nanoid';
 import { NumberFormat } from '../../utils/numberformat';
 import RequestError from '../RequestError';
 import SearchFilterBar from '../SearchFilterBar';
@@ -166,8 +164,7 @@ const TableToolbar = memo(function TableToolbar({
 const RentTable = () => {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
-  const [rents, setRents] = useState(store.rent.items);
-  const [filteredRents, setFilteredRents] = useState(rents);
+  const [filteredRents, setFilteredRents] = useState(store.rent.items);
   const [selected, setSelected] = useState([]);
   const [filterSearchText, setFilterSearchText] = useState({
     searchText: '',
@@ -176,11 +173,9 @@ const RentTable = () => {
   const [error, setError] = useState('');
   const theme = useTheme();
 
-  useEffect(() => autorun(() => setRents(store.rent.items)));
-
   useEffect(() => {
     setFilteredRents(
-      rents
+      store.rent.items
         .filter(({ status }) => {
           if (!filterSearchText.filter) {
             return true;
@@ -201,7 +196,7 @@ const RentTable = () => {
           return true;
         })
     );
-  }, [rents, filterSearchText]);
+  }, [store.rent?.items, filterSearchText]);
 
   const onSelectAllClick = useCallback(
     (event) => {
@@ -337,7 +332,7 @@ const RentTable = () => {
               const contactEmails = rent.occupant.contactEmails.join(', ');
               return (
                 <TableRow
-                  key={nanoid()}
+                  key={rent._id}
                   hover
                   selected={isItemSelected}
                   size="small"
