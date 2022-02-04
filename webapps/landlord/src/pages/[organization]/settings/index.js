@@ -46,11 +46,11 @@ const SettingTabs = observer(({ onSubmit, setError }) => {
           onChange={handleTabChange}
           aria-label="Setting tabs"
         >
-          <Tab label={t('Landlord')} />
-          <Tab label={t('Billing')} />
-          <Tab label={t('Contracts')} />
-          <Tab label={t('Collaborators')} />
-          <Tab label={t('Third-parties')} />
+          <Tab label={t('Landlord')} wrapped />
+          <Tab label={t('Billing')} wrapped />
+          <Tab label={t('Contracts')} wrapped />
+          <Tab label={t('Collaborators')} wrapped />
+          <Tab label={t('Third-parties')} wrapped />
         </Tabs>
         <TabPanel value={tabSelectedIndex} index={0}>
           <LandlordForm onSubmit={onSubmit} onSubmitted={onSubmitted} />

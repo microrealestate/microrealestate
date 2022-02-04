@@ -10,11 +10,23 @@ import App from 'next/app';
 import Application from '../components/Application';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import DateFnsUtils from '@date-io/moment';
+import getConfig from 'next/config';
 import Head from 'next/head';
 import { InjectStoreContext } from '../store';
 import { MuiPickersUtilsProvider } from '@material-ui/pickers';
 import theme from '../styles/theme';
 import { ThemeProvider } from '@material-ui/core/styles';
+
+const {
+  publicRuntimeConfig: { BASE_PATH, APP_NAME, DEMO_MODE },
+} = getConfig();
+
+const APP_TITLE = [APP_NAME];
+if (process.env.NODE_ENV === 'development') {
+  APP_TITLE.push('DEV');
+} else if (DEMO_MODE) {
+  APP_TITLE.push('DEMO');
+}
 
 Yup.addMethod(Yup.string, 'emails', function (message) {
   return this.test({
@@ -53,10 +65,12 @@ const MyApp = memo(function MyApp(props) {
           name="viewport"
           content="minimum-scale=1, initial-scale=1, width=device-width"
         />
+        <link rel="shortcut icon" href={`${BASE_PATH}/favicon.svg`} />
         <link
           href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css"
           rel="stylesheet"
         ></link>
+        <title>{APP_TITLE.join(' - ')}</title>
       </Head>
       <ThemeProvider theme={theme}>
         {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}

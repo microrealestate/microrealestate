@@ -165,9 +165,9 @@ const PaymentTabs = ({ onSubmit }) => {
           onChange={handleTabChange}
           aria-label="Tenant tabs"
         >
-          <Tab label={t('Settlements')} />
-          <Tab label={t('Additional cost and discount')} />
-          <Tab label={t('Internal note')} />
+          <Tab label={t('Settlements')} wrapped />
+          <Tab label={t('Additional cost and discount')} wrapped />
+          <Tab label={t('Internal note')} wrapped />
         </Tabs>
         <TabPanel value={tabSelectedIndex} index={0}>
           <PaymentForm onSubmit={onSubmit} />

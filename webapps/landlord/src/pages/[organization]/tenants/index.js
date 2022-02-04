@@ -19,7 +19,6 @@ import _ from 'lodash';
 import { EmptyIllustration } from '../../../components/Illustrations';
 import { isServer } from '../../../utils';
 import moment from 'moment';
-import { nanoid } from 'nanoid';
 import NewTenantDialog from '../../../components/tenants/NewTenantDialog';
 import { observer } from 'mobx-react-lite';
 import Page from '../../../components/Page';
@@ -45,7 +44,7 @@ const Properties = memo(function Properties({ tenant }) {
     <Box display="flex" height="100%" alignItems="center" flexWrap="wrap">
       {tenant.properties?.map(({ property }) => {
         return (
-          <Box key={nanoid()} m={0.5}>
+          <Box key={property._id} m={0.5}>
             <Chip
               icon={<PropertyIcon type={property.type} color="action" />}
               label={property.name}
@@ -57,105 +56,107 @@ const Properties = memo(function Properties({ tenant }) {
   );
 });
 
-const TenantList = () => {
-  const { t } = useTranslation('common');
-  const store = useContext(StoreContext);
+const TenantListItem = memo(function TenantListItem({ tenant }) {
   const router = useRouter();
+  const store = useContext(StoreContext);
+  const { t } = useTranslation('common');
   const classes = useStyles();
 
-  const onEdit = useCallback(
-    async (tenant) => {
-      store.tenant.setSelected(tenant);
-      await router.push(
-        `/${store.organization.selected.name}/tenants/${tenant._id}`
-      );
-    },
-    [store.organization.selected.name, store.tenant]
+  const onEdit = useCallback(async () => {
+    store.tenant.setSelected(tenant);
+    await router.push(
+      `/${store.organization.selected.name}/tenants/${tenant._id}`
+    );
+  }, [router, tenant, store.organization.selected.name, store.tenant]);
+
+  return (
+    <ListItem
+      button
+      style={{
+        marginBottom: 20,
+      }}
+      onClick={onEdit}
+    >
+      <Hidden smDown>
+        <ListItemAvatar>
+          <TenantAvatar
+            tenant={tenant}
+            className={
+              !!tenant.beginDate && !tenant.terminated
+                ? classes.avatarInProgress
+                : null
+            }
+          />
+        </ListItemAvatar>
+      </Hidden>
+      <ListItemText
+        primary={
+          <Grid container spacing={1}>
+            <Grid item xs={12} md={4}>
+              <Typography variant="h5">{tenant.name}</Typography>
+              {tenant.isCompany && (
+                <Typography
+                  variant="caption"
+                  color="textSecondary"
+                  component="div"
+                >
+                  {_.startCase(_.capitalize(tenant.manager))}
+                </Typography>
+              )}
+              <Typography
+                variant="caption"
+                color="textSecondary"
+                component="div"
+              >
+                {tenant.beginDate
+                  ? t(
+                      'Contract {{contract}} - from {{startDate}} to {{endDate}}',
+                      {
+                        contract: tenant.contract,
+                        startDate: moment(
+                          tenant.beginDate,
+                          'DD/MM/YYYY'
+                        ).format('L'),
+                        endDate: moment(
+                          tenant.terminationDate || tenant.endDate,
+                          'DD/MM/YYYY'
+                        ).format('L'),
+                      }
+                    )
+                  : t('No associated contract')}
+              </Typography>
+
+              {!!tenant.beginDate && (
+                <Typography
+                  variant="caption"
+                  color="textSecondary"
+                  component="div"
+                  className={!tenant.terminated ? classes.inProgress : null}
+                >
+                  {tenant.terminated ? t('Terminated') : t('In progress')}
+                </Typography>
+              )}
+            </Grid>
+            <Grid item xs={12} md={8}>
+              <Properties tenant={tenant} />
+            </Grid>
+          </Grid>
+        }
+      />
+    </ListItem>
   );
+});
+
+const TenantList = memo(function TenantList() {
+  const { t } = useTranslation('common');
+  const store = useContext(StoreContext);
 
   return store.tenant.filteredItems?.length ? (
     <List component="nav" aria-labelledby="tenant-list">
       {store.tenant.filteredItems.map((tenant) => {
         return (
-          <Paper key={nanoid()}>
-            <ListItem
-              button
-              style={{
-                marginBottom: 20,
-              }}
-              onClick={() => onEdit(tenant)}
-            >
-              <Hidden smDown>
-                <ListItemAvatar>
-                  <TenantAvatar
-                    tenant={tenant}
-                    className={
-                      !!tenant.beginDate && !tenant.terminated
-                        ? classes.avatarInProgress
-                        : null
-                    }
-                  />
-                </ListItemAvatar>
-              </Hidden>
-              <ListItemText
-                primary={
-                  <Grid container spacing={1}>
-                    <Grid item xs={12} md={4}>
-                      <Typography variant="h5">{tenant.name}</Typography>
-                      {tenant.isCompany && (
-                        <Typography
-                          variant="caption"
-                          color="textSecondary"
-                          component="div"
-                        >
-                          {_.startCase(_.capitalize(tenant.manager))}
-                        </Typography>
-                      )}
-                      <Typography
-                        variant="caption"
-                        color="textSecondary"
-                        component="div"
-                      >
-                        {tenant.beginDate
-                          ? t(
-                              'Contract {{contract}} - from {{startDate}} to {{endDate}}',
-                              {
-                                contract: tenant.contract,
-                                startDate: moment(
-                                  tenant.beginDate,
-                                  'DD/MM/YYYY'
-                                ).format('L'),
-                                endDate: moment(
-                                  tenant.terminationDate || tenant.endDate,
-                                  'DD/MM/YYYY'
-                                ).format('L'),
-                              }
-                            )
-                          : t('No associated contract')}
-                      </Typography>
-
-                      {!!tenant.beginDate && (
-                        <Typography
-                          variant="caption"
-                          color="textSecondary"
-                          component="div"
-                          className={
-                            !tenant.terminated ? classes.inProgress : null
-                          }
-                        >
-                          {tenant.terminated
-                            ? t('Terminated')
-                            : t('In progress')}
-                        </Typography>
-                      )}
-                    </Grid>
-                    <Grid item xs={12} md={8}>
-                      <Properties tenant={tenant} />
-                    </Grid>
-                  </Grid>
-                }
-              />
-            </ListItem>
+          <Paper key={tenant._id}>
+            <TenantListItem tenant={tenant} />
           </Paper>
         );
       })}
@@ -165,7 +166,7 @@ const TenantList = () => {
       <EmptyIllustration label={t('No tenants found')} />
     </Box>
   );
-};
+});
 
 const Tenants = observer(() => {
   const { t } = useTranslation('common');

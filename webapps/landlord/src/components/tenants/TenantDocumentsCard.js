@@ -18,7 +18,6 @@ import { DashboardCard } from '../Cards';
 import DeleteIcon from '@material-ui/icons/Delete';
 import DescriptionIcon from '@material-ui/icons/DescriptionOutlined';
 import FullScreenDialogMenu from '../FullScreenDialogMenu';
-import { nanoid } from 'nanoid';
 import { observer } from 'mobx-react-lite';
 import RichTextEditorDialog from '../RichTextEditor/RichTextEditorDialog';
 import { StoreContext } from '../../store';
@@ -36,7 +35,7 @@ const DocumentList = observer(({ onEdit, onDelete }) => {
   return documents.length > 0 ? (
     <List dense>
       {documents.map((document) => (
-        <ListItem key={nanoid()} button onClick={() => onEdit(document)}>
+        <ListItem key={document._id} button onClick={() => onEdit(document)}>
           <ListItemText id={document._id} primary={document.name} />
           <ListItemSecondaryAction>
             <IconButton

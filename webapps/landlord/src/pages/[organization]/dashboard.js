@@ -30,7 +30,6 @@ import { DashboardCard } from '../../components/Cards';
 import DescriptionIcon from '@material-ui/icons/Description';
 import Loading from '../../components/Loading';
 import moment from 'moment';
-import { nanoid } from 'nanoid';
 import NewLeaseDialog from '../../components/organization/NewLeaseDialog';
 import NewPaymentDialog from '../../components/payment/NewPaymentDialog';
 import NewPropertyDialog from '../../components/properties/NewPropertyDialog';
@@ -344,7 +343,7 @@ const MonthFigures = observer(() => {
                 {store.dashboard.data.topUnpaid.map(
                   ({ tenant, balance, rent }) => (
                     <TenantListItem
-                      key={nanoid()}
+                      key={tenant._id}
                       tenant={tenant}
                       balance={balance}
                       onClick={() => {

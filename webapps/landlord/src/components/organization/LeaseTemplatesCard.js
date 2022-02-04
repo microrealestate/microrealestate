@@ -14,7 +14,6 @@ import { DashboardCard } from '../Cards';
 import DeleteIcon from '@material-ui/icons/Delete';
 import DescriptionIcon from '@material-ui/icons/DescriptionOutlined';
 import { EmptyIllustration } from '../Illustrations';
-import { nanoid } from 'nanoid';
 import { observer } from 'mobx-react-lite';
 import RichTextEditorDialog from '../RichTextEditor/RichTextEditorDialog';
 import { StoreContext } from '../../store';
@@ -32,7 +31,7 @@ const TemplateList = observer(({ onEdit, onDelete }) => {
   return templates.length > 0 ? (
     <List dense>
       {templates.map((template) => (
-        <ListItem key={nanoid()} button onClick={() => onEdit(template)}>
+        <ListItem key={template._id} button onClick={() => onEdit(template)}>
           <ListItemText id={template._id} primary={template.name} />
           <ListItemSecondaryAction>
             <IconButton
