@@ -1,4 +1,5 @@
-const mailgun = require('mailgun-js');
+const formData = require('form-data');
+const Mailgun = require('mailgun.js');
 const config = require('./config');
 const crypto = require('@mre/common/utils/crypto');
 
@@ -21,16 +22,9 @@ const sendEmail = (email, data) => {
     throw new Error('landlord has not set the mailgun configuration');
   }
 
-  const mg = mailgun(mgConfig);
-
-  return new Promise((resolve, reject) => {
-    mg.messages().send(email, function (error, body) {
-      if (error) {
-        return reject(error);
-      }
-      resolve(body);
-    });
-  });
+  const mailgun = new Mailgun(formData);
+  const mg = mailgun.client({ username: 'api', key: mgConfig.apiKey });
+  return mg.messages.create(mgConfig.domain, email);
 };
 
 module.exports = {
