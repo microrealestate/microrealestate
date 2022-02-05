@@ -16,3 +16,5 @@ coverage
 
 # Rest client vscode plugin
 *.rest
+
+.yarn
