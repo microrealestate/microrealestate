@@ -147,26 +147,28 @@ const TenantListItem = memo(function TenantListItem({ tenant }) {
   );
 });
 
-const TenantList = memo(function TenantList() {
-  const { t } = useTranslation('common');
-  const store = useContext(StoreContext);
+const TenantList = memo(
+  observer(function TenantList() {
+    const { t } = useTranslation('common');
+    const store = useContext(StoreContext);
 
-  return store.tenant.filteredItems?.length ? (
-    <List component="nav" aria-labelledby="tenant-list">
-      {store.tenant.filteredItems.map((tenant) => {
-        return (
-          <Paper key={tenant._id}>
-            <TenantListItem tenant={tenant} />
-          </Paper>
-        );
-      })}
-    </List>
-  ) : (
-    <Box mt={20}>
-      <EmptyIllustration label={t('No tenants found')} />
-    </Box>
-  );
-});
+    return store.tenant.filteredItems?.length ? (
+      <List component="nav" aria-labelledby="tenant-list">
+        {store.tenant.filteredItems.map((tenant) => {
+          return (
+            <Paper key={tenant._id}>
+              <TenantListItem tenant={tenant} />
+            </Paper>
+          );
+        })}
+      </List>
+    ) : (
+      <Box mt={20}>
+        <EmptyIllustration label={t('No tenants found')} />
+      </Box>
+    );
+  })
+);
 
 const Tenants = observer(() => {
   const { t } = useTranslation('common');
