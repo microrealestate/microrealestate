@@ -50,7 +50,6 @@
   },
   "devDependencies": {
     "@babel/core": "7.16.0",
-    "eslint": "8.8.0",
     "fdir": "5.1.0"
   },
   "babel": {
