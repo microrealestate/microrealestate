@@ -27,6 +27,7 @@
     "@tiptap/react": "2.0.0-beta.107",
     "@tiptap/starter-kit": "2.0.0-beta.180",
     "async-mutex": "0.3.2",
+    "axios": "0.25.0",
     "currency-codes": "2.1.0",
     "currency-symbol-map": "5.0.1",
     "formik": "2.2.9",
@@ -49,6 +50,7 @@
   },
   "devDependencies": {
     "@babel/core": "7.16.0",
+    "eslint": "8.8.0",
     "fdir": "5.1.0"
   },
   "babel": {
