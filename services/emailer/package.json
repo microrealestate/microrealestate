@@ -18,7 +18,7 @@
   "author": "Camel Aissani",
   "license": "MIT",
   "dependencies": {
-    "axios": "0.24.0",
+    "@mre/common": "*",
     "body-parser": "1.19.0",
     "ejs": "2.7.4",
     "express": "4.17.1",
@@ -28,7 +28,6 @@
     "mailgun-js": "0.22.0",
     "moment": "2.29.1",
     "mongodb": "3.5.6",
-    "@mre/common": "*",
     "winston": "2.4.4"
   },
   "devDependencies": {

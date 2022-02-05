@@ -14,9 +14,9 @@
   "author": "Camel Aissani",
   "license": "MIT",
   "dependencies": {
+    "@mre/common": "*",
     "express": "4.17.1",
     "express-winston": "2.6.0",
-    "@mre/common": "*",
     "winston": "2.4.4"
   },
   "devDependencies": {
