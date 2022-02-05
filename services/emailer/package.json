@@ -23,9 +23,10 @@
     "ejs": "2.7.4",
     "express": "4.17.1",
     "express-winston": "2.6.0",
+    "form-data": "4.0.0",
     "jsonwebtoken": "8.5.1",
     "locale": "0.1.0",
-    "mailgun-js": "0.22.0",
+    "mailgun.js": "4.2.1",
     "moment": "2.29.1",
     "mongodb": "3.5.6",
     "winston": "2.4.4"

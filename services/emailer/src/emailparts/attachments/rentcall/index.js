@@ -26,8 +26,14 @@ module.exports = {
       params,
       filename
     );
+    const data = fs.readFileSync(filePath);
     return {
-      attachment: [fs.createReadStream(filePath)],
+      attachment: [
+        {
+          filename,
+          data,
+        },
+      ],
     };
   },
 };
