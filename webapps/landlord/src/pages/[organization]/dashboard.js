@@ -138,13 +138,6 @@ const Shortcuts = () => {
               )}
               <Grid item xs={12}>
                 <ShortcutButton
-                  Icon={DescriptionIcon}
-                  label={t('Create a new contract')}
-                  onClick={() => setOpenNewLeaseDialog(true)}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <ShortcutButton
                   Icon={VpnKeyIcon}
                   label={t('Add a new property')}
                   onClick={() => setOpenNewPropertyDialog(true)}
@@ -155,6 +148,13 @@ const Shortcuts = () => {
                   Icon={PeopleIcon}
                   label={t('Add a new tenant')}
                   onClick={() => setOpenNewTenantDialog(true)}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <ShortcutButton
+                  Icon={DescriptionIcon}
+                  label={t('Create a new contract')}
+                  onClick={() => setOpenNewLeaseDialog(true)}
                 />
               </Grid>
             </Grid>
