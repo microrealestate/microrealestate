@@ -26,10 +26,10 @@ import { observer } from 'mobx-react-lite';
 import Page from '../../../components/Page';
 import PeriodPicker from '../../../components/PeriodPicker';
 import PropertyIcon from '../../../components/properties/PropertyIcon';
+import SaveAltIcon from '@material-ui/icons/SaveAlt';
 import { StoreContext } from '../../../store';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
-import VerticalAlignBottomIcon from '@material-ui/icons/VerticalAlignBottom';
 import { withAuthentication } from '../../../components/Authentication';
 import { withStyles } from '@material-ui/core/styles';
 
@@ -109,7 +109,7 @@ const TenantsTableWrapper = ({
               aria-label={t('download as csv')}
             >
               <IconButton onClick={onClick}>
-                <VerticalAlignBottomIcon />
+                <SaveAltIcon />
               </IconButton>
             </Tooltip>
           </Grid>

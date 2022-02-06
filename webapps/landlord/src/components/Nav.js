@@ -8,7 +8,7 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import moment from 'moment';
-import PeopleIcon from '@material-ui/icons/People';
+import PeopleAltIcon from '@material-ui/icons/PeopleAlt';
 import ReceiptIcon from '@material-ui/icons/Receipt';
 import SettingsIcon from '@material-ui/icons/Settings';
 import { StoreContext } from '../store';
@@ -80,7 +80,7 @@ const Nav = () => {
         key: 'tenants',
         value: t('Tenants'),
         pathname: '/tenants',
-        icon: <PeopleIcon />,
+        icon: <PeopleAltIcon />,
         dataCy: 'tenantsNav',
       },
       {
