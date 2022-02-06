@@ -2,7 +2,7 @@ import { Box, IconButton, Link, Tooltip, Typography } from '@material-ui/core';
 import { memo, useCallback } from 'react';
 
 import { downloadDocument } from '../utils/fetch';
-import VerticalAlignBottomIcon from '@material-ui/icons/VerticalAlignBottom';
+import SaveAltIcon from '@material-ui/icons/SaveAlt';
 
 const DownloadLink = ({
   label,
@@ -22,7 +22,7 @@ const DownloadLink = ({
       {withIcon && tooltipText && (
         <Tooltip title={tooltipText} aria-label="download">
           <IconButton size="small" onClick={onClick} aria-label="download">
-            <VerticalAlignBottomIcon fontSize="inherit" />
+            <SaveAltIcon fontSize="inherit" />
           </IconButton>
         </Tooltip>
       )}
@@ -35,7 +35,7 @@ const DownloadLink = ({
         <Box display="flex" alignItems="center">
           {label && <Typography {...props}>{label}</Typography>}
           <IconButton size="small" onClick={onClick} aria-label="download">
-            <VerticalAlignBottomIcon fontSize="inherit" />
+            <SaveAltIcon fontSize="inherit" />
           </IconButton>
         </Box>
       )}
