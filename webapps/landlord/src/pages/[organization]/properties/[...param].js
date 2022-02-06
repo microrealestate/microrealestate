@@ -200,25 +200,21 @@ const Property = observer(() => {
 
   return (
     <Page
+      ActionToolbar={
+        <Button
+          variant="contained"
+          startIcon={<DeleteIcon />}
+          onClick={onConfirmDeleteProperty}
+        >
+          {t('Delete')}
+        </Button>
+      }
       PrimaryToolbar={
         <BreadcrumbBar
           backPath={backPath}
           backPage={backToDashboard ? t('Dashboard') : t('Properties')}
           currentPage={store.property.selected.name}
         />
-      }
-      SecondaryToolbar={
-        <Grid container spacing={2}>
-          <Grid item>
-            <Button
-              variant="contained"
-              startIcon={<DeleteIcon />}
-              onClick={onConfirmDeleteProperty}
-            >
-              {t('Delete')}
-            </Button>
-          </Grid>
-        </Grid>
       }
     >
       <RequestError error={error} />

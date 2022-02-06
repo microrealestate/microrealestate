@@ -1,4 +1,4 @@
-import { Box, InputAdornment, TextField } from '@material-ui/core';
+import { Grid, InputAdornment, TextField } from '@material-ui/core';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import FilterListIcon from '@material-ui/icons/FilterList';
@@ -24,11 +24,9 @@ const SearchFilterBar = ({
   }, [filter, searchText, onSearch]);
 
   return (
-    <Box display="flex" alignItems="center">
-      <Box flexGrow={1}>
+    <Grid container>
+      <Grid item>
         <TextField
-          // fullWidth
-          // size="medium"
           placeholder={t('Search')}
           defaultValue={defaultValue.searchText}
           InputProps={{
@@ -43,11 +41,11 @@ const SearchFilterBar = ({
             []
           )}
           style={{
-            width: '400px',
+            width: 300,
           }}
         />
-      </Box>
-      <Box>
+      </Grid>
+      <Grid item>
         <ToggleMenu
           startIcon={<FilterListIcon />}
           options={filters}
@@ -58,8 +56,8 @@ const SearchFilterBar = ({
           )}
           onChange={useCallback((option) => setFilter(option.id), [])}
         />
-      </Box>
-    </Box>
+      </Grid>
+    </Grid>
   );
 };
 

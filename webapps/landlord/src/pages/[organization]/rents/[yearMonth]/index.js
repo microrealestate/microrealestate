@@ -101,29 +101,25 @@ const Rents = observer(() => {
 
   return (
     <Page
+      ActionToolbar={
+        <FullScreenDialogButton
+          variant="contained"
+          buttonLabel={t('Send mass emails')}
+          startIcon={<SendIcon />}
+          dialogTitle={t('Send mass emails')}
+          cancelButtonLabel={t('Close')}
+          showCancel
+        >
+          <RentTable />
+        </FullScreenDialogButton>
+      }
       PrimaryToolbar={<PeriodToolbar onChange={onPeriodChange} />}
       SecondaryToolbar={
-        <Box display="flex" alignItems="center">
-          <Box flexGrow={1} mr={5}>
-            <SearchFilterBar
-              filters={filters}
-              defaultValue={store.rent.filters}
-              onSearch={onSearch}
-            />
-          </Box>
-          <Box>
-            <FullScreenDialogButton
-              variant="contained"
-              buttonLabel={t('Send mass emails')}
-              startIcon={<SendIcon />}
-              dialogTitle={t('Send mass emails')}
-              cancelButtonLabel={t('Close')}
-              showCancel
-            >
-              <RentTable />
-            </FullScreenDialogButton>
-          </Box>
-        </Box>
+        <SearchFilterBar
+          filters={filters}
+          defaultValue={store.rent.filters}
+          onSearch={onSearch}
+        />
       }
     >
       {!store.rent.filters.searchText && (

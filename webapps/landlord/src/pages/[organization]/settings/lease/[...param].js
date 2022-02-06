@@ -84,18 +84,7 @@ const Lease = observer(() => {
 
   return (
     <Page
-      PrimaryToolbar={
-        <BreadcrumbBar
-          backPath={
-            backToDashboard
-              ? `/${store.organization.selected.name}/dashboard`
-              : `/${store.organization.selected.name}/settings#leases`
-          }
-          backPage={backToDashboard ? t('Dashboard') : t('Settings')}
-          currentPage={store.lease.selected?.name || t('New contract')}
-        />
-      }
-      SecondaryToolbar={
+      ActionToolbar={
         <RestrictButton
           variant="contained"
           startIcon={<DeleteIcon />}
@@ -114,6 +103,17 @@ const Lease = observer(() => {
         >
           {t('Delete')}
         </RestrictButton>
+      }
+      PrimaryToolbar={
+        <BreadcrumbBar
+          backPath={
+            backToDashboard
+              ? `/${store.organization.selected.name}/dashboard`
+              : `/${store.organization.selected.name}/settings#leases`
+          }
+          backPage={backToDashboard ? t('Dashboard') : t('Settings')}
+          currentPage={store.lease.selected?.name || t('New contract')}
+        />
       }
     >
       <RequestError error={error} />

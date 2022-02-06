@@ -127,26 +127,22 @@ const Properties = observer(() => {
 
   return (
     <Page
+      ActionToolbar={
+        <Button variant="contained" onClick={onNewProperty}>
+          {t('New property')}
+        </Button>
+      }
       PrimaryToolbar={
         <Typography color="textSecondary" variant="h5" noWrap>
           {t('Properties')}
         </Typography>
       }
       SecondaryToolbar={
-        <Box display="flex">
-          <Box mr={1} flexGrow={1}>
-            <SearchFilterBar
-              filters={filters}
-              defaultValue={store.property.filters}
-              onSearch={onSearch}
-            />
-          </Box>
-          <Box>
-            <Button variant="contained" onClick={onNewProperty}>
-              {t('New property')}
-            </Button>
-          </Box>
-        </Box>
+        <SearchFilterBar
+          filters={filters}
+          defaultValue={store.property.filters}
+          onSearch={onSearch}
+        />
       }
     >
       <RequestError error={error} />
