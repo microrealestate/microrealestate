@@ -420,14 +420,7 @@ const Tenant = observer(() => {
 
   return (
     <Page
-      PrimaryToolbar={
-        <BreadcrumbBar
-          backPath={backPath}
-          backPage={backToDashboard ? t('Dashboard') : t('Tenants')}
-          currentPage={store.tenant.selected.name}
-        />
-      }
-      SecondaryToolbar={
+      ActionToolbar={
         <Grid container spacing={2}>
           <Grid item>
             <Tooltip
@@ -476,6 +469,13 @@ const Tenant = observer(() => {
             </Button>
           </Grid>
         </Grid>
+      }
+      PrimaryToolbar={
+        <BreadcrumbBar
+          backPath={backPath}
+          backPage={backToDashboard ? t('Dashboard') : t('Tenants')}
+          currentPage={store.tenant.selected.name}
+        />
       }
     >
       <RequestError error={error} />

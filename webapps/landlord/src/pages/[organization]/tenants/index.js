@@ -188,30 +188,26 @@ const Tenants = observer(() => {
 
   return (
     <Page
+      ActionToolbar={
+        <Button variant="contained" onClick={onNewTenant}>
+          {t('New tenant')}
+        </Button>
+      }
       PrimaryToolbar={
         <Typography color="textSecondary" variant="h5" noWrap>
           {t('Tenants')}
         </Typography>
       }
       SecondaryToolbar={
-        <Box display="flex">
-          <Box mr={1} flexGrow={1}>
-            <SearchFilterBar
-              filters={[
-                { id: '', label: t('All') },
-                { id: 'inprogress', label: t('In progress') },
-                { id: 'stopped', label: t('Terminated') },
-              ]}
-              defaultValue={store.tenant.filters}
-              onSearch={onSearch}
-            />
-          </Box>
-          <Box>
-            <Button variant="contained" onClick={onNewTenant}>
-              {t('New tenant')}
-            </Button>
-          </Box>
-        </Box>
+        <SearchFilterBar
+          filters={[
+            { id: '', label: t('All') },
+            { id: 'inprogress', label: t('In progress') },
+            { id: 'stopped', label: t('Terminated') },
+          ]}
+          defaultValue={store.tenant.filters}
+          onSearch={onSearch}
+        />
       }
     >
       <TenantList />

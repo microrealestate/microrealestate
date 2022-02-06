@@ -44,8 +44,8 @@ const EditorMenu = ({
         <Box display="flex" flexDirection="column" m={1}>
           <Box display="flex" justifyContent="space-between" mb={1}>
             <Box display="flex" alignItems="center">
-              <Box>
-                <Input value={title} onChange={onTitleChange} />
+              <Box width={300}>
+                <Input value={title} onChange={onTitleChange} fullWidth />
               </Box>
               <Box color="text.disabled" ml={2}>
                 {saving === true && (

@@ -24,12 +24,15 @@ const {
   publicRuntimeConfig: { DEMO_MODE, APP_NAME, BASE_PATH },
 } = getConfig();
 
-const Demonstrationbar = memo(function Demonstrationbar() {
+const EnvironmentBar = memo(function EnvironmentBar() {
   const { t } = useTranslation('common');
-  return DEMO_MODE ? (
-    <Box color="primary.contrastText" bgcolor="success.dark">
+  return DEMO_MODE || process.env.NODE_ENV === 'development' ? (
+    <Box
+      color="primary.contrastText"
+      bgcolor={DEMO_MODE ? 'success.dark' : 'grey.700'}
+    >
       <Typography variant="button" component="div" align="center">
-        {t('Demonstration mode')}
+        {DEMO_MODE ? t('Demonstration mode') : t('Development mode')}
       </Typography>
     </Box>
   ) : null;
@@ -77,33 +80,38 @@ const MainToolbar = memo(function MainToolbar({ visible }) {
   ) : null;
 });
 
-const SubToolbars = memo(function SubToolbars({
-  visible,
-  PrimaryToolbar,
-  SecondaryToolbar,
-}) {
-  return visible ? (
-    <ElevationScroll>
-      <AppBar position="sticky">
-        <Toolbar>
-          <Grid
-            container
-            alignItems="center"
-            justifyContent="space-between"
-            wrap="nowrap"
-            spacing={5}
-          >
-            <Grid item>{PrimaryToolbar}</Grid>
-            <Grid item>{SecondaryToolbar}</Grid>
+const SubToolbar = memo(function SubToolbar({ ContentBar, ActionBar }) {
+  return (
+    <Toolbar disableGutters>
+      {ActionBar ? (
+        <Grid
+          container
+          alignItems="center"
+          justifyContent="space-between"
+          spacing={2}
+        >
+          <Grid item xs={12} sm="auto">
+            {ContentBar}
           </Grid>
-        </Toolbar>
-      </AppBar>
-    </ElevationScroll>
-  ) : null;
+          <Grid item xs={12} sm="auto">
+            {ActionBar}
+          </Grid>
+        </Grid>
+      ) : (
+        <Box width="100%">{ContentBar}</Box>
+      )}
+    </Toolbar>
+  );
 });
 
 const Page = observer(
-  ({ children, PrimaryToolbar, SecondaryToolbar, maxWidth = 'lg' }) => {
+  ({
+    children,
+    PrimaryToolbar,
+    SecondaryToolbar,
+    ActionToolbar,
+    maxWidth = 'lg',
+  }) => {
     console.log('Page functional component');
     const store = useContext(StoreContext);
     const [loading, setLoading] = useState(false);
@@ -132,15 +140,27 @@ const Page = observer(
 
     return (
       <>
-        <Demonstrationbar />
+        <EnvironmentBar />
 
         <MainToolbar visible={store.user.signedIn} />
 
-        <SubToolbars
-          visible={!loading && (PrimaryToolbar || SecondaryToolbar)}
-          PrimaryToolbar={PrimaryToolbar}
-          SecondaryToolbar={SecondaryToolbar}
-        />
+        {!loading ? (
+          <ElevationScroll>
+            <AppBar position="sticky">
+              <Container maxWidth={maxWidth}>
+                {PrimaryToolbar ? (
+                  <SubToolbar
+                    ContentBar={PrimaryToolbar}
+                    ActionBar={ActionToolbar}
+                  />
+                ) : null}
+                {SecondaryToolbar ? (
+                  <SubToolbar ContentBar={SecondaryToolbar} />
+                ) : null}
+              </Container>
+            </AppBar>
+          </ElevationScroll>
+        ) : null}
 
         <Box mt={!loading && (PrimaryToolbar || SecondaryToolbar) ? 4 : 0}>
           <Container maxWidth={maxWidth}>

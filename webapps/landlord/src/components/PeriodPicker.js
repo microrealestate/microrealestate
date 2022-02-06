@@ -29,7 +29,11 @@ const PeriodPicker = ({ value, period, format, onChange }) => {
 
   return (
     <Box display="flex" alignItems="center">
-      <IconButton onClick={_onPreviousPeriod} aria-label="previous period">
+      <IconButton
+        onClick={_onPreviousPeriod}
+        aria-label="previous period"
+        size="small"
+      >
         <ArrowLeftIcon />
       </IconButton>
       <DatePicker
