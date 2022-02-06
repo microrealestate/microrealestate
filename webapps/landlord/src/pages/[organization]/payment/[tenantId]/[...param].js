@@ -309,7 +309,7 @@ const RentPayment = observer(() => {
                 {store.rent.selected.emailStatus.status?.rentcall && (
                   <StyledListItem>
                     <DownloadLink
-                      label={t('First notice sent on {{datetime}}', {
+                      label={t('1st notice sent on {{datetime}}', {
                         datetime: moment(
                           store.rent.selected.emailStatus.last.rentcall.sentDate
                         ).format('L hh:mm'),
@@ -327,7 +327,7 @@ const RentPayment = observer(() => {
                 {store.rent.selected.emailStatus.status?.rentcall_reminder && (
                   <StyledListItem>
                     <DownloadLink
-                      label={t('Second notice sent on {{datetime}}', {
+                      label={t('2nd notice sent on {{datetime}}', {
                         datetime: moment(
                           store.rent.selected.emailStatus.last.rentcall_reminder
                             .sentDate
