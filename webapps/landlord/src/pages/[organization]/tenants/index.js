@@ -163,9 +163,7 @@ const TenantList = memo(
         })}
       </List>
     ) : (
-      <Box mt={20}>
-        <EmptyIllustration label={t('No tenants found')} />
-      </Box>
+      <EmptyIllustration label={t('No tenants found')} />
     );
   })
 );

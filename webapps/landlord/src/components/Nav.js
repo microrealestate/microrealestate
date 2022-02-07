@@ -93,7 +93,7 @@ const Nav = () => {
       {
         key: 'accounting',
         value: t('Accounting'),
-        pathname: `/accounting/${moment().year()}`,
+        pathname: `/accounting/[year]`,
         icon: <AccountBalanceWalletIcon />,
         dataCy: 'accountingNav',
       },
@@ -120,10 +120,11 @@ const Nav = () => {
     (menuItem) => {
       triggerOpen.clear();
       if (store.organization.selected?.name && store.rent?.period) {
-        const pathname = menuItem.pathname.replace(
+        let pathname = menuItem.pathname.replace(
           '[yearMonth]',
           store.rent.period
         );
+        pathname = pathname.replace('[year]', moment().year());
         router.push(`/${store.organization.selected.name}${pathname}`);
       }
     },
