@@ -74,6 +74,7 @@ const TenantsTableWrapper = ({
   id,
   title,
   defaultExpanded = false,
+  hasData = true,
   onClick,
   children,
 }) => {
@@ -99,20 +100,24 @@ const TenantsTableWrapper = ({
       >
         <Grid container alignItems="center" spacing={2}>
           <Grid item>
-            <Typography variant="h5" noWrap={true}>
-              {title}
-            </Typography>
+            <Box width={350}>
+              <Typography variant="h5" noWrap={true}>
+                {title}
+              </Typography>
+            </Box>
           </Grid>
-          <Grid item>
-            <Tooltip
-              title={t('download as csv')}
-              aria-label={t('download as csv')}
-            >
-              <IconButton onClick={onClick}>
-                <SaveAltIcon />
-              </IconButton>
-            </Tooltip>
-          </Grid>
+          {hasData && (
+            <Grid item>
+              <Tooltip
+                title={t('download as csv')}
+                aria-label={t('download as csv')}
+              >
+                <IconButton onClick={onClick}>
+                  <SaveAltIcon />
+                </IconButton>
+              </Tooltip>
+            </Grid>
+          )}
         </Grid>
       </AccordionSummary>
       <AccordionDetails>{children}</AccordionDetails>
@@ -150,59 +155,78 @@ const SettlementList = ({ month, tenantId, settlements }) => {
     : null;
 };
 
+const StyledTable = withStyles(() => {
+  return {
+    root: { border: '1px solid rgba(224, 224, 224, 1)' },
+  };
+})(Table);
+
 const StyledTableCell = withStyles(() => {
   return {
-    root: { verticalAlign: 'top' },
+    root: {
+      verticalAlign: 'top',
+      borderLeft: '1px solid rgba(224, 224, 224, 1)',
+    },
   };
 })(TableCell);
 
 const IncomingTenants = ({ id, defaultExpanded, onCSVClick }) => {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
+  const hasData = !!store.accounting?.data?.incomingTenants?.length;
 
   return (
     <TenantsTableWrapper
       id={id}
       title={t('Incoming tenants')}
       defaultExpanded={defaultExpanded}
+      hasData={hasData}
       onClick={onCSVClick}
     >
-      <TableContainer>
-        <Table aria-label="incoming tenants">
-          <TableHead>
-            <TableRow>
-              <TableCell>{t('Name')}</TableCell>
-              <TableCell align="left">{t('Property')}</TableCell>
-              <TableCell align="center">{t('Start date')}</TableCell>
-              <TableCell align="center">{t('End date')}</TableCell>
-              <TableCell align="right">{t('Deposit')}</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {store.accounting.data.incomingTenants.map((tenant) => (
-              <TableRow key={tenant._id} hover>
-                <StyledTableCell component="th" scope="row">
-                  <Typography noWrap={true}>{tenant.name}</Typography>
-                </StyledTableCell>
-                <StyledTableCell align="left">
-                  <PropertiesList properties={tenant.properties} />
+      {hasData ? (
+        <TableContainer>
+          <StyledTable aria-label="incoming tenants">
+            <TableHead>
+              <TableRow>
+                <StyledTableCell>{t('Name')}</StyledTableCell>
+                <StyledTableCell align="left">{t('Property')}</StyledTableCell>
+                <StyledTableCell align="center">
+                  {t('Start date')}
                 </StyledTableCell>
                 <StyledTableCell align="center">
-                  {moment(tenant.beginDate).format('L')}
+                  {t('End date')}
                 </StyledTableCell>
-                <StyledTableCell align="center">
-                  {moment(tenant.endDate).format('L')}
-                </StyledTableCell>
-                <StyledTableCell align="right">
-                  <NumberFormat
-                    value={tenant.guaranty !== 0 ? tenant.guaranty : null}
-                  />
-                </StyledTableCell>
+                <StyledTableCell align="right">{t('Deposit')}</StyledTableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+            </TableHead>
+            <TableBody>
+              {store.accounting.data.incomingTenants.map((tenant) => (
+                <TableRow key={tenant._id} hover>
+                  <StyledTableCell component="th" scope="row">
+                    <Typography noWrap={true}>{tenant.name}</Typography>
+                  </StyledTableCell>
+                  <StyledTableCell align="left">
+                    <PropertiesList properties={tenant.properties} />
+                  </StyledTableCell>
+                  <StyledTableCell align="center">
+                    {moment(tenant.beginDate).format('L')}
+                  </StyledTableCell>
+                  <StyledTableCell align="center">
+                    {moment(tenant.endDate).format('L')}
+                  </StyledTableCell>
+                  <StyledTableCell align="right">
+                    <NumberFormat
+                      value={tenant.guaranty !== 0 ? tenant.guaranty : null}
+                    />
+                  </StyledTableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </StyledTable>
+        </TableContainer>
+      ) : (
+        <EmptyIllustration label={t('No data found')} />
+      )}
     </TenantsTableWrapper>
   );
 };
@@ -210,76 +234,92 @@ const IncomingTenants = ({ id, defaultExpanded, onCSVClick }) => {
 const OutgoingTenants = ({ id, onCSVClick }) => {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
+  const hasData = !!store.accounting?.data?.outgoingTenants?.length;
 
   return (
     <TenantsTableWrapper
       id={id}
       title={t('Outgoing tenants')}
       onClick={onCSVClick}
+      hasData={hasData}
     >
-      <TableContainer>
-        <Table aria-label="incoming tenants">
-          <TableHead>
-            <TableRow>
-              <TableCell>{t('Name')}</TableCell>
-              <TableCell align="left">{t('Property')}</TableCell>
-              <TableCell align="center">{t('Start date')}</TableCell>
-              <TableCell align="center">{t('Termination date')}</TableCell>
-              <TableCell align="right">{t('Deposit')}</TableCell>
-              <TableCell align="right">{t('Deposit reimbursement')}</TableCell>
-              <TableCell align="right">{t('Last rent balance')}</TableCell>
-              <TableCell align="right">{t('Final balance')}</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {store.accounting.data.outgoingTenants.map((tenant) => (
-              <TableRow key={tenant._id} hover>
-                <StyledTableCell component="th" scope="row">
-                  <Typography noWrap={true}>{tenant.name}</Typography>
-                </StyledTableCell>
-                <StyledTableCell align="left">
-                  <PropertiesList properties={tenant.properties} />
+      {hasData ? (
+        <TableContainer>
+          <StyledTable aria-label="incoming tenants">
+            <TableHead>
+              <TableRow>
+                <StyledTableCell>{t('Name')}</StyledTableCell>
+                <StyledTableCell align="left">{t('Property')}</StyledTableCell>
+                <StyledTableCell align="center">
+                  {t('Start date')}
                 </StyledTableCell>
                 <StyledTableCell align="center">
-                  {moment(tenant.beginDate).format('L')}
+                  {t('Termination date')}
                 </StyledTableCell>
-                <StyledTableCell align="center">
-                  {tenant.terminationDate
-                    ? moment(tenant.terminationDate).format('L')
-                    : moment(tenant.endDate).format('L')}
+                <StyledTableCell align="right">{t('Deposit')}</StyledTableCell>
+                <StyledTableCell align="right">
+                  {t('Deposit reimbursement')}
                 </StyledTableCell>
                 <StyledTableCell align="right">
-                  <NumberFormat
-                    value={tenant.guaranty !== 0 ? tenant.guaranty : null}
-                  />
+                  {t('Last rent balance')}
                 </StyledTableCell>
                 <StyledTableCell align="right">
-                  <NumberFormat
-                    value={
-                      tenant.guarantyPayback !== 0
-                        ? tenant.guarantyPayback
-                        : null
-                    }
-                  />
-                </StyledTableCell>
-                <StyledTableCell align="right">
-                  <NumberFormat
-                    value={tenant.balance !== 0 ? tenant.balance : null}
-                  />
-                </StyledTableCell>
-                <StyledTableCell align="right">
-                  <NumberFormat
-                    value={
-                      tenant.finalBalance !== 0 ? tenant.finalBalance : null
-                    }
-                    withColor
-                  />
+                  {t('Final balance')}
                 </StyledTableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+            </TableHead>
+            <TableBody>
+              {store.accounting.data.outgoingTenants.map((tenant) => (
+                <TableRow key={tenant._id} hover>
+                  <StyledTableCell component="th" scope="row">
+                    <Typography noWrap={true}>{tenant.name}</Typography>
+                  </StyledTableCell>
+                  <StyledTableCell align="left">
+                    <PropertiesList properties={tenant.properties} />
+                  </StyledTableCell>
+                  <StyledTableCell align="center">
+                    {moment(tenant.beginDate).format('L')}
+                  </StyledTableCell>
+                  <StyledTableCell align="center">
+                    {tenant.terminationDate
+                      ? moment(tenant.terminationDate).format('L')
+                      : moment(tenant.endDate).format('L')}
+                  </StyledTableCell>
+                  <StyledTableCell align="right">
+                    <NumberFormat
+                      value={tenant.guaranty !== 0 ? tenant.guaranty : null}
+                    />
+                  </StyledTableCell>
+                  <StyledTableCell align="right">
+                    <NumberFormat
+                      value={
+                        tenant.guarantyPayback !== 0
+                          ? tenant.guarantyPayback
+                          : null
+                      }
+                    />
+                  </StyledTableCell>
+                  <StyledTableCell align="right">
+                    <NumberFormat
+                      value={tenant.balance !== 0 ? tenant.balance : null}
+                    />
+                  </StyledTableCell>
+                  <StyledTableCell align="right">
+                    <NumberFormat
+                      value={
+                        tenant.finalBalance !== 0 ? tenant.finalBalance : null
+                      }
+                      withColor
+                    />
+                  </StyledTableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </StyledTable>
+        </TableContainer>
+      ) : (
+        <EmptyIllustration />
+      )}
     </TenantsTableWrapper>
   );
 };
@@ -288,50 +328,68 @@ const months = moment.localeData().months();
 const Settlements = ({ id, onCSVClick }) => {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
-
+  const hasData = !!store.accounting?.data?.settlements?.length;
   return (
-    <TenantsTableWrapper id={id} title={t('Settlements')} onClick={onCSVClick}>
-      <TableContainer>
-        <Table aria-label="incoming tenants">
-          <TableHead>
-            <TableRow>
-              <TableCell>{t('Name')}</TableCell>
-              {months.map((m) => (
-                <TableCell key={m} align="center">
-                  {m}
-                </TableCell>
-              ))}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {store.accounting.data.settlements.map((settlement) => (
-              <TableRow key={settlement.tenantId} hover>
-                <StyledTableCell component="th" scope="row">
-                  <Typography noWrap={true}>{settlement.tenant}</Typography>
-                  <Typography noWrap={true}>
-                    {moment(settlement.beginDate).format('L')} -{' '}
-                    {moment(settlement.endDate).format('L')}
-                  </Typography>
-                </StyledTableCell>
-                {months.map((m, index) => {
-                  return (
-                    <StyledTableCell
-                      key={`${settlement.tenantId}_${index}`}
-                      align="center"
-                    >
-                      <SettlementList
-                        tenantId={settlement.tenantId}
-                        month={index}
-                        settlements={settlement.settlements[index]}
-                      />
-                    </StyledTableCell>
-                  );
-                })}
+    <TenantsTableWrapper
+      id={id}
+      title={t('Settlements')}
+      hasData={hasData}
+      onClick={onCSVClick}
+    >
+      {hasData ? (
+        <TableContainer
+          style={{
+            transform: 'rotateX(180deg)',
+          }}
+        >
+          <StyledTable
+            aria-label="incoming tenants"
+            style={{
+              transform: 'rotateX(180deg)',
+            }}
+          >
+            <TableHead>
+              <TableRow>
+                <StyledTableCell>{t('Name')}</StyledTableCell>
+                {months.map((m) => (
+                  <StyledTableCell key={m} align="center">
+                    {m}
+                  </StyledTableCell>
+                ))}
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+            </TableHead>
+            <TableBody>
+              {store.accounting.data.settlements.map((settlement) => (
+                <TableRow key={settlement.tenantId} hover>
+                  <StyledTableCell component="th" scope="row">
+                    <Typography noWrap={true}>{settlement.tenant}</Typography>
+                    <Typography noWrap={true}>
+                      {moment(settlement.beginDate).format('L')} -{' '}
+                      {moment(settlement.endDate).format('L')}
+                    </Typography>
+                  </StyledTableCell>
+                  {months.map((m, index) => {
+                    return (
+                      <StyledTableCell
+                        key={`${settlement.tenantId}_${index}`}
+                        align="center"
+                      >
+                        <SettlementList
+                          tenantId={settlement.tenantId}
+                          month={index}
+                          settlements={settlement.settlements[index]}
+                        />
+                      </StyledTableCell>
+                    );
+                  })}
+                </TableRow>
+              ))}
+            </TableBody>
+          </StyledTable>
+        </TableContainer>
+      ) : (
+        <EmptyIllustration />
+      )}
     </TenantsTableWrapper>
   );
 };
@@ -384,7 +442,7 @@ const Accounting = observer(() => {
   );
 
   return (
-    <Page maxWidth="xl" PrimaryToolbar={<PeriodToolbar />}>
+    <Page PrimaryToolbar={<PeriodToolbar />}>
       {!loading ? (
         store.accounting?.data.incomingTenants.length ||
         store.accounting?.data.outgoingTenants.length ||
@@ -402,9 +460,7 @@ const Accounting = observer(() => {
             <Settlements id="settlements" onCSVClick={getSettlementsAsCsv} />
           </>
         ) : (
-          <Box mt={20}>
-            <EmptyIllustration label={t('No data found')} />
-          </Box>
+          <EmptyIllustration label={t('No data found')} />
         )
       ) : (
         <Loading />

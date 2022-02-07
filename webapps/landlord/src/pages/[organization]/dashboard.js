@@ -110,7 +110,7 @@ const Shortcuts = () => {
     <Paper>
       <Grid container spacing={0}>
         <Grid item xs={12} sm={6}>
-          <Box py={1} height={362}>
+          <Box py={1} height="100%">
             <WelcomeIllustration />
           </Box>
         </Grid>

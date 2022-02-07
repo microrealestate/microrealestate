@@ -15,11 +15,11 @@ const Illustration = ({
   width = '100%',
   height = 200,
 }) => (
-  <>
+  <Box whiteSpace="nowrap" height="100%" width={width}>
     <Box height={height} width={width} position="relative">
       <Image
         src={`${BASE_PATH}/${imgName}.svg`}
-        width={width}
+        width="100%"
         height={height}
         layout="fill"
         alt={alt}
@@ -32,7 +32,7 @@ const Illustration = ({
         </Typography>
       </Box>
     )}
-  </>
+  </Box>
 );
 
 export const EmptyIllustration = ({ label }) => {

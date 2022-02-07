@@ -2,6 +2,7 @@ import { Box, Grid, Hidden, Typography } from '@material-ui/core';
 import { getStoreInstance, StoreContext } from '../../../../store';
 import { useCallback, useContext, useMemo } from 'react';
 
+import { EmptyIllustration } from '../../../../components/Illustrations';
 import FullScreenDialogButton from '../../../../components/FullScreenDialogButton';
 import { isServer } from '../../../../utils';
 import moment from 'moment';
@@ -166,13 +167,18 @@ const Rents = observer(() => {
           </Box>
         </Hidden>
       )}
-      <Grid container spacing={3}>
-        {store.rent.filteredItems.map((rent) => (
-          <Grid key={rent._id} item xs={12} md={4}>
-            <RentCard rent={rent} onEdit={onEdit} />
-          </Grid>
-        ))}
-      </Grid>
+
+      {store.rent?.filteredItems.length ? (
+        <Grid container spacing={3}>
+          {store.rent.filteredItems.map((rent) => (
+            <Grid key={rent._id} item xs={12} md={4}>
+              <RentCard rent={rent} onEdit={onEdit} />
+            </Grid>
+          ))}
+        </Grid>
+      ) : (
+        <EmptyIllustration label={t('No rents found')} />
+      )}
     </Page>
   );
 });

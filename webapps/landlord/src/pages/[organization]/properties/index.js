@@ -1,5 +1,4 @@
 import {
-  Box,
   Button,
   makeStyles,
   Paper,
@@ -173,9 +172,7 @@ const Properties = observer(() => {
           </Table>
         </Paper>
       ) : (
-        <Box mt={20}>
-          <EmptyIllustration label={t('No properties found')} />
-        </Box>
+        <EmptyIllustration label={t('No properties found')} />
       )}
       <NewPropertyDialog
         open={openNewPropertyDialog}
