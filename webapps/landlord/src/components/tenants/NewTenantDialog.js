@@ -99,7 +99,7 @@ const NewTenantDialog = ({ open, setOpen, fromDashboard = false }) => {
       );
     },
     [
-      t,
+      // t,
       router,
       handleClose,
       store.organization?.selected?.name,

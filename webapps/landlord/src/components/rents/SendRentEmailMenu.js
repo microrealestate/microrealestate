@@ -4,7 +4,7 @@ import {
   PendingIllustration,
   ReceiptIllustration,
 } from '../Illustrations';
-import { memo, useCallback, useContext } from 'react';
+import { memo, useCallback, useContext, useMemo } from 'react';
 
 import FullScreenDialogMenu from '../FullScreenDialogMenu';
 import SendIcon from '@material-ui/icons/Send';
@@ -36,16 +36,9 @@ const SendRentEmailMenu = ({ period, tenant, terms, onError, ...props }) => {
     [store.rent, tenant, terms, onError]
   );
 
-  return (
-    <FullScreenDialogMenu
-      variant="contained"
-      buttonLabel={t('Send email')}
-      dialogTitle={t('Send a billing email to {{tenantName}}', {
-        tenantName: tenant.name,
-      })}
-      size="small"
-      startIcon={<SendIcon />}
-      menuItems={[
+  const menuItems = useMemo(
+    () => {
+      return [
         {
           category: t('Reminder notices'),
           label: t('First notice'),
@@ -70,7 +63,23 @@ const SendRentEmailMenu = ({ period, tenant, terms, onError, ...props }) => {
           illustration: <ReceiptIllustration />,
           value: 'invoice',
         },
-      ]}
+      ];
+    },
+    [
+      //t
+    ]
+  );
+
+  return (
+    <FullScreenDialogMenu
+      variant="contained"
+      buttonLabel={t('Send email')}
+      dialogTitle={t('Send a billing email to {{tenantName}}', {
+        tenantName: tenant.name,
+      })}
+      size="small"
+      startIcon={<SendIcon />}
+      menuItems={menuItems}
       onClick={onSend}
       {...props}
     />

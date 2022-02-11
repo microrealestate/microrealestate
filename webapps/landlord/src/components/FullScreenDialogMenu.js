@@ -8,7 +8,7 @@ import {
   Toolbar,
   useTheme,
 } from '@material-ui/core';
-import { forwardRef, Fragment, useCallback, useState } from 'react';
+import { forwardRef, Fragment, useCallback, useMemo, useState } from 'react';
 
 import Button from '@material-ui/core/Button';
 import CloseIcon from '@material-ui/icons/Close';
@@ -23,27 +23,35 @@ const Transition = forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
-const CardMenuItem = ({ illustration, label, description }) => (
-  <Card>
-    <CardActionArea>
-      <CardContent>
-        {illustration}
-        <Box py={2}>
-          <Typography align="center" variant="subtitle1">
-            {label}
-          </Typography>
-        </Box>
-        {!!description && (
-          <Box height={50}>
-            <Typography variant="body2" color="textSecondary">
-              {description}
-            </Typography>
-          </Box>
-        )}
-      </CardContent>
-    </CardActionArea>
-  </Card>
-);
+const CardMenuItem = ({ value, illustration, label, description, onClick }) => {
+  const onMenuClick = useCallback(() => {
+    onClick(value);
+  }, [value, onClick]);
+
+  return (
+    <Box width={300} pr={2} pb={2} onClick={onMenuClick}>
+      <Card>
+        <CardActionArea>
+          <CardContent>
+            {illustration}
+            <Box py={2}>
+              <Typography align="center" variant="subtitle1">
+                {label}
+              </Typography>
+            </Box>
+            {!!description && (
+              <Box height={50}>
+                <Typography variant="body2" color="textSecondary">
+                  {description}
+                </Typography>
+              </Box>
+            )}
+          </CardContent>
+        </CardActionArea>
+      </Card>
+    </Box>
+  );
+};
 
 const FullScreenDialogMenu = ({
   buttonLabel,
@@ -74,8 +82,17 @@ const FullScreenDialogMenu = ({
         setRunningAction(false);
       }
     },
-    [onClick]
+    [onClick, mountedRef]
   );
+
+  const categories = useMemo(() => {
+    return Array.from(
+      menuItems.reduce((acc, { category }) => {
+        acc.add(category);
+        return acc;
+      }, new Set())
+    );
+  }, [menuItems]);
 
   return (
     <>
@@ -104,12 +121,7 @@ const FullScreenDialogMenu = ({
         </Toolbar>
         <Box position="relative">
           <Box px={5}>
-            {Array.from(
-              menuItems.reduce((acc, { category }) => {
-                acc.add(category);
-                return acc;
-              }, new Set())
-            ).map((category, index) => {
+            {categories.map((category, index) => {
               return (
                 <Fragment key={category}>
                   {!!category && (
@@ -123,7 +135,7 @@ const FullScreenDialogMenu = ({
                   <Box display="flex" flexWrap="wrap">
                     {menuItems
                       .filter((item) => item.category === category)
-                      .map((menuItem) => {
+                      .map((menuItem, index) => {
                         const {
                           label,
                           description,
@@ -134,21 +146,16 @@ const FullScreenDialogMenu = ({
                         } = menuItem;
 
                         return (
-                          <Box
-                            key={`${category}_${value}`}
-                            width={300}
-                            pr={2}
-                            pb={2}
-                            onClick={() => handleMenuClick(value)}
-                          >
-                            <CardMenuItem
-                              label={label}
-                              description={description}
-                              illustration={illustration}
-                              badgeContent={badgeContent}
-                              badgeColor={badgeColor}
-                            />
-                          </Box>
+                          <CardMenuItem
+                            key={`${category}_${index}`}
+                            value={value}
+                            label={label}
+                            description={description}
+                            illustration={illustration}
+                            badgeContent={badgeContent}
+                            badgeColor={badgeColor}
+                            onClick={handleMenuClick}
+                          />
                         );
                       })}
                   </Box>

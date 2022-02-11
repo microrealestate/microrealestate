@@ -58,7 +58,7 @@ const NewLeaseDialog = ({ open, setOpen, fromDashboard = false }) => {
       );
     },
     [
-      t,
+      // t,
       router,
       handleClose,
       store.lease,

@@ -67,7 +67,7 @@ const Rents = observer(() => {
       );
       store.rent.setFilters({ status, searchText });
     },
-    [/*router, store.rent,*/ store.organization.selected.name]
+    [router, store.rent, store.organization.selected.name]
   );
 
   const onPeriodChange = useCallback(
@@ -77,7 +77,7 @@ const Rents = observer(() => {
         `/${store.organization.selected.name}/rents/${store.rent.period}`
       );
     },
-    [/*router, store.rent,*/ store.organization.selected.name]
+    [router, store.rent, store.organization.selected.name]
   );
 
   const onEdit = useCallback(
@@ -87,7 +87,7 @@ const Rents = observer(() => {
         `/${store.organization.selected.name}/payment/${rent.occupant._id}/${store.rent.selected.term}`
       );
     },
-    [/*router, store.rent,*/ store.organization.selected.name]
+    [router, store.rent, store.organization.selected.name]
   );
 
   const filters = useMemo(
@@ -97,7 +97,9 @@ const Rents = observer(() => {
       { id: 'partiallypaid', label: t('Partially paid') },
       { id: 'paid', label: t('Paid') },
     ],
-    []
+    [
+      //t
+    ]
   );
 
   return (

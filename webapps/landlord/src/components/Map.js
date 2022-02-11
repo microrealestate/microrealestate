@@ -2,6 +2,7 @@ import { Marker, Map as PigeonMap } from 'pigeon-maps';
 import { memo, useEffect, useState } from 'react';
 
 import axios from 'axios';
+import Loading from './Loading';
 import { LocationIllustration } from './Illustrations';
 import { useComponentMountedRef } from '../utils/hooks';
 import { useTheme } from '@material-ui/core';
@@ -16,7 +17,9 @@ const Map = memo(function Map({ address, height = 200, zoom = 16 }) {
 
   useEffect(() => {
     const getLatLong = async () => {
-      setLoading(true);
+      if (mountedRef.current) {
+        setLoading(true);
+      }
 
       if (address) {
         let queryAddress;
@@ -54,25 +57,32 @@ const Map = memo(function Map({ address, height = 200, zoom = 16 }) {
         }
       }
 
-      setLoading(false);
+      if (mountedRef.current) {
+        setLoading(false);
+      }
     };
 
     getLatLong();
-  }, [address]);
+  }, [mountedRef, address]);
 
   return (
     <>
-      {!loading && center && (
-        <PigeonMap height={height} center={center} zoom={zoom}>
-          <Marker
-            height={50}
-            width={50}
-            color={theme.palette.info.main}
-            anchor={center}
-          />
-        </PigeonMap>
+      {!loading ? (
+        center ? (
+          <PigeonMap height={height} center={center} zoom={zoom}>
+            <Marker
+              height={35}
+              width={35}
+              color={theme.palette.info.main}
+              anchor={center}
+            />
+          </PigeonMap>
+        ) : (
+          <LocationIllustration height={height} />
+        )
+      ) : (
+        <Loading height={height} />
       )}
-      {!center && <LocationIllustration height={height} />}
     </>
   );
 });

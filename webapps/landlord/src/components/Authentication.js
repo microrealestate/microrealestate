@@ -15,7 +15,7 @@ const {
 } = getConfig();
 
 export function withAuthentication(PageComponent) {
-  const WithAuth = (pageProps) => {
+  function WithAuth(pageProps) {
     console.log('WithAuth functional component');
     const store = useContext(StoreContext);
 
@@ -38,7 +38,7 @@ export function withAuthentication(PageComponent) {
         {() => (store.user.signedIn ? <PageComponent {...pageProps} /> : null)}
       </Observer>
     );
-  };
+  }
 
   WithAuth.getInitialProps = async (context) => {
     console.log('WithAuth.getInitialProps');

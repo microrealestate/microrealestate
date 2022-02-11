@@ -1,8 +1,14 @@
 import { Box, CircularProgress } from '@material-ui/core';
 
-const Loading = () => {
+const Loading = ({ height = '100%' }) => {
   return (
-    <Box marginLeft="50%" marginTop={20} data-cy="loading">
+    <Box
+      display="flex"
+      alignItems="center"
+      justifyContent="center"
+      height={height}
+      data-cy="loading"
+    >
       <CircularProgress />
     </Box>
   );
