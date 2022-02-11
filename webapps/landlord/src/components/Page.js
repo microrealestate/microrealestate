@@ -111,21 +111,22 @@ const Page = observer(
     SecondaryToolbar,
     ActionToolbar,
     maxWidth = 'lg',
+    loading = false,
   }) => {
     console.log('Page functional component');
     const store = useContext(StoreContext);
-    const [loading, setLoading] = useState(false);
+    const [routeloading, setRouteLoading] = useState(false);
     const router = useRouter();
 
     useEffect(() => {
       const routeChangeStart = (url, { shallow }) => {
         if (!shallow) {
-          setLoading(true);
+          setRouteLoading(true);
         }
       };
       const routeChangeComplete = (url, { shallow }) => {
         if (!shallow) {
-          setLoading(false);
+          setRouteLoading(false);
         }
       };
 
@@ -136,7 +137,7 @@ const Page = observer(
         router.events.off('routeChangeStart', routeChangeStart);
         router.events.off('routeChangeComplete', routeChangeComplete);
       };
-    }, []);
+    }, [router]);
 
     return (
       <>
@@ -144,7 +145,7 @@ const Page = observer(
 
         <MainToolbar visible={store.user.signedIn} />
 
-        {!loading ? (
+        {!loading && !routeloading ? (
           <ElevationScroll>
             <AppBar position="sticky">
               <Container maxWidth={maxWidth}>
@@ -162,9 +163,27 @@ const Page = observer(
           </ElevationScroll>
         ) : null}
 
-        <Box mt={!loading && (PrimaryToolbar || SecondaryToolbar) ? 4 : 0}>
+        <Box
+          mt={
+            !loading && !routeloading && (PrimaryToolbar || SecondaryToolbar)
+              ? 4
+              : 0
+          }
+        >
           <Container maxWidth={maxWidth}>
-            {loading ? <Loading /> : children}
+            {loading || routeloading ? (
+              <Box
+                position="absolute"
+                top={0}
+                left={0}
+                width="100vw"
+                height="100vh"
+              >
+                <Loading />
+              </Box>
+            ) : (
+              children
+            )}
           </Container>
         </Box>
       </>

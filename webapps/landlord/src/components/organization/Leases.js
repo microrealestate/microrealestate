@@ -39,7 +39,11 @@ const Leases = observer(({ setError }) => {
         }
       }
     },
-    [setError, store.lease, t]
+    [
+      // t,
+      setError,
+      store.lease,
+    ]
   );
 
   return (

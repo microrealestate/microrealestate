@@ -10,7 +10,7 @@ import {
   ListItemSecondaryAction,
   ListItemText,
 } from '@material-ui/core';
-import { useCallback, useContext, useState } from 'react';
+import { useCallback, useContext, useMemo, useState } from 'react';
 
 import AddIcon from '@material-ui/icons/Add';
 import ConfirmDialog from '../ConfirmDialog';
@@ -98,7 +98,11 @@ const TenantDocumentsCard = () => {
       }
       setEditDocument(data);
     },
-    [store.document, store.tenant.selected]
+    [
+      //t,
+      store.document,
+      store.tenant.selected,
+    ]
   );
 
   const onSaveDocument = useCallback(
@@ -136,10 +140,30 @@ const TenantDocumentsCard = () => {
     await store.document.delete([documentToRemove._id]);
   }, [documentToRemove, store.document]);
 
-  // TODO: optimize to not recompute the template list on each rendered
-  const templates = store.template.items.filter(({ linkedResourceIds = [] }) =>
-    linkedResourceIds.includes(store.tenant.selected?.leaseId)
-  );
+  const menuItems = useMemo(() => {
+    const templates = store.template.items.filter(
+      ({ linkedResourceIds = [] }) =>
+        linkedResourceIds.includes(store.tenant.selected?.leaseId)
+    );
+    return [
+      {
+        category: '',
+        label: t('New blank document'),
+        illustration: <BlankDocumentIllustration />,
+        value: {},
+      },
+      ...templates.map((template) => ({
+        category: t('Templates'),
+        label: template.name,
+        illustration: <TermsDocumentIllustration />,
+        value: template,
+      })),
+    ];
+  }, [
+    //t,
+    store.template?.items,
+    store.tenant?.selected?.leaseId,
+  ]);
 
   return (
     <DashboardCard
@@ -152,20 +176,7 @@ const TenantDocumentsCard = () => {
           dialogTitle={t('Create a document')}
           size="small"
           startIcon={<AddIcon />}
-          menuItems={[
-            {
-              category: '',
-              label: t('New blank document'),
-              illustration: <BlankDocumentIllustration />,
-              value: {},
-            },
-            ...templates.map((template) => ({
-              category: t('Templates'),
-              label: template.name,
-              illustration: <TermsDocumentIllustration />,
-              value: template,
-            })),
-          ]}
+          menuItems={menuItems}
           onClick={onCreateDocument}
         />
       }

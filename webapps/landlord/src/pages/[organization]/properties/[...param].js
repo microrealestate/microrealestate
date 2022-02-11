@@ -36,7 +36,7 @@ import useTranslation from 'next-translate/useTranslation';
 import VpnKeyIcon from '@material-ui/icons/VpnKey';
 import { withAuthentication } from '../../../components/Authentication';
 
-const PropertyOverview = observer(() => {
+const PropertyOverview = () => {
   const store = useContext(StoreContext);
   return (
     <>
@@ -53,7 +53,7 @@ const PropertyOverview = observer(() => {
       <Map address={store.property.selected.address} />
     </>
   );
-});
+};
 
 const useStyles = makeStyles(() => ({
   root: {
@@ -150,7 +150,12 @@ const Property = observer(() => {
     }
 
     await router.push(backPath);
-  }, [t, router, backPath, store.property]);
+  }, [
+    // t,
+    router,
+    backPath,
+    store.property,
+  ]);
 
   const onSubmit = useCallback(
     async (propertyPart) => {
@@ -195,7 +200,12 @@ const Property = observer(() => {
         );
       }
     },
-    [t, router, store.organization.selected.name, store.property]
+    [
+      // t,
+      router,
+      store.organization.selected.name,
+      store.property,
+    ]
   );
 
   return (

@@ -67,7 +67,14 @@ const NewPropertyDialog = ({ open, setOpen, fromDashboard = false }) => {
           : `/${store.organization.selected.name}/properties/${data._id}`
       );
     },
-    [t, router, handleClose, store.organization, store.property, fromDashboard]
+    [
+      // t,
+      router,
+      handleClose,
+      store.organization,
+      store.property,
+      fromDashboard,
+    ]
   );
 
   const propertyTypes = useMemo(
@@ -77,7 +84,9 @@ const NewPropertyDialog = ({ open, setOpen, fromDashboard = false }) => {
         value: type.id,
         label: t(type.labelId),
       })),
-    [t]
+    [
+      // t
+    ]
   );
 
   return (

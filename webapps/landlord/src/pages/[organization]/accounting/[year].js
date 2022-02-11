@@ -19,7 +19,6 @@ import { useCallback, useContext, useEffect, useState } from 'react';
 import { downloadDocument } from '../../../utils/fetch';
 import { EmptyIllustration } from '../../../components/Illustrations';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import Loading from '../../../components/Loading';
 import moment from 'moment';
 import { NumberFormat } from '../../../utils/numberformat';
 import { observer } from 'mobx-react-lite';
@@ -416,7 +415,10 @@ const Accounting = observer(() => {
         t('Settlements - {{year}}.csv', router.query.year)
       );
     },
-    [t, router.query.year]
+    [
+      // t,
+      router.query.year,
+    ]
   );
 
   const getIncomingTenantsAsCsv = useCallback(
@@ -427,7 +429,10 @@ const Accounting = observer(() => {
         t('Incoming tenants - {{year}}.csv', router.query.year)
       );
     },
-    [t, router.query.year]
+    [
+      // t,
+      router.query.year,
+    ]
   );
 
   const getOutgoingTenantsAsCsv = useCallback(
@@ -438,32 +443,31 @@ const Accounting = observer(() => {
         t('Outgoing tenants - {{year}}.csv', router.query.year)
       );
     },
-    [t, router.query.year]
+    [
+      // t,
+      router.query.year,
+    ]
   );
 
   return (
-    <Page PrimaryToolbar={<PeriodToolbar />}>
-      {!loading ? (
-        store.accounting?.data.incomingTenants.length ||
-        store.accounting?.data.outgoingTenants.length ||
-        store.accounting?.data.settlements.length ? (
-          <>
-            <IncomingTenants
-              id="incoming-tenants"
-              defaultExpanded={true}
-              onCSVClick={getIncomingTenantsAsCsv}
-            />
-            <OutgoingTenants
-              id="outgoing-tenants"
-              onCSVClick={getOutgoingTenantsAsCsv}
-            />
-            <Settlements id="settlements" onCSVClick={getSettlementsAsCsv} />
-          </>
-        ) : (
-          <EmptyIllustration label={t('No data found')} />
-        )
+    <Page PrimaryToolbar={<PeriodToolbar loading={loading} />}>
+      {store.accounting?.data?.incomingTenants?.length ||
+      store.accounting?.data?.outgoingTenants?.length ||
+      store.accounting?.data?.settlements?.length ? (
+        <>
+          <IncomingTenants
+            id="incoming-tenants"
+            defaultExpanded={true}
+            onCSVClick={getIncomingTenantsAsCsv}
+          />
+          <OutgoingTenants
+            id="outgoing-tenants"
+            onCSVClick={getOutgoingTenantsAsCsv}
+          />
+          <Settlements id="settlements" onCSVClick={getSettlementsAsCsv} />
+        </>
       ) : (
-        <Loading />
+        <EmptyIllustration label={t('No data found')} />
       )}
     </Page>
   );

@@ -28,7 +28,6 @@ import { useComponentMountedRef, useInterval } from '../../utils/hooks';
 import ArrowRightAltIcon from '@material-ui/icons/ArrowRightAlt';
 import { DashboardCard } from '../../components/Cards';
 import DescriptionIcon from '@material-ui/icons/Description';
-import Loading from '../../components/Loading';
 import moment from 'moment';
 import NewLeaseDialog from '../../components/organization/NewLeaseDialog';
 import NewPaymentDialog from '../../components/payment/NewPaymentDialog';
@@ -421,7 +420,7 @@ const YearFigures = observer(() => {
       store.rent.setPeriod(moment(yearMonth, 'YYYY.MM', true));
       router.push(`/${store.organization.selected.name}/rents/${yearMonth}`);
     },
-    [store.organization.selected.name]
+    [router, store.rent, store.organization.selected.name]
   );
 
   return (
@@ -520,7 +519,7 @@ const Dashboard = () => {
       setReady(true);
     };
     fetchData();
-  }, []);
+  }, [store]);
 
   useEffect(() => {
     if (mountedRef.current && ready) {
@@ -528,37 +527,33 @@ const Dashboard = () => {
     }
 
     return () => triggerRefreshData.clear();
-  }, [ready]);
+  }, [mountedRef, triggerRefreshData, ready]);
 
   return (
-    <Page>
-      {ready ? (
-        <>
-          <Box my={5}>
-            <Welcome />
+    <Page loading={!ready}>
+      <>
+        <Box my={5}>
+          <Welcome />
+        </Box>
+        <Box mb={10}>
+          <Shortcuts />
+        </Box>
+        {!!store.dashboard.data.overview && (
+          <Box my={10}>
+            <GeneralFigures />
           </Box>
-          <Box mb={10}>
-            <Shortcuts />
+        )}
+        {!!store.dashboard.data.overview?.tenantCount && (
+          <Box my={10}>
+            <MonthFigures />
           </Box>
-          {!!store.dashboard.data.overview && (
-            <Box my={10}>
-              <GeneralFigures />
-            </Box>
-          )}
-          {!!store.dashboard.data.overview?.tenantCount && (
-            <Box my={10}>
-              <MonthFigures />
-            </Box>
-          )}
-          {!!store.dashboard.data.overview && (
-            <Box my={10}>
-              <YearFigures />
-            </Box>
-          )}
-        </>
-      ) : (
-        <Loading />
-      )}
+        )}
+        {!!store.dashboard.data.overview && (
+          <Box my={10}>
+            <YearFigures />
+          </Box>
+        )}
+      </>
     </Page>
   );
 };

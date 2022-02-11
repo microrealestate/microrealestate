@@ -105,7 +105,9 @@ const Nav = () => {
         dataCy: 'settingsNav',
       },
     ],
-    [t]
+    [
+      // t
+    ]
   );
 
   const triggerOpen = useTimeout(() => {
@@ -128,18 +130,18 @@ const Nav = () => {
         router.push(`/${store.organization.selected.name}${pathname}`);
       }
     },
-    [store.organization.selected?.name, store.rent?.period]
+    [router, triggerOpen, store.organization.selected?.name, store.rent?.period]
   );
 
   const handleMouseEnter = useCallback(() => {
     triggerClose.clear();
     !openDebounced && triggerOpen.start();
-  }, [triggerOpen, triggerClose]);
+  }, [openDebounced, triggerOpen, triggerClose]);
 
   const handleMouseLeave = useCallback(() => {
     triggerOpen.clear();
     openDebounced && triggerClose.start();
-  }, [triggerOpen, triggerClose]);
+  }, [openDebounced, triggerOpen, triggerClose]);
 
   return (
     <Drawer

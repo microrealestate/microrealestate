@@ -45,7 +45,6 @@ const PropertyTableRow = ({ property }) => {
   const classes = useStyles();
   const { t } = useTranslation('common');
 
-  console.log('render row');
   const onClick = useCallback(async () => {
     store.property.setSelected(property);
     await router.push(
@@ -110,7 +109,9 @@ const Properties = observer(() => {
       { id: 'vacant', label: t('Vacant') },
       { id: 'occupied', label: t('Occupied') },
     ],
-    [t]
+    [
+      // t
+    ]
   );
 
   const onSearch = useCallback(
