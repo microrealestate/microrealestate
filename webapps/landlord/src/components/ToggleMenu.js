@@ -1,10 +1,10 @@
+import { Box, Typography } from '@material-ui/core';
 import { memo, useCallback, useEffect, useState } from 'react';
 
 import Button from '@material-ui/core/Button';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
-import { Typography } from '@material-ui/core';
 
 const ToggleMenu = ({ startIcon, options, value, onChange = () => {} }) => {
   const [anchorEl, setAnchorEl] = useState(null);
@@ -32,7 +32,7 @@ const ToggleMenu = ({ startIcon, options, value, onChange = () => {} }) => {
   );
 
   return (
-    <>
+    <Box display="flex" flexWrap="nowrap">
       <Button
         aria-controls="select-menu"
         aria-haspopup="true"
@@ -60,7 +60,7 @@ const ToggleMenu = ({ startIcon, options, value, onChange = () => {} }) => {
           </MenuItem>
         ))}
       </Menu>
-    </>
+    </Box>
   );
 };
 

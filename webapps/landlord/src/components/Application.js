@@ -1,6 +1,6 @@
+import { Box, Hidden } from '@material-ui/core';
 import { useContext, useEffect } from 'react';
 
-import { Box } from '@material-ui/core';
 import moment from 'moment';
 import Nav from './Nav';
 import { observer } from 'mobx-react-lite';
@@ -22,10 +22,20 @@ const Application = observer(({ children }) => {
   }, [store.user.signedIn, store.organization.selected?.locale]);
 
   return (
-    <Box display="flex">
-      {displayNav && <Nav />}
-      <Box flexGrow={1}>{children}</Box>
-    </Box>
+    <>
+      <Hidden mdUp>
+        <Box display="flex" flexDirection="column" flexWrap="nowrap">
+          <Box>{children}</Box>
+          {displayNav && <Nav />}
+        </Box>
+      </Hidden>
+      <Hidden smDown>
+        <Box display="flex">
+          {displayNav && <Nav />}
+          <Box flexGrow={1}>{children}</Box>
+        </Box>
+      </Hidden>
+    </>
   );
 });
 

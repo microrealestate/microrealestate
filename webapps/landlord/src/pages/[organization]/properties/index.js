@@ -137,7 +137,7 @@ const Properties = observer(() => {
           {t('Properties')}
         </Typography>
       }
-      SecondaryToolbar={
+      SearchBar={
         <SearchFilterBar
           filters={filters}
           defaultValue={store.property.filters}

@@ -1,4 +1,4 @@
-import { Grid, InputAdornment, TextField, withStyles } from '@material-ui/core';
+import { Box, InputAdornment, TextField, withStyles } from '@material-ui/core';
 import { useCallback, useMemo, useState } from 'react';
 
 import FilterListIcon from '@material-ui/icons/FilterList';
@@ -9,7 +9,7 @@ import useTranslation from 'next-translate/useTranslation';
 
 const StyledTextField = withStyles({
   root: {
-    width: 300,
+    width: '100%',
   },
 })(TextField);
 
@@ -57,8 +57,8 @@ const SearchFilterBar = ({
   );
 
   return (
-    <Grid container>
-      <Grid item>
+    <Box display="flex" flexWrap="nowrap">
+      <Box flexGrow={1}>
         <StyledTextField
           placeholder={t('Search')}
           defaultValue={defaultValue.searchText}
@@ -71,16 +71,16 @@ const SearchFilterBar = ({
           }}
           onChange={onTextChange}
         />
-      </Grid>
-      <Grid item>
+      </Box>
+      <Box>
         <ToggleMenu
           startIcon={<FilterListIcon />}
           options={filters}
           value={selectedItem}
           onChange={onToggleChange}
         />
-      </Grid>
-    </Grid>
+      </Box>
+    </Box>
   );
 };
 

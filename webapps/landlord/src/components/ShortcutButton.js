@@ -1,4 +1,4 @@
-import { Box, Button, makeStyles } from '@material-ui/core';
+import { Box, Button, Hidden, makeStyles } from '@material-ui/core';
 
 const ShortcutButton = ({ Icon, label, disabled, onClick }) => {
   const useStyles = makeStyles((theme) => ({
@@ -16,14 +16,23 @@ const ShortcutButton = ({ Icon, label, disabled, onClick }) => {
 
   return (
     <Button
-      startIcon={<Icon style={{ fontSize: 32 }} />}
+      startIcon={
+        <>
+          <Hidden smDown>
+            <Icon style={{ fontSize: 32 }} />
+          </Hidden>
+          <Hidden mdUp>
+            <Icon />
+          </Hidden>
+        </>
+      }
       size="large"
       className={classes.root}
       fullWidth
       disabled={!!disabled}
       onClick={onClick}
     >
-      <Box minWidth={300} textAlign="left">
+      <Box minWidth={250} textAlign="left">
         {label}
       </Box>
     </Button>

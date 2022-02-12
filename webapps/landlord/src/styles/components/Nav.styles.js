@@ -29,6 +29,10 @@ export const useStyles = makeStyles((theme) => ({
   itemSelected: {
     backgroundColor: [infoColor[0], '!important'],
   },
+  mobileItemSelected: {
+    color: [infoColor[0], '!important'],
+    backgroundColor: ['none', '!important'],
+  },
   itemIcon: {
     color: ['rgba(' + hexToRgb(whiteColor) + ', 0.8)', '!important'],
   },
