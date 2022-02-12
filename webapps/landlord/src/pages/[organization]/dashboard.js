@@ -8,10 +8,12 @@ import {
   ReferenceLine,
   ResponsiveContainer,
   XAxis,
+  YAxis,
 } from 'recharts';
 import {
   Box,
   Grid,
+  Hidden,
   List,
   ListItem,
   Paper,
@@ -108,12 +110,12 @@ const Shortcuts = () => {
   return (
     <Paper>
       <Grid container spacing={0}>
-        <Grid item xs={12} sm={6}>
+        <Grid item xs={12} md={6}>
           <Box py={1} height="100%">
             <WelcomeIllustration />
           </Box>
         </Grid>
-        <Grid item xs={12} sm={6}>
+        <Grid item xs={12} md={6}>
           <Box p={3} height={362} display="flex" alignItems="center">
             <Grid container spacing={2}>
               {!!store.dashboard.data?.overview?.tenantCount && (
@@ -196,47 +198,49 @@ const GeneralFigures = observer(() => {
 
   return (
     <Grid container spacing={5}>
-      <Grid item xs={12} md={2}>
-        <DashboardCard
-          title={t('Tenant')}
-          onClick={() => {
-            router.push(`/${store.organization.selected.name}/tenants`);
-          }}
-        >
-          <FigureCardContent nav>
-            <Typography variant="h3">
-              {store.dashboard.data.overview?.tenantCount}
-            </Typography>
-          </FigureCardContent>
-        </DashboardCard>
-      </Grid>
-      <Grid item xs={12} md={2}>
-        <DashboardCard
-          title={t('Property')}
-          onClick={() => {
-            router.push(`/${store.organization.selected.name}/properties`);
-          }}
-        >
-          <FigureCardContent nav>
-            <Typography variant="h3">
-              {store.dashboard.data.overview?.propertyCount}
-            </Typography>
-          </FigureCardContent>
-        </DashboardCard>
-      </Grid>
-      <Grid item xs={12} md={2}>
-        <DashboardCard title={t('Occupancy rate')}>
-          <FigureCardContent>
-            <NumberFormat
-              value={store.dashboard.data.overview?.occupancyRate}
-              minimumFractionDigits={0}
-              style="percent"
-              variant="h3"
-            />
-          </FigureCardContent>
-        </DashboardCard>
-      </Grid>
-      <Grid item xs={12} md={6}>
+      <Hidden smDown>
+        <Grid item xs={12} md={4} lg={2}>
+          <DashboardCard
+            title={t('Tenant')}
+            onClick={() => {
+              router.push(`/${store.organization.selected.name}/tenants`);
+            }}
+          >
+            <FigureCardContent nav>
+              <Typography variant="h3">
+                {store.dashboard.data.overview?.tenantCount}
+              </Typography>
+            </FigureCardContent>
+          </DashboardCard>
+        </Grid>
+        <Grid item xs={12} md={4} lg={2}>
+          <DashboardCard
+            title={t('Property')}
+            onClick={() => {
+              router.push(`/${store.organization.selected.name}/properties`);
+            }}
+          >
+            <FigureCardContent nav>
+              <Typography variant="h3">
+                {store.dashboard.data.overview?.propertyCount}
+              </Typography>
+            </FigureCardContent>
+          </DashboardCard>
+        </Grid>
+        <Grid item xs={12} md={4} lg={2}>
+          <DashboardCard title={t('Occupancy rate')}>
+            <FigureCardContent>
+              <NumberFormat
+                value={store.dashboard.data.overview?.occupancyRate}
+                minimumFractionDigits={0}
+                style="percent"
+                variant="h3"
+              />
+            </FigureCardContent>
+          </DashboardCard>
+        </Grid>
+      </Hidden>
+      <Grid item xs={12} md={12} lg={6}>
         <DashboardCard title={t('Revenues')}>
           <FigureCardContent>
             <NumberFormat
@@ -285,13 +289,13 @@ const MonthFigures = observer(() => {
         </Typography>
       </Box>
       <Grid container spacing={5}>
-        <Grid item xs={12} sm={5}>
+        <Grid item xs={12} md={5}>
           <Box mb={1}>
             <Typography variant="subtitle1">{t('Settlements')}</Typography>
           </Box>
           <Paper>
             <Box pt={2} width="100%" height={296}>
-              <ResponsiveContainer>
+              <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Legend
                     verticalAlign="top"
@@ -322,15 +326,15 @@ const MonthFigures = observer(() => {
                     label={({ value }) => (value ? formatNumber(value) : '')}
                     labelLine={false}
                   >
-                    <Cell fill={theme.palette.success.main} />
-                    <Cell fill={theme.palette.warning.main} />
+                    <Cell fill={theme.palette.success.dark} />
+                    <Cell fill={theme.palette.warning.dark} />
                   </Pie>
                 </PieChart>
               </ResponsiveContainer>
             </Box>
           </Paper>
         </Grid>
-        <Grid item xs={12} sm={7}>
+        <Grid item xs={12} md={7}>
           <Box mb={1}>
             <Typography variant="subtitle1">
               {t('Top 5 of not paid rents')}
@@ -423,71 +427,80 @@ const YearFigures = observer(() => {
     [router, store.rent, store.organization.selected.name]
   );
 
-  return (
-    <Grid container>
-      {hasRevenues ? (
-        <>
-          <Box mb={3}>
-            <Typography variant="h5">
-              {t('Rents of {{year}}', {
-                year: moment().format('YYYY'),
-              })}
-            </Typography>
-          </Box>
-          <Grid item xs={12}>
-            <Paper>
-              <Box py={2} px={3} width="100%" height={380}>
-                <ResponsiveContainer>
-                  <BarChart data={data} stackOffset="sign" onClick={onClick}>
-                    <Legend
-                      verticalAlign="top"
-                      height={40}
-                      formatter={(value) =>
-                        value === 'paid' ? t('Rent paid') : t('Rents not paid')
-                      }
-                    />
+  return hasRevenues ? (
+    <>
+      <Box mb={3}>
+        <Typography variant="h5">
+          {t('Rents of {{year}}', {
+            year: moment().format('YYYY'),
+          })}
+        </Typography>
+      </Box>
+      <Grid container>
+        <Grid item xs={12}>
+          <Paper>
+            <Box py={2} px={3} width="100%" height={600}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={data}
+                  layout="vertical"
+                  stackOffset="sign"
+                  onClick={onClick}
+                >
+                  <XAxis
+                    type="number"
+                    hide={true}
+                    domain={['dataMin', 'dataMax']}
+                  />
+                  <YAxis
+                    dataKey="name"
+                    hide={false}
+                    axisLine={false}
+                    tickLine={false}
+                    type="category"
+                  />
+                  <Legend
+                    verticalAlign="top"
+                    height={40}
+                    formatter={(value) =>
+                      value === 'paid' ? t('Rent paid') : t('Rents not paid')
+                    }
+                  />
+                  <Bar
+                    isAnimationActive={false}
+                    dataKey="notPaid"
+                    fill={theme.palette.warning.dark}
+                    stackId="stack"
+                    cursor="pointer"
+                    background={{ fill: theme.palette.grey[300] }}
+                    label={{
+                      fill: theme.palette.grey[50],
+                      formatter: (value) =>
+                        value < 0 ? formatNumber(value) : '',
+                    }}
+                  />
 
-                    <ReferenceLine y={0} stroke={theme.palette.grey[400]} />
-                    <Bar
-                      dataKey="paid"
-                      fill={theme.palette.success.main}
-                      stackId="stack"
-                      barSize={30}
-                      cursor="pointer"
-                      label={{
-                        fill: theme.palette.success.main,
-                        position: 'top',
-                        formatter: (value) =>
-                          value > 0 ? formatNumber(value) : '',
-                      }}
-                    />
-                    <Bar
-                      dataKey="notPaid"
-                      fill={theme.palette.warning.main}
-                      stackId="stack"
-                      cursor="pointer"
-                      label={{
-                        fill: theme.palette.warning.main,
-                        position: 'top',
-                        formatter: (value) =>
-                          value < 0 ? formatNumber(value) : '',
-                      }}
-                    />
-                    <XAxis
-                      dataKey="name"
-                      axisLine={false}
-                      tickLine={false}
-                      orientation="top"
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              </Box>
-            </Paper>
-          </Grid>
-        </>
-      ) : null}
-    </Grid>
-  );
+                  <Bar
+                    isAnimationActive={false}
+                    dataKey="paid"
+                    fill={theme.palette.success.dark}
+                    stackId="stack"
+                    cursor="pointer"
+                    label={{
+                      fill: theme.palette.grey[50],
+                      formatter: (value) =>
+                        value > 0 ? formatNumber(value) : '',
+                    }}
+                  />
+                  <ReferenceLine x={0} stroke={theme.palette.grey[400]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </Box>
+          </Paper>
+        </Grid>
+      </Grid>
+    </>
+  ) : null;
 });
 
 const Welcome = () => {
@@ -548,11 +561,13 @@ const Dashboard = () => {
             <MonthFigures />
           </Box>
         )}
-        {!!store.dashboard.data.overview && (
-          <Box my={10}>
-            <YearFigures />
-          </Box>
-        )}
+        <Hidden smDown>
+          {!!store.dashboard.data.overview && (
+            <Box my={10}>
+              <YearFigures />
+            </Box>
+          )}
+        </Hidden>
       </>
     </Page>
   );
