@@ -1,9 +1,17 @@
-import { ListItemIcon, Typography } from '@material-ui/core';
+import {
+  Box,
+  Hidden,
+  IconButton,
+  ListItemIcon,
+  Typography,
+  withStyles,
+} from '@material-ui/core';
 import { memo, useCallback, useContext, useMemo, useState } from 'react';
 
 import AccountBalanceWalletIcon from '@material-ui/icons/AccountBalanceWallet';
 import DashboardIcon from '@material-ui/icons/Dashboard';
 import Drawer from '@material-ui/core/Drawer';
+import { hexToRgb } from '../styles/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
@@ -28,12 +36,16 @@ const MenuItem = memo(function MenuItem({
 }) {
   const classes = useStyles();
 
+  const onMenuClick = useCallback(() => {
+    onClick(item);
+  }, [item, onClick]);
+
   return (
     <ListItem
       className={`${classes.item} ${selected ? classes.itemSelected : ''}`}
       button
       selected={selected}
-      onClick={() => onClick(item)}
+      onClick={onMenuClick}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
       data-cy={item.dataCy}
@@ -50,6 +62,48 @@ const MenuItem = memo(function MenuItem({
     </ListItem>
   );
 });
+
+const MobileMenuItem = ({ item, selected, onClick }) => {
+  const classes = useStyles();
+
+  const onMenuClick = useCallback(() => {
+    onClick(item);
+  }, [item, onClick]);
+
+  return (
+    <Box>
+      <MobileMenuButton
+        className={`${classes.item} ${
+          selected ? classes.mobileItemSelected : ''
+        }`}
+        onClick={onMenuClick}
+      >
+        <Box display="flex" flexDirection="column">
+          <Box>{item.icon}</Box>
+          <Box>
+            <Typography variant="inherit" noWrap>
+              {item.value}
+            </Typography>
+          </Box>
+        </Box>
+      </MobileMenuButton>
+    </Box>
+  );
+};
+
+const MobileMenu = withStyles((theme) => ({
+  root: {
+    backgroundColor: theme.palette.common.black,
+  },
+}))(Box);
+
+const MobileMenuButton = withStyles((theme) => ({
+  root: {
+    fontSize: 10,
+    color: 'rgba(' + hexToRgb(theme.palette.common.white) + ', 0.8)',
+    borderRadius: 0,
+  },
+}))(IconButton);
 
 const Nav = () => {
   const classes = useStyles();
@@ -110,6 +164,11 @@ const Nav = () => {
     ]
   );
 
+  const mobileItems = useMemo(
+    () => menuItems.filter(({ key }) => !['accounting'].includes(key)),
+    [menuItems]
+  );
+
   const triggerOpen = useTimeout(() => {
     !openDebounced && setOpenDebounced(true);
   }, 1000);
@@ -144,29 +203,55 @@ const Nav = () => {
   }, [openDebounced, triggerOpen, triggerClose]);
 
   return (
-    <Drawer
-      className={`${openDebounced ? classes.drawerOpen : classes.drawerClose}`}
-      variant="permanent"
-      classes={{
-        paper: openDebounced ? classes.drawerOpen : classes.drawerClose,
-      }}
-    >
-      <List className={classes.list}>
-        {menuItems.map((item) => {
-          return (
-            <MenuItem
-              key={item.key}
-              item={item}
-              selected={pathname.indexOf(item.pathname) !== -1}
-              open={openDebounced}
-              onMouseEnter={handleMouseEnter}
-              onMouseLeave={handleMouseLeave}
-              onClick={handleMenuClick}
-            />
-          );
-        })}
-      </List>
-    </Drawer>
+    <>
+      <Hidden smDown>
+        <Drawer
+          className={`${
+            openDebounced ? classes.drawerOpen : classes.drawerClose
+          }`}
+          variant="permanent"
+          classes={{
+            paper: openDebounced ? classes.drawerOpen : classes.drawerClose,
+          }}
+        >
+          <List className={classes.list}>
+            {menuItems.map((item) => {
+              return (
+                <MenuItem
+                  key={item.key}
+                  item={item}
+                  selected={pathname.indexOf(item.pathname) !== -1}
+                  open={openDebounced}
+                  onMouseEnter={handleMouseEnter}
+                  onMouseLeave={handleMouseLeave}
+                  onClick={handleMenuClick}
+                />
+              );
+            })}
+          </List>
+        </Drawer>
+      </Hidden>
+      <Hidden mdUp>
+        <MobileMenu
+          position="fixed"
+          bottom={0}
+          width="100%"
+          display="flex"
+          justifyContent="space-between"
+        >
+          {mobileItems.map((item) => {
+            return (
+              <MobileMenuItem
+                key={item.key}
+                item={item}
+                selected={pathname.indexOf(item.pathname) !== -1}
+                onClick={handleMenuClick}
+              />
+            );
+          })}
+        </MobileMenu>
+      </Hidden>
+    </>
   );
 };
 

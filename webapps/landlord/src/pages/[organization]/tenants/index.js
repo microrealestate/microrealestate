@@ -196,7 +196,7 @@ const Tenants = observer(() => {
           {t('Tenants')}
         </Typography>
       }
-      SecondaryToolbar={
+      SearchBar={
         <SearchFilterBar
           filters={[
             { id: '', label: t('All') },
