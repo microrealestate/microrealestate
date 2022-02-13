@@ -7,7 +7,11 @@ import { NumberFormat } from '../../utils/numberformat';
 import RentPeriod from './RentPeriod';
 import useTranslation from 'next-translate/useTranslation';
 
-const BalanceBar = memo(function BalanceBar({ rent, hideTooltip }) {
+const BalanceBar = memo(function BalanceBar({
+  rent,
+  hideLeftToPay = true,
+  hideTooltip,
+}) {
   const { t } = useTranslation('common');
   const theme = useTheme();
 
@@ -26,6 +30,11 @@ const BalanceBar = memo(function BalanceBar({ rent, hideTooltip }) {
       },
     ];
   }, [rent.payment, rent.totalWithoutBalanceAmount, rent.balance]);
+
+  const remainingRentToPay = useMemo(
+    () => (rent.newBalance < 0 ? Math.abs(rent.newBalance) : 0),
+    [rent.newBalance]
+  );
 
   return (
     <>
@@ -95,6 +104,12 @@ const BalanceBar = memo(function BalanceBar({ rent, hideTooltip }) {
           </ResponsiveContainer>
         </span>
       </Tooltip>
+      {!hideLeftToPay ? (
+        <CardRow pb={2}>
+          <Typography variant="caption">{t('Left to pay')}</Typography>
+          <NumberFormat variant="caption" value={remainingRentToPay} />
+        </CardRow>
+      ) : null}
     </>
   );
 });

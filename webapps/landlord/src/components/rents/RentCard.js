@@ -19,7 +19,6 @@ import BalanceBar from './BalanceBar';
 import { CardRow } from '../Cards';
 import DownloadLink from '../DownloadLink';
 import moment from 'moment';
-import { NumberFormat } from '../../utils/numberformat';
 import { observer } from 'mobx-react-lite';
 import SendRentEmailMenu from './SendRentEmailMenu';
 import { useStyles } from '../../styles/components/RentCards.styles';
@@ -52,23 +51,6 @@ const Header = memo(function Header({ rent }) {
           )}
         </Typography>
       </Box>
-    </>
-  );
-});
-
-const RentBar = memo(function RentBar({ rent }) {
-  const { t } = useTranslation('common');
-  const remainingRentToPay = useMemo(
-    () => (rent.newBalance < 0 ? Math.abs(rent.newBalance) : 0),
-    [rent.newBalance]
-  );
-  return (
-    <>
-      <BalanceBar rent={rent} />
-      <CardRow pb={2}>
-        <Typography variant="caption">{t('Left to pay')}</Typography>
-        <NumberFormat variant="caption" value={remainingRentToPay} />
-      </CardRow>
     </>
   );
 });
@@ -168,7 +150,13 @@ const Steps = memo(function Steps({ rent }) {
       receiptSentText,
       lastPayment,
     };
-  }, [rent.newBalance, rent.status, rent.emailStatus, rent.payments]);
+  }, [
+    // t, *
+    rent.newBalance,
+    rent.status,
+    rent.emailStatus,
+    rent.payments,
+  ]);
 
   return (
     <Stepper
@@ -254,7 +242,7 @@ const RentCard = observer(({ rent, onEdit }) => {
     <Card>
       <CardContent>
         <Header rent={rent} />
-        <RentBar rent={rent} />
+        <BalanceBar rent={rent} hideLeftToPay={false} />
         <Divider />
         <Box pt={2}>
           <Steps rent={rent} />
