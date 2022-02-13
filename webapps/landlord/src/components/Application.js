@@ -25,7 +25,7 @@ const Application = observer(({ children }) => {
     <>
       <Hidden mdUp>
         <Box display="flex" flexDirection="column" flexWrap="nowrap">
-          <Box>{children}</Box>
+          <Box mb={10}>{children}</Box>
           {displayNav && <Nav />}
         </Box>
       </Hidden>
