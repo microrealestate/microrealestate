@@ -1,0 +1,18 @@
+{
+  "cash": "Bargeld",
+  "cheque": "Scheck",
+  "Contract begin date": "Vertragsbeginndatum",
+  "Contract end date": "Vertragsenddatum",
+  "Contract termination date": "Datum der Vertragsbeendigung",
+  "Deposit": "Kaution",
+  "Deposit: {{deposit}}": "Kaution: {{deposit}}",
+  "Final balance": "Schlusssaldo",
+  "Last rent balance": "Letzter Mietsaldo",
+  "levy": "Erheben",
+  "Name": "Name",
+  "Properties": "Grundstücke",
+  "Reference": "Referenz",
+  "Refunded deposit": "Zurückerstattete Kaution",
+  "Tenant": "Mieter",
+  "transfer": "Transfer"
+}

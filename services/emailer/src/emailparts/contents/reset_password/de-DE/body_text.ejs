@@ -1,0 +1,14 @@
+Hallo <%- firstname %>!
+
+Jemand hat angefordert Ihr Passwort von Ihrem <%- config.APP_NAME %> Konto zu ändern.
+
+Klicken Sie auf den unten stehenden Link, um ein neues Passwort zu erstellen:
+
+<%- `${config.APP_URL}/resetpassword/${token}` %>
+
+Wenn dieser Link nicht funktioniert, kopieren Sie ihn in die Adressleiste Ihres Browsers.
+
+Wenn Sie dies nicht angefordert haben, können sie diese Email ignorieren. Ihr Passwort wird nicht geändert bis sie selbst ein neues Erstellen.
+
+Beste Grüße,
+Das <%- config.APP_NAME %> team
