@@ -7,11 +7,13 @@ import {
   Toolbar,
   Tooltip,
   Typography,
+  withStyles,
 } from '@material-ui/core';
 import { memo, useCallback, useContext, useEffect, useState } from 'react';
 
 import { ElevationScroll } from './Scroll';
 import getConfig from 'next/config';
+import { hexToRgb } from '../styles/styles';
 import Loading from './Loading';
 import { observer } from 'mobx-react-lite';
 import OrganizationSwitcher from './organization/OrganizationSwitcher';
@@ -37,6 +39,13 @@ const EnvironmentBar = memo(function EnvironmentBar() {
     </Box>
   ) : null;
 });
+
+const MobileTopBar = withStyles((theme) => ({
+  root: {
+    backgroundColor: theme.palette.common.black,
+    color: 'rgba(' + hexToRgb(theme.palette.common.white) + ', 0.8)',
+  },
+}))(Box);
 
 const MainToolbar = memo(function MainToolbar({ visible, SearchBar }) {
   const { t } = useTranslation('common');
@@ -78,32 +87,40 @@ const MainToolbar = memo(function MainToolbar({ visible, SearchBar }) {
           </Box>
         </Toolbar>
       </Hidden>
-      <Hidden mdUp>
-        <Toolbar variant="dense" disableGutters>
-          <Box display="flex" justifyContent="space-between" width="100%">
-            {!!(
-              store.organization.items && store.organization.items.length
-            ) && <OrganizationSwitcher />}
-            <Box>
-              <IconButton
-                aria-label="sign out"
-                onClick={signOut}
-                color="default"
-                data-cy="signout"
-              >
-                <PowerSettingsNewIcon />
-              </IconButton>
-            </Box>
-          </Box>
-        </Toolbar>
-      </Hidden>
 
       <Hidden mdUp>
         {SearchBar ? (
           <Toolbar variant="dense" disableGutters>
-            <Box width="100%">{SearchBar}</Box>
+            <Box mt={6} width="100%">
+              {SearchBar}
+            </Box>
           </Toolbar>
         ) : null}
+      </Hidden>
+
+      <Hidden mdUp>
+        <MobileTopBar
+          position="fixed"
+          top={0}
+          left={0}
+          width="100%"
+          display="flex"
+          justifyContent="space-between"
+        >
+          {!!(store.organization.items && store.organization.items.length) && (
+            <OrganizationSwitcher />
+          )}
+          <Box>
+            <IconButton
+              aria-label="sign out"
+              onClick={signOut}
+              color="inherit"
+              data-cy="signout"
+            >
+              <PowerSettingsNewIcon />
+            </IconButton>
+          </Box>
+        </MobileTopBar>
       </Hidden>
     </>
   ) : null;
@@ -162,46 +179,48 @@ const Page = observer(
 
     return (
       <>
-        <EnvironmentBar />
-
-        {!loading && !routeloading ? (
-          <>
-            <ElevationScroll>
-              <AppBar position="sticky">
-                <Container maxWidth={maxWidth}>
-                  <MainToolbar
-                    visible={store.user.signedIn}
-                    SearchBar={SearchBar}
-                  />
-                </Container>
-              </AppBar>
-            </ElevationScroll>
+        <Hidden smDown>
+          <EnvironmentBar />
+        </Hidden>
+        <>
+          <ElevationScroll>
+            <AppBar position="sticky">
+              <Container maxWidth={maxWidth}>
+                <MainToolbar
+                  visible={store.user.signedIn}
+                  SearchBar={!loading && !routeloading ? SearchBar : null}
+                />
+              </Container>
+            </AppBar>
+          </ElevationScroll>
+          {!loading && !routeloading ? (
             <Container maxWidth={maxWidth}>
               {PrimaryToolbar ? (
-                <SubToolbar
-                  ContentBar={PrimaryToolbar}
-                  ActionBar={ActionToolbar}
-                />
+                <Box my={1}>
+                  <SubToolbar
+                    ContentBar={PrimaryToolbar}
+                    ActionBar={ActionToolbar}
+                  />
+                </Box>
               ) : null}
               {SecondaryToolbar ? (
                 <SubToolbar ContentBar={SecondaryToolbar} />
               ) : null}
             </Container>
-          </>
-        ) : null}
+          ) : null}
+        </>
 
         <Box
           mt={
             !loading && !routeloading && (PrimaryToolbar || SecondaryToolbar)
-              ? 4
-              : 0
+              ? 0
+              : 8
           }
-          mb={10}
         >
           <Container maxWidth={maxWidth}>
             {loading || routeloading ? (
               <Box
-                position="absolute"
+                position="fixed"
                 top={0}
                 left={0}
                 width="100vw"
@@ -210,7 +229,7 @@ const Page = observer(
                 <Loading />
               </Box>
             ) : (
-              children
+              <Box>{children}</Box>
             )}
           </Container>
         </Box>

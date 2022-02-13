@@ -37,7 +37,7 @@ const ToggleMenu = ({ startIcon, options, value, onChange = () => {} }) => {
         aria-controls="select-menu"
         aria-haspopup="true"
         size="large"
-        color="default"
+        color="inherit"
         startIcon={startIcon}
         endIcon={<ExpandMoreIcon />}
         onClick={handleClick}
