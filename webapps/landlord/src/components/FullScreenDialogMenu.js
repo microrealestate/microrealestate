@@ -1,27 +1,52 @@
 import {
+  AppBar,
   Box,
   Card,
   CardActionArea,
   CardContent,
   Divider,
-  IconButton,
+  Hidden,
   Toolbar,
   useTheme,
 } from '@material-ui/core';
 import { forwardRef, Fragment, useCallback, useMemo, useState } from 'react';
 
 import Button from '@material-ui/core/Button';
-import CloseIcon from '@material-ui/icons/Close';
 import Dialog from '@material-ui/core/Dialog';
 import { hexToRgb } from '../styles/styles';
 import Loading from './Loading';
 import Slide from '@material-ui/core/Slide';
 import Typography from '@material-ui/core/Typography';
 import { useComponentMountedRef } from '../utils/hooks';
+import useTranslation from 'next-translate/useTranslation';
 
 const Transition = forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
+
+const CardMenuItemContent = ({ illustration, label, description }) => {
+  return (
+    <Card>
+      <CardActionArea>
+        <CardContent>
+          {illustration}
+          <Box py={2}>
+            <Typography align="center" variant="subtitle1">
+              {label}
+            </Typography>
+          </Box>
+          {!!description && (
+            <Box height={50}>
+              <Typography variant="body2" color="textSecondary">
+                {description}
+              </Typography>
+            </Box>
+          )}
+        </CardContent>
+      </CardActionArea>
+    </Card>
+  );
+};
 
 const CardMenuItem = ({ value, illustration, label, description, onClick }) => {
   const onMenuClick = useCallback(() => {
@@ -29,27 +54,26 @@ const CardMenuItem = ({ value, illustration, label, description, onClick }) => {
   }, [value, onClick]);
 
   return (
-    <Box width={300} pr={2} pb={2} onClick={onMenuClick}>
-      <Card>
-        <CardActionArea>
-          <CardContent>
-            {illustration}
-            <Box py={2}>
-              <Typography align="center" variant="subtitle1">
-                {label}
-              </Typography>
-            </Box>
-            {!!description && (
-              <Box height={50}>
-                <Typography variant="body2" color="textSecondary">
-                  {description}
-                </Typography>
-              </Box>
-            )}
-          </CardContent>
-        </CardActionArea>
-      </Card>
-    </Box>
+    <>
+      <Hidden smDown>
+        <Box width={300} pr={2} pb={2} onClick={onMenuClick}>
+          <CardMenuItemContent
+            illustration={illustration}
+            label={label}
+            description={description}
+          />
+        </Box>
+      </Hidden>
+      <Hidden mdUp>
+        <Box width="100%" pb={2} onClick={onMenuClick}>
+          <CardMenuItemContent
+            illustration={illustration}
+            label={label}
+            description={description}
+          />
+        </Box>
+      </Hidden>
+    </>
   );
 };
 
@@ -64,6 +88,7 @@ const FullScreenDialogMenu = ({
   const [open, setOpen] = useState(false);
   const [runningAction, setRunningAction] = useState(false);
   const theme = useTheme();
+  const { t } = useTranslation('common');
 
   const handleClickOpen = useCallback(() => {
     setOpen(true);
@@ -109,18 +134,22 @@ const FullScreenDialogMenu = ({
         onClose={handleClose}
         TransitionComponent={Transition}
       >
-        <Toolbar>
-          <Box width="100%" display="flex" alignItems="center">
-            <Box flexGrow={1}>
-              <Typography variant="h6">{dialogTitle}</Typography>
+        <AppBar position="sticky">
+          <Toolbar>
+            <Box width="100%" display="flex" alignItems="center">
+              <Box flexGrow={1}>
+                <Typography>{dialogTitle}</Typography>
+              </Box>
+              <Box ml={4}>
+                <Button color="inherit" onClick={handleClose}>
+                  {t('Close')}
+                </Button>
+              </Box>
             </Box>
-            <IconButton onClick={handleClose} aria-label="close">
-              <CloseIcon />
-            </IconButton>
-          </Box>
-        </Toolbar>
+          </Toolbar>
+        </AppBar>
         <Box position="relative">
-          <Box px={5}>
+          <Box py={2} px={5}>
             {categories.map((category, index) => {
               return (
                 <Fragment key={category}>

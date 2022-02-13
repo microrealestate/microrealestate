@@ -63,6 +63,13 @@ const MenuItem = memo(function MenuItem({
   );
 });
 
+const MobileMenuButton = withStyles((theme) => ({
+  root: {
+    color: 'rgba(' + hexToRgb(theme.palette.common.white) + ', 0.8)',
+    borderRadius: 0,
+  },
+}))(IconButton);
+
 const MobileMenuItem = ({ item, selected, onClick }) => {
   const classes = useStyles();
 
@@ -80,11 +87,9 @@ const MobileMenuItem = ({ item, selected, onClick }) => {
       >
         <Box display="flex" flexDirection="column">
           <Box>{item.icon}</Box>
-          <Box>
-            <Typography variant="inherit" noWrap>
-              {item.value}
-            </Typography>
-          </Box>
+          <Typography variant="caption" component="div" noWrap>
+            {item.value}
+          </Typography>
         </Box>
       </MobileMenuButton>
     </Box>
@@ -96,14 +101,6 @@ const MobileMenu = withStyles((theme) => ({
     backgroundColor: theme.palette.common.black,
   },
 }))(Box);
-
-const MobileMenuButton = withStyles((theme) => ({
-  root: {
-    fontSize: 10,
-    color: 'rgba(' + hexToRgb(theme.palette.common.white) + ', 0.8)',
-    borderRadius: 0,
-  },
-}))(IconButton);
 
 const Nav = () => {
   const classes = useStyles();

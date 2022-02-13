@@ -81,6 +81,38 @@ export const PageCard = memo(function PageCard({
   );
 });
 
+const CardContent = ({ Toolbar, info, children }) => (
+  <Box mt={1.8}>
+    {!!Toolbar && (
+      <>
+        <UIToolbar>
+          <Box width="100%" display="flex" justifyContent="flex-end">
+            {Toolbar}
+          </Box>
+        </UIToolbar>
+        <Box pb={1}>
+          <Divider variant="middle" />
+        </Box>
+      </>
+    )}
+
+    <Box px={1.8} pb={1.8} pt={Toolbar ? 0 : 1.8}>
+      {children}
+    </Box>
+
+    {info && (
+      <>
+        <Divider />
+        <Box p={1}>
+          <Typography component="div" color="textSecondary" variant="caption">
+            {info}
+          </Typography>
+        </Box>
+      </>
+    )}
+  </Box>
+);
+
 export const DashboardCard = memo(function DashboardCard({
   variant,
   Icon,
@@ -90,49 +122,21 @@ export const DashboardCard = memo(function DashboardCard({
   children,
   onClick,
 }) {
-  const CardContent = () => (
-    <Box mt={1.8}>
-      {!!Toolbar && (
-        <>
-          <UIToolbar>
-            <Box width="100%" display="flex" justifyContent="flex-end">
-              {Toolbar}
-            </Box>
-          </UIToolbar>
-          <Box pb={1}>
-            <Divider variant="middle" />
-          </Box>
-        </>
-      )}
-
-      <Box px={1.8} pb={1.8} pt={Toolbar ? 0 : 1.8}>
-        {children}
-      </Box>
-
-      {info && (
-        <>
-          <Divider />
-          <Box p={1}>
-            <Typography component="div" color="textSecondary" variant="caption">
-              {info}
-            </Typography>
-          </Box>
-        </>
-      )}
-    </Box>
-  );
-
   return (
     <Box position="relative">
       {onClick ? (
         <Card onClick={onClick}>
           <CardActionArea>
-            <CardContent />
+            <CardContent info={info} Toolbar={Toolbar}>
+              {children}
+            </CardContent>
           </CardActionArea>
         </Card>
       ) : (
         <Card>
-          <CardContent />
+          <CardContent info={info} Toolbar={Toolbar}>
+            {children}
+          </CardContent>
         </Card>
       )}
       <Box
