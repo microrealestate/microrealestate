@@ -62,7 +62,7 @@ async function start() {
   );
 
   // parse locale
-  app.use(locale(['fr-FR', 'en-US', 'pt-BR'], 'en-US'));
+  app.use(locale(['fr-FR', 'en-US', 'pt-BR', 'de-DE'], 'en-US'));
 
   // body parser
   app.use(express.urlencoded({ extended: true }));

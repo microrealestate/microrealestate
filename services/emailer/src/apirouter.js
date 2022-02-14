@@ -60,7 +60,7 @@ const _send = async (req, res) => {
 
 const apiRouter = express.Router();
 // parse locale
-apiRouter.use(locale(['fr-FR', 'en', 'pt-BR'], 'en')); // used when organization is not set
+apiRouter.use(locale(['fr-FR', 'en', 'pt-BR', 'de-DE'], 'en')); // used when organization is not set
 apiRouter.post('/emailer/resetpassword', _send); // allow this route even there is no access token
 apiRouter.use(needAccessToken(config.ACCESS_TOKEN_SECRET));
 apiRouter.use(checkOrganization());

@@ -3,7 +3,7 @@ const moment = require('moment');
 const i18n = require('i18n');
 
 i18n.configure({
-  locales: ['en', 'fr-FR', 'pt-BR'],
+  locales: ['en', 'fr-FR', 'pt-BR', 'de-DE'],
   directory: path.join(__dirname, '..', '..', 'templates', 'locales'),
   updateFiles: false,
 });
