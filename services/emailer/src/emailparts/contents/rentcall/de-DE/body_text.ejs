@@ -1,0 +1,71 @@
+<%-landlord.name%>
+<% if (landlord.hasAddress) { -%>
+<%-landlord.addresses[0].street1%>
+<%if (landlord.addresses[0].street2) {-%>
+<%-landlord.addresses[0].street2%>
+<%}-%>
+<%-landlord.addresses[0].zipCode%> <%-landlord.addresses[0].city%>
+<%if (landlord.addresses[0].state) {-%>
+<%-landlord.addresses[0].state%>
+<%}-%>
+<%if (landlord.addresses[0].country) {-%>
+<%-landlord.addresses[0].country%>
+<%}-%>
+<%}-%>
+
+
+                                              <%-tenant.name%>
+                                              <%-tenant.street1%>
+<%if (tenant.street2) {-%>
+                                              <%-tenant.street2%>
+<%}-%>
+                                              <%-tenant.zipCode%> <%-tenant.city%>
+
+
+
+Sehr geehrter Mieter!
+
+Bitte beachten Sie den Mietbescheid von <%- _.formatTerm(period, tenant.contract.lease.timeRange) %>.
+
+Die Höhe Ihrer Miete beträgt <%- _.formatNumber(tenant.rents[0].total.grandTotal, 'currency') %> and the settlement has to be made before <%- _.formatDate(dueDate, 'LL') %>.
+
+Zahlungsarten:
+
+Per Banküberweisung
+Bankdaten
+<% if (landlord.hasBankInfo) { -%>
+<%- landlord.bankInfo.name %>
+IBAN: <%-landlord.bankInfo.iban%>
+<%}-%>
+
+Per Scheck
+Schreiben Sie Ihren Scheck an den Begünstigten  <%-landlord.name%> und schicken sie es an folgende Adresse:
+<%-landlord.name%>
+<% if (landlord.hasAddress) { -%>
+<%-landlord.addresses[0].street1%>
+<%if (landlord.addresses[0].street2) {-%>
+<%-landlord.addresses[0].street2%>
+<%}-%>
+<%-landlord.addresses[0].zipCode%> <%-landlord.addresses[0].city%>
+<%if (landlord.addresses[0].state) {-%>
+<%-landlord.addresses[0].state%>
+<%}-%>
+<%if (landlord.addresses[0].country) {-%>
+<%-landlord.addresses[0].country%>
+<%}-%>
+<%}-%>
+
+Mit Bargeld
+Kontakt: <%-landlord.hasContact ? landlord.contacts[0].name : ''%>
+Mobil: <%-landlord.hasContact ? landlord.contacts[0].phone1 : ''%><% landlord.hasContact && landlord.contacts[0].phone2 ? ' / ' + landlord.contacts[0].phone2 : '' %>
+Email: <%-landlord.hasContact ? landlord.contacts[0].email : ''%>
+
+Für weitere Informationen stehen wir Ihnen gerne zur Verfügung.
+
+Beste Grüße,
+
+<%-landlord.name%>
+<% if (landlord.hasContact) { -%>
+<%-landlord.contacts[0].phone1%><%if (landlord.contacts[0].phone2) {%> / <%-landlord.contacts[0].phone2%> <%}%>
+<%-landlord.contacts[0].email%>
+<%}-%>
