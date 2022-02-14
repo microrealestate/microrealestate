@@ -65,7 +65,7 @@ const _clearTokens = async (refreshToken) => {
 const apiRouter = express.Router();
 
 // parse locale
-apiRouter.use(locale(['fr-FR', 'en-US', 'pt-BR'], 'en-US'));
+apiRouter.use(locale(['fr-FR', 'en-US', 'pt-BR', 'de-DE'], 'en-US'));
 
 if (config.SIGNUP) {
   apiRouter.post('/signup', async (req, res) => {

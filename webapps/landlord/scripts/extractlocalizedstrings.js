@@ -5,7 +5,7 @@ const axios = require('axios');
 const _ = require('lodash');
 
 const TRANSLATION_SERVICE_ENDPOINT = 'https://translate.astian.org/translate';
-const LANGUAGES = ['en', 'fr-FR', 'pt-BR'];
+const LANGUAGES = ['en', 'fr-FR', 'pt-BR', 'de-DE'];
 const AUTOMATIC_TRANSLATION_FOR = ['fr-FR'];
 
 const harvestKeysFromSourceFiles = () => {
