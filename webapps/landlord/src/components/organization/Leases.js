@@ -1,6 +1,7 @@
 import { Box, Paper, Switch, TableHead, Typography } from '@material-ui/core';
 import React, { useCallback, useContext, useState } from 'react';
 
+import AddIcon from '@material-ui/icons/Add';
 import { ADMIN_ROLE } from '../../store/User';
 import { FormSection } from '../Form';
 import Link from '../Link';
@@ -53,6 +54,7 @@ const Leases = observer(({ setError }) => {
           variant="contained"
           color="primary"
           onClick={() => setOpenNewLeaseDialog(true)}
+          startIcon={<AddIcon />}
           onlyRoles={[ADMIN_ROLE]}
         >
           {t('New contract')}

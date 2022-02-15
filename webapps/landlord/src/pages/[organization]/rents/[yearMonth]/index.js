@@ -1,4 +1,10 @@
-import { Box, Grid, Hidden, Typography } from '@material-ui/core';
+import {
+  Box,
+  Grid,
+  Hidden,
+  Typography,
+  useMediaQuery,
+} from '@material-ui/core';
 import { getStoreInstance, StoreContext } from '../../../../store';
 import { useCallback, useContext, useMemo } from 'react';
 
@@ -51,6 +57,7 @@ const Rents = observer(() => {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const router = useRouter();
+  const isMobile = useMediaQuery((theme) => theme.breakpoints.down('sm'));
 
   const onSearch = useCallback(
     (status, searchText) => {
@@ -105,7 +112,7 @@ const Rents = observer(() => {
   return (
     <Page
       ActionToolbar={
-        <Hidden smDown>
+        !isMobile ? (
           <FullScreenDialogButton
             variant="contained"
             buttonLabel={t('Send mass emails')}
@@ -116,7 +123,7 @@ const Rents = observer(() => {
           >
             <RentTable />
           </FullScreenDialogButton>
-        </Hidden>
+        ) : null
       }
       PrimaryToolbar={<PeriodToolbar onChange={onPeriodChange} />}
       SearchBar={

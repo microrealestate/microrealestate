@@ -11,11 +11,13 @@ import {
   makeStyles,
   Paper,
   Typography,
+  useMediaQuery,
 } from '@material-ui/core';
 import { getStoreInstance, StoreContext } from '../../../store';
 import { memo, useCallback, useContext, useState } from 'react';
 
 import _ from 'lodash';
+import AddIcon from '@material-ui/icons/Add';
 import { EmptyIllustration } from '../../../components/Illustrations';
 import { isServer } from '../../../utils';
 import moment from 'moment';
@@ -172,6 +174,7 @@ const Tenants = observer(() => {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const [openNewTenantDialog, setOpenNewTenantDialog] = useState(false);
+  const isMobile = useMediaQuery((theme) => theme.breakpoints.down('sm'));
 
   const onSearch = useCallback(
     (status, searchText) => {
@@ -187,7 +190,12 @@ const Tenants = observer(() => {
   return (
     <Page
       ActionToolbar={
-        <Button variant="contained" onClick={onNewTenant}>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          size={isMobile ? 'small' : 'medium'}
+          onClick={onNewTenant}
+        >
           {t('New tenant')}
         </Button>
       }

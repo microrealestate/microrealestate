@@ -256,7 +256,7 @@ const RentPayment = observer(() => {
     >
       <RequestError error={error} />
       <Grid container spacing={5}>
-        <Grid item xs={12} md={8}>
+        <Grid item xs={12} md={7} lg={8}>
           <Hidden mdUp>
             <Box pb={4}>
               <BalanceBar
@@ -272,7 +272,7 @@ const RentPayment = observer(() => {
           </Paper>
         </Grid>
         <Hidden smDown>
-          <Grid item xs={12} md={4}>
+          <Grid item xs={12} md={5} lg={4}>
             <Box pb={4}>
               <DashboardCard
                 Icon={ReceiptIcon}

@@ -8,10 +8,12 @@ import {
   TableHead,
   TableRow,
   Typography,
+  useMediaQuery,
 } from '@material-ui/core';
 import { getStoreInstance, StoreContext } from '../../../store';
 import { useCallback, useContext, useMemo, useState } from 'react';
 
+import AddIcon from '@material-ui/icons/Add';
 import { EmptyIllustration } from '../../../components/Illustrations';
 import { isServer } from '../../../utils';
 import NewPropertyDialog from '../../../components/properties/NewPropertyDialog';
@@ -102,6 +104,7 @@ const Properties = observer(() => {
   const store = useContext(StoreContext);
   const [openNewPropertyDialog, setOpenNewPropertyDialog] = useState(false);
   const [error /* setError*/] = useState('');
+  const isMobile = useMediaQuery((theme) => theme.breakpoints.down('sm'));
 
   const filters = useMemo(
     () => [
@@ -128,7 +131,12 @@ const Properties = observer(() => {
   return (
     <Page
       ActionToolbar={
-        <Button variant="contained" onClick={onNewProperty}>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          size={isMobile ? 'small' : 'medium'}
+          onClick={onNewProperty}
+        >
           {t('New property')}
         </Button>
       }

@@ -1,20 +1,14 @@
-import {
-  Box,
-  Hidden,
-  IconButton,
-  ListItemIcon,
-  Typography,
-  withStyles,
-} from '@material-ui/core';
+import { Hidden, ListItemIcon, Typography } from '@material-ui/core';
 import { memo, useCallback, useContext, useMemo, useState } from 'react';
 
 import AccountBalanceWalletIcon from '@material-ui/icons/AccountBalanceWallet';
 import DashboardIcon from '@material-ui/icons/Dashboard';
 import Drawer from '@material-ui/core/Drawer';
-import { hexToRgb } from '../styles/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
+import MobileMenu from './MobileMenu';
+import MobileMenuButton from './MobileMenuButton';
 import moment from 'moment';
 import PeopleAltIcon from '@material-ui/icons/PeopleAlt';
 import ReceiptIcon from '@material-ui/icons/Receipt';
@@ -62,45 +56,6 @@ const MenuItem = memo(function MenuItem({
     </ListItem>
   );
 });
-
-const MobileMenuButton = withStyles((theme) => ({
-  root: {
-    color: 'rgba(' + hexToRgb(theme.palette.common.white) + ', 0.8)',
-    borderRadius: 0,
-  },
-}))(IconButton);
-
-const MobileMenuItem = ({ item, selected, onClick }) => {
-  const classes = useStyles();
-
-  const onMenuClick = useCallback(() => {
-    onClick(item);
-  }, [item, onClick]);
-
-  return (
-    <Box>
-      <MobileMenuButton
-        className={`${classes.item} ${
-          selected ? classes.mobileItemSelected : ''
-        }`}
-        onClick={onMenuClick}
-      >
-        <Box display="flex" flexDirection="column">
-          <Box>{item.icon}</Box>
-          <Typography variant="caption" component="div" noWrap>
-            {item.value}
-          </Typography>
-        </Box>
-      </MobileMenuButton>
-    </Box>
-  );
-};
-
-const MobileMenu = withStyles((theme) => ({
-  root: {
-    backgroundColor: theme.palette.common.black,
-  },
-}))(Box);
 
 const Nav = () => {
   const classes = useStyles();
@@ -238,7 +193,7 @@ const Nav = () => {
         >
           {mobileItems.map((item) => {
             return (
-              <MobileMenuItem
+              <MobileMenuButton
                 key={item.key}
                 item={item}
                 selected={pathname.indexOf(item.pathname) !== -1}

@@ -8,6 +8,7 @@ import {
   Tabs,
   Tooltip,
   Typography,
+  useMediaQuery,
 } from '@material-ui/core';
 import { CardRow, DashboardCard } from '../../../components/Cards';
 import { getStoreInstance, StoreContext } from '../../../store';
@@ -253,6 +254,7 @@ const Tenant = observer(() => {
       param: [, backToDashboard],
     },
   } = router;
+  const isMobile = useMediaQuery((theme) => theme.breakpoints.down('sm'));
 
   const backPath = useMemo(() => {
     let backPath = `/${store.organization.selected.name}/dashboard`;
@@ -431,7 +433,7 @@ const Tenant = observer(() => {
   return (
     <Page
       ActionToolbar={
-        <Grid container spacing={2}>
+        <Grid container spacing={!isMobile ? 2 : 1}>
           <Grid item>
             <Tooltip
               title={
@@ -446,8 +448,9 @@ const Tenant = observer(() => {
                 <Button
                   variant="contained"
                   startIcon={<DeleteIcon />}
-                  onClick={() => setOpenConfirmDeleteTenant(true)}
                   disabled={store.tenant.selected.hasPayments}
+                  size={isMobile ? 'small' : 'medium'}
+                  onClick={() => setOpenConfirmDeleteTenant(true)}
                 >
                   {t('Delete')}
                 </Button>
@@ -459,8 +462,9 @@ const Tenant = observer(() => {
               <Button
                 variant="contained"
                 startIcon={<StopIcon />}
-                onClick={() => setOpenTerminateLease(true)}
                 disabled={store.tenant.selected.terminated}
+                size={isMobile ? 'small' : 'medium'}
+                onClick={() => setOpenTerminateLease(true)}
               >
                 {t('Terminate')}
               </Button>
@@ -470,10 +474,11 @@ const Tenant = observer(() => {
             <Button
               variant="contained"
               startIcon={<EditIcon />}
-              onClick={() => setOpenConfirmEditTenant(true)}
               disabled={
                 !(!!store.tenant.selected.properties?.length && readOnly)
               }
+              size={isMobile ? 'small' : 'medium'}
+              onClick={() => setOpenConfirmEditTenant(true)}
             >
               {t('Edit')}
             </Button>
@@ -490,13 +495,13 @@ const Tenant = observer(() => {
     >
       <RequestError error={error} />
       <Grid container spacing={5}>
-        <Grid item sm={12} md={8}>
+        <Grid item sm={12} md={7} lg={8}>
           <Paper>
             <TenantTabs onSubmit={onSubmit} readOnly={readOnly} />
           </Paper>
         </Grid>
         {!!store.tenant.selected.properties && (
-          <Grid item sm={12} md={4}>
+          <Grid item xs={12} md={5} lg={4}>
             <Box pb={4}>
               <DashboardCard Icon={SubjectIcon} title={t('Lease')}>
                 <ContractOverview />
