@@ -7,14 +7,13 @@ import {
   Toolbar,
   Tooltip,
   Typography,
-  withStyles,
 } from '@material-ui/core';
 import { memo, useCallback, useContext, useEffect, useState } from 'react';
 
 import { ElevationScroll } from './Scroll';
 import getConfig from 'next/config';
-import { hexToRgb } from '../styles/styles';
 import Loading from './Loading';
+import MobileMenu from './MobileMenu';
 import { observer } from 'mobx-react-lite';
 import OrganizationSwitcher from './organization/OrganizationSwitcher';
 import PowerSettingsNewIcon from '@material-ui/icons/PowerSettingsNew';
@@ -40,16 +39,10 @@ const EnvironmentBar = memo(function EnvironmentBar() {
   ) : null;
 });
 
-const MobileTopBar = withStyles((theme) => ({
-  root: {
-    backgroundColor: theme.palette.common.black,
-    color: 'rgba(' + hexToRgb(theme.palette.common.white) + ', 0.8)',
-  },
-}))(Box);
-
 const MainToolbar = memo(function MainToolbar({
   visible,
   SearchBar,
+  ActionBar,
   maxWidth,
 }) {
   const { t } = useTranslation('common');
@@ -95,7 +88,7 @@ const MainToolbar = memo(function MainToolbar({
       </Hidden>
 
       <Hidden mdUp>
-        <MobileTopBar>
+        <MobileMenu>
           <Container maxWidth={maxWidth}>
             <Box display="flex" justifyContent="space-between">
               {!!(
@@ -111,11 +104,20 @@ const MainToolbar = memo(function MainToolbar({
               </IconButton>
             </Box>
           </Container>
-        </MobileTopBar>
-        {SearchBar ? (
-          <Toolbar variant="dense" disableGutters>
-            <Container>{SearchBar}</Container>
-          </Toolbar>
+        </MobileMenu>
+        {ActionBar || SearchBar ? (
+          <Container maxWidth={maxWidth}>
+            {ActionBar ? (
+              <>
+                <Toolbar disableGutters>{ActionBar}</Toolbar>
+              </>
+            ) : null}
+            {SearchBar ? (
+              <Toolbar variant="dense" disableGutters>
+                <Box width="100%">{SearchBar}</Box>
+              </Toolbar>
+            ) : null}
+          </Container>
         ) : null}
       </Hidden>
     </>
@@ -181,6 +183,7 @@ const Page = observer(
             <MainToolbar
               visible={store.user.signedIn}
               SearchBar={!loading && !routeloading ? SearchBar : null}
+              ActionBar={!loading && !routeloading ? ActionToolbar : null}
               maxWidth={maxWidth}
             />
           </AppBar>
@@ -190,14 +193,24 @@ const Page = observer(
           <>
             {!loading && !routeloading ? (
               <>
-                {PrimaryToolbar ? (
-                  <Box mt={1}>
-                    <SubToolbar
-                      ContentBar={PrimaryToolbar}
-                      ActionBar={ActionToolbar}
-                    />
-                  </Box>
-                ) : null}
+                <Hidden smDown>
+                  {PrimaryToolbar ? (
+                    <Box mt={1}>
+                      <SubToolbar
+                        ContentBar={PrimaryToolbar}
+                        ActionBar={ActionToolbar}
+                      />
+                    </Box>
+                  ) : null}
+                </Hidden>
+
+                <Hidden mdUp>
+                  {PrimaryToolbar ? (
+                    <Box mt={1}>
+                      <SubToolbar ContentBar={PrimaryToolbar} />
+                    </Box>
+                  ) : null}
+                </Hidden>
 
                 {SecondaryToolbar ? (
                   <SubToolbar ContentBar={SecondaryToolbar} />

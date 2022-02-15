@@ -2,6 +2,7 @@ import {
   Box,
   Button,
   Grid,
+  Hidden,
   List,
   ListItem,
   ListItemAvatar,
@@ -11,6 +12,7 @@ import {
   Tab,
   Tabs,
   Typography,
+  useMediaQuery,
 } from '@material-ui/core';
 import { CardRow, DashboardCard } from '../../../components/Cards';
 import { getStoreInstance, StoreContext } from '../../../store';
@@ -112,6 +114,7 @@ const Property = observer(() => {
       param: [, backToDashboard],
     },
   } = router;
+  const isMobile = useMediaQuery((theme) => theme.breakpoints.down('sm'));
 
   const backPath = useMemo(() => {
     let backPath = `/${store.organization.selected.name}/dashboard`;
@@ -214,6 +217,7 @@ const Property = observer(() => {
         <Button
           variant="contained"
           startIcon={<DeleteIcon />}
+          size={isMobile ? 'small' : 'medium'}
           onClick={onConfirmDeleteProperty}
         >
           {t('Delete')}
@@ -229,7 +233,7 @@ const Property = observer(() => {
     >
       <RequestError error={error} />
       <Grid container spacing={5}>
-        <Grid item sm={12} md={8}>
+        <Grid item xs={12} md={7} lg={8}>
           {tabsReady && (
             <Paper>
               <Tabs
@@ -246,16 +250,18 @@ const Property = observer(() => {
             </Paper>
           )}
         </Grid>
-        <Grid item sm={12} md={4}>
-          <Box pb={4}>
-            <DashboardCard Icon={VpnKeyIcon} title={t('Property')}>
-              <PropertyOverview />
+        <Hidden smDown>
+          <Grid item xs={12} md={5} lg={4}>
+            <Box pb={4}>
+              <DashboardCard Icon={VpnKeyIcon} title={t('Property')}>
+                <PropertyOverview />
+              </DashboardCard>
+            </Box>
+            <DashboardCard Icon={HistoryIcon} title={t('Previous tenants')}>
+              <OccupancyHistory />
             </DashboardCard>
-          </Box>
-          <DashboardCard Icon={HistoryIcon} title={t('Previous tenants')}>
-            <OccupancyHistory />
-          </DashboardCard>
-        </Grid>
+          </Grid>
+        </Hidden>
       </Grid>
       <ConfirmDialog
         title={t('Are you sure to definitely remove this property?')}

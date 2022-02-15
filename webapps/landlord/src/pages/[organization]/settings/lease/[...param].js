@@ -127,12 +127,12 @@ const Lease = observer(() => {
     >
       <RequestError error={error} />
       <Grid container spacing={5}>
-        <Grid item sm={12} md={8}>
+        <Grid item xs={12} md={7} lg={8}>
           <Paper>
             <LeaseForm onSubmit={onLeaseAddUpdate} onRemove={onLeaseRemove} />
           </Paper>
         </Grid>
-        <Grid item sm={12} md={4}>
+        <Grid item xs={12} md={5} lg={4}>
           <LeaseTemplatesCard />
         </Grid>
       </Grid>

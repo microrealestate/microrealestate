@@ -22,6 +22,7 @@ import { FormSection, FormTextField, SelectField, SubmitButton } from '../Form';
 import { memo, useCallback, useContext, useMemo, useState } from 'react';
 import { RestrictButton, RestrictIconButton } from '../RestrictedComponents';
 
+import AddIcon from '@material-ui/icons/Add';
 import ConfirmDialog from '../ConfirmDialog';
 import DeleteIcon from '@material-ui/icons/Delete';
 import { observer } from 'mobx-react-lite';
@@ -84,6 +85,7 @@ const FormDialog = memo(function FormDialog({ members = [], onSubmit }) {
       <RestrictButton
         variant="contained"
         color="primary"
+        startIcon={<AddIcon />}
         onClick={handleClickOpen}
         onlyRoles={allowedRoles}
       >

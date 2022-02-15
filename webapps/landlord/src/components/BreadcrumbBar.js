@@ -6,7 +6,7 @@ import { memo } from 'react';
 function BreadcrumbBar({ backPath, backPage, currentPage }) {
   return (
     <Breadcrumbs aria-label="breadcrumb">
-      <Link underline="hover" color="inherit" href={backPath}>
+      <Link underline="always" color="inherit" href={backPath}>
         {backPage}
       </Link>
       <Typography variant="h6" noWrap>
