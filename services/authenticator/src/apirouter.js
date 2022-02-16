@@ -8,11 +8,12 @@ const config = require('./config');
 const redis = require('@mre/common/models/redis');
 const AccountModel = require('@mre/common/models/account');
 
+const APP_URL = new URL(config.APP_URL);
 const refreshTokenCookieAttributes = {
   httpOnly: true,
-  sameSite: true,
-  secure: config.DOMAIN !== 'localhost',
-  domain: config.DOMAIN,
+  sameSite: 'Strict',
+  secure: APP_URL.protocol === 'https:',
+  domain: APP_URL.hostname,
 };
 
 const _generateTokens = async (dbAccount) => {

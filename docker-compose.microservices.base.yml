@@ -1,4 +1,4 @@
-version: "3.3"
+version: '3.3'
 services:
   ###############################################################################
   # Redis
@@ -6,13 +6,13 @@ services:
   redis:
     image: redis:5
     expose:
-      - "$REDIS_PORT"
+      - '$REDIS_PORT'
     volumes:
-      - "./data/redis:/data"
+      - './data/redis:/data'
     command:
-      - "bash"
-      - "-c"
-      - "docker-entrypoint.sh --requirepass $AUTHENTICATOR_TOKEN_DB_PASSWORD"
+      - 'bash'
+      - '-c'
+      - 'docker-entrypoint.sh --requirepass $AUTHENTICATOR_TOKEN_DB_PASSWORD'
     networks:
       - net
   ###############################################################################
@@ -21,9 +21,9 @@ services:
   mongo:
     image: mongo:3.6
     expose:
-      - "$MONGO_PORT"
+      - '$MONGO_PORT'
     volumes:
-      - "./data/mongodb:/data/db"
+      - './data/mongodb:/data/db'
     networks:
       - net
   ###############################################################################
@@ -34,17 +34,18 @@ services:
     volumes:
       - ./config/nginx/etc/conf.d/prod.conf:/etc/nginx/conf.d/default.template
     ports:
-      - "$NGINX_PORT:$NGINX_PORT"
+      - '$NGINX_PORT:$NGINX_PORT'
     environment:
       - FRONTEND_PORT=$FRONTEND_PORT
       - AUTHENTICATOR_PORT=$AUTHENTICATOR_PORT
       - PDFGENERATOR_PORT=$PDFGENERATOR_PORT
       - API_PORT=$API_PORT
       - NGINX_PORT=$NGINX_PORT
+      - BASE_PATH=$BASE_PATH
     command:
-      - "bin/bash"
-      - "-c"
-      - "envsubst '$${NGINX_PORT},$${API_PORT},$${AUTHENTICATOR_PORT},$${FRONTEND_PORT},$${PDFGENERATOR_PORT},$${RESETSERVICE_PORT}' < /etc/nginx/conf.d/default.template > /etc/nginx/conf.d/default.conf && cat /etc/nginx/conf.d/default.conf && exec nginx -g 'daemon off;'"
+      - 'bin/bash'
+      - '-c'
+      - "envsubst '$${NGINX_PORT},$${BASE_PATH},$${API_PORT},$${AUTHENTICATOR_PORT},$${FRONTEND_PORT},$${PDFGENERATOR_PORT},$${RESETSERVICE_PORT}' < /etc/nginx/conf.d/default.template > /etc/nginx/conf.d/default.conf && cat /etc/nginx/conf.d/default.conf && exec nginx -g 'daemon off;'"
     networks:
       - net
     depends_on:
@@ -67,8 +68,9 @@ services:
       - BASE_DB_URL=$BASE_DB_URL
       - EMAILER_URL=$EMAILER_URL
       - SIGNUP=$SIGNUP
+      - APP_URL=$APP_URL
     expose:
-      - "$AUTHENTICATOR_PORT"
+      - '$AUTHENTICATOR_PORT'
     networks:
       - net
     depends_on:
@@ -89,7 +91,7 @@ services:
       - CIPHER_KEY=$CIPHER_KEY
       - CIPHER_IV_KEY=$CIPHER_IV_KEY
     expose:
-      - "$PDFGENERATOR_PORT"
+      - '$PDFGENERATOR_PORT'
     networks:
       - net
     depends_on:
@@ -117,7 +119,7 @@ services:
       - EMAIL_REPLY_TO=$EMAIL_REPLY_TO
       - EMAIL_BCC=$EMAIL_BCC
     expose:
-      - "$EMAILER_PORT"
+      - '$EMAILER_PORT'
     networks:
       - net
     depends_on:
@@ -142,7 +144,7 @@ services:
       - CIPHER_KEY=$CIPHER_KEY
       - CIPHER_IV_KEY=$CIPHER_IV_KEY
     expose:
-      - "$API_PORT"
+      - '$API_PORT'
     networks:
       - net
     depends_on:
@@ -168,9 +170,9 @@ services:
       - DEMO_MODE=$DEMO_MODE
       - SIGNUP=$SIGNUP
     expose:
-      - "$FRONTEND_PORT"
+      - '$FRONTEND_PORT'
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - 'host.docker.internal:host-gateway'
     networks:
       - net
     depends_on:
