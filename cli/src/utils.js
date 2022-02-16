@@ -110,8 +110,18 @@ const runCompose = async (
   );
 };
 
+const computeUrl = (baseUrl) => {
+  const url = new URL(baseUrl);
+  return {
+    baseUrl: `${url.protocol}//${url.hostname}`,
+    basePath: url.pathname !== '/' ? url.pathname : '',
+    port: url.port,
+  };
+};
+
 module.exports = {
   generateRandomToken,
   loadEnv,
   runCompose,
+  computeUrl,
 };

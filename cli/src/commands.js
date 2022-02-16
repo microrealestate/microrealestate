@@ -4,7 +4,7 @@ const clear = require('clear');
 const chalk = require('chalk');
 const figlet = require('figlet');
 const inquirer = require('inquirer');
-const { generateRandomToken, runCompose } = require('./utils');
+const { generateRandomToken, runCompose, computeUrl } = require('./utils');
 
 const initDirectories = () => {
   const mongoDir = path.join('.', 'data', 'mongodb');
@@ -56,9 +56,7 @@ const start = async () => {
     );
 
     console.log(
-      chalk.green(
-        `Front-end ready and accessible on http://localhost:${process.env.NGINX_PORT}/app`
-      )
+      chalk.green(`Front-end ready and accessible on ${process.env.APP_URL}`)
     );
   } catch (error) {
     console.log(chalk.red(error));
@@ -175,6 +173,20 @@ const askForEnvironmentVariables = () => {
       message: 'Enter the reply to email address (reply to):',
       when: (answers) => answers.mailgunConfig,
     },
+    {
+      name: 'appUrl',
+      type: 'input',
+      message: 'Enter the URL to use to access the front-end:',
+      validate: (input) => {
+        try {
+          new URL(input);
+          return true;
+        } catch (error) {
+          return false;
+        }
+      },
+      default: 'http://localhost:8080/app',
+    },
   ];
   return inquirer.prompt(questions);
 };
@@ -202,6 +214,7 @@ const writeDotEnv = (config) => {
   const accessTokenSecret = generateRandomToken(64);
   const refreshTokenSecret = generateRandomToken(64);
   const resetTokenSecret = generateRandomToken(64);
+  const { baseUrl, basePath, port } = computeUrl(config.appUrl);
   const mailgunApiKey = config.mailgunApiKey || '';
   const mailgunDomain = config.mailgunDomain || '';
   const mailgunFromEmail = config.mailgunFromEmail || '';
@@ -234,6 +247,12 @@ EMAIL_BCC=${mailgunBccEmails}
 ## api
 DEMO_MODE=${demoMode}
 RESTORE_DB=${restoreDb}
+
+## frontend
+${basePath ? `BASE_PATH=${basePath}` : ''}
+${port ? `NGINX_PORT=${port}` : ''}
+APP_URL=${baseUrl}:$\{NGINX_PORT}$\{BASE_PATH}
+API_URL=${baseUrl}:$\{NGINX_PORT}/api/v2
 `;
   fs.writeFileSync('.env', content);
 };
