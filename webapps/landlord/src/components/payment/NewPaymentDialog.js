@@ -19,7 +19,7 @@ import { useComponentMountedRef } from '../../utils/hooks';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 
-const NewPaymentDialog = ({ open, setOpen, fromDashboard = false }) => {
+const NewPaymentDialog = ({ open, setOpen, backPage, backPath }) => {
   const { t } = useTranslation('common');
   const router = useRouter();
   const store = useContext(StoreContext);
@@ -42,7 +42,7 @@ const NewPaymentDialog = ({ open, setOpen, fromDashboard = false }) => {
       }
     };
     fetchRents();
-  }, [store.rent]);
+  }, [mountedRef, store.rent]);
 
   const onRentChange = (event) => {
     setSelectedRent(event.target.value);
@@ -56,9 +56,11 @@ const NewPaymentDialog = ({ open, setOpen, fromDashboard = false }) => {
     handleClose();
     store.rent.setSelected(selectedRent);
     await router.push(
-      fromDashboard
-        ? `/${store.organization.selected.name}/payment/${selectedRent.occupant._id}/${selectedRent.term}/1`
-        : `/${store.organization.selected.name}/payment/${selectedRent.occupant._id}/${selectedRent.term}`
+      `/${store.organization.selected.name}/payment/${
+        selectedRent.occupant._id
+      }/${selectedRent.term}/${encodeURI(backPage)}/${encodeURIComponent(
+        backPath
+      )}`
     );
   }, [
     router,
@@ -66,7 +68,8 @@ const NewPaymentDialog = ({ open, setOpen, fromDashboard = false }) => {
     selectedRent,
     store.organization?.selected?.name,
     store.rent,
-    fromDashboard,
+    backPage,
+    backPath,
   ]);
 
   return (

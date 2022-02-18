@@ -10,7 +10,7 @@ import {
   Tabs,
   Typography,
 } from '@material-ui/core';
-import { CardRow, DashboardCard } from '../../../../components/Cards';
+import { CardRow, PageInfoCard } from '../../../../components/Cards';
 import { getStoreInstance, StoreContext } from '../../../../store';
 import { TabPanel, useTabChangeHelper } from '../../../../components/Tabs';
 import { useCallback, useContext, useMemo, useState } from 'react';
@@ -190,28 +190,9 @@ const RentPayment = observer(() => {
   const store = useContext(StoreContext);
   const router = useRouter();
   const {
-    param: [term, backToDashboard],
+    param: [term, backPage, backPath],
   } = router.query;
   const [error /*setError*/] = useState('');
-
-  const backPath = useMemo(() => {
-    let backPath = `/${store.organization.selected.name}/dashboard`;
-    if (!backToDashboard) {
-      backPath = `/${store.organization.selected.name}/rents/${store.rent.period}`;
-      if (store.rent.filters.searchText || store.rent.filters.status) {
-        backPath = `${backPath}?search=${encodeURIComponent(
-          store.rent.filters.searchText
-        )}&status=${encodeURIComponent(store.rent.filters.status)}`;
-      }
-    }
-    return backPath;
-  }, [
-    backToDashboard,
-    store.organization.selected.name,
-    store.rent.filters.searchText,
-    store.rent.filters.status,
-    store.rent.period,
-  ]);
 
   const onSubmit = useCallback(
     async (paymentPart) => {
@@ -243,13 +224,7 @@ const RentPayment = observer(() => {
       PrimaryToolbar={
         <BreadcrumbBar
           backPath={backPath}
-          backPage={
-            backToDashboard
-              ? t('Dashboard')
-              : t('Rents of {{date}}', {
-                  date: store.rent._period.format('MMM YYYY'),
-                })
-          }
+          backPage={backPage}
           currentPage={store.rent.selected.occupant.name}
         />
       }
@@ -274,7 +249,7 @@ const RentPayment = observer(() => {
         <Hidden smDown>
           <Grid item xs={12} md={5} lg={4}>
             <Box pb={4}>
-              <DashboardCard
+              <PageInfoCard
                 Icon={ReceiptIcon}
                 title={t('Rent')}
                 Toolbar={
@@ -287,10 +262,7 @@ const RentPayment = observer(() => {
                     cancelButtonLabel={t('Close')}
                     showCancel
                   >
-                    <RentHistory
-                      tenantId={store.rent.selected.occupant._id}
-                      backToDashboard={backToDashboard}
-                    />
+                    <RentHistory tenantId={store.rent.selected.occupant._id} />
                   </FullScreenDialogButton>
                 }
               >
@@ -301,10 +273,10 @@ const RentPayment = observer(() => {
                 <Box pt={1}>
                   <PaymentBalance />
                 </Box>
-              </DashboardCard>
+              </PageInfoCard>
             </Box>
 
-            <DashboardCard
+            <PageInfoCard
               Icon={SendIcon}
               title={t('Emails sent')}
               Toolbar={
@@ -398,7 +370,7 @@ const RentPayment = observer(() => {
               ) : (
                 <EmptyIllustration label={t('No emails sent')} />
               )}
-            </DashboardCard>
+            </PageInfoCard>
           </Grid>
         </Hidden>
       </Grid>

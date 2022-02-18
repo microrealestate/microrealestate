@@ -22,7 +22,7 @@ const initialValues = {
   name: '',
 };
 
-const NewLeaseDialog = ({ open, setOpen, fromDashboard = false }) => {
+const NewLeaseDialog = ({ open, setOpen, backPage, backPath }) => {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const router = useRouter();
@@ -52,9 +52,9 @@ const NewLeaseDialog = ({ open, setOpen, fromDashboard = false }) => {
 
       store.lease.setSelected(data);
       await router.push(
-        fromDashboard
-          ? `/${store.organization.selected.name}/settings/lease/${data._id}/1`
-          : `/${store.organization.selected.name}/settings/lease/${data._id}`
+        `/${store.organization.selected.name}/settings/lease/${
+          data._id
+        }/${encodeURI(backPage)}/${encodeURIComponent(backPath)}`
       );
     },
     [
@@ -63,7 +63,8 @@ const NewLeaseDialog = ({ open, setOpen, fromDashboard = false }) => {
       handleClose,
       store.lease,
       store.organization?.selected?.name,
-      fromDashboard,
+      backPage,
+      backPath,
     ]
   );
 

@@ -65,6 +65,7 @@ export const FormTextField = RestrictedComponent(
             ) : null
           }
           disabled={disabled || isSubmitting}
+          fullWidth
           {...props}
           {...field}
           type={

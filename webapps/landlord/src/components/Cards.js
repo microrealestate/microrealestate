@@ -81,7 +81,7 @@ export const PageCard = memo(function PageCard({
   );
 });
 
-const CardContent = ({ Toolbar, info, children }) => (
+const CardContent = ({ Toolbar, info, minHeight, children }) => (
   <Box mt={1.8}>
     {!!Toolbar && (
       <>
@@ -96,7 +96,7 @@ const CardContent = ({ Toolbar, info, children }) => (
       </>
     )}
 
-    <Box px={1.8} pb={1.8} pt={Toolbar ? 0 : 1.8}>
+    <Box px={1.8} pb={1.8} pt={Toolbar ? 0 : 1.8} minHeight={minHeight}>
       {children}
     </Box>
 
@@ -119,8 +119,9 @@ export const DashboardCard = memo(function DashboardCard({
   title,
   info,
   Toolbar,
-  children,
+  minHeight = 'none',
   onClick,
+  children,
 }) {
   return (
     <Box position="relative">
@@ -134,7 +135,7 @@ export const DashboardCard = memo(function DashboardCard({
         </Card>
       ) : (
         <Card>
-          <CardContent info={info} Toolbar={Toolbar}>
+          <CardContent info={info} Toolbar={Toolbar} minHeight={minHeight}>
             {children}
           </CardContent>
         </Card>
@@ -156,5 +157,29 @@ export const DashboardCard = memo(function DashboardCard({
         </IconTypography>
       </Box>
     </Box>
+  );
+});
+
+export const PageInfoCard = memo(function PageInfoCard({
+  variant,
+  Icon,
+  title,
+  info,
+  Toolbar,
+  onClick,
+  children,
+}) {
+  return (
+    <DashboardCard
+      variant={variant}
+      Icon={Icon}
+      title={title}
+      info={info}
+      Toolbar={Toolbar}
+      minHeight={200}
+      onClick={onClick}
+    >
+      {children}
+    </DashboardCard>
   );
 });

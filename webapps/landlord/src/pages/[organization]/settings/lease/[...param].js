@@ -25,7 +25,7 @@ const Lease = observer(() => {
   const [removeLease, setRemoveLease] = useState(false);
   const {
     query: {
-      param: [, backToDashboard],
+      param: [, backPage, backPath],
     },
   } = router;
 
@@ -115,12 +115,8 @@ const Lease = observer(() => {
       }
       PrimaryToolbar={
         <BreadcrumbBar
-          backPath={
-            backToDashboard
-              ? `/${store.organization.selected.name}/dashboard`
-              : `/${store.organization.selected.name}/settings#leases`
-          }
-          backPage={backToDashboard ? t('Dashboard') : t('Settings')}
+          backPath={backPath}
+          backPage={backPage}
           currentPage={store.lease.selected?.name || t('New contract')}
         />
       }

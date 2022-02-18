@@ -95,6 +95,7 @@ const TenantListItem = ({ tenant, balance, onClick }) => (
 
 const Shortcuts = () => {
   const store = useContext(StoreContext);
+  const router = useRouter();
   const { t } = useTranslation('common');
   const [openNewTenantDialog, setOpenNewTenantDialog] = useState(false);
   const [openNewPropertyDialog, setOpenNewPropertyDialog] = useState(false);
@@ -162,22 +163,26 @@ const Shortcuts = () => {
             <NewTenantDialog
               open={openNewTenantDialog}
               setOpen={setOpenNewTenantDialog}
-              fromDashboard={true}
+              backPage={t('Dashboard')}
+              backPath={router.asPath}
             />
             <NewPropertyDialog
               open={openNewPropertyDialog}
               setOpen={setOpenNewPropertyDialog}
-              fromDashboard={true}
+              backPage={t('Dashboard')}
+              backPath={router.asPath}
             />
             <NewLeaseDialog
               open={openNewLeaseDialog}
               setOpen={setOpenNewLeaseDialog}
-              fromDashboard={true}
+              backPage={t('Dashboard')}
+              backPath={router.asPath}
             />
             <NewPaymentDialog
               open={openNewPaymentDialog}
               setOpen={setOpenNewPaymentDialog}
-              fromDashboard={true}
+              backPage={t('Dashboard')}
+              backPath={router.asPath}
             />
             <TerminateLeaseDialog
               open={openTerminateLease}
@@ -529,10 +534,12 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       await fetchDashboardData(store);
-      setReady(true);
+      if (mountedRef.current) {
+        setReady(true);
+      }
     };
     fetchData();
-  }, [store]);
+  }, [mountedRef, store]);
 
   useEffect(() => {
     if (mountedRef.current && ready) {

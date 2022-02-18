@@ -67,9 +67,17 @@ const TenantListItem = memo(function TenantListItem({ tenant }) {
   const onEdit = useCallback(async () => {
     store.tenant.setSelected(tenant);
     await router.push(
-      `/${store.organization.selected.name}/tenants/${tenant._id}`
+      `/${store.organization.selected.name}/tenants/${tenant._id}/${encodeURI(
+        t('Tenants')
+      )}/${encodeURIComponent(router.asPath)}`
     );
-  }, [router, tenant, store.organization.selected.name, store.tenant]);
+  }, [
+    //t,
+    router,
+    tenant,
+    store.organization.selected.name,
+    store.tenant,
+  ]);
 
   return (
     <ListItem

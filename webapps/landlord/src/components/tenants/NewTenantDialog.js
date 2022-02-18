@@ -35,7 +35,7 @@ const initialValues = {
   isCopyFrom: false,
 };
 
-const NewTenantDialog = ({ open, setOpen, fromDashboard = false }) => {
+const NewTenantDialog = ({ open, setOpen, backPage, backPath }) => {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const router = useRouter();
@@ -93,9 +93,9 @@ const NewTenantDialog = ({ open, setOpen, fromDashboard = false }) => {
 
       store.tenant.setSelected(data);
       await router.push(
-        fromDashboard
-          ? `/${store.organization.selected.name}/tenants/${data._id}/1`
-          : `/${store.organization.selected.name}/tenants/${data._id}`
+        `/${store.organization.selected.name}/tenants/${data._id}/${encodeURI(
+          backPage
+        )}/${encodeURIComponent(backPath)}`
       );
     },
     [
@@ -104,7 +104,8 @@ const NewTenantDialog = ({ open, setOpen, fromDashboard = false }) => {
       handleClose,
       store.organization?.selected?.name,
       store.tenant,
-      fromDashboard,
+      backPage,
+      backPath,
     ]
   );
 

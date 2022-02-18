@@ -23,12 +23,18 @@ import TableRow from '@material-ui/core/TableRow';
 import useTranslation from 'next-translate/useTranslation';
 
 const NavTableRow = React.forwardRef(function NavTableRow(
-  { tenantId, tenant, rent, selected, backToDashboard = false },
+  { tenantId, tenant, rent, selected },
   ref
 ) {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
-
+  const backPath = `/${store.organization.selected.name}/rents/${moment(
+    rent.term,
+    'YYYYMMDDHH'
+  ).format('YYYY.MM')}`;
+  const backPage = t('Rents of {{date}}', {
+    date: moment(rent.term, 'YYYYMMDDHHMM').format('MMM YYYY'),
+  });
   return (
     <TableRow ref={ref} key={rent.term} hover selected={selected} size="small">
       <TableCell>
@@ -36,11 +42,9 @@ const NavTableRow = React.forwardRef(function NavTableRow(
           color="inherit"
           variant="body1"
           underline="always"
-          href={
-            backToDashboard
-              ? `/${store.organization.selected.name}/payment/${tenantId}/${rent.term}/1`
-              : `/${store.organization.selected.name}/payment/${tenantId}/${rent.term}`
-          }
+          href={`/${store.organization.selected.name}/payment/${tenantId}/${
+            rent.term
+          }/${encodeURI(backPage)}/${encodeURIComponent(backPath)}`}
         >
           {getPeriod(t, rent.term, tenant.occupant.frequency)}
         </Link>
@@ -71,7 +75,7 @@ const NavTableRow = React.forwardRef(function NavTableRow(
   );
 });
 
-const RentHistory = ({ tenantId, backToDashboard = false }) => {
+const RentHistory = ({ tenantId }) => {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const [loading, setLoading] = useState(true);
@@ -161,7 +165,6 @@ const RentHistory = ({ tenantId, backToDashboard = false }) => {
                       tenant={tenant}
                       rent={rent}
                       selected={isSelected}
-                      backToDashboard={backToDashboard}
                     />
                   );
                 })}

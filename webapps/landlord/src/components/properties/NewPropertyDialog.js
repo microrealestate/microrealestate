@@ -27,7 +27,7 @@ const initialValues = {
   rent: '',
 };
 
-const NewPropertyDialog = ({ open, setOpen, fromDashboard = false }) => {
+const NewPropertyDialog = ({ open, setOpen, backPage, backPath }) => {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const router = useRouter();
@@ -62,9 +62,9 @@ const NewPropertyDialog = ({ open, setOpen, fromDashboard = false }) => {
 
       store.property.setSelected(data);
       await router.push(
-        fromDashboard
-          ? `/${store.organization.selected.name}/properties/${data._id}/1`
-          : `/${store.organization.selected.name}/properties/${data._id}`
+        `/${store.organization.selected.name}/properties/${
+          data._id
+        }/${encodeURI(backPage)}/${encodeURIComponent(backPath)}`
       );
     },
     [
@@ -73,7 +73,8 @@ const NewPropertyDialog = ({ open, setOpen, fromDashboard = false }) => {
       handleClose,
       store.organization,
       store.property,
-      fromDashboard,
+      backPage,
+      backPath,
     ]
   );
 
