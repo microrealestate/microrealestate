@@ -10,11 +10,11 @@ import { useCallback, useContext, useState } from 'react';
 
 import AddIcon from '@material-ui/icons/Add';
 import ConfirmDialog from '../ConfirmDialog';
-import { DashboardCard } from '../Cards';
 import DeleteIcon from '@material-ui/icons/Delete';
 import DescriptionIcon from '@material-ui/icons/DescriptionOutlined';
 import { EmptyIllustration } from '../Illustrations';
 import { observer } from 'mobx-react-lite';
+import { PageInfoCard } from '../Cards';
 import RichTextEditorDialog from '../RichTextEditor/RichTextEditorDialog';
 import { StoreContext } from '../../store';
 import useTranslation from 'next-translate/useTranslation';
@@ -158,7 +158,7 @@ const LeaseTemplatesCard = () => {
   ]);
 
   return (
-    <DashboardCard
+    <PageInfoCard
       Icon={DescriptionIcon}
       title={t('Contract templates')}
       Toolbar={
@@ -191,7 +191,7 @@ const LeaseTemplatesCard = () => {
         setOpen={setTemplateToRemove}
         onConfirm={onDeleteTemplate}
       />
-    </DashboardCard>
+    </PageInfoCard>
   );
 };
 

@@ -14,10 +14,10 @@ import {
   Typography,
   useMediaQuery,
 } from '@material-ui/core';
-import { CardRow, DashboardCard } from '../../../components/Cards';
+import { CardRow, PageInfoCard } from '../../../components/Cards';
 import { getStoreInstance, StoreContext } from '../../../store';
 import { TabPanel, useTabChangeHelper } from '../../../components/Tabs';
-import { useCallback, useContext, useMemo, useState } from 'react';
+import { useCallback, useContext, useState } from 'react';
 
 import BreadcrumbBar from '../../../components/BreadcrumbBar';
 import ConfirmDialog from '../../../components/ConfirmDialog';
@@ -111,23 +111,10 @@ const Property = observer(() => {
 
   const {
     query: {
-      param: [, backToDashboard],
+      param: [, backPage, backPath],
     },
   } = router;
   const isMobile = useMediaQuery((theme) => theme.breakpoints.down('sm'));
-
-  const backPath = useMemo(() => {
-    let backPath = `/${store.organization.selected.name}/dashboard`;
-    if (!backToDashboard) {
-      backPath = `/${store.organization.selected.name}/properties`;
-      if (store.property.filters.searchText || store.property.filters.status) {
-        backPath = `${backPath}?search=${encodeURIComponent(
-          store.property.filters.searchText
-        )}&status=${encodeURIComponent(store.property.filters.status)}`;
-      }
-    }
-    return backPath;
-  }, [backToDashboard, store.organization.selected, store.property.filters]);
 
   const onConfirmDeleteProperty = useCallback(() => {
     setOpenConfirmDeleteProperty(true);
@@ -226,7 +213,7 @@ const Property = observer(() => {
       PrimaryToolbar={
         <BreadcrumbBar
           backPath={backPath}
-          backPage={backToDashboard ? t('Dashboard') : t('Properties')}
+          backPage={backPage}
           currentPage={store.property.selected.name}
         />
       }
@@ -253,13 +240,13 @@ const Property = observer(() => {
         <Hidden smDown>
           <Grid item xs={12} md={5} lg={4}>
             <Box pb={4}>
-              <DashboardCard Icon={VpnKeyIcon} title={t('Property')}>
+              <PageInfoCard Icon={VpnKeyIcon} title={t('Property')}>
                 <PropertyOverview />
-              </DashboardCard>
+              </PageInfoCard>
             </Box>
-            <DashboardCard Icon={HistoryIcon} title={t('Previous tenants')}>
+            <PageInfoCard Icon={HistoryIcon} title={t('Previous tenants')}>
               <OccupancyHistory />
-            </DashboardCard>
+            </PageInfoCard>
           </Grid>
         </Hidden>
       </Grid>

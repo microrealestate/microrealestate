@@ -14,11 +14,11 @@ import { useCallback, useContext, useMemo, useState } from 'react';
 
 import AddIcon from '@material-ui/icons/Add';
 import ConfirmDialog from '../ConfirmDialog';
-import { DashboardCard } from '../Cards';
 import DeleteIcon from '@material-ui/icons/Delete';
 import DescriptionIcon from '@material-ui/icons/DescriptionOutlined';
 import FullScreenDialogMenu from '../FullScreenDialogMenu';
 import { observer } from 'mobx-react-lite';
+import { PageInfoCard } from '../Cards';
 import RichTextEditorDialog from '../RichTextEditor/RichTextEditorDialog';
 import { StoreContext } from '../../store';
 import useTranslation from 'next-translate/useTranslation';
@@ -166,7 +166,7 @@ const TenantDocumentsCard = () => {
   ]);
 
   return (
-    <DashboardCard
+    <PageInfoCard
       Icon={DescriptionIcon}
       title={t('Documents')}
       Toolbar={
@@ -200,7 +200,7 @@ const TenantDocumentsCard = () => {
         setOpen={setDocumentToRemove}
         onConfirm={onDeleteDocument}
       />
-    </DashboardCard>
+    </PageInfoCard>
   );
 };
 

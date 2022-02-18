@@ -127,7 +127,7 @@ const Nav = () => {
 
   const triggerClose = useTimeout(() => {
     openDebounced && setOpenDebounced(false);
-  }, 1000);
+  }, 250);
 
   const handleMenuClick = useCallback(
     (menuItem) => {

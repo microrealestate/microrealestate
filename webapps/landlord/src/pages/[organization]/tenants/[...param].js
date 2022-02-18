@@ -10,7 +10,7 @@ import {
   Typography,
   useMediaQuery,
 } from '@material-ui/core';
-import { CardRow, DashboardCard } from '../../../components/Cards';
+import { CardRow, PageInfoCard } from '../../../components/Cards';
 import { getStoreInstance, StoreContext } from '../../../store';
 import { TabPanel, useTabChangeHelper } from '../../../components/Tabs';
 import { useCallback, useContext, useMemo, useState } from 'react';
@@ -251,23 +251,10 @@ const Tenant = observer(() => {
   const [editContract, setEditContract] = useState(false);
   const {
     query: {
-      param: [, backToDashboard],
+      param: [, backPage, backPath],
     },
   } = router;
   const isMobile = useMediaQuery((theme) => theme.breakpoints.down('sm'));
-
-  const backPath = useMemo(() => {
-    let backPath = `/${store.organization.selected.name}/dashboard`;
-    if (!backToDashboard) {
-      backPath = `/${store.organization.selected.name}/tenants`;
-      if (store.tenant.filters.searchText || store.tenant.filters.status) {
-        backPath = `${backPath}?search=${encodeURIComponent(
-          store.tenant.filters.searchText
-        )}&status=${encodeURIComponent(store.tenant.filters.status)}`;
-      }
-    }
-    return backPath;
-  }, [backToDashboard, store.organization.selected, store.tenant.filters]);
 
   const onDeleteTenant = useCallback(async () => {
     setError('');
@@ -488,7 +475,7 @@ const Tenant = observer(() => {
       PrimaryToolbar={
         <BreadcrumbBar
           backPath={backPath}
-          backPage={backToDashboard ? t('Dashboard') : t('Tenants')}
+          backPage={backPage}
           currentPage={store.tenant.selected.name}
         />
       }
@@ -503,12 +490,12 @@ const Tenant = observer(() => {
         {!!store.tenant.selected.properties && (
           <Grid item xs={12} md={5} lg={4}>
             <Box pb={4}>
-              <DashboardCard Icon={SubjectIcon} title={t('Lease')}>
+              <PageInfoCard Icon={SubjectIcon} title={t('Lease')}>
                 <ContractOverview />
-              </DashboardCard>
+              </PageInfoCard>
             </Box>
             <Box pb={4}>
-              <DashboardCard
+              <PageInfoCard
                 Icon={ReceiptIcon}
                 title={t('Rental')}
                 Toolbar={
@@ -537,7 +524,7 @@ const Tenant = observer(() => {
                 }
               >
                 <RentOverview />
-              </DashboardCard>
+              </PageInfoCard>
             </Box>
             <TenantDocumentsCard />
           </Grid>

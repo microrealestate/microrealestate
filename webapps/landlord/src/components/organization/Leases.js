@@ -13,11 +13,13 @@ import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
+import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 
 const Leases = observer(({ setError }) => {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
+  const router = useRouter();
   const [openNewLeaseDialog, setOpenNewLeaseDialog] = useState(false);
 
   const onLeaseChange = useCallback(
@@ -87,7 +89,11 @@ const Leases = observer(({ setError }) => {
                       <Typography noWrap>{t(lease.name)}</Typography>
                     ) : (
                       <Link
-                        href={`/${store.organization.selected.name}/settings/lease/${lease._id}`}
+                        href={`/${
+                          store.organization.selected.name
+                        }/settings/lease/${lease._id}/${encodeURI(
+                          t('Settings')
+                        )}/${encodeURIComponent(router.asPath)}`}
                       >
                         <Typography noWrap>{lease.name}</Typography>
                       </Link>

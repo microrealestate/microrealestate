@@ -91,10 +91,21 @@ const Rents = observer(() => {
     async (rent) => {
       store.rent.setSelected(rent);
       await router.push(
-        `/${store.organization.selected.name}/payment/${rent.occupant._id}/${store.rent.selected.term}`
+        `/${store.organization.selected.name}/payment/${rent.occupant._id}/${
+          store.rent.selected.term
+        }/${encodeURI(
+          t('Rents of {{date}}', {
+            date: store.rent._period.format('MMM YYYY'),
+          })
+        )}/${encodeURIComponent(router.asPath)}`
       );
     },
-    [router, store.rent, store.organization.selected.name]
+    [
+      //t,
+      router,
+      store.rent,
+      store.organization.selected.name,
+    ]
   );
 
   const filters = useMemo(
@@ -112,18 +123,17 @@ const Rents = observer(() => {
   return (
     <Page
       ActionToolbar={
-        !isMobile ? (
-          <FullScreenDialogButton
-            variant="contained"
-            buttonLabel={t('Send mass emails')}
-            startIcon={<SendIcon />}
-            dialogTitle={t('Send mass emails')}
-            cancelButtonLabel={t('Close')}
-            showCancel
-          >
-            <RentTable />
-          </FullScreenDialogButton>
-        ) : null
+        <FullScreenDialogButton
+          variant="contained"
+          size={isMobile ? 'small' : 'medium'}
+          buttonLabel={t('Send mass emails')}
+          startIcon={<SendIcon />}
+          dialogTitle={t('Send mass emails')}
+          cancelButtonLabel={t('Close')}
+          showCancel
+        >
+          <RentTable />
+        </FullScreenDialogButton>
       }
       PrimaryToolbar={<PeriodToolbar onChange={onPeriodChange} />}
       SearchBar={

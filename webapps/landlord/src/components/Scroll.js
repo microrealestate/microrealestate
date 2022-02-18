@@ -4,6 +4,7 @@ import { Slide, useScrollTrigger } from '@material-ui/core';
 export const ElevationScroll = memo(function ElevationScroll({ children }) {
   const trigger = useScrollTrigger({
     disableHysteresis: true,
+    threshold: 0,
   });
 
   return cloneElement(children, {

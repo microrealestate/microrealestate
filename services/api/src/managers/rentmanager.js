@@ -165,11 +165,15 @@ const _getRentsDataByTerm = async (
 ////////////////////////////////////////////////////////////////////////////////
 const update = async (req, res) => {
   const realm = req.realm;
+  const authorizationHeader = req.headers.authorization;
+  const locale = req.headers['accept-language'];
   const paymentData = rentModel.paymentSchema.filter(req.body);
   const term = `${paymentData.year}${paymentData.month}0100`;
 
   try {
-    res.json(await _updateByTerm(realm, term, paymentData));
+    res.json(
+      await _updateByTerm(authorizationHeader, locale, realm, term, paymentData)
+    );
   } catch (errors) {
     logger.error(errors);
     res.status(500).json({ errors });
@@ -179,17 +183,27 @@ const update = async (req, res) => {
 const updateByTerm = async (req, res) => {
   const realm = req.realm;
   const term = req.params.term;
+  const authorizationHeader = req.headers.authorization;
+  const locale = req.headers['accept-language'];
   const paymentData = rentModel.paymentSchema.filter(req.body);
 
   try {
-    res.json(await _updateByTerm(realm, term, paymentData));
+    res.json(
+      await _updateByTerm(authorizationHeader, locale, realm, term, paymentData)
+    );
   } catch (errors) {
     logger.error(errors);
     res.status(500).json({ errors });
   }
 };
 
-const _updateByTerm = async (realm, term, paymentData) => {
+const _updateByTerm = async (
+  authorizationHeader,
+  locale,
+  realm,
+  term,
+  paymentData
+) => {
   if (!paymentData.promo && paymentData.promo <= 0) {
     paymentData.promo = 0;
     paymentData.notepromo = null;
@@ -265,6 +279,14 @@ const _updateByTerm = async (realm, term, paymentData) => {
 
   dbOccupant.rents = Contract.payTerm(contract, term, settlements).rents;
 
+  const emailStatus =
+    (await _getEmailStatus(
+      authorizationHeader,
+      locale,
+      realm,
+      Number(term)
+    ).catch(logger.error)) || {};
+
   return await new Promise((resolve, reject) => {
     const termAsNumber = Number(term);
     occupantModel.update(realm, dbOccupant, (errors) => {
@@ -274,7 +296,7 @@ const _updateByTerm = async (realm, term, paymentData) => {
       const rent = dbOccupant.rents.filter(
         (rent) => rent.term === termAsNumber
       )[0];
-      resolve(FD.toRentData(rent, dbOccupant));
+      resolve(FD.toRentData(rent, dbOccupant, emailStatus?.[dbOccupant._id]));
     });
   });
 };

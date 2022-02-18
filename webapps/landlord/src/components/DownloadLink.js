@@ -27,7 +27,12 @@ const DownloadLink = ({
         </Tooltip>
       )}
       {!withIcon && label && (
-        <Link component="button" variant={props.variant} onClick={onClick}>
+        <Link
+          component="button"
+          variant={props.variant}
+          underline="always"
+          onClick={onClick}
+        >
           <Typography {...props}>{label}</Typography>
         </Link>
       )}

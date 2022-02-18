@@ -50,9 +50,17 @@ const PropertyTableRow = ({ property }) => {
   const onClick = useCallback(async () => {
     store.property.setSelected(property);
     await router.push(
-      `/${store.organization.selected.name}/properties/${property._id}`
+      `/${store.organization.selected.name}/properties/${
+        property._id
+      }/${encodeURI(t('Properties'))}/${encodeURIComponent(router.asPath)}`
     );
-  }, [property, router, store.organization.selected.name, store.property]);
+  }, [
+    //t,
+    property,
+    router,
+    store.organization.selected.name,
+    store.property,
+  ]);
 
   return (
     <StyledTableRow hover onClick={onClick}>
