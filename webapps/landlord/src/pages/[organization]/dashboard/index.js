@@ -22,39 +22,41 @@ import {
 import {
   CelebrationIllustration,
   WelcomeIllustration,
-} from '../../components/Illustrations';
-import { NumberFormat, useFormatNumber } from '../../utils/numberformat';
+} from '../../../components/Illustrations';
+import { NumberFormat, useFormatNumber } from '../../../utils/numberformat';
 import { useCallback, useContext, useMemo, useState } from 'react';
-import { useComponentMountedRef, useInterval } from '../../utils/hooks';
+import { useComponentMountedRef, useInterval } from '../../../utils/hooks';
 
 import ArrowRightAltIcon from '@material-ui/icons/ArrowRightAlt';
-import { DashboardCard } from '../../components/Cards';
+import { DashboardCard } from '../../../components/Cards';
 import DescriptionIcon from '@material-ui/icons/Description';
+import FirstConnection from './FirstConnection';
 import moment from 'moment';
-import NewLeaseDialog from '../../components/organization/NewLeaseDialog';
-import NewPaymentDialog from '../../components/payment/NewPaymentDialog';
-import NewPropertyDialog from '../../components/properties/NewPropertyDialog';
-import NewTenantDialog from '../../components/tenants/NewTenantDialog';
+import NewLeaseDialog from '../../../components/organization/NewLeaseDialog';
+import NewPaymentDialog from '../../../components/payment/NewPaymentDialog';
+import NewPropertyDialog from '../../../components/properties/NewPropertyDialog';
+import NewTenantDialog from '../../../components/tenants/NewTenantDialog';
 import { observer } from 'mobx-react-lite';
-import Page from '../../components/Page';
+import Page from '../../../components/Page';
 import PeopleIcon from '@material-ui/icons/People';
 import ReceiptIcon from '@material-ui/icons/Receipt';
-import ShortcutButton from '../../components/ShortcutButton';
+import ShortcutButton from '../../../components/ShortcutButton';
 import StopIcon from '@material-ui/icons/Stop';
-import { StoreContext } from '../../store';
-import TenantAvatar from '../../components/tenants/TenantAvatar';
-import TerminateLeaseDialog from '../../components/tenants/TerminateLeaseDialog';
+import { StoreContext } from '../../../store';
+import TenantAvatar from '../../../components/tenants/TenantAvatar';
+import TerminateLeaseDialog from '../../../components/tenants/TerminateLeaseDialog';
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useTheme } from '@material-ui/styles';
 import useTranslation from 'next-translate/useTranslation';
 import VpnKeyIcon from '@material-ui/icons/VpnKey';
-import { withAuthentication } from '../../components/Authentication';
+import { withAuthentication } from '../../../components/Authentication';
 
 const fetchDashboardData = async (store) => {
   const responses = await Promise.all([
     store.dashboard.fetch(),
     store.tenant.fetch(),
+    store.lease.fetch(),
   ]);
 
   return responses.find(({ status }) => status !== 200);
@@ -93,7 +95,7 @@ const TenantListItem = ({ tenant, balance, onClick }) => (
   </ListItem>
 );
 
-const Shortcuts = () => {
+const Shortcuts = ({ firstConnection = false }) => {
   const store = useContext(StoreContext);
   const router = useRouter();
   const { t } = useTranslation('common');
@@ -108,19 +110,33 @@ const Shortcuts = () => {
     [store.tenant.items]
   );
 
+  const hasContract = !!store.lease?.items?.filter(({ system }) => !system)
+    ?.length;
+  const hasProperty = !!store.dashboard.data.overview?.propertyCount;
+  const hasTenant = !!store.tenant?.items?.length;
+
   return (
-    <Paper>
-      <Grid container spacing={0}>
-        <Grid item xs={12} md={6}>
-          <Box py={1} height="100%">
-            <WelcomeIllustration />
-          </Box>
-        </Grid>
-        <Grid item xs={12} md={6}>
-          <Box p={3} height={362} display="flex" alignItems="center">
-            <Grid container spacing={2}>
-              {!!store.dashboard.data?.overview?.tenantCount && (
-                <>
+    <>
+      {firstConnection ? (
+        <FirstConnection
+          hasContract={hasContract}
+          hasProperty={hasProperty}
+          hasTenant={hasTenant}
+          handleCreateContract={() => setOpenNewLeaseDialog(true)}
+          handleCreateProperty={() => setOpenNewPropertyDialog(true)}
+          handleCreateTenant={() => setOpenNewTenantDialog(true)}
+        />
+      ) : (
+        <Paper>
+          <Grid container spacing={0}>
+            <Grid item xs={12} md={6}>
+              <Box py={1} height="100%">
+                <WelcomeIllustration />
+              </Box>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Box p={3} height={362} display="flex" alignItems="center">
+                <Grid container spacing={2}>
                   <Grid item xs={12}>
                     <ShortcutButton
                       Icon={ReceiptIcon}
@@ -136,63 +152,63 @@ const Shortcuts = () => {
                       onClick={() => setOpenTerminateLease(true)}
                     />
                   </Grid>
-                </>
-              )}
-              <Grid item xs={12}>
-                <ShortcutButton
-                  Icon={VpnKeyIcon}
-                  label={t('Add a new property')}
-                  onClick={() => setOpenNewPropertyDialog(true)}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <ShortcutButton
-                  Icon={PeopleIcon}
-                  label={t('Add a new tenant')}
-                  onClick={() => setOpenNewTenantDialog(true)}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <ShortcutButton
-                  Icon={DescriptionIcon}
-                  label={t('Create a new contract')}
-                  onClick={() => setOpenNewLeaseDialog(true)}
-                />
-              </Grid>
+                  <Grid item xs={12}>
+                    <ShortcutButton
+                      Icon={VpnKeyIcon}
+                      label={t('Add a new property')}
+                      onClick={() => setOpenNewPropertyDialog(true)}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <ShortcutButton
+                      Icon={PeopleIcon}
+                      label={t('Add a new tenant')}
+                      onClick={() => setOpenNewTenantDialog(true)}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <ShortcutButton
+                      Icon={DescriptionIcon}
+                      label={t('Create a new contract')}
+                      onClick={() => setOpenNewLeaseDialog(true)}
+                    />
+                  </Grid>
+                </Grid>
+              </Box>
             </Grid>
-            <NewTenantDialog
-              open={openNewTenantDialog}
-              setOpen={setOpenNewTenantDialog}
-              backPage={t('Dashboard')}
-              backPath={router.asPath}
-            />
-            <NewPropertyDialog
-              open={openNewPropertyDialog}
-              setOpen={setOpenNewPropertyDialog}
-              backPage={t('Dashboard')}
-              backPath={router.asPath}
-            />
-            <NewLeaseDialog
-              open={openNewLeaseDialog}
-              setOpen={setOpenNewLeaseDialog}
-              backPage={t('Dashboard')}
-              backPath={router.asPath}
-            />
-            <NewPaymentDialog
-              open={openNewPaymentDialog}
-              setOpen={setOpenNewPaymentDialog}
-              backPage={t('Dashboard')}
-              backPath={router.asPath}
-            />
-            <TerminateLeaseDialog
-              open={openTerminateLease}
-              setOpen={setOpenTerminateLease}
-              tenantList={tenantsNotTerminated}
-            />
-          </Box>
-        </Grid>
-      </Grid>
-    </Paper>
+          </Grid>
+        </Paper>
+      )}
+      <NewTenantDialog
+        open={openNewTenantDialog}
+        setOpen={setOpenNewTenantDialog}
+        backPage={t('Dashboard')}
+        backPath={router.asPath}
+      />
+      <NewPropertyDialog
+        open={openNewPropertyDialog}
+        setOpen={setOpenNewPropertyDialog}
+        backPage={t('Dashboard')}
+        backPath={router.asPath}
+      />
+      <NewLeaseDialog
+        open={openNewLeaseDialog}
+        setOpen={setOpenNewLeaseDialog}
+        backPage={t('Dashboard')}
+        backPath={router.asPath}
+      />
+      <NewPaymentDialog
+        open={openNewPaymentDialog}
+        setOpen={setOpenNewPaymentDialog}
+        backPage={t('Dashboard')}
+        backPath={router.asPath}
+      />
+      <TerminateLeaseDialog
+        open={openTerminateLease}
+        setOpen={setOpenTerminateLease}
+        tenantList={tenantsNotTerminated}
+      />
+    </>
   );
 };
 
@@ -521,7 +537,7 @@ const Welcome = () => {
   );
 };
 
-const Dashboard = () => {
+const Dashboard = observer(() => {
   console.log('Dashboard functional component');
   const store = useContext(StoreContext);
   const [ready, setReady] = useState(false);
@@ -549,35 +565,51 @@ const Dashboard = () => {
     return () => triggerRefreshData.clear();
   }, [mountedRef, triggerRefreshData, ready]);
 
+  const isFirstConnection = useMemo(() => {
+    return (
+      !store.lease?.items?.filter(({ system }) => !system)?.length ||
+      !store.dashboard.data.overview?.propertyCount ||
+      !store.tenant?.items?.length
+    );
+  }, [
+    store.dashboard.data.overview?.propertyCount,
+    store.lease?.items,
+    store.tenant?.items?.length,
+  ]);
+
   return (
     <Page loading={!ready}>
       <>
         <Box my={5}>
           <Welcome />
         </Box>
-        <Box mb={10}>
-          <Shortcuts />
-        </Box>
-        {!!store.dashboard.data.overview && (
-          <Box my={10}>
-            <GeneralFigures />
+        {isFirstConnection ? (
+          <Box mt={10}>
+            <Shortcuts firstConnection={true} />
           </Box>
-        )}
-        {!!store.dashboard.data.overview?.tenantCount && (
-          <Box my={10}>
-            <MonthFigures />
-          </Box>
-        )}
-        <Hidden smDown>
-          {!!store.dashboard.data.overview && (
-            <Box my={10}>
-              <YearFigures />
+        ) : (
+          <>
+            <Box mb={10}>
+              <Shortcuts />
             </Box>
-          )}
-        </Hidden>
+            <Box my={10}>
+              <GeneralFigures />
+            </Box>
+            <Box my={10}>
+              <MonthFigures />
+            </Box>
+            <Hidden smDown>
+              {!!store.dashboard.data.overview && (
+                <Box my={10}>
+                  <YearFigures />
+                </Box>
+              )}
+            </Hidden>
+          </>
+        )}
       </>
     </Page>
   );
-};
+});
 
 export default withAuthentication(Dashboard);
