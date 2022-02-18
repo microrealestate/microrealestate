@@ -153,7 +153,7 @@ const _getRentsDataByTerm = async (
     acc.countAll++;
     acc.totalToPay += rent.totalToPay;
     acc.totalPaid += rent.payment;
-    acc.totalNotPaid -= rent.newBalance;
+    acc.totalNotPaid -= rent.newBalance < 0 ? rent.newBalance : 0;
     return acc;
   }, overview);
 
