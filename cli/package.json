@@ -25,8 +25,8 @@
     "chalk": "4.1.2",
     "clear": "0.1.0",
     "clui": "0.3.6",
-    "dotenv": "10.0.0",
-    "dotenv-expand": "5.1.0",
+    "dotenv": "16.0.0",
+    "dotenv-expand": "8.0.1",
     "figlet": "1.5.2",
     "inquirer": "8.2.0",
     "minimist": "1.2.5"
