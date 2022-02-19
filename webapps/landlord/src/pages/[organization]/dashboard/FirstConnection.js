@@ -25,19 +25,19 @@ export default function FirstConnection({
     return [
       {
         key: 0,
-        label: t('Create your first contract'),
+        label: t('Create my first contract'),
         content: '',
         onClick: handleCreateContract,
       },
       {
         key: 1,
-        label: t('Add your first property'),
+        label: t('Add my first property'),
         content: '',
         onClick: handleCreateProperty,
       },
       {
         key: 2,
-        label: t('Add your first tenant'),
+        label: t('Add my first tenant'),
         content: '',
         onClick: handleCreateTenant,
       },
@@ -51,6 +51,11 @@ export default function FirstConnection({
 
   return (
     <>
+      <Box mt={1} p={1}>
+        <Typography variant="h6">
+          {t('Follow these steps to start managing your properties')}
+        </Typography>
+      </Box>
       <Stepper activeStep={activeStep} orientation="vertical">
         {steps.map(({ key, label, content, onClick }) => (
           <Step key={key}>
