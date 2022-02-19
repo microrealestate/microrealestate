@@ -25,7 +25,7 @@ const loadEnv = (wd, runMode) => {
       runMode === 'prod' ? 'prod.env' : 'dev.env'
     ),
   });
-  dotenvExpand(env); // expand env variables which reference env variable
+  dotenvExpand.expand(env); // expand env variables which reference env variable
 };
 
 const runCommand = async (cmd, parameters = [], options = {}, waitLog = '') => {
