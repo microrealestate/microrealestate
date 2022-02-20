@@ -1,10 +1,10 @@
 import { Box, Grid, Hidden, Typography } from '@material-ui/core';
 
 import ArrowRightAltIcon from '@material-ui/icons/ArrowRightAlt';
-import { DashboardCard } from '../../../components/Cards';
-import { NumberFormat } from '../../../utils/numberformat';
+import { DashboardCard } from '../Cards';
+import { NumberFormat } from '../../utils/numberformat';
 import { observer } from 'mobx-react-lite';
-import { StoreContext } from '../../../store';
+import { StoreContext } from '../../store';
 import { useContext } from 'react';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';

@@ -3,20 +3,20 @@ import { useContext, useMemo, useState } from 'react';
 
 import DescriptionIcon from '@material-ui/icons/Description';
 import FirstConnection from './FirstConnection';
-import NewLeaseDialog from '../../../components/organization/NewLeaseDialog';
-import NewPaymentDialog from '../../../components/payment/NewPaymentDialog';
-import NewPropertyDialog from '../../../components/properties/NewPropertyDialog';
-import NewTenantDialog from '../../../components/tenants/NewTenantDialog';
+import NewLeaseDialog from '../../components/organization/NewLeaseDialog';
+import NewPaymentDialog from '../../components/payment/NewPaymentDialog';
+import NewPropertyDialog from '../../components/properties/NewPropertyDialog';
+import NewTenantDialog from '../../components/tenants/NewTenantDialog';
 import PeopleIcon from '@material-ui/icons/People';
 import ReceiptIcon from '@material-ui/icons/Receipt';
-import ShortcutButton from '../../../components/ShortcutButton';
+import ShortcutButton from '../../components/ShortcutButton';
 import StopIcon from '@material-ui/icons/Stop';
-import { StoreContext } from '../../../store';
-import TerminateLeaseDialog from '../../../components/tenants/TerminateLeaseDialog';
+import { StoreContext } from '../../store';
+import TerminateLeaseDialog from '../../components/tenants/TerminateLeaseDialog';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 import VpnKeyIcon from '@material-ui/icons/VpnKey';
-import { WelcomeIllustration } from '../../../components/Illustrations';
+import { WelcomeIllustration } from '../../components/Illustrations';
 
 export default function Shortcuts({ firstConnection = false }) {
   const store = useContext(StoreContext);

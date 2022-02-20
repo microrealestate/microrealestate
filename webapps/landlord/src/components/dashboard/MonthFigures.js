@@ -8,14 +8,14 @@ import {
   useTheme,
 } from '@material-ui/core';
 import { Cell, Legend, Pie, PieChart, ResponsiveContainer } from 'recharts';
-import { NumberFormat, useFormatNumber } from '../../../utils/numberformat';
+import { NumberFormat, useFormatNumber } from '../../utils/numberformat';
 import { useContext, useMemo } from 'react';
 
-import { CelebrationIllustration } from '../../../components/Illustrations';
+import { CelebrationIllustration } from '../../components/Illustrations';
 import moment from 'moment';
 import { observer } from 'mobx-react-lite';
-import { StoreContext } from '../../../store';
-import TenantAvatar from '../../../components/tenants/TenantAvatar';
+import { StoreContext } from '../../store';
+import TenantAvatar from '../../components/tenants/TenantAvatar';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 
