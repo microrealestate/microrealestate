@@ -8,13 +8,13 @@ import {
   RadioField,
   RadioFieldGroup,
   SubmitButton,
-} from '../Form';
+} from '../../Form';
 import { Box, Button } from '@material-ui/core';
 import { FieldArray, Form, Formik } from 'formik';
+import { useContext, useMemo } from 'react';
 
 import { observer } from 'mobx-react-lite';
-import { StoreContext } from '../../store';
-import { useContext } from 'react';
+import { StoreContext } from '../../../store';
 import useTranslation from 'next-translate/useTranslation';
 
 const validationSchema = Yup.object().shape({
@@ -56,37 +56,46 @@ const validationSchema = Yup.object().shape({
 
 const emptyContact = { contact: '', email: '', phone1: '', phone2: '' };
 
+const initValues = (tenant) => {
+  return {
+    name: tenant?.name || '',
+    isCompany: tenant?.isCompany ? 'true' : 'false',
+    legalRepresentative: tenant?.manager || '',
+    legalStructure: tenant?.legalForm || '',
+    ein: tenant?.siret || '',
+    dos: tenant?.rcs || '',
+    capital: tenant?.capital || '',
+    contacts: tenant?.contacts?.length
+      ? tenant.contacts.map(({ contact, email, phone, phone1, phone2 }) => ({
+          contact,
+          email,
+          phone1: phone1 || phone,
+          phone2: phone2 || '',
+        }))
+      : [emptyContact],
+    address: {
+      street1: tenant?.street1 || '',
+      street2: tenant?.street2 || '',
+      city: tenant?.city || '',
+      zipCode: tenant?.zipCode || '',
+      state: tenant?.state || '',
+      country: tenant?.country || '',
+    },
+  };
+};
+
+export const validate = (tenant) => {
+  return validationSchema.validate(initValues(tenant));
+};
+
 const TenantForm = observer(({ readOnly, onSubmit }) => {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
 
-  const initialValues = {
-    name: store.tenant.selected?.name || '',
-    isCompany: store.tenant.selected?.isCompany ? 'true' : 'false',
-    legalRepresentative: store.tenant.selected?.manager || '',
-    legalStructure: store.tenant.selected?.legalForm || '',
-    ein: store.tenant.selected?.siret || '',
-    dos: store.tenant.selected?.rcs || '',
-    capital: store.tenant.selected?.capital || '',
-    contacts: store.tenant.selected?.contacts?.length
-      ? store.tenant.selected.contacts.map(
-          ({ contact, email, phone, phone1, phone2 }) => ({
-            contact,
-            email,
-            phone1: phone1 || phone,
-            phone2: phone2 || '',
-          })
-        )
-      : [emptyContact],
-    address: {
-      street1: store.tenant.selected?.street1 || '',
-      street2: store.tenant.selected?.street2 || '',
-      city: store.tenant.selected?.city || '',
-      zipCode: store.tenant.selected?.zipCode || '',
-      state: store.tenant.selected?.state || '',
-      country: store.tenant.selected?.country || '',
-    },
-  };
+  const initialValues = useMemo(
+    () => initValues(store.tenant?.selected),
+    [store.tenant?.selected]
+  );
 
   const _onSubmit = async (tenant) => {
     await onSubmit({

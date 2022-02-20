@@ -35,6 +35,7 @@ class OccupantModel extends Model {
       vatRatio: Number,
       discount: Number,
       rents: Array,
+      stepperMode: Boolean,
     });
   }
 

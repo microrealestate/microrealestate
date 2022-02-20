@@ -1,238 +1,35 @@
 import {
   Box,
   Button,
-  Divider,
   Grid,
   Paper,
-  Tab,
-  Tabs,
   Tooltip,
-  Typography,
   useMediaQuery,
 } from '@material-ui/core';
-import { CardRow, PageInfoCard } from '../../../components/Cards';
 import { getStoreInstance, StoreContext } from '../../../store';
-import { TabPanel, useTabChangeHelper } from '../../../components/Tabs';
 import { useCallback, useContext, useMemo, useState } from 'react';
 
-import BillingForm from '../../../components/tenants/BillingForm';
 import BreadcrumbBar from '../../../components/BreadcrumbBar';
 import ConfirmDialog from '../../../components/ConfirmDialog';
+import ContractOverviewCard from '../../../components/tenants/ContractOverviewCard';
 import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
-import FullScreenDialogButton from '../../../components/FullScreenDialogButton';
-import HistoryIcon from '@material-ui/icons/History';
 import { isServer } from '../../../utils';
-import LeaseContractForm from '../../../components/tenants/LeaseContractForm';
 import moment from 'moment';
-import { NumberFormat } from '../../../utils/numberformat';
 import { observer } from 'mobx-react-lite';
 import Page from '../../../components/Page';
-import ReceiptIcon from '@material-ui/icons/Receipt';
-import RentHistory from '../../../components/rents/RentHistory';
+import RentOverviewCard from '../../../components/tenants/RentOverviewCard';
 import RequestError from '../../../components/RequestError';
 import RichTextEditorDialog from '../../../components/RichTextEditor/RichTextEditorDialog';
 import StopIcon from '@material-ui/icons/Stop';
-import SubjectIcon from '@material-ui/icons/Subject';
 import TenantDocumentsCard from '../../../components/tenants/TenantDocumentsCard';
-import TenantForm from '../../../components/tenants/TenantForm';
+import TenantStepper from '../../../components/tenants/TenantStepper';
+import TenantTabs from '../../../components/tenants/TenantTabs';
 import TerminateLeaseDialog from '../../../components/tenants/TerminateLeaseDialog';
 import { toJS } from 'mobx';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 import { withAuthentication } from '../../../components/Authentication';
-import { withStyles } from '@material-ui/core/styles';
-
-const WarningTypography = withStyles((theme) => {
-  return {
-    root: {
-      color: theme.palette.warning.dark,
-    },
-  };
-})(Typography);
-
-const ContractOverview = () => {
-  const { t } = useTranslation('common');
-  const store = useContext(StoreContext);
-  return (
-    <>
-      <CardRow>
-        <Typography color="textSecondary" noWrap>
-          {t('Contract')}
-        </Typography>
-        <Typography color="textSecondary" noWrap>
-          {store.tenant.selected.contract}
-        </Typography>
-      </CardRow>
-      <CardRow>
-        <Typography color="textSecondary" noWrap>
-          {t('Status')}
-        </Typography>
-        {store.tenant.selected.terminated ? (
-          <WarningTypography color="textSecondary" noWrap>
-            {t('Terminated')}
-          </WarningTypography>
-        ) : (
-          <Typography color="textSecondary" noWrap>
-            {t('In progress')}
-          </Typography>
-        )}
-      </CardRow>
-      {store.tenant.selected.beginDate && (
-        <CardRow>
-          <Typography color="textSecondary" noWrap>
-            {t('Start date')}
-          </Typography>
-          <Typography color="textSecondary" noWrap>
-            {moment(store.tenant.selected.beginDate, 'DD/MM/YYYY').format('L')}
-          </Typography>
-        </CardRow>
-      )}
-      {(store.tenant.selected.terminationDate ||
-        store.tenant.selected.endDate) && (
-        <CardRow>
-          <Typography color="textSecondary" noWrap>
-            {t('End date')}
-          </Typography>
-          <Typography color="textSecondary" noWrap>
-            {moment(
-              store.tenant.selected.terminationDate ||
-                store.tenant.selected.endDate,
-              'DD/MM/YYYY'
-            ).format('L')}
-          </Typography>
-        </CardRow>
-      )}
-      <CardRow>
-        <Typography color="textSecondary" variant="h5" noWrap>
-          {t('Deposit')}
-        </Typography>
-        <NumberFormat
-          color="textSecondary"
-          variant="h5"
-          value={store.tenant.selected.guaranty}
-          noWrap
-        />
-      </CardRow>
-    </>
-  );
-};
-
-const RentOverview = () => {
-  const { t } = useTranslation('common');
-  const store = useContext(StoreContext);
-  return (
-    <>
-      <CardRow>
-        <Typography color="textSecondary" noWrap>
-          {t('Base')}
-        </Typography>
-        <NumberFormat
-          color="textSecondary"
-          value={store.tenant.selected.rental}
-          noWrap
-        />
-      </CardRow>
-      <CardRow>
-        <Typography color="textSecondary" noWrap>
-          {t('Expenses')}
-        </Typography>
-        <NumberFormat
-          color="textSecondary"
-          value={store.tenant.selected.expenses}
-          noWrap
-        />
-      </CardRow>
-      {store.tenant.selected.discount > 0 ? (
-        <CardRow>
-          <Typography color="textSecondary" noWrap>
-            {t('Discount')}
-          </Typography>
-          <NumberFormat
-            color="textSecondary"
-            value={store.tenant.selected.discount * -1}
-            noWrap
-          />
-        </CardRow>
-      ) : null}
-      {store.tenant.selected.isVat && (
-        <>
-          <Box pb={1}>
-            <Divider />
-          </Box>
-          <CardRow>
-            <Typography color="textSecondary" noWrap>
-              {t('Pre-tax total')}
-            </Typography>
-            <NumberFormat
-              color="textSecondary"
-              value={store.tenant.selected.preTaxTotal}
-              noWrap
-            />
-          </CardRow>
-          <CardRow>
-            <Typography color="textSecondary" noWrap>
-              {t('VAT')}
-            </Typography>
-            <NumberFormat
-              color="textSecondary"
-              value={store.tenant.selected.vat}
-              noWrap
-            />
-          </CardRow>
-        </>
-      )}
-      <Box pb={1}>
-        <Divider />
-      </Box>
-      <CardRow>
-        <Typography color="textSecondary" variant="h5" noWrap>
-          {t('Total')}
-        </Typography>
-        <NumberFormat
-          color="textSecondary"
-          variant="h5"
-          value={store.tenant.selected.total}
-          noWrap
-        />
-      </CardRow>
-    </>
-  );
-};
-
-const hashes = ['tenant', 'contract', 'billing'];
-
-const TenantTabs = ({ onSubmit /*, setError*/, readOnly }) => {
-  const { t } = useTranslation('common');
-  const { handleTabChange, tabSelectedIndex, tabsReady } =
-    useTabChangeHelper(hashes);
-
-  return (
-    tabsReady && (
-      <>
-        <Tabs
-          variant="scrollable"
-          value={tabSelectedIndex}
-          onChange={handleTabChange}
-          aria-label="Tenant tabs"
-        >
-          <Tab label={t('Tenant')} wrapped />
-          <Tab label={t('Contract')} wrapped />
-          <Tab label={t('Billing')} wrapped />
-        </Tabs>
-        <TabPanel value={tabSelectedIndex} index={0}>
-          <TenantForm onSubmit={onSubmit} readOnly={readOnly} />
-        </TabPanel>
-        <TabPanel value={tabSelectedIndex} index={1}>
-          <LeaseContractForm onSubmit={onSubmit} readOnly={readOnly} />
-        </TabPanel>
-        <TabPanel value={tabSelectedIndex} index={2}>
-          <BillingForm onSubmit={onSubmit} readOnly={readOnly} />
-        </TabPanel>
-      </>
-    )
-  );
-};
 
 const Tenant = observer(() => {
   console.log('Tenant functional component');
@@ -351,8 +148,14 @@ const Tenant = observer(() => {
       !!(
         store.tenant.selected.beginDate &&
         store.tenant.selected.endDate &&
-        !store.tenant.selected.terminationDate
+        !store.tenant.selected.terminationDate &&
+        !store.tenant.selected.stepperMode
       ),
+    [store.tenant.selected]
+  );
+
+  const showEditButton = useMemo(
+    () => !store.tenant.selected.stepperMode,
     [store.tenant.selected]
   );
 
@@ -457,19 +260,21 @@ const Tenant = observer(() => {
               </Button>
             </Grid>
           )}
-          <Grid item>
-            <Button
-              variant="contained"
-              startIcon={<EditIcon />}
-              disabled={
-                !(!!store.tenant.selected.properties?.length && readOnly)
-              }
-              size={isMobile ? 'small' : 'medium'}
-              onClick={() => setOpenConfirmEditTenant(true)}
-            >
-              {t('Edit')}
-            </Button>
-          </Grid>
+          {showEditButton && (
+            <Grid item>
+              <Button
+                variant="contained"
+                startIcon={<EditIcon />}
+                disabled={
+                  !(!!store.tenant.selected.properties?.length && readOnly)
+                }
+                size={isMobile ? 'small' : 'medium'}
+                onClick={() => setOpenConfirmEditTenant(true)}
+              >
+                {t('Edit')}
+              </Button>
+            </Grid>
+          )}
         </Grid>
       }
       PrimaryToolbar={
@@ -484,49 +289,22 @@ const Tenant = observer(() => {
       <Grid container spacing={5}>
         <Grid item sm={12} md={7} lg={8}>
           <Paper>
-            <TenantTabs onSubmit={onSubmit} readOnly={readOnly} />
+            {store.tenant.selected.stepperMode ? (
+              <TenantStepper onSubmit={onSubmit} />
+            ) : (
+              <TenantTabs onSubmit={onSubmit} readOnly={readOnly} />
+            )}
           </Paper>
         </Grid>
         {!!store.tenant.selected.properties && (
           <Grid item xs={12} md={5} lg={4}>
             <Box pb={4}>
-              <PageInfoCard Icon={SubjectIcon} title={t('Lease')}>
-                <ContractOverview />
-              </PageInfoCard>
+              <ContractOverviewCard />
             </Box>
             <Box pb={4}>
-              <PageInfoCard
-                Icon={ReceiptIcon}
-                title={t('Rental')}
-                Toolbar={
-                  <Tooltip
-                    title={
-                      !store.tenant.selected.properties
-                        ? t('Contract details not filled')
-                        : ''
-                    }
-                  >
-                    <span>
-                      <FullScreenDialogButton
-                        variant="contained"
-                        size="small"
-                        buttonLabel={t('Rents history')}
-                        startIcon={<HistoryIcon />}
-                        dialogTitle={t('Rents history')}
-                        cancelButtonLabel={t('Close')}
-                        showCancel
-                        disabled={!store.tenant.selected.properties}
-                      >
-                        <RentHistory tenantId={store.tenant.selected._id} />
-                      </FullScreenDialogButton>
-                    </span>
-                  </Tooltip>
-                }
-              >
-                <RentOverview />
-              </PageInfoCard>
+              <RentOverviewCard />
             </Box>
-            <TenantDocumentsCard />
+            {!store.tenant.selected.stepperMode && <TenantDocumentsCard />}
           </Grid>
         )}
       </Grid>

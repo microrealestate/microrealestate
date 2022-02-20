@@ -110,6 +110,7 @@ const PropertyTableRow = ({ property }) => {
 const Properties = observer(() => {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
+  const router = useRouter();
   const [openNewPropertyDialog, setOpenNewPropertyDialog] = useState(false);
   const [error /* setError*/] = useState('');
   const isMobile = useMediaQuery((theme) => theme.breakpoints.down('sm'));
@@ -194,6 +195,8 @@ const Properties = observer(() => {
       <NewPropertyDialog
         open={openNewPropertyDialog}
         setOpen={setOpenNewPropertyDialog}
+        backPage={t('Properties')}
+        backPath={router.asPath}
       />
     </Page>
   );

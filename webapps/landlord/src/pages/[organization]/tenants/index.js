@@ -181,6 +181,7 @@ const TenantList = memo(
 const Tenants = observer(() => {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
+  const router = useRouter();
   const [openNewTenantDialog, setOpenNewTenantDialog] = useState(false);
   const isMobile = useMediaQuery((theme) => theme.breakpoints.down('sm'));
 
@@ -228,6 +229,8 @@ const Tenants = observer(() => {
       <NewTenantDialog
         open={openNewTenantDialog}
         setOpen={setOpenNewTenantDialog}
+        backPage={t('Tenants')}
+        backPath={router.asPath}
       />
     </Page>
   );

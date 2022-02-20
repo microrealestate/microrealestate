@@ -60,6 +60,9 @@ const TenantSchema = mongoose.Schema({
   discount: Number,
   guaranty: Number,
   guarantyPayback: Number,
+
+  // ui state
+  stepperMode: { type: Boolean, default: false },
 });
 
 module.exports = mongoose.model('Occupant', TenantSchema);

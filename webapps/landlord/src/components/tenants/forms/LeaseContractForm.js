@@ -8,7 +8,7 @@ import {
   FormTextField,
   SelectField,
   SubmitButton,
-} from '../Form';
+} from '../../Form';
 import {
   FieldArray,
   Form,
@@ -20,7 +20,7 @@ import { Fragment, useContext, useMemo, useState } from 'react';
 
 import moment from 'moment';
 import { observer } from 'mobx-react-lite';
-import { StoreContext } from '../../store';
+import { StoreContext } from '../../../store';
 import useTranslation from 'next-translate/useTranslation';
 
 const validationSchema = Yup.object().shape({
@@ -87,48 +87,61 @@ const emptyProperty = {
   exitDate: null,
 };
 
+const initValues = (tenant) => {
+  return {
+    leaseId: tenant?.leaseId || '',
+    beginDate: tenant?.beginDate
+      ? moment(tenant.beginDate, 'DD/MM/YYYY').startOf('day')
+      : null,
+    endDate: tenant?.endDate
+      ? moment(tenant.endDate, 'DD/MM/YYYY').endOf('day')
+      : null,
+    terminated: !!tenant?.terminationDate,
+    terminationDate: tenant?.terminationDate
+      ? moment(tenant.terminationDate, 'DD/MM/YYYY').endOf('day')
+      : null,
+    properties: tenant?.properties?.length
+      ? tenant.properties.map((property) => {
+          return {
+            _id: property.property._id,
+            rent: property.rent || '',
+            expense:
+              (property.expenses.length && property.expenses[0]) ||
+              emptyExpense,
+            entryDate: property.entryDate
+              ? moment(property.entryDate, 'DD/MM/YYYY')
+              : null,
+            exitDate: property.exitDate
+              ? moment(property.exitDate, 'DD/MM/YYYY')
+              : null,
+          };
+        })
+      : [emptyProperty],
+    guaranty: tenant?.guaranty || 0,
+    guarantyPayback: tenant?.guarantyPayback || 0,
+  };
+};
+
+export const validate = (tenant) => {
+  const values = initValues(tenant);
+  return validationSchema.validate(values, {
+    context: {
+      beginDate: values.beginDate,
+      endDate: values.endDate,
+    },
+  });
+};
+
 const LeaseContractForm = observer((props) => {
   const { readOnly, onSubmit } = props;
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const [contractDuration, setContractDuration] = useState();
 
-  const initialValues = useMemo(() => {
-    return {
-      leaseId: store.tenant.selected?.leaseId || '',
-      beginDate: store.tenant.selected?.beginDate
-        ? moment(store.tenant.selected.beginDate, 'DD/MM/YYYY').startOf('day')
-        : null,
-      endDate: store.tenant.selected?.endDate
-        ? moment(store.tenant.selected.endDate, 'DD/MM/YYYY').endOf('day')
-        : null,
-      terminated: !!store.tenant.selected?.terminationDate,
-      terminationDate: store.tenant.selected?.terminationDate
-        ? moment(store.tenant.selected.terminationDate, 'DD/MM/YYYY').endOf(
-            'day'
-          )
-        : null,
-      properties: store.tenant.selected?.properties?.length
-        ? store.tenant.selected.properties.map((property) => {
-            return {
-              _id: property.property._id,
-              rent: property.rent || '',
-              expense:
-                (property.expenses.length && property.expenses[0]) ||
-                emptyExpense,
-              entryDate: property.entryDate
-                ? moment(property.entryDate, 'DD/MM/YYYY')
-                : null,
-              exitDate: property.exitDate
-                ? moment(property.exitDate, 'DD/MM/YYYY')
-                : null,
-            };
-          })
-        : [emptyProperty],
-      guaranty: store.tenant.selected?.guaranty || '',
-      guarantyPayback: store.tenant.selected?.guarantyPayback || '',
-    };
-  }, [store.tenant.selected]);
+  const initialValues = useMemo(
+    () => initValues(store.tenant?.selected),
+    [store.tenant.selected]
+  );
 
   const availableLeases = useMemo(() => {
     return store.lease.items.map(({ _id, name, active }) => ({

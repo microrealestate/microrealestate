@@ -50,6 +50,7 @@ const NewTenantDialog = ({ open, setOpen, backPage, backPath }) => {
       let tenant = {
         name: tenantPart.name,
         company: tenantPart.name,
+        stepperMode: true,
       };
       if (tenantPart.isCopyFrom) {
         const {
