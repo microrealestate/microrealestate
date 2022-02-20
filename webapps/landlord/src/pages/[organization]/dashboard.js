@@ -1,17 +1,17 @@
 import { Box, Hidden } from '@material-ui/core';
-import { useComponentMountedRef, useInterval } from '../../../utils/hooks';
+import { useComponentMountedRef, useInterval } from '../../utils/hooks';
 import { useContext, useMemo, useState } from 'react';
 
-import GeneralFigures from './GeneralFigures';
-import MonthFigures from './MonthFigures';
+import GeneralFigures from '../../components/dashboard/GeneralFigures';
+import MonthFigures from '../../components/dashboard/MonthFigures';
 import { observer } from 'mobx-react-lite';
-import Page from '../../../components/Page';
-import Shortcuts from './Shortcuts';
-import { StoreContext } from '../../../store';
+import Page from '../../components/Page';
+import Shortcuts from '../../components/dashboard/Shortcuts';
+import { StoreContext } from '../../store';
 import { useEffect } from 'react';
-import Welcome from './Welcome';
-import { withAuthentication } from '../../../components/Authentication';
-import YearFigures from './YearFigures';
+import Welcome from '../../components/dashboard/Welcome';
+import { withAuthentication } from '../../components/Authentication';
+import YearFigures from '../../components/dashboard/YearFigures';
 
 const fetchDashboardData = async (store) => {
   const responses = await Promise.all([

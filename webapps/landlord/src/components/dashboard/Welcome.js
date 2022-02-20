@@ -1,4 +1,4 @@
-import { StoreContext } from '../../../store';
+import { StoreContext } from '../../store';
 import { Typography } from '@material-ui/core';
 import { useContext } from 'react';
 import useTranslation from 'next-translate/useTranslation';
