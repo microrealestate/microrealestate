@@ -137,6 +137,8 @@ const Leases = observer(({ setError }) => {
       <NewLeaseDialog
         open={openNewLeaseDialog}
         setOpen={setOpenNewLeaseDialog}
+        backPage={t('Settings')}
+        backPath={router.asPath}
       />
     </FormSection>
   );

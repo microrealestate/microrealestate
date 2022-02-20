@@ -5,13 +5,13 @@ import {
   FormSection,
   FormTextField,
   SubmitButton,
-} from '../Form';
+} from '../../Form';
 import { Form, Formik } from 'formik';
+import { useContext, useMemo } from 'react';
 
 import { Box } from '@material-ui/core';
 import { observer } from 'mobx-react-lite';
-import { StoreContext } from '../../store';
-import { useContext } from 'react';
+import { StoreContext } from '../../../store';
 import useTranslation from 'next-translate/useTranslation';
 
 const validationSchema = Yup.object().shape({
@@ -24,16 +24,27 @@ const validationSchema = Yup.object().shape({
   discount: Yup.number().min(0),
 });
 
+const initValues = (tenant) => {
+  return {
+    reference: tenant?.reference || '',
+    isVat: !!tenant?.isVat,
+    vatRatio: tenant?.vatRatio * 100 || 0,
+    discount: tenant?.discount || 0,
+  };
+};
+
+export const validate = (tenant) => {
+  return validationSchema.validate(initValues(tenant));
+};
+
 const Billing = observer(({ readOnly, onSubmit }) => {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
 
-  const initialValues = {
-    reference: store.tenant.selected?.reference || '',
-    isVat: !!store.tenant.selected?.isVat,
-    vatRatio: store.tenant.selected?.vatRatio * 100 || 0,
-    discount: store.tenant.selected?.discount || 0,
-  };
+  const initialValues = useMemo(
+    () => initValues(store.tenant?.selected),
+    [store.tenant?.selected]
+  );
 
   const _onSubmit = async (billing) => {
     await onSubmit({
