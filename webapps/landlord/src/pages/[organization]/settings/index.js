@@ -4,38 +4,42 @@ import { TabPanel, useTabChangeHelper } from '../../../components/Tabs';
 import { useCallback, useContext, useState } from 'react';
 
 import BillingForm from '../../../components/organization/BillingForm';
+import getConfig from 'next/config';
 import { isServer } from '../../../utils';
 import LandlordForm from '../../../components/organization/LandlordForm';
 import Leases from '../../../components/organization/Leases';
 import Members from '../../../components/organization/Members';
-import moment from 'moment';
 import { observer } from 'mobx-react-lite';
 import Page from '../../../components/Page';
 import RequestError from '../../../components/RequestError';
 import { setOrganizationId } from '../../../utils/fetch';
 import ThirdPartiesForm from '../../../components/organization/ThirdPartiesForm';
 import { toJS } from 'mobx';
-import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 import { withAuthentication } from '../../../components/Authentication';
+
+const {
+  publicRuntimeConfig: { BASE_PATH },
+} = getConfig();
 
 const hashes = ['landlord', 'billing', 'leases', 'access', 'third-parties'];
 
 const SettingTabs = observer(({ onSubmit, setError }) => {
-  const router = useRouter();
   const store = useContext(StoreContext);
   const { t } = useTranslation('common');
   const { handleTabChange, tabSelectedIndex, tabsReady } =
     useTabChangeHelper(hashes);
 
-  const onSubmitted = ({ isOrgNameChanged, isLocaleChanged }) => {
-    if (isOrgNameChanged || isLocaleChanged) {
-      moment.locale(store.organization.selected.locale);
-      router.push(`/${store.organization.selected.name}/settings`, null, {
-        locale: store.organization.selected.locale,
-      });
-    }
-  };
+  const onSubmitted = useCallback(
+    ({ isOrgNameChanged, isLocaleChanged }) => {
+      if (isOrgNameChanged || isLocaleChanged) {
+        window.location.assign(
+          `${BASE_PATH}/${store.organization.selected.locale}/${store.organization.selected.name}/settings`
+        );
+      }
+    },
+    [store.organization.selected]
+  );
 
   return (
     tabsReady && (

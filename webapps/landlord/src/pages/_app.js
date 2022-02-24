@@ -1,5 +1,6 @@
 import 'moment/locale/fr';
 import 'moment/locale/pt';
+import 'moment/locale/de';
 import '../components/RichTextEditor/richtexteditor.css';
 
 import * as Yup from 'yup';

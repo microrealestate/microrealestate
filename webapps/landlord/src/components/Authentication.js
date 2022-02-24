@@ -6,7 +6,6 @@ import { useContext, useEffect } from 'react';
 import Cookies from 'universal-cookie';
 import ErrorPage from 'next/error';
 import getConfig from 'next/config';
-import moment from 'moment';
 import { Observer } from 'mobx-react-lite';
 import { toJS } from 'mobx';
 
@@ -86,7 +85,6 @@ export function withAuthentication(PageComponent) {
             );
           }
           setOrganizationId(store.organization.selected?._id);
-          moment.locale(store.organization.selected?.locale || 'en');
           if (!store.organization.selected) {
             return {
               error: {

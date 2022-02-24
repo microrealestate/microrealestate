@@ -2,6 +2,7 @@ import { createContext, useEffect, useState } from 'react';
 import { isClient, isServer } from '../utils';
 
 import { enableStaticRendering } from 'mobx-react-lite';
+import moment from 'moment';
 import Store from './Store';
 
 enableStaticRendering(isServer());
@@ -31,11 +32,13 @@ function InjectStoreContext({ children, initialData }) {
   const [store, setStore] = useState();
 
   useEffect(() => {
-    setStore(getStoreInstance(initialData));
+    moment.locale(initialData?.organization?.selected?.locale ?? 'en');
+    const newStore = getStoreInstance(initialData);
+    setStore(newStore);
     if (isClient() && process.env.NODE_ENV === 'development') {
-      window.__store = store;
+      window.__store = newStore;
     }
-  }, []);
+  }, [initialData]);
 
   return store ? (
     <StoreContext.Provider value={store}>{children}</StoreContext.Provider>
