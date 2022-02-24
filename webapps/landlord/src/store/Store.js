@@ -89,7 +89,6 @@ export default class Store {
     this.organization.items = organization.items;
     this.organization.selected = organization.selected;
     setOrganizationId(organization.selected?._id);
-    moment.locale(organization.selected?.locale || 'en');
 
     this.lease.items = lease.items;
     this.lease.selected = lease.selected;
