@@ -283,7 +283,7 @@ const RentPayment = observer(() => {
                 <SendRentEmailMenu
                   tenant={store.rent.selected.occupant}
                   terms={[store.rent.selected.term]}
-                  period={store.rent._period}
+                  period={store.rent.period}
                   // TODO: handle errors
                   onError={() => {}}
                 />

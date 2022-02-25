@@ -33,7 +33,13 @@ const SendRentEmailMenu = ({ period, tenant, terms, onError, ...props }) => {
         return onError(t('Cannot fetch rents from server'));
       }
     },
-    [store.rent, tenant, terms, onError]
+    [
+      //t,
+      store.rent,
+      tenant,
+      terms,
+      onError,
+    ]
   );
 
   const menuItems = useMemo(
