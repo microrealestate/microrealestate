@@ -132,16 +132,21 @@ const Nav = () => {
   const handleMenuClick = useCallback(
     (menuItem) => {
       triggerOpen.clear();
-      if (store.organization.selected?.name && store.rent?.period) {
+      if (store.organization.selected?.name && store.rent?.periodAsString) {
         let pathname = menuItem.pathname.replace(
           '[yearMonth]',
-          store.rent.period
+          store.rent.periodAsString
         );
         pathname = pathname.replace('[year]', moment().year());
         router.push(`/${store.organization.selected.name}${pathname}`);
       }
     },
-    [router, triggerOpen, store.organization.selected?.name, store.rent?.period]
+    [
+      router,
+      triggerOpen,
+      store.organization.selected?.name,
+      store.rent?.periodAsString,
+    ]
   );
 
   const handleMouseEnter = useCallback(() => {

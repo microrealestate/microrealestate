@@ -143,10 +143,10 @@ const PaymentForm = ({ onSubmit }) => {
                           <DateField
                             label={t('Date')}
                             name={`payments[${index}].date`}
-                            minDate={store.rent._period
+                            minDate={store.rent.period
                               .startOf('month')
                               .toISOString()}
-                            maxDate={store.rent._period
+                            maxDate={store.rent.period
                               .endOf('month')
                               .toISOString()}
                           />

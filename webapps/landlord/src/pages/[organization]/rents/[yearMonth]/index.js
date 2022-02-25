@@ -68,7 +68,7 @@ const Rents = observer(() => {
         )}&status=${encodeURIComponent(status)}`;
       }
       router.push(
-        `/${store.organization.selected.name}/rents/${store.rent.period}${queryString}`,
+        `/${store.organization.selected.name}/rents/${store.rent.periodAsString}${queryString}`,
         null,
         { shallow: true }
       );
@@ -81,7 +81,7 @@ const Rents = observer(() => {
     async (period) => {
       store.rent.setPeriod(period);
       await router.push(
-        `/${store.organization.selected.name}/rents/${store.rent.period}`
+        `/${store.organization.selected.name}/rents/${store.rent.periodAsString}`
       );
     },
     [router, store.rent, store.organization.selected.name]
@@ -95,7 +95,7 @@ const Rents = observer(() => {
           store.rent.selected.term
         }/${encodeURI(
           t('Rents of {{date}}', {
-            date: store.rent._period.format('MMM YYYY'),
+            date: store.rent.period.format('MMM YYYY'),
           })
         )}/${encodeURIComponent(router.asPath)}`
       );
@@ -154,7 +154,7 @@ const Rents = observer(() => {
                   Icon={ReceiptIcon}
                   title={t('Rents')}
                   info={t('Rents of {{period}}', {
-                    period: store.rent._period.format('MMMM YYYY'),
+                    period: store.rent.period.format('MMMM YYYY'),
                   })}
                 >
                   <Typography variant="h3">{store.rent.countAll}</Typography>

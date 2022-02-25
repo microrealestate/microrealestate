@@ -6,7 +6,7 @@ import moment from 'moment';
 export default class Rent {
   selected = {};
   filters = { searchText: '', status: '' };
-  _period = moment();
+  _period;
   items = [];
   countAll;
   countPaid;
@@ -29,6 +29,7 @@ export default class Rent {
       totalPaid: observable,
       totalNotPaid: observable,
       period: computed,
+      periodAsString: computed,
       filteredItems: computed,
       setSelected: action,
       setFilters: action,
@@ -43,6 +44,16 @@ export default class Rent {
   }
 
   get period() {
+    if (!this._period) {
+      this._period = moment();
+    }
+    return this._period;
+  }
+
+  get periodAsString() {
+    if (!this._period) {
+      this._period = moment();
+    }
     return this._period.format('YYYY.MM');
   }
 

@@ -96,7 +96,9 @@ export default class Store {
     this.rent.items = rent.items;
     this.rent.selected = rent.selected;
     this.rent.filters = rent.filters;
-    this.rent.setPeriod(rent._period ? moment(rent._period) : moment());
+    if (rent._period) {
+      this.rent.setPeriod(moment(rent._period));
+    }
     this.rent.countAll = rent.countAll;
     this.rent.countPaid = rent.countPaid;
     this.rent.countPartiallyPaid = rent.countPartiallyPaid;
