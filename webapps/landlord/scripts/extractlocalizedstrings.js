@@ -19,11 +19,17 @@ const harvestKeysFromSourceFiles = () => {
 
   const keys = files.reduce((acc, file) => {
     const content = fs.readFileSync(file, { encoding: 'utf8' });
-    const keys = Array.from(content.matchAll(/[\s{(,}:]t\(\s*'(.+?)'/g));
+    const keys = Array.from(
+      content.matchAll(/[\s{(,}:]t\(\s*('(.+?)'|"(.+?)")/g)
+    );
 
     if (keys.length) {
-      keys.forEach(([, key]) => {
-        acc[key] = key;
+      keys.forEach(([, , key1, key2]) => {
+        if (key1) {
+          acc[key1] = key1;
+        } else if (key2) {
+          acc[key2] = key2;
+        }
       });
     }
 
@@ -122,8 +128,8 @@ const translateText = async (text, sourceLanguage, targetLanguage) => {
     }
     return _.unescape(translatedText);
   } catch (error) {
-    console.log(error);
-    console.error(`cannot translate: ${text}`);
+    console.error(`\t${error.message}`);
+    console.error(`\t cannot translate: ${text}`);
     return text;
   }
 };
@@ -164,7 +170,7 @@ const main = async () => {
 
   for (let i = 0; i < LANGUAGES.length; i++) {
     const language = LANGUAGES[i];
-    console.log(language);
+    console.log(`creating ${language} file...`);
     const oldKeys = loadKeysFromLocaleFile(language);
     const { mergedKeys, keysToRemove } = mergeKeys(keptKeys, newKeys, oldKeys);
     if (AUTOMATIC_TRANSLATION_FOR.includes(language)) {
@@ -173,6 +179,7 @@ const main = async () => {
     logKeysToRemove(keysToRemove);
     // TODO: Ask confirmation to overwrite the locale file
     writeLocaleFile(language, mergedKeys);
+    console.log('done');
     console.log();
   }
 };

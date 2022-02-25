@@ -351,6 +351,7 @@
   "tenant_name": "locataire.nom",
   "Tenants": "Locataires",
   "Terminate": "Résilier",
+  "Terminate {{tenant}}'s lease": "Résilier le bail de {{tenant}}",
   "Terminate a lease": "Résilier un bail",
   "Terminated": "Résilié",
   "Terminating": "Résiliation en cours",
