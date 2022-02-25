@@ -338,7 +338,7 @@ async function incomingTenantsAsCsv(req, res) {
       value: 'guaranty',
     },
   ];
-  const json2csv = new Parser({ fields });
+  const json2csv = new Parser({ fields, delimiter: ';', withBOM: true });
   const csv = json2csv.parse(data);
   res.header('Content-Type', 'text/csv');
   return res.send(csv);
@@ -398,7 +398,7 @@ async function outgoingTenantsAsCsv(req, res) {
     },
   ];
 
-  const json2csv = new Parser({ fields });
+  const json2csv = new Parser({ fields, delimiter: ';', withBOM: true });
   const csv = json2csv.parse(data);
   res.header('Content-Type', 'text/csv');
   return res.send(csv);
@@ -423,7 +423,7 @@ async function settlementsAsCsv(req, res) {
     ...months,
   ];
 
-  const json2csv = new Parser({ fields });
+  const json2csv = new Parser({ fields, delimiter: ';', withBOM: true });
   const csv = json2csv.parse(data);
   res.header('Content-Type', 'text/csv');
   return res.send(csv);

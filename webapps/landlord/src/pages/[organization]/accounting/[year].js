@@ -412,7 +412,7 @@ const Accounting = observer(() => {
       e.stopPropagation();
       downloadDocument(
         `/csv/settlements/${router.query.year}`,
-        t('Settlements - {{year}}.csv', router.query.year)
+        t('Settlements - {{year}}.csv', { year: router.query.year })
       );
     },
     [
@@ -426,7 +426,7 @@ const Accounting = observer(() => {
       e.stopPropagation();
       downloadDocument(
         `/csv/tenants/incoming/${router.query.year}`,
-        t('Incoming tenants - {{year}}.csv', router.query.year)
+        t('Incoming tenants - {{year}}.csv', { year: router.query.year })
       );
     },
     [
@@ -440,7 +440,7 @@ const Accounting = observer(() => {
       e.stopPropagation();
       downloadDocument(
         `/csv/tenants/outgoing/${router.query.year}`,
-        t('Outgoing tenants - {{year}}.csv', router.query.year)
+        t('Outgoing tenants - {{year}}.csv', { year: router.query.year })
       );
     },
     [
