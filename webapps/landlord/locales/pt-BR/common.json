@@ -351,6 +351,7 @@
   "tenant_name": "tenant.name",
   "Tenants": "Tenants",
   "Terminate": "Terminate",
+  "Terminate {{tenant}}'s lease": "Terminate {{tenant}}'s lease",
   "Terminate a lease": "Terminate a lease",
   "Terminated": "Terminated",
   "Terminating": "Terminating",

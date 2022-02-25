@@ -351,6 +351,7 @@
   "tenant_name": "Mietername",
   "Tenants": "Mieter",
   "Terminate": "Beenden",
+  "Terminate {{tenant}}'s lease": "Terminate {{tenant}}'s lease",
   "Terminate a lease": "Mietvertrag kündigen",
   "Terminated": "Beendet",
   "Terminating": "Wird beendet",
