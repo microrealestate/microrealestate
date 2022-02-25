@@ -3,5 +3,6 @@
   "defaultLocale": "en",
   "pages": {
     "*": ["common"]
-  }
+  },
+  "keySeparator": false
 }
