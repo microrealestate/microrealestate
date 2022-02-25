@@ -3,6 +3,19 @@ import { action, computed, flow, makeObservable, observable } from 'mobx';
 import { apiFetcher } from '../utils/fetch';
 import moment from 'moment';
 
+// workaround for this momentjs behavior:
+// As of 2.8.0, changing the global locale doesn't affect existing instances.
+// https://momentjscom.readthedocs.io/en/latest/moment/06-i18n/01-changing-locale/
+function getMoment(current) {
+  if (!current) {
+    return moment();
+  }
+  const locale = moment().locale;
+  if (current.locale !== locale) {
+    current.locale(locale);
+  }
+  return current;
+}
 export default class Rent {
   selected = {};
   filters = { searchText: '', status: '' };
@@ -44,16 +57,12 @@ export default class Rent {
   }
 
   get period() {
-    if (!this._period) {
-      this._period = moment();
-    }
+    this._period = getMoment();
     return this._period;
   }
 
   get periodAsString() {
-    if (!this._period) {
-      this._period = moment();
-    }
+    this._period = getMoment();
     return this._period.format('YYYY.MM');
   }
 
