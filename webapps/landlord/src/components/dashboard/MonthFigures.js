@@ -133,7 +133,11 @@ function MonthFigures() {
                       onClick={() => {
                         store.rent.setSelected(rent);
                         router.push(
-                          `/${store.organization.selected.name}/payment/${tenant._id}/${rent.term}`
+                          `/${store.organization.selected.name}/payment/${
+                            tenant._id
+                          }/${rent.term}/${encodeURI(
+                            t('Dashboard')
+                          )}/${encodeURIComponent(router.asPath)}`
                         );
                       }}
                     />
