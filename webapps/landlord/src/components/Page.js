@@ -25,6 +25,21 @@ const {
   publicRuntimeConfig: { DEMO_MODE, APP_NAME, BASE_PATH },
 } = getConfig();
 
+const SubToolbar = memo(function SubToolbar({ PrimaryBar, SecondaryBar }) {
+  return (
+    <Toolbar disableGutters>
+      {SecondaryBar ? (
+        <Box display="flex" justifyContent="space-between" width="100%">
+          <Box>{PrimaryBar}</Box>
+          <Box>{SecondaryBar}</Box>
+        </Box>
+      ) : (
+        <Box width="100%">{PrimaryBar}</Box>
+      )}
+    </Toolbar>
+  );
+});
+
 const EnvironmentBar = memo(function EnvironmentBar() {
   const { t } = useTranslation('common');
   return DEMO_MODE || process.env.NODE_ENV === 'development' ? (
@@ -39,8 +54,10 @@ const EnvironmentBar = memo(function EnvironmentBar() {
   ) : null;
 });
 
-const MainToolbar = memo(function MainToolbar({
+const Toolbars = memo(function Toolbars({
   visible,
+  loading,
+  NavBar,
   SearchBar,
   ActionBar,
   maxWidth,
@@ -59,64 +76,77 @@ const MainToolbar = memo(function MainToolbar({
 
   return visible ? (
     <>
-      <Hidden smDown>
-        <Container maxWidth={maxWidth}>
-          <Toolbar disableGutters>
-            <Box display="flex" alignItems="center" width="100%">
-              <Typography variant="h5">{APP_NAME}</Typography>
-              <Box flexGrow={1} mx={10}>
-                {SearchBar}
-              </Box>
-              <Box display="flex">
-                {!!(
-                  store.organization.items && store.organization.items.length
-                ) && <OrganizationSwitcher />}
-                <Tooltip title={t('Sign out')} aria-label="sign out">
+      <ElevationScroll>
+        <AppBar position="sticky">
+          <EnvironmentBar />
+          <Hidden smDown>
+            <Container maxWidth={maxWidth}>
+              <Toolbar disableGutters>
+                <Box display="flex" alignItems="center" width="100%">
+                  <Typography variant="h5">{APP_NAME}</Typography>
+                  <Box flexGrow={1} mx={10}>
+                    {!loading && SearchBar}
+                  </Box>
+                  <Box display="flex">
+                    {!!(
+                      store.organization.items &&
+                      store.organization.items.length
+                    ) && <OrganizationSwitcher />}
+                    <Tooltip title={t('Sign out')} aria-label="sign out">
+                      <IconButton
+                        aria-label="sign out"
+                        onClick={signOut}
+                        color="default"
+                        data-cy="signout"
+                      >
+                        <PowerSettingsNewIcon />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
+                </Box>
+              </Toolbar>
+            </Container>
+          </Hidden>
+          <Hidden mdUp>
+            <MobileMenu>
+              <Container maxWidth={maxWidth}>
+                <Box
+                  display="flex"
+                  justifyContent="space-between"
+                  alignItems="center"
+                >
+                  {!!(
+                    store.organization.items && store.organization.items.length
+                  ) && <OrganizationSwitcher />}
+                  <Box flexGrow={1}>{!loading && SearchBar}</Box>
                   <IconButton
                     aria-label="sign out"
                     onClick={signOut}
-                    color="default"
+                    color="inherit"
                     data-cy="signout"
                   >
                     <PowerSettingsNewIcon />
                   </IconButton>
-                </Tooltip>
-              </Box>
-            </Box>
-          </Toolbar>
-        </Container>
-      </Hidden>
-
-      <Hidden mdUp>
-        <MobileMenu>
-          <Container maxWidth={maxWidth}>
-            <Box display="flex" justifyContent="space-between">
-              {!!(
-                store.organization.items && store.organization.items.length
-              ) && <OrganizationSwitcher />}
-              <IconButton
-                aria-label="sign out"
-                onClick={signOut}
-                color="inherit"
-                data-cy="signout"
-              >
-                <PowerSettingsNewIcon />
-              </IconButton>
-            </Box>
-          </Container>
-        </MobileMenu>
-        {ActionBar || SearchBar ? (
-          <Container maxWidth={maxWidth}>
-            {ActionBar ? (
-              <>
-                <Toolbar disableGutters>{ActionBar}</Toolbar>
-              </>
+                </Box>
+              </Container>
+            </MobileMenu>
+            {!loading ? (
+              <Container maxWidth={maxWidth}>
+                {NavBar ? <Toolbar disableGutters>{NavBar}</Toolbar> : null}
+                {ActionBar ? (
+                  <Toolbar disableGutters>{ActionBar}</Toolbar>
+                ) : null}
+              </Container>
             ) : null}
-            {SearchBar ? (
-              <Toolbar variant="dense" disableGutters>
-                <Box width="100%">{SearchBar}</Box>
-              </Toolbar>
-            ) : null}
+          </Hidden>
+        </AppBar>
+      </ElevationScroll>
+      <Hidden smDown>
+        {!loading && NavBar ? (
+          <Container maxWidth={maxWidth}>
+            <Box mt={1}>
+              <SubToolbar PrimaryBar={NavBar} SecondaryBar={ActionBar} />
+            </Box>
           </Container>
         ) : null}
       </Hidden>
@@ -124,27 +154,11 @@ const MainToolbar = memo(function MainToolbar({
   ) : null;
 });
 
-const SubToolbar = memo(function SubToolbar({ ContentBar, ActionBar }) {
-  return (
-    <Toolbar disableGutters>
-      {ActionBar ? (
-        <Box display="flex" justifyContent="space-between" width="100%">
-          <Box>{ContentBar}</Box>
-          <Box>{ActionBar}</Box>
-        </Box>
-      ) : (
-        <Box width="100%">{ContentBar}</Box>
-      )}
-    </Toolbar>
-  );
-});
-
 const Page = observer(
   ({
     children,
     SearchBar,
-    PrimaryToolbar,
-    SecondaryToolbar,
+    NavBar,
     ActionToolbar,
     maxWidth = 'lg',
     loading = false,
@@ -177,47 +191,19 @@ const Page = observer(
 
     return (
       <>
-        <ElevationScroll>
-          <AppBar position="sticky">
-            <EnvironmentBar />
-            <MainToolbar
-              visible={store.user.signedIn}
-              SearchBar={!loading && !routeloading ? SearchBar : null}
-              ActionBar={!loading && !routeloading ? ActionToolbar : null}
-              maxWidth={maxWidth}
-            />
-          </AppBar>
-        </ElevationScroll>
+        <Toolbars
+          visible={store.user.signedIn}
+          NavBar={NavBar}
+          SearchBar={SearchBar}
+          ActionBar={ActionToolbar}
+          loading={loading || routeloading}
+          maxWidth={maxWidth}
+        />
 
         <Container maxWidth={maxWidth}>
           <>
             {!loading && !routeloading ? (
-              <>
-                <Hidden smDown>
-                  {PrimaryToolbar ? (
-                    <Box mt={1}>
-                      <SubToolbar
-                        ContentBar={PrimaryToolbar}
-                        ActionBar={ActionToolbar}
-                      />
-                    </Box>
-                  ) : null}
-                </Hidden>
-
-                <Hidden mdUp>
-                  {PrimaryToolbar ? (
-                    <Box mt={1}>
-                      <SubToolbar ContentBar={PrimaryToolbar} />
-                    </Box>
-                  ) : null}
-                </Hidden>
-
-                {SecondaryToolbar ? (
-                  <SubToolbar ContentBar={SecondaryToolbar} />
-                ) : null}
-
-                <Box mt={1}>{children}</Box>
-              </>
+              <Box mt={1}>{children}</Box>
             ) : (
               <Box
                 position="fixed"

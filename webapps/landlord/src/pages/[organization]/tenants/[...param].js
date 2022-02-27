@@ -277,7 +277,7 @@ const Tenant = observer(() => {
           )}
         </Grid>
       }
-      PrimaryToolbar={
+      NavBar={
         <BreadcrumbBar
           backPath={backPath}
           backPage={backPage}

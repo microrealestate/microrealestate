@@ -1,10 +1,11 @@
 import { useCallback, useContext, useMemo } from 'react';
-
 import getConfig from 'next/config';
+
 import LocationCityIcon from '@material-ui/icons/LocationCity';
 import { observer } from 'mobx-react-lite';
 import { StoreContext } from '../../store';
 import ToggleMenu from '../ToggleMenu';
+import { useMediaQuery } from '@material-ui/core';
 
 const {
   publicRuntimeConfig: { BASE_PATH },
@@ -12,17 +13,20 @@ const {
 
 const OrganizationSwitcher = observer(() => {
   const store = useContext(StoreContext);
+  const isMobile = useMediaQuery((theme) => theme.breakpoints.down('sm'));
 
   const onChange = useCallback(
     ({ id }) => {
-      const organization = store.organization.items.find(
-        ({ _id }) => _id === id
-      );
-      window.location.assign(
-        `${BASE_PATH}/${organization.locale}/${organization.name}/dashboard`
-      );
+      if (store.organization.selected?._id !== id) {
+        const organization = store.organization.items.find(
+          ({ _id }) => _id === id
+        );
+        window.location.assign(
+          `${BASE_PATH}/${organization.locale}/${organization.name}/dashboard`
+        );
+      }
     },
-    [store.organization.items]
+    [store.organization.selected, store.organization.items]
   );
 
   const options = useMemo(
@@ -44,6 +48,7 @@ const OrganizationSwitcher = observer(() => {
       startIcon={<LocationCityIcon />}
       options={options}
       value={value}
+      noLabel={isMobile}
       onChange={onChange}
     />
   );

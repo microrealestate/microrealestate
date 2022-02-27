@@ -210,7 +210,7 @@ const Property = observer(() => {
           {t('Delete')}
         </Button>
       }
-      PrimaryToolbar={
+      NavBar={
         <BreadcrumbBar
           backPath={backPath}
           backPage={backPage}

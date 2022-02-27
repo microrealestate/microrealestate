@@ -113,7 +113,7 @@ const Lease = observer(() => {
           {t('Delete')}
         </RestrictButton>
       }
-      PrimaryToolbar={
+      NavBar={
         <BreadcrumbBar
           backPath={backPath}
           backPage={backPage}

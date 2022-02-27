@@ -43,9 +43,6 @@ const PeriodPicker = ({ value, period, format, onChange }) => {
         onChange={_onPeriodChange}
         size="small"
         format={format}
-        style={{
-          width: 130,
-        }}
       />
       <IconButton onClick={_onNextPeriod} aria-label="next period" size="small">
         <ArrowRightIcon />

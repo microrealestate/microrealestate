@@ -149,10 +149,12 @@ const Properties = observer(() => {
           {t('New property')}
         </Button>
       }
-      PrimaryToolbar={
-        <Typography color="textSecondary" variant="h5" noWrap>
-          {t('Properties')}
-        </Typography>
+      NavBar={
+        !isMobile ? (
+          <Typography color="textSecondary" variant="h5" noWrap>
+            {t('Properties')}
+          </Typography>
+        ) : null
       }
       SearchBar={
         <SearchFilterBar

@@ -135,7 +135,7 @@ const Rents = observer(() => {
           <RentTable />
         </FullScreenDialogButton>
       }
-      PrimaryToolbar={<PeriodToolbar onChange={onPeriodChange} />}
+      NavBar={<PeriodToolbar onChange={onPeriodChange} />}
       SearchBar={
         <SearchFilterBar
           filters={filters}

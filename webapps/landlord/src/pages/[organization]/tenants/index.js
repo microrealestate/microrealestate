@@ -15,8 +15,8 @@ import {
 } from '@material-ui/core';
 import { getStoreInstance, StoreContext } from '../../../store';
 import { memo, useCallback, useContext, useState } from 'react';
-
 import _ from 'lodash';
+
 import AddIcon from '@material-ui/icons/Add';
 import { EmptyIllustration } from '../../../components/Illustrations';
 import { isServer } from '../../../utils';
@@ -208,10 +208,12 @@ const Tenants = observer(() => {
           {t('New tenant')}
         </Button>
       }
-      PrimaryToolbar={
-        <Typography color="textSecondary" variant="h5" noWrap>
-          {t('Tenants')}
-        </Typography>
+      NavBar={
+        !isMobile ? (
+          <Typography color="textSecondary" variant="h5" noWrap>
+            {t('Tenants')}
+          </Typography>
+        ) : null
       }
       SearchBar={
         <SearchFilterBar
