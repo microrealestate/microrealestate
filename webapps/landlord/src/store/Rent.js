@@ -57,12 +57,12 @@ export default class Rent {
   }
 
   get period() {
-    this._period = getMoment();
+    this._period = getMoment(this._period);
     return this._period;
   }
 
   get periodAsString() {
-    this._period = getMoment();
+    this._period = getMoment(this._period);
     return this._period.format('YYYY.MM');
   }
 
