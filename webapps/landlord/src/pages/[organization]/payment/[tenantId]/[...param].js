@@ -221,7 +221,7 @@ const RentPayment = observer(() => {
 
   return (
     <Page
-      PrimaryToolbar={
+      NavBar={
         <BreadcrumbBar
           backPath={backPath}
           backPage={backPage}

@@ -450,7 +450,7 @@ const Accounting = observer(() => {
   );
 
   return (
-    <Page PrimaryToolbar={<PeriodToolbar loading={loading} />}>
+    <Page NavBar={<PeriodToolbar loading={loading} />}>
       {store.accounting?.data?.incomingTenants?.length ||
       store.accounting?.data?.outgoingTenants?.length ||
       store.accounting?.data?.settlements?.length ? (

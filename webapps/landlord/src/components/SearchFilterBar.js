@@ -1,4 +1,10 @@
-import { Box, InputAdornment, TextField, withStyles } from '@material-ui/core';
+import {
+  Box,
+  InputAdornment,
+  TextField,
+  useMediaQuery,
+  withStyles,
+} from '@material-ui/core';
 import { useCallback, useMemo, useState } from 'react';
 
 import FilterListIcon from '@material-ui/icons/FilterList';
@@ -10,6 +16,12 @@ import useTranslation from 'next-translate/useTranslation';
 const StyledTextField = withStyles({
   root: {
     width: '100%',
+    '& .MuiInput-root': {
+      color: 'inherit',
+      '& .MuiInputAdornment-root': {
+        color: 'inherit',
+      },
+    },
   },
 })(TextField);
 
@@ -24,6 +36,7 @@ const SearchFilterBar = ({
   const triggerSearch = useTimeout(() => {
     onSearch(filter, searchText);
   }, 250);
+  const isMobile = useMediaQuery((theme) => theme.breakpoints.down('sm'));
 
   // TODO: use useEffect to trigger the search
   // commented as now this cause infinite rendering loop
@@ -57,7 +70,7 @@ const SearchFilterBar = ({
   );
 
   return (
-    <Box display="flex" flexWrap="nowrap">
+    <Box display="flex" flexWrap="nowrap" alignItems="center">
       <Box flexGrow={1}>
         <StyledTextField
           placeholder={t('Search')}
@@ -77,6 +90,7 @@ const SearchFilterBar = ({
           startIcon={<FilterListIcon />}
           options={filters}
           value={selectedItem}
+          noLabel={isMobile}
           onChange={onToggleChange}
         />
       </Box>
