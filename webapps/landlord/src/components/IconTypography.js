@@ -1,6 +1,6 @@
 import { memo, useMemo } from 'react';
 
-const { Grid, Typography, useTheme } = require('@material-ui/core');
+const { Typography, useTheme, Box } = require('@material-ui/core');
 
 const IconTypography = ({
   Icon,
@@ -20,18 +20,17 @@ const IconTypography = ({
   }, [props.color, theme.palette.text.secondary]);
 
   return (
-    <Grid container wrap="nowrap" alignItems="center" spacing={1}>
+    <Box display="flex" alignItems="center">
       {Icon && (
-        <Grid item>
+        <Box display="flex" alignItems="center" mr={0.5}>
           <Icon fontSize={fontSize} className={className} style={iconStyle} />
-        </Grid>
+        </Box>
       )}
-      <Grid item>
-        <Typography fontSize={fontSize} className={className} {...props}>
-          {children}
-        </Typography>
-      </Grid>
-    </Grid>
+
+      <Typography fontSize={fontSize} className={className} {...props}>
+        {children}
+      </Typography>
+    </Box>
   );
 };
 
