@@ -64,7 +64,10 @@ const Billing = observer(({ readOnly, onSubmit }) => {
       {({ isSubmitting, values }) => {
         return (
           <Form autoComplete="off">
-            <FormSection label={t('Billing information')}>
+            <FormSection
+              label={t('Billing information')}
+              visible={!store.tenant.selected.stepperMode}
+            >
               <FormTextField
                 label={t('Tenant reference')}
                 name="reference"

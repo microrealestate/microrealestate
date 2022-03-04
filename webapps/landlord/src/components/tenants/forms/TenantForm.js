@@ -136,7 +136,10 @@ const TenantForm = observer(({ readOnly, onSubmit }) => {
       {({ values, isSubmitting }) => {
         return (
           <Form autoComplete="off">
-            <FormSection label={t('Tenant information')}>
+            <FormSection
+              label={t('Tenant information')}
+              visible={!store.tenant.selected.stepperMode}
+            >
               <FormTextField
                 label={t('Name')}
                 name="name"

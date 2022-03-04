@@ -48,25 +48,25 @@ export default function TenantStepper({ onSubmit }) {
   return (
     <Stepper activeStep={activeStep} orientation="vertical">
       <Step>
-        <StepLabel>{t('Tenant')}</StepLabel>
+        <StepLabel>{t('Tenant information')}</StepLabel>
         <StepContent>
-          <Box p={5}>
+          <Box px={1}>
             <TenantForm onSubmit={handleSubmit} />
           </Box>
         </StepContent>
       </Step>
       <Step>
-        <StepLabel>{t('Contract')}</StepLabel>
+        <StepLabel>{t('Lease')}</StepLabel>
         <StepContent>
-          <Box p={5}>
+          <Box px={1}>
             <LeaseContractForm onSubmit={handleSubmit} />
           </Box>
         </StepContent>
       </Step>
       <Step>
-        <StepLabel>{t('Billing')}</StepLabel>
+        <StepLabel>{t('Billing information')}</StepLabel>
         <StepContent>
-          <Box p={5}>
+          <Box px={1}>
             <BillingForm onSubmit={handleSubmit} />
           </Box>
         </StepContent>
