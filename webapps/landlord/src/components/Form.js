@@ -288,14 +288,20 @@ export const SubmitButton = ({ label, disabled, ...props }) => {
   );
 };
 
-export const FormSection = ({ label, children }) => {
+export const FormSection = ({ label, visible = true, children }) => {
   return (
     <Box pb={4}>
-      <Typography variant="h5">{label}</Typography>
-      <Box pt={2} pb={1}>
-        <Divider />
-      </Box>
-      {children}
+      {visible ? (
+        <>
+          <Typography variant="h5">{label}</Typography>
+          <Box pt={2} pb={1}>
+            <Divider />
+          </Box>
+          {children}
+        </>
+      ) : (
+        children
+      )}
     </Box>
   );
 };

@@ -269,7 +269,10 @@ const LeaseContractForm = observer((props) => {
                 />
               </FormSection>
             )}
-            <FormSection label={t('Lease')}>
+            <FormSection
+              label={t('Lease')}
+              visible={!store.tenant.selected.stepperMode}
+            >
               <SelectField
                 label={t('Lease')}
                 name="leaseId"

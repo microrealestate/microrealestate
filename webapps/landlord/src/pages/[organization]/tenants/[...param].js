@@ -286,59 +286,63 @@ const Tenant = observer(() => {
       }
     >
       <RequestError error={error} />
-      <Grid container spacing={5}>
-        <Grid item sm={12} md={7} lg={8}>
-          <Paper>
-            {store.tenant.selected.stepperMode ? (
-              <TenantStepper onSubmit={onSubmit} />
-            ) : (
-              <TenantTabs onSubmit={onSubmit} readOnly={readOnly} />
+      {store.tenant.selected.stepperMode ? (
+        <Paper>
+          <TenantStepper onSubmit={onSubmit} />
+        </Paper>
+      ) : (
+        <>
+          <Grid container spacing={5}>
+            <Grid item sm={12} md={7} lg={8}>
+              <Paper>
+                <TenantTabs onSubmit={onSubmit} readOnly={readOnly} />
+              </Paper>
+            </Grid>
+            {!!store.tenant.selected.properties && (
+              <Grid item xs={12} md={5} lg={4}>
+                <Box pb={4}>
+                  <ContractOverviewCard />
+                </Box>
+                <Box pb={4}>
+                  <RentOverviewCard />
+                </Box>
+                {!store.tenant.selected.stepperMode && <TenantDocumentsCard />}
+              </Grid>
             )}
-          </Paper>
-        </Grid>
-        {!!store.tenant.selected.properties && (
-          <Grid item xs={12} md={5} lg={4}>
-            <Box pb={4}>
-              <ContractOverviewCard />
-            </Box>
-            <Box pb={4}>
-              <RentOverviewCard />
-            </Box>
-            {!store.tenant.selected.stepperMode && <TenantDocumentsCard />}
           </Grid>
-        )}
-      </Grid>
-      <RichTextEditorDialog
-        open={editContract}
-        setOpen={setEditContract}
-        onLoad={onLoadContract}
-        onSave={onSaveContract}
-        title={store.tenant.selected.name}
-        hideFields={true}
-      />
-      <TerminateLeaseDialog
-        open={openTerminateLease}
-        setOpen={setOpenTerminateLease}
-      />
-      <ConfirmDialog
-        title={
-          store.tenant.selected.terminated
-            ? t('Lease terminated on {{terminationDate}}', {
-                terminationDate: moment(
-                  store.tenant.selected.terminationDate,
-                  'DD/MM/YYYY'
-                ).format('LL'),
-              })
-            : t('Lease is in progress')
-        }
-        subTitle={t(
-          'Modifying this form might break the contract signed with the tenant'
-        )}
-        subTitle2={t('Continue editing?')}
-        open={openConfirmEditTenant}
-        setOpen={setOpenConfirmEditTenant}
-        onConfirm={() => setReadOnly(false)}
-      />
+          <RichTextEditorDialog
+            open={editContract}
+            setOpen={setEditContract}
+            onLoad={onLoadContract}
+            onSave={onSaveContract}
+            title={store.tenant.selected.name}
+            hideFields={true}
+          />
+          <TerminateLeaseDialog
+            open={openTerminateLease}
+            setOpen={setOpenTerminateLease}
+          />
+          <ConfirmDialog
+            title={
+              store.tenant.selected.terminated
+                ? t('Lease terminated on {{terminationDate}}', {
+                    terminationDate: moment(
+                      store.tenant.selected.terminationDate,
+                      'DD/MM/YYYY'
+                    ).format('LL'),
+                  })
+                : t('Lease is in progress')
+            }
+            subTitle={t(
+              'Modifying this form might break the contract signed with the tenant'
+            )}
+            subTitle2={t('Continue editing?')}
+            open={openConfirmEditTenant}
+            setOpen={setOpenConfirmEditTenant}
+            onConfirm={() => setReadOnly(false)}
+          />
+        </>
+      )}
       <ConfirmDialog
         title={t('Are you sure to definitely remove this tenant?')}
         subTitle={store.tenant.selected.name}
