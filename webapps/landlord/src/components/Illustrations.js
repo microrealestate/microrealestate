@@ -66,21 +66,21 @@ export const TermsDocumentIllustration = () => (
 
 export const AlertIllustration = () => (
   //TODO: fill the alt attribute
-  <Illustration imgName="undraw_Notify_re_65on" alt="" />
+  <Illustration imgName="undraw_notify_re_65on" alt="" />
 );
 
 export const PendingIllustration = () => (
   //TODO: fill the alt attribute
-  <Illustration imgName="undraw_pending_approval_xuu9" alt="" />
+  <Illustration imgName="caution" alt="" />
 );
 
 export const Pending2Illustration = () => (
   //TODO: fill the alt attribute
-  <Illustration imgName="undraw_pending_approval2_xuu9" alt="" />
+  <Illustration imgName="caution" alt="" />
 );
 
 export const ReceiptIllustration = () => (
-  <Illustration imgName="undraw_Receipt_re_fre3" alt="Invoice" />
+  <Illustration imgName="bill" alt="Invoice" />
 );
 
 export const WelcomeIllustration = ({ height = '100%' }) => (
