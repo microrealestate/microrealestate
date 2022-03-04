@@ -23,7 +23,7 @@ export default function TenantTabs({ onSubmit /*, setError*/, readOnly }) {
           aria-label="Tenant tabs"
         >
           <Tab label={t('Tenant')} wrapped />
-          <Tab label={t('Contract')} wrapped />
+          <Tab label={t('Lease')} wrapped />
           <Tab label={t('Billing')} wrapped />
         </Tabs>
         <TabPanel value={tabSelectedIndex} index={0}>
