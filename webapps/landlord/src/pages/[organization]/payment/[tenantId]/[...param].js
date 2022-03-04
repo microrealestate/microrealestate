@@ -255,10 +255,10 @@ const RentPayment = observer(() => {
                 Toolbar={
                   <FullScreenDialogButton
                     variant="contained"
-                    buttonLabel={t('Rents history')}
+                    buttonLabel={t('Rent timeline')}
                     size="small"
                     startIcon={<HistoryIcon />}
-                    dialogTitle={t('Rents history')}
+                    dialogTitle={t('Rent timeline')}
                     cancelButtonLabel={t('Close')}
                     showCancel
                   >

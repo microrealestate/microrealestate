@@ -147,13 +147,13 @@ const TenantDocumentsCard = () => {
     );
     return [
       {
-        category: '',
-        label: t('New blank document'),
+        key: 'blank',
+        label: t('Blank document'),
         illustration: <BlankDocumentIllustration />,
         value: {},
       },
       ...templates.map((template) => ({
-        category: t('Templates'),
+        key: template._id,
         label: template.name,
         illustration: <TermsDocumentIllustration />,
         value: template,

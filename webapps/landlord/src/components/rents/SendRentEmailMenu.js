@@ -46,25 +46,25 @@ const SendRentEmailMenu = ({ period, tenant, terms, onError, ...props }) => {
     () => {
       return [
         {
-          category: t('Reminder notices'),
+          key: 'first_notice',
           label: t('First notice'),
           illustration: <PendingIllustration />,
           value: 'rentcall',
         },
         {
-          category: t('Reminder notices'),
+          key: 'second_notice',
           label: t('Second notice'),
           illustration: <Pending2Illustration />,
           value: 'rentcall_reminder',
         },
         {
-          category: t('Reminder notices'),
+          key: 'last_notice',
           label: t('Last notice'),
           illustration: <AlertIllustration />,
           value: 'rentcall_last_reminder',
         },
         {
-          category: t('Invoice'),
+          key: 'invoice',
           label: t('Invoice'),
           illustration: <ReceiptIllustration />,
           value: 'invoice',

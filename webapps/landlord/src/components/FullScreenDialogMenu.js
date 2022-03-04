@@ -4,12 +4,11 @@ import {
   Card,
   CardActionArea,
   CardContent,
-  Divider,
   Toolbar,
   useMediaQuery,
   useTheme,
 } from '@material-ui/core';
-import { forwardRef, Fragment, useCallback, useMemo, useState } from 'react';
+import { forwardRef, Fragment, useCallback, useState } from 'react';
 
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
@@ -104,15 +103,6 @@ const FullScreenDialogMenu = ({
     [onClick, mountedRef]
   );
 
-  const categories = useMemo(() => {
-    return Array.from(
-      menuItems.reduce((acc, { category }) => {
-        acc.add(category);
-        return acc;
-      }, new Set())
-    );
-  }, [menuItems]);
-
   return (
     <>
       <Button
@@ -142,67 +132,49 @@ const FullScreenDialogMenu = ({
             </Box>
           </Toolbar>
         </AppBar>
-        <Box position="relative">
-          <Box py={2} px={5}>
-            {categories.map((category, index) => {
-              return (
-                <Fragment key={category}>
-                  {!!category && (
-                    <Box pt={index === 0 ? 0 : 3} pb={3}>
-                      <Typography variant="subtitle1" gutterBottom>
-                        {category}
-                      </Typography>
-                      <Divider />
-                    </Box>
-                  )}
-                  <Box display="flex" flexWrap="wrap">
-                    {menuItems
-                      .filter((item) => item.category === category)
-                      .map((menuItem, index) => {
-                        const {
-                          label,
-                          description,
-                          illustration,
-                          badgeContent,
-                          badgeColor,
-                          value,
-                        } = menuItem;
 
-                        return (
-                          <CardMenuItem
-                            key={`${category}_${index}`}
-                            value={value}
-                            label={label}
-                            description={description}
-                            illustration={illustration}
-                            badgeContent={badgeContent}
-                            badgeColor={badgeColor}
-                            onClick={handleMenuClick}
-                          />
-                        );
-                      })}
-                  </Box>
-                </Fragment>
-              );
-            })}
-          </Box>
-          {runningAction && (
-            <Box
-              sx={{
-                position: 'absolute',
-                top: 0,
-                right: 0,
-                height: '100%',
-                width: '100%',
-                backgroundColor: `rgba(${hexToRgb(
-                  theme.palette.background.paper
-                )}, 0.5)`,
-              }}
-            >
-              <Loading />
-            </Box>
-          )}
+        <Box display="flex" flexWrap="wrap" py={2} px={5}>
+          {menuItems.map((menuItem) => {
+            const {
+              key,
+              label,
+              description,
+              illustration,
+              badgeContent,
+              badgeColor,
+              value,
+            } = menuItem;
+
+            return (
+              <CardMenuItem
+                key={key}
+                value={value}
+                label={label}
+                description={description}
+                illustration={illustration}
+                badgeContent={badgeContent}
+                badgeColor={badgeColor}
+                onClick={handleMenuClick}
+              />
+            );
+          })}
         </Box>
+        {runningAction && (
+          <Box
+            sx={{
+              position: 'fixed',
+              top: 0,
+              right: 0,
+              height: '100%',
+              width: '100%',
+              backgroundColor: `rgba(${hexToRgb(
+                theme.palette.background.paper
+              )}, 0.5)`,
+            }}
+          >
+            <Loading />
+          </Box>
+        )}
       </Dialog>
     </>
   );
