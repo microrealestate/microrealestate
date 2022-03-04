@@ -1,34 +1,42 @@
-import { Box, IconButton, Typography, withStyles } from '@material-ui/core';
+import {
+  Box,
+  IconButton,
+  Typography,
+  useTheme,
+  withStyles,
+} from '@material-ui/core';
 
 import { hexToRgb } from '../styles/styles';
 import { useCallback } from 'react';
-import { useStyles } from '../styles/components/Nav.styles';
 
 const StyledButton = withStyles((theme) => ({
   root: {
+    width: '100%',
     color: 'rgba(' + hexToRgb(theme.palette.common.white) + ', 0.8)',
     borderRadius: 0,
+    paddingTop: 6,
+    paddingBottom: 6,
   },
 }))(IconButton);
 
 const MobileMenuButton = ({ item, selected, onClick }) => {
-  const classes = useStyles();
+  const theme = useTheme();
 
   const handleClick = useCallback(() => {
     onClick(item);
   }, [item, onClick]);
 
   return (
-    <Box>
-      <StyledButton
-        className={`${classes.item} ${
-          selected ? classes.mobileItemSelected : ''
-        }`}
-        onClick={handleClick}
-      >
-        <Box display="flex" flexDirection="column">
-          <Box>{item.icon}</Box>
-          <Typography variant="caption" component="div" noWrap>
+    <Box
+      borderTop={`5px solid ${
+        selected ? theme.palette.primary.main : 'transparent'
+      }`}
+      width={72}
+    >
+      <StyledButton onClick={handleClick}>
+        <Box display="flex" flexDirection="column" fontSize="44%">
+          <Box pb={0.2}>{item.icon}</Box>
+          <Typography variant="inherit" component="div">
             {item.value}
           </Typography>
         </Box>
