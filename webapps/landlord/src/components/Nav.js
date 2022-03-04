@@ -194,7 +194,7 @@ const Nav = () => {
           bottom={0}
           width="100%"
           display="flex"
-          justifyContent="space-between"
+          justifyContent="space-around"
         >
           {mobileItems.map((item) => {
             return (

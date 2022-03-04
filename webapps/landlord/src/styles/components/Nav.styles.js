@@ -1,10 +1,4 @@
-import {
-  defaultFont,
-  drawerWidth,
-  hexToRgb,
-  infoColor,
-  whiteColor,
-} from '../styles.js';
+import { defaultFont, drawerWidth, hexToRgb, whiteColor } from '../styles.js';
 
 import { makeStyles } from '@material-ui/core/styles';
 
@@ -27,10 +21,10 @@ export const useStyles = makeStyles((theme) => ({
     marginTop: 56,
   },
   itemSelected: {
-    backgroundColor: [infoColor[0], '!important'],
+    backgroundColor: [theme.palette.primary.main, '!important'],
   },
   mobileItemSelected: {
-    color: [infoColor[0], '!important'],
+    color: [theme.palette.primary.main, '!important'],
     backgroundColor: ['none', '!important'],
   },
   itemIcon: {
