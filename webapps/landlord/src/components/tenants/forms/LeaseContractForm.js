@@ -77,11 +77,11 @@ const validationSchema = Yup.object().shape({
   guarantyPayback: Yup.number().min(0),
 });
 
-const emptyExpense = { title: '', amount: '' };
+const emptyExpense = { title: '', amount: 0 };
 
 const emptyProperty = {
   _id: '',
-  rent: '',
+  rent: 0,
   expense: emptyExpense,
   entryDate: null,
   exitDate: null,
@@ -175,7 +175,11 @@ const LeaseContractForm = observer((props) => {
         //disabled: selectedPropertyId !== _id && status === 'occupied'
       })),
     ];
-  }, [store.tenant.selected.properties, store.property.items]);
+  }, [
+    //t,
+    store.tenant.selected.properties,
+    store.property.items,
+  ]);
 
   const _onSubmit = async (lease) => {
     await onSubmit({
@@ -190,16 +194,9 @@ const LeaseContractForm = observer((props) => {
       properties: lease.properties
         .filter((property) => !!property._id)
         .map((property) => {
-          // hack to avoid passing a string in place of a number to the backend
-          // weird that formik doesn't handle this properly...
-          if (property.expense?.title) {
-            property.expense.amount = Number(property.expense.amount);
-          }
           return {
             propertyId: property._id,
-            // hack to avoid passing a string in place of a number to the backend
-            // weird that formik doesn't handle this properly...
-            rent: Number(property.rent),
+            rent: property.rent,
             expenses: property.expense.title ? [property.expense] : [],
             entryDate: property.entryDate?.format('DD/MM/YYYY'),
             exitDate: property.exitDate?.format('DD/MM/YYYY'),
