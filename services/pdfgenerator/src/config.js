@@ -14,4 +14,6 @@ module.exports = {
     process.env.TEMPORARY_DIRECTORY || path.join(root_dir, '/tmp'),
   PDF_DIRECTORY:
     process.env.PDF_DIRECTORY || path.join(root_dir, '/pdf_documents'),
+  UPLOADS_DIRECTORY:
+    process.env.UPLOADS_DIRECTORY || path.join(root_dir, '/uploads'),
 };

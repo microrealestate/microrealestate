@@ -65,7 +65,7 @@ export default class Document {
 
   *update(document) {
     try {
-      const response = yield apiFetcher().put('/documents', document);
+      const response = yield apiFetcher().patch('/documents', document);
       const updatedDocument = response.data;
       const index = this.items.findIndex((item) => item._id === document._id);
       if (index > -1) {

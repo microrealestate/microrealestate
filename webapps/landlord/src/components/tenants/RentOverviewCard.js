@@ -30,9 +30,9 @@ export default function RentOverview() {
               <FullScreenDialogButton
                 variant="contained"
                 size="small"
-                buttonLabel={t('Rents history')}
+                buttonLabel={t('Rent schedule')}
                 startIcon={<HistoryIcon />}
-                dialogTitle={t('Rents history')}
+                dialogTitle={t('Rent schedule')}
                 cancelButtonLabel={t('Close')}
                 showCancel
                 disabled={!store.tenant.selected.properties}

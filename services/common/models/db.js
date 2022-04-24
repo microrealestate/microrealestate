@@ -8,6 +8,7 @@ const connect = async () => {
   if (!connection) {
     logger.debug(`connecting to ${config.MONGO_URL}...`);
     connection = await mongoose.connect(config.MONGO_URL, {
+      useFindAndModify: false,
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });

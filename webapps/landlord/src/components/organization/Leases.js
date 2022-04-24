@@ -85,38 +85,26 @@ const Leases = observer(({ setError }) => {
               return (
                 <TableRow key={lease._id} size="small">
                   <TableCell>
-                    {lease.system ? (
-                      <Typography noWrap>{t(lease.name)}</Typography>
-                    ) : (
-                      <Link
-                        href={`/${
-                          store.organization.selected.name
-                        }/settings/lease/${lease._id}/${encodeURI(
-                          t('Settings')
-                        )}/${encodeURIComponent(router.asPath)}`}
-                      >
-                        <Typography noWrap>{lease.name}</Typography>
-                      </Link>
-                    )}
+                    <Link
+                      href={`/${
+                        store.organization.selected.name
+                      }/settings/lease/${lease._id}/${encodeURI(
+                        t('Settings')
+                      )}/${encodeURIComponent(router.asPath)}`}
+                    >
+                      <Typography noWrap>{lease.name}</Typography>
+                    </Link>
                   </TableCell>
                   <TableCell>
-                    {lease.system || !lease.numberOfTerms ? (
-                      <Typography noWrap>{t('Custom')}</Typography>
-                    ) : (
-                      <Typography noWrap>
-                        {t('{{numberOfTerms}} {{timeRange}}', {
-                          numberOfTerms: lease.numberOfTerms,
-                          timeRange: lease.timeRange,
-                        })}
-                      </Typography>
-                    )}
+                    <Typography noWrap>
+                      {t('{{numberOfTerms}} {{timeRange}}', {
+                        numberOfTerms: lease.numberOfTerms,
+                        timeRange: lease.timeRange,
+                      })}
+                    </Typography>
                   </TableCell>
                   <TableCell>
-                    {lease.system ? (
-                      <Typography>{t(lease.description)}</Typography>
-                    ) : (
-                      <Typography>{lease.description}</Typography>
-                    )}
+                    <Typography>{lease.description}</Typography>
                   </TableCell>
                   <TableCell align="center">
                     <Switch

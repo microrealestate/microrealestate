@@ -3,6 +3,7 @@ import { useCallback, useContext, useState } from 'react';
 import BillingForm from './forms/BillingForm';
 import { validate as BillingFormValidate } from '../../components/tenants/forms/BillingForm';
 import { Box } from '@material-ui/core';
+import DocumentsForm from './forms/DocumentsForm';
 import LeaseContractForm from './forms/LeaseContractForm';
 import { validate as LeaseContractFormValidate } from '../../components/tenants/forms/LeaseContractForm';
 import Step from '@material-ui/core/Step';
@@ -12,15 +13,14 @@ import Stepper from '@material-ui/core/Stepper';
 import { StoreContext } from '../../store';
 import TenantForm from './forms/TenantForm';
 import { validate as TenantFormValidate } from '../../components/tenants/forms/TenantForm';
+import { useComponentMountedRef } from '../../utils/hooks';
 import useTranslation from 'next-translate/useTranslation';
 
 export default function TenantStepper({ onSubmit }) {
   const store = useContext(StoreContext);
   const { t } = useTranslation('common');
-  const [activeStep, setActiveStep] = useState(
-    // hasContract ? (hasProperty ? (hasTenant ? 3 : 2) : 1) : 0
-    0
-  );
+  const [activeStep, setActiveStep] = useState(0);
+  const mountedRef = useComponentMountedRef();
 
   const handleSubmit = useCallback(
     async (tenantPart) => {
@@ -30,19 +30,20 @@ export default function TenantStepper({ onSubmit }) {
           await TenantFormValidate(store.tenant?.selected);
           await LeaseContractFormValidate(store.tenant?.selected);
           await BillingFormValidate(store.tenant?.selected);
-          isFormsValid = true;
+          isFormsValid = activeStep >= 3;
         } catch (error) {
           console.log(error);
           isFormsValid = false;
         }
-
         await onSubmit({ ...tenantPart, stepperMode: !isFormsValid });
-        setActiveStep(activeStep + 1);
+        if (mountedRef.current) {
+          setActiveStep(activeStep + 1);
+        }
       } catch (error) {
         // do nothing on error
       }
     },
-    [store.tenant?.selected, onSubmit, activeStep]
+    [onSubmit, mountedRef, store.tenant?.selected, activeStep]
   );
 
   return (
@@ -68,6 +69,14 @@ export default function TenantStepper({ onSubmit }) {
         <StepContent>
           <Box px={1}>
             <BillingForm onSubmit={handleSubmit} />
+          </Box>
+        </StepContent>
+      </Step>
+      <Step>
+        <StepLabel>{t('Documents')}</StepLabel>
+        <StepContent>
+          <Box px={1}>
+            <DocumentsForm onSubmit={handleSubmit} />
           </Box>
         </StepContent>
       </Step>

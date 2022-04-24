@@ -64,6 +64,7 @@ const HeadingSelect = ({ editor }) => {
       value={headingLevel}
       onChange={handleHeadingChange}
       input={<InputBase />}
+      disabled={!editor.isEditable}
     >
       <MenuItem value={1}>
         <Box width={80}>Heading 1</Box>
@@ -111,10 +112,12 @@ const FormatMenu = ({ editor, showPrintButton }) => {
     <FormatToolbar>
       <EditorButton
         iconType="ri-arrow-go-back-line"
+        disabled={!editor.isEditable}
         onClick={() => editor.chain().focus().undo().run()}
       />
       <EditorButton
         iconType="ri-arrow-go-forward-line"
+        disabled={!editor.isEditable}
         onClick={() => editor.chain().focus().redo().run()}
       />
       <Divider orientation="vertical" flexItem />
@@ -123,74 +126,88 @@ const FormatMenu = ({ editor, showPrintButton }) => {
       <EditorButton
         iconType="ri-bold"
         selected={boldActive}
+        disabled={!editor.isEditable}
         onClick={() => editor.chain().focus().toggleBold().run()}
       />
       <EditorButton
         iconType="ri-italic"
         selected={italicActive}
+        disabled={!editor.isEditable}
         onClick={() => editor.chain().focus().toggleItalic().run()}
       />
       <EditorButton
         iconType="ri-underline"
         selected={underlineActive}
+        disabled={!editor.isEditable}
         onClick={() => editor.chain().focus().toggleUnderline().run()}
       />
       <EditorButton
         iconType="ri-strikethrough"
         selected={strikeActive}
+        disabled={!editor.isEditable}
         onClick={() => editor.chain().focus().toggleStrike().run()}
       />
       <EditorButton
         iconType="ri-format-clear"
+        disabled={!editor.isEditable}
         onClick={() => editor.chain().focus().unsetAllMarks().run()}
       />
       <Divider orientation="vertical" flexItem />
       <EditorButton
         iconType="ri-align-left"
         selected={alignLeftActive}
+        disabled={!editor.isEditable}
         onClick={() => editor.chain().focus().setTextAlign('left').run()}
       />
       <EditorButton
         iconType="ri-align-center"
         selected={alignCenterActive}
+        disabled={!editor.isEditable}
         onClick={() => editor.chain().focus().setTextAlign('center').run()}
       />
       <EditorButton
         iconType="ri-align-right"
         selected={alignRightActive}
+        disabled={!editor.isEditable}
         onClick={() => editor.chain().focus().setTextAlign('right').run()}
       />
       <Divider orientation="vertical" flexItem />
       <EditorButton
         iconType="ri-superscript"
         selected={superscriptActive}
+        disabled={!editor.isEditable}
         onClick={() => editor.chain().focus().toggleSuperscript().run()}
       />
       <Divider orientation="vertical" flexItem />
       <EditorButton
         iconType="ri-list-unordered"
         selected={bulletListActive}
+        disabled={!editor.isEditable}
         onClick={() => editor.chain().focus().toggleBulletList().run()}
       />
       <EditorButton
         iconType="ri-list-ordered"
         selected={orderedListActive}
+        disabled={!editor.isEditable}
         onClick={() => editor.chain().focus().toggleOrderedList().run()}
       />
       <Divider orientation="vertical" flexItem />
       <EditorButton
         iconType="ri-double-quotes-r"
         selected={blockquoteActive}
+        disabled={!editor.isEditable}
         onClick={() => editor.chain().focus().toggleBlockquote().run()}
       />
       <Divider orientation="vertical" flexItem />
       <EditorButton
         iconType="ri-text-wrap"
+        disabled={!editor.isEditable}
         onClick={() => editor.chain().focus().setHardBreak().run()}
       />
       <Divider orientation="vertical" flexItem />
       <EditorButton
         iconType="ri-separator"
+        disabled={!editor.isEditable}
         onClick={() => editor.chain().focus().setHorizontalRule().run()}
       />
       {showPrintButton && (

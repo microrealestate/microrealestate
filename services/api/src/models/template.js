@@ -9,6 +9,7 @@ class TemplateModel extends Model {
       name: String,
       type: String,
       description: String,
+      hasExpiryDate: Boolean,
       contents: Object,
       html: String,
       linkedResourceIds: Array,

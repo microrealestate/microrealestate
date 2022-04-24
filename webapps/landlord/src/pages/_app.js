@@ -1,6 +1,10 @@
 import 'moment/locale/fr';
 import 'moment/locale/pt';
 import 'moment/locale/de';
+import '@react-pdf-viewer/core/lib/styles/index.css';
+import '@react-pdf-viewer/default-layout/lib/styles/index.css';
+import 'react-awesome-lightbox/build/style.css';
+import '../components/PdfViewer/pdfviewer.css';
 import '../components/RichTextEditor/richtexteditor.css';
 
 import * as Yup from 'yup';

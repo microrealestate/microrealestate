@@ -205,15 +205,7 @@ const Page = observer(
             {!loading && !routeloading ? (
               <Box mt={1}>{children}</Box>
             ) : (
-              <Box
-                position="fixed"
-                top={0}
-                left={0}
-                width="100vw"
-                height="100vh"
-              >
-                <Loading />
-              </Box>
+              <Loading fullScreen />
             )}
           </>
         </Container>

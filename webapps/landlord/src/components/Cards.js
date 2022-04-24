@@ -82,7 +82,7 @@ export const PageCard = memo(function PageCard({
 });
 
 const CardContent = ({ Toolbar, info, minHeight, children }) => (
-  <Box mt={1.8}>
+  <Box pt={1.8}>
     {!!Toolbar && (
       <>
         <UIToolbar>
@@ -96,7 +96,13 @@ const CardContent = ({ Toolbar, info, minHeight, children }) => (
       </>
     )}
 
-    <Box px={1.8} pb={1.8} pt={Toolbar ? 0 : 1.8} minHeight={minHeight}>
+    <Box
+      display="flex"
+      flexDirection="column"
+      justifyContent="center"
+      px={1.8}
+      minHeight={minHeight}
+    >
       {children}
     </Box>
 

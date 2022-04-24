@@ -22,7 +22,6 @@ import RentOverviewCard from '../../../components/tenants/RentOverviewCard';
 import RequestError from '../../../components/RequestError';
 import RichTextEditorDialog from '../../../components/RichTextEditor/RichTextEditorDialog';
 import StopIcon from '@material-ui/icons/Stop';
-import TenantDocumentsCard from '../../../components/tenants/TenantDocumentsCard';
 import TenantStepper from '../../../components/tenants/TenantStepper';
 import TenantTabs from '../../../components/tenants/TenantTabs';
 import TerminateLeaseDialog from '../../../components/tenants/TerminateLeaseDialog';
@@ -182,7 +181,7 @@ const Tenant = observer(() => {
       templateId,
       tenantId: editContract._id,
       leaseId: lease._id,
-      type: 'contract',
+      type: 'text',
       name: editContract.name,
     });
     contractId = data._id;
@@ -306,7 +305,6 @@ const Tenant = observer(() => {
                 <Box pb={4}>
                   <RentOverviewCard />
                 </Box>
-                {!store.tenant.selected.stepperMode && <TenantDocumentsCard />}
               </Grid>
             )}
           </Grid>

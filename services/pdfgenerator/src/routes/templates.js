@@ -4,7 +4,13 @@ const Template = require('@mre/common/models/template');
 /**
  * route: /templates
  */
-const _checkTemplateParameters = ({ name, type, contents, html }) => {
+const _checkTemplateParameters = ({
+  name,
+  type,
+  hasExpiryDate,
+  contents,
+  html,
+}) => {
   const errors = [];
   if (!name) {
     errors.push('template name is missing');
@@ -12,11 +18,17 @@ const _checkTemplateParameters = ({ name, type, contents, html }) => {
   if (!type) {
     errors.push('template type is missing');
   }
-  if (!contents) {
-    errors.push('template content is missing');
-  }
-  if (!html) {
-    errors.push('template html is missing');
+  if (type === 'text') {
+    if (!contents) {
+      errors.push('template content is missing');
+    }
+    if (!html) {
+      errors.push('template html is missing');
+    }
+  } else if (type === 'fileDescriptor') {
+    if (hasExpiryDate === undefined) {
+      errors.push('template hasExpiryDate is missing');
+    }
   }
   return errors;
 };
@@ -349,6 +361,7 @@ templatesApi.post('/', (req, res) => {
       name,
       type,
       description = '',
+      hasExpiryDate,
       contents,
       html,
       linkedResourceIds,
@@ -358,6 +371,7 @@ templatesApi.post('/', (req, res) => {
       name,
       type,
       description,
+      hasExpiryDate,
       contents,
       html,
       linkedResourceIds,
@@ -368,7 +382,7 @@ templatesApi.post('/', (req, res) => {
   request();
 });
 
-templatesApi.put('/', (req, res) => {
+templatesApi.patch('/', (req, res) => {
   const request = async () => {
     const organizationId = req.headers.organizationid;
 
@@ -380,28 +394,15 @@ templatesApi.put('/', (req, res) => {
       return res.status(422).json({ errors });
     }
 
-    const {
-      _id,
-      name,
-      type,
-      description = '',
-      contents,
-      html,
-      linkedResourceIds,
-    } = req.body || {};
+    const template = req.body || {};
     const updatedTemplate = await Template.findOneAndReplace(
       {
-        _id,
+        _id: template._id,
         realmId: organizationId,
       },
       {
+        ...template,
         realmId: organizationId,
-        name,
-        type,
-        description,
-        contents,
-        html,
-        linkedResourceIds,
       },
       { new: true }
     );

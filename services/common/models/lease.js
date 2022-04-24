@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 const Realm = require('./realm');
-const Template = require('./template');
 
 const LeaseSchema = mongoose.Schema({
   realmId: { type: String, ref: Realm },
@@ -9,8 +8,9 @@ const LeaseSchema = mongoose.Schema({
   numberOfTerms: Number,
   timeRange: String, // days, weeks, months, years
   active: Boolean,
-  system: Boolean,
-  templateIds: { type: Array, ref: Template },
+
+  // ui state
+  stepperMode: { type: Boolean, default: false },
 });
 
 module.exports = mongoose.model('Lease', LeaseSchema);

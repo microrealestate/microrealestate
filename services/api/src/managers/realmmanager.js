@@ -25,8 +25,8 @@ const _escapeSecrets = (realm) => {
   if (realm.thirdParties?.mailgun?.apiKey) {
     realm.thirdParties.mailgun.apiKey = SECRET_PLACEHOLDER;
   }
-  if (realm.thirdParties?.b2?.applicationKeyId) {
-    realm.thirdParties.b2.applicationKeyId = SECRET_PLACEHOLDER;
+  if (realm.thirdParties?.b2?.keyId) {
+    realm.thirdParties.b2.keyId = SECRET_PLACEHOLDER;
   }
   if (realm.thirdParties?.b2?.applicationKey) {
     realm.thirdParties.b2.applicationKey = SECRET_PLACEHOLDER;
@@ -39,7 +39,7 @@ module.exports = {
     const newRealm = realmModel.schema.filter(req.body);
 
     delete req.body.thirdParties?.mailgun?.apiKeyUpdated;
-    delete req.body.thirdParties?.b2?.applicationKeyIdUpdated;
+    delete req.body.thirdParties?.b2?.keyIdUpdated;
     delete req.body.thirdParties?.b2?.applicationKeyUpdated;
 
     if (!_hasRequiredFields(newRealm)) {
@@ -64,9 +64,9 @@ module.exports = {
       );
     }
 
-    if (newRealm.thirdParties?.b2?.applicationKeyId) {
-      newRealm.thirdParties.b2.applicationKeyId = crypto.encrypt(
-        newRealm.thirdParties.b2.applicationKeyId
+    if (newRealm.thirdParties?.b2?.keyId) {
+      newRealm.thirdParties.b2.keyId = crypto.encrypt(
+        newRealm.thirdParties.b2.keyId
       );
     }
 
@@ -81,14 +81,13 @@ module.exports = {
   },
   async update(req, res) {
     const mailgunApiKeyUpdated = req.body.thirdParties?.mailgun?.apiKeyUpdated;
-    const b2ApplicationKeyIdUpdated =
-      req.body.thirdParties?.b2?.applicationKeyIdUpdated;
+    const b2KeyIdUpdated = req.body.thirdParties?.b2?.keyIdUpdated;
     const b2ApplicationKeyUpdated =
       req.body.thirdParties?.b2?.applicationKeyUpdated;
     const updatedRealm = realmModel.schema.filter(req.body);
 
     delete req.body.thirdParties?.mailgun?.apiKeyUpdated;
-    delete req.body.thirdParties?.b2?.applicationKeyIdUpdated;
+    delete req.body.thirdParties?.b2?.keyIdUpdated;
     delete req.body.thirdParties?.b2?.applicationKeyUpdated;
 
     if (req.realm._id !== updatedRealm._id) {
@@ -135,13 +134,12 @@ module.exports = {
         req.realm.thirdParties.mailgun.apiKey;
     }
 
-    if (b2ApplicationKeyIdUpdated) {
-      updatedRealm.thirdParties.b2.applicationKeyId = crypto.encrypt(
-        updatedRealm.thirdParties.b2.applicationKeyId
+    if (b2KeyIdUpdated) {
+      updatedRealm.thirdParties.b2.keyId = crypto.encrypt(
+        updatedRealm.thirdParties.b2.keyId
       );
-    } else if (req.realm.thirdParties?.b2?.applicationKeyId) {
-      updatedRealm.thirdParties.b2.applicationKeyId =
-        req.realm.thirdParties.b2.applicationKeyId;
+    } else if (req.realm.thirdParties?.b2?.keyId) {
+      updatedRealm.thirdParties.b2.keyId = req.realm.thirdParties.b2.keyId;
     }
 
     if (b2ApplicationKeyUpdated) {

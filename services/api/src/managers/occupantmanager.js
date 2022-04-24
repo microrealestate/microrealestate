@@ -1,12 +1,14 @@
 const logger = require('winston');
 const { customAlphabet } = require('nanoid');
 const moment = require('moment');
+const { default: axios } = require('axios');
+const Tenant = require('@mre/common/models/tenant');
 const FD = require('./frontdata');
 const Contract = require('./contract');
-const Tenant = require('@mre/common/models/tenant');
 const occupantModel = require('../models/occupant');
 const propertyModel = require('../models/property');
 const documentModel = require('../models/document');
+const config = require('../config');
 
 const nanoid = customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', 12);
 
@@ -291,55 +293,54 @@ async function remove(req, res) {
       });
     }
 
-    const documents = await new Promise((resolve, reject) => {
-      documentModel.findAll(realm, async (errors, dbDocuments) => {
-        if (errors && errors.length > 0) {
-          return reject({
-            errors: errors,
-          });
-        }
-        resolve(
-          dbDocuments?.filter((document) =>
-            occupantIds.includes(document.tenantId)
-          ) || []
-        );
-      });
-    });
-
-    await Promise.all([
-      ...(documents.length
-        ? [
-            new Promise((resolve, reject) => {
-              documentModel.remove(
-                realm,
-                documents.map(({ _id }) => _id),
-                (errors) => {
-                  if (errors) {
-                    return reject({
-                      errors,
-                    });
-                  }
-                  resolve();
-                }
-              );
-            }),
-          ]
-        : []),
-      new Promise((resolve, reject) => {
-        occupantModel.remove(
-          realm,
-          occupants.map((occupant) => occupant._id.toString()),
-          (errors) => {
-            if (errors) {
-              return reject({
-                errors,
-              });
-            }
-            resolve();
+    // remove documents
+    try {
+      const documents = await new Promise((resolve, reject) => {
+        documentModel.findAll(realm, async (errors, dbDocuments) => {
+          if (errors && errors.length > 0) {
+            return reject({
+              errors: errors,
+            });
           }
-        );
-      }),
-    ]);
+          resolve(
+            dbDocuments?.filter((document) =>
+              occupantIds.includes(document.tenantId)
+            ) || []
+          );
+        });
+      });
+
+      const documentsEndPoint = `${
+        config.PDFGENERATOR_URL
+      }/documents/${documents.map(({ _id }) => _id).join(',')}`;
+
+      await axios.delete(documentsEndPoint, {
+        headers: {
+          authorization: req.headers.authorization,
+          organizationid: req.headers.organizationid || String(req.realm._id),
+          'Accept-Language': req.headers['accept-language'],
+        },
+      });
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || error.message;
+      logger.error('DELETE documents failed');
+      logger.error(errorMessage);
+    }
+
+    await new Promise((resolve, reject) => {
+      occupantModel.remove(
+        realm,
+        occupants.map((occupant) => occupant._id.toString()),
+        (errors) => {
+          if (errors) {
+            return reject({
+              errors,
+            });
+          }
+          resolve();
+        }
+      );
+    });
 
     res.sendStatus(200);
   } catch (error) {

@@ -30,12 +30,14 @@ const RichTextEditor = ({
   fields = [],
   showPrintButton,
   placeholder = '',
+  editable = true,
 }) => {
   const { t } = useTranslation('common');
   const [ready, setReady] = useState(false);
   const [title, setTitle] = useState(initialTitle || t('Untitled document'));
   const [saving, setSaving] = useState();
   const editor = useEditor({
+    editable,
     extensions: [
       StarterKit,
       Placeholder.configure({
@@ -116,6 +118,7 @@ const RichTextEditor = ({
             saving={saving}
             onChange={onTitleChange}
             onClose={onClose}
+            editable={editable}
           />
           <EditorContent editor={editor} />
         </>

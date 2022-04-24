@@ -4,8 +4,9 @@ const Realm = require('./realm');
 const TemplateSchema = mongoose.Schema({
   realmId: { type: String, ref: Realm },
   name: String,
-  type: String,
+  type: String, // one of 'text', 'fileDescriptor'
   description: String,
+  hasExpiryDate: Boolean,
   contents: Object,
   html: String,
   linkedResourceIds: Array,
