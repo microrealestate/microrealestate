@@ -23,6 +23,7 @@ const EditorMenu = ({
   saving,
   onChange,
   onClose,
+  editable,
 }) => {
   const { t } = useTranslation('common');
   const [showFieldMenu, setShowFieldMenu] = useState(fields?.length && true);
@@ -45,7 +46,12 @@ const EditorMenu = ({
           <Box display="flex" justifyContent="space-between" mb={1}>
             <Box display="flex" alignItems="center">
               <Box width={300}>
-                <Input value={title} onChange={onTitleChange} fullWidth />
+                <Input
+                  value={title}
+                  onChange={onTitleChange}
+                  fullWidth
+                  readOnly={!editable}
+                />
               </Box>
               <Box color="text.disabled" ml={2}>
                 {saving === true && (

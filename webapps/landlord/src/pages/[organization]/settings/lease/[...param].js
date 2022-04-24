@@ -1,16 +1,15 @@
 import { getStoreInstance, StoreContext } from '../../../../store';
-import { Grid, Paper } from '@material-ui/core';
 import { useCallback, useContext, useState } from 'react';
-
 import { ADMIN_ROLE } from '../../../../store/User';
 import BreadcrumbBar from '../../../../components/BreadcrumbBar';
 import ConfirmDialog from '../../../../components/ConfirmDialog';
 import DeleteIcon from '@material-ui/icons/Delete';
 import { isServer } from '../../../../utils';
-import LeaseForm from '../../../../components/organization/LeaseForm';
-import LeaseTemplatesCard from '../../../../components/organization/LeaseTemplatesCard';
+import LeaseStepper from '../../../../components/organization/lease/LeaseStepper';
+import LeaseTabs from '../../../../components/organization/lease/LeaseTabs';
 import { observer } from 'mobx-react-lite';
 import Page from '../../../../components/Page';
+import { Paper } from '@material-ui/core';
 import RequestError from '../../../../components/RequestError';
 import { RestrictButton } from '../../../../components/RestrictedComponents';
 import router from 'next/router';
@@ -98,16 +97,8 @@ const Lease = observer(() => {
           variant="contained"
           startIcon={<DeleteIcon />}
           onClick={() => setRemoveLease(true)}
-          disabled={
-            store.lease.selected?.usedByTenants || store.lease.selected?.system
-          }
-          disabledTooltipTitle={
-            store.lease.selected?.usedByTenants
-              ? t('Contract currently used')
-              : store.lease.selected?.system
-              ? t('System contract cannot be removed')
-              : ''
-          }
+          disabled={store.lease.selected?.usedByTenants}
+          disabledTooltipTitle={t('Contract currently used')}
           onlyRoles={[ADMIN_ROLE]}
         >
           {t('Delete')}
@@ -122,16 +113,15 @@ const Lease = observer(() => {
       }
     >
       <RequestError error={error} />
-      <Grid container spacing={5}>
-        <Grid item xs={12} md={7} lg={8}>
-          <Paper>
-            <LeaseForm onSubmit={onLeaseAddUpdate} onRemove={onLeaseRemove} />
-          </Paper>
-        </Grid>
-        <Grid item xs={12} md={5} lg={4}>
-          <LeaseTemplatesCard />
-        </Grid>
-      </Grid>
+      {store.lease.selected?.stepperMode ? (
+        <Paper>
+          <LeaseStepper onSubmit={onLeaseAddUpdate} onRemove={onLeaseRemove} />
+        </Paper>
+      ) : (
+        <Paper>
+          <LeaseTabs onSubmit={onLeaseAddUpdate} onRemove={onLeaseRemove} />
+        </Paper>
+      )}
       <ConfirmDialog
         title={t('Are you sure to remove this contract?')}
         subTitle={store.lease.selected?.name}

@@ -34,8 +34,7 @@ export default function Shortcuts({ firstConnection = false }) {
     [store.tenant.items]
   );
 
-  const hasContract = !!store.lease?.items?.filter(({ system }) => !system)
-    ?.length;
+  const hasContract = !!store.lease?.items?.length;
   const hasProperty = !!store.dashboard.data.overview?.propertyCount;
   const hasTenant = !!store.tenant?.items?.length;
 

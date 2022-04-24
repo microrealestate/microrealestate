@@ -15,7 +15,13 @@ const Illustration = ({
   width = '100%',
   height = 200,
 }) => (
-  <Box whiteSpace="nowrap" height="100%" width={width}>
+  <Box
+    display="flex"
+    flexDirection="column"
+    justifyContent="center"
+    height="100%"
+    width={width}
+  >
     <Box height={height} width={width} position="relative">
       <Image
         src={`${BASE_PATH}/${imgName}.svg`}

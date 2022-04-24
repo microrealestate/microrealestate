@@ -49,10 +49,12 @@ const RealmSchema = mongoose.Schema({
       fromEmail: String,
       replyToEmail: String,
     },
-    // b2: {
-    //     applicationKeyId: String,
-    //     applicationKey: String,
-    // }
+    b2: {
+      keyId: String,
+      applicationKey: String,
+      endpoint: String,
+      bucket: String,
+    },
   },
   locale: String,
   currency: String,

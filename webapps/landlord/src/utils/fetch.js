@@ -196,9 +196,29 @@ export const buildFetchError = (error) => {
   };
 };
 
-export const downloadDocument = async (endpoint, documentName) => {
+export const downloadDocument = async ({ endpoint, documentName }) => {
   const response = await apiFetcher().get(endpoint, {
     responseType: 'blob',
   });
   FileDownload(response.data, documentName);
+};
+
+export const uploadDocument = async ({
+  endpoint,
+  documentName,
+  file,
+  folder,
+}) => {
+  const formData = new FormData();
+  if (folder) {
+    formData.append('folder', folder);
+  }
+  formData.append('fileName', documentName);
+  formData.append('file', file);
+  return await apiFetcher().post(endpoint, formData, {
+    headers: {
+      timeout: 60000,
+      'Content-Type': 'multipart/form-data',
+    },
+  });
 };

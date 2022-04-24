@@ -8,11 +8,18 @@ class DocumentModel extends Model {
       _id: String,
       tenantId: String,
       leaseId: String,
+      templateId: String,
       name: String,
       type: String,
+      mimeType: String,
       description: String,
+      expiryDate: Date,
       contents: Object,
       html: String,
+      url: String,
+      versionId: String,
+      createdDate: Date,
+      updatedDate: Date,
     });
   }
 }

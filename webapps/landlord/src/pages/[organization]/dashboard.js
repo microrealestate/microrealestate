@@ -53,7 +53,7 @@ const Dashboard = observer(() => {
 
   const isFirstConnection = useMemo(() => {
     return (
-      !store.lease?.items?.filter(({ system }) => !system)?.length ||
+      !store.lease?.items?.length ||
       !store.dashboard.data.overview?.propertyCount ||
       !store.tenant?.items?.length
     );

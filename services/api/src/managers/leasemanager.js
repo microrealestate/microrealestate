@@ -49,7 +49,6 @@ function add(req, res) {
     realm,
     {
       ...lease,
-      system: false,
       active: !!lease.active && !!lease.numberOfTerms && !!lease.timeRange,
     },
     async (errors, dbLease) => {
@@ -91,8 +90,9 @@ async function update(req, res) {
     lease = {
       ...dbLease,
       name: lease.name || dbLease.name,
-      description: lease.description || dbLease.description,
-      active: lease.active !== undefined ? lease.active : dbLease.active,
+      description: lease.description ?? dbLease.description,
+      active: lease.active ?? dbLease.active,
+      stepperMode: lease.stepperMode ?? dbLease.stepperMode,
     };
   }
 
@@ -143,9 +143,7 @@ async function remove(req, res) {
         }
 
         resolve(
-          dbLeases?.filter(
-            (lease) => !lease.system && leaseIds.includes(lease._id)
-          ) || []
+          dbLeases?.filter((lease) => leaseIds.includes(lease._id)) || []
         );
       });
     });
@@ -252,13 +250,7 @@ function all(req, res) {
       usedByTenants: setOfUsedLeases.has(dbLease._id),
     }));
 
-    const systemLeases = allLeases
-      .filter((lease) => lease.system)
-      .sort((l1, l2) => l1.name?.localeCompare(l2.name));
-    const otherLeases = allLeases
-      .filter((lease) => !lease.system)
-      .sort((l1, l2) => l1.name?.localeCompare(l2.name));
-    res.json([...systemLeases, ...otherLeases]);
+    res.json(allLeases.sort((l1, l2) => l1.name?.localeCompare(l2.name)));
   });
 }
 

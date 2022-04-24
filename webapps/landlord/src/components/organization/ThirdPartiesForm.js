@@ -14,8 +14,10 @@ const validationSchema = Yup.object().shape({
   domain: Yup.string().required(),
   fromEmail: Yup.string().email().required(),
   replyToEmail: Yup.string().email().required(),
-  // applicationKeyId: Yup.string().required(),
-  // applicationKey: Yup.string().required(),
+  keyId: Yup.string().required(),
+  applicationKey: Yup.string().required(),
+  endpoint: Yup.string().required(),
+  bucket: Yup.string().required(),
 });
 
 const ThirdPartiesForm = observer(({ onSubmit }) => {
@@ -34,10 +36,11 @@ const ThirdPartiesForm = observer(({ onSubmit }) => {
         store.organization.selected.thirdParties?.mailgun?.replyToEmail ||
         store.organization.selected?.contacts?.[0]?.email ||
         '',
-      // applicationKeyId:
-      //   store.organization.selected.thirdParties?.b2?.applicationKeyId,
-      // applicationKey:
-      //   store.organization.selected.thirdParties?.b2?.applicationKey,
+      keyId: store.organization.selected.thirdParties?.b2?.keyId,
+      applicationKey:
+        store.organization.selected.thirdParties?.b2?.applicationKey,
+      endpoint: store.organization.selected.thirdParties?.b2?.endpoint,
+      bucket: store.organization.selected.thirdParties?.b2?.bucket,
     }),
     [store.organization.selected]
   );
@@ -48,8 +51,10 @@ const ThirdPartiesForm = observer(({ onSubmit }) => {
       domain,
       fromEmail,
       replyToEmail,
-      // applicationKeyId,
-      // applicationKey,
+      keyId,
+      applicationKey,
+      endpoint,
+      bucket,
     }) => {
       await onSubmit({
         thirdParties: {
@@ -60,18 +65,24 @@ const ThirdPartiesForm = observer(({ onSubmit }) => {
             fromEmail,
             replyToEmail,
           },
-          // b2: {
-          //   applicationKeyId,
-          //   applicationKey,
-          //   applicationKeyIdUpdated:
-          //     applicationKeyId !== initialValues.applicationKeyId,
-          //   applicationKeyUpdated:
-          //     applicationKey !== initialValues.applicationKey,
-          // },
+          b2: {
+            keyId,
+            applicationKey,
+            keyIdUpdated: keyId !== initialValues.keyId,
+            applicationKeyUpdated:
+              applicationKey !== initialValues.applicationKey,
+            endpoint,
+            bucket,
+          },
         },
       });
     },
-    [onSubmit, initialValues.apiKey]
+    [
+      onSubmit,
+      initialValues.apiKey,
+      initialValues.keyId,
+      initialValues.applicationKey,
+    ]
   );
 
   const allowedRoles = useMemo(
@@ -117,21 +128,19 @@ const ThirdPartiesForm = observer(({ onSubmit }) => {
                 onlyRoles={allowedRoles}
               />
             </FormSection>
-            {/* <FormSection label="Backblaze B2">
+            <FormSection label="Backblaze B2 Cloud Storage">
               <Typography>
                 {t('Configuration required to store documents in the cloud')}
               </Typography>
               <FormTextField
-                label={t('Master application key Id')}
-                name="applicationKeyId"
+                label="KeyId"
+                name="keyId"
                 type="password"
-                showHidePassword={
-                  values.applicationKeyId !== initialValues.applicationKeyId
-                }
+                showHidePassword={values.keyId !== initialValues.keyId}
                 onlyRoles={allowedRoles}
               />
               <FormTextField
-                label={t('Application key')}
+                label="ApplicationKey"
                 name="applicationKey"
                 type="password"
                 showHidePassword={
@@ -139,7 +148,17 @@ const ThirdPartiesForm = observer(({ onSubmit }) => {
                 }
                 onlyRoles={allowedRoles}
               />
-            </FormSection> */}
+              <FormTextField
+                label={t('Bucket')}
+                name="bucket"
+                onlyRoles={allowedRoles}
+              />
+              <FormTextField
+                label={t('Bucket endpoint')}
+                name="endpoint"
+                onlyRoles={allowedRoles}
+              />
+            </FormSection>
             <SubmitButton
               size="large"
               label={!isSubmitting ? t('Save') : t('Saving')}

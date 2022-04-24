@@ -18,11 +18,13 @@ import {
   Select,
   Switch,
   Typography,
+  withStyles,
 } from '@material-ui/core';
 import React, { useCallback, useEffect, useState } from 'react';
 import { RestrictButton, RestrictedComponent } from './RestrictedComponents';
 import { useField, useFormikContext } from 'formik';
 
+import AttachFileIcon from '@material-ui/icons/AttachFile';
 import { KeyboardDatePicker } from '@material-ui/pickers';
 import moment from 'moment';
 import useTranslation from 'next-translate/useTranslation';
@@ -189,8 +191,15 @@ export const SwitchField = RestrictedComponent(
 
 export const DateField = RestrictedComponent(({ disabled, ...props }) => {
   const [field, meta] = useField(props.name);
-  const { setFieldValue, isSubmitting } = useFormikContext();
-  const hasError = !!(field.value?.isValid() && meta.error);
+  const { isSubmitting, handleBlur, setFieldValue } = useFormikContext();
+  const hasError = !!(meta.touched && meta.error);
+
+  const handleChange = useCallback(
+    (date) => {
+      setFieldValue(field.name, date, true);
+    },
+    [field.name, setFieldValue]
+  );
 
   return (
     <FormControl margin="normal" fullWidth>
@@ -200,7 +209,8 @@ export const DateField = RestrictedComponent(({ disabled, ...props }) => {
         format={moment.localeData().longDateFormat('L')}
         error={hasError}
         helperText={hasError ? meta.error : ''}
-        onChange={(date) => setFieldValue(field.name, date, false)}
+        onChange={handleChange}
+        onBlur={handleBlur}
         autoOk
         disabled={disabled || isSubmitting}
         {...props}
@@ -271,13 +281,13 @@ export const DateRangeField = ({
 };
 
 export const SubmitButton = ({ label, disabled, ...props }) => {
-  const { isValid, isSubmitting } = useFormikContext();
+  const { isSubmitting } = useFormikContext();
   return (
     <RestrictButton
       type="submit"
       variant="contained"
       color="primary"
-      disabled={!isValid || isSubmitting || disabled}
+      disabled={isSubmitting || disabled}
       endIcon={
         isSubmitting ? <CircularProgress color="inherit" size={20} /> : null
       }
@@ -288,15 +298,46 @@ export const SubmitButton = ({ label, disabled, ...props }) => {
   );
 };
 
-export const FormSection = ({ label, visible = true, children }) => {
+export const CancelButton = ({ label, disabled, onClick, ...props }) => {
+  const { isSubmitting, resetForm } = useFormikContext();
+
+  const handleClick = useCallback(
+    (e) => {
+      resetForm();
+      onClick && onClick(e);
+    },
+    [onClick, resetForm]
+  );
+
+  return !isSubmitting ? (
+    <RestrictButton
+      color="primary"
+      disabled={disabled}
+      {...props}
+      onClick={handleClick}
+    >
+      {label}
+    </RestrictButton>
+  ) : null;
+};
+
+export const FormSection = ({
+  label,
+  description,
+  visible = true,
+  children,
+}) => {
   return (
     <Box pb={4}>
       {visible ? (
         <>
           <Typography variant="h5">{label}</Typography>
-          <Box pt={2} pb={1}>
+          <Box pt={1} pb={2}>
             <Divider />
           </Box>
+          {!!description && (
+            <Typography variant="body1">{description}</Typography>
+          )}
           {children}
         </>
       ) : (
@@ -408,3 +449,56 @@ export const AddressField = ({ onlyRoles, disabled }) => {
     </Grid>
   );
 };
+
+const HiddenInput = withStyles({
+  root: { display: 'none' },
+})(Input);
+
+export const UploadField = RestrictedComponent(
+  ({ label, description, disabled, ...props }) => {
+    const { isSubmitting, setFieldValue } = useFormikContext();
+    const [field, meta] = useField(props);
+    const hasError = !!(meta.touched && meta.error);
+
+    const handleChange = useCallback(
+      (event) => {
+        setFieldValue(field.name, event.target.files[0], true);
+      },
+      [field.name, setFieldValue]
+    );
+
+    return (
+      <label htmlFor={props.name}>
+        <Box display="flex">
+          <FormControl margin="normal" fullWidth>
+            <InputLabel htmlFor={props.name} error={hasError}>
+              {label}
+            </InputLabel>
+            <Input
+              error={hasError}
+              value={field.value?.name ?? ''}
+              fullWidth
+              disabled={disabled || isSubmitting}
+              readOnly
+            />
+            {hasError && (
+              <FormHelperText error={hasError}>{meta.error}</FormHelperText>
+            )}
+          </FormControl>
+          <Box pt={3}>
+            <HiddenInput
+              type="file"
+              id={props.name}
+              name={props.name}
+              onChange={handleChange}
+              disabled={disabled}
+            />
+            <IconButton component="span" disabled={disabled}>
+              <AttachFileIcon />
+            </IconButton>
+          </Box>
+        </Box>
+      </label>
+    );
+  }
+);

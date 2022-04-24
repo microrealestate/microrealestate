@@ -22,6 +22,7 @@ const RichTextEditorDialog = ({
   onSave,
   title,
   fields,
+  editable,
 }) => {
   const handleClose = useCallback(() => {
     setOpen(false);
@@ -41,6 +42,7 @@ const RichTextEditorDialog = ({
         onSave={onSave}
         onClose={handleClose}
         showPrintButton
+        editable={editable}
       />
     </StyledDialog>
   );

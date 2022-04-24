@@ -24,9 +24,6 @@ i18n.configure({
 
 async function startService() {
   try {
-    await db.init();
-    await mongoosedb.connect();
-
     if (config.restoreDatabase) {
       await restoredb();
       logger.debug('database restored');
@@ -34,6 +31,9 @@ async function startService() {
 
     // migrate db to the new models
     await migratedb();
+
+    await db.init();
+    await mongoosedb.connect();
 
     server.listen(config.appHttpPort, () => {
       config.log();

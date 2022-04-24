@@ -1,4 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+
+import Alert from '@material-ui/lab/Alert';
+import Snackbar from '@material-ui/core/Snackbar';
 
 export const useComponentMountedRef = () => {
   const mountedRef = useRef(false);
@@ -74,4 +77,31 @@ export const useInterval = (fn, delay) => {
   }, []);
 
   return { start, clear, isRunning };
+};
+
+export const useToast = () => {
+  const [toastMessage, setToastMessage] = useState('');
+
+  const toastVisible = useMemo(() => !!toastMessage, [toastMessage]);
+
+  const Toast = ({ severity, onClose }) => {
+    const handleClose = useCallback(() => {
+      setToastMessage('');
+      onClose && onClose();
+    }, [onClose]);
+
+    return (
+      <Snackbar
+        open={!!toastMessage}
+        autoHideDuration={3000}
+        onClose={handleClose}
+      >
+        <Alert elevation={6} variant="filled" severity={severity}>
+          {toastMessage}
+        </Alert>
+      </Snackbar>
+    );
+  };
+
+  return [Toast, setToastMessage, toastVisible];
 };

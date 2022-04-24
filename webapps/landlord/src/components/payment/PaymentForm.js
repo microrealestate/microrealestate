@@ -25,7 +25,9 @@ const validationSchema = Yup.object().shape({
           is: (val) => val > 0,
           then: Yup.date().required(),
         }),
-        type: Yup.string().required(),
+        type: Yup.mixed()
+          .oneOf(['cash', 'transfer', 'levy', 'cheque'])
+          .required(),
         reference: Yup.mixed().when('type', {
           is: (val) => val !== 'cash',
           then: Yup.string().required(),
@@ -87,7 +89,9 @@ const PaymentForm = ({ onSubmit }) => {
         value: 'transfer',
       },
     ],
-    []
+    [
+      //t
+    ]
   );
 
   const _onSubmit = useCallback(

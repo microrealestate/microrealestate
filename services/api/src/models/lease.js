@@ -11,7 +11,9 @@ class LeaseModel extends Model {
       numberOfTerms: Number,
       timeRange: String, // days, weeks, months, years
       active: Boolean,
-      system: Boolean,
+
+      // ui state
+      stepperMode: Boolean,
     });
   }
 

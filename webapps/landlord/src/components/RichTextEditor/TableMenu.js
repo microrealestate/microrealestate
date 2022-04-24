@@ -14,53 +14,54 @@ const TableMenu = ({ editor }) => {
             withHeaderRow: false,
           })
         }
+        disabled={!editor.isEditable}
       />
       <EditorButton
         iconType="ri-delete-bin-2-line"
-        disabled={!editor.can().deleteTable()}
+        disabled={!editor.isEditable || !editor.can().deleteTable()}
         onClick={() => editor.chain().focus().deleteTable().run()}
       />
       <Divider orientation="vertical" flexItem />
       <EditorButton
         iconType="ri-insert-column-left"
-        disabled={!editor.can().addColumnBefore()}
+        disabled={!editor.isEditable || !editor.can().addColumnBefore()}
         onClick={() => editor.chain().focus().addColumnBefore().run()}
       />
       <EditorButton
         iconType="ri-insert-column-right"
-        disabled={!editor.can().addColumnAfter()}
+        disabled={!editor.isEditable || !editor.can().addColumnAfter()}
         onClick={() => editor.chain().focus().addColumnAfter().run()}
       />
       <EditorButton
         iconType="ri-delete-column"
-        disabled={!editor.can().deleteColumn()}
+        disabled={!editor.isEditable || !editor.can().deleteColumn()}
         onClick={() => editor.chain().focus().deleteColumn().run()}
       />
       <Divider orientation="vertical" flexItem />
       <EditorButton
         iconType="ri-insert-row-top"
-        disabled={!editor.can().addRowBefore()}
+        disabled={!editor.isEditable || !editor.can().addRowBefore()}
         onClick={() => editor.chain().focus().addRowBefore().run()}
       />
       <EditorButton
         iconType="ri-insert-row-bottom"
-        disabled={!editor.can().addRowAfter()}
+        disabled={!editor.isEditable || !editor.can().addRowAfter()}
         onClick={() => editor.chain().focus().addRowAfter().run()}
       />
       <EditorButton
         iconType="ri-delete-row"
-        disabled={!editor.can().deleteRow()}
+        disabled={!editor.isEditable || !editor.can().deleteRow()}
         onClick={() => editor.chain().focus().deleteRow().run()}
       />
       <Divider orientation="vertical" flexItem />
       <EditorButton
         iconType="ri-merge-cells-horizontal"
-        disabled={!editor.can().mergeCells()}
+        disabled={!editor.isEditable || !editor.can().mergeCells()}
         onClick={() => editor.chain().focus().mergeCells().run()}
       />
       <EditorButton
         iconType="ri-split-cells-horizontal"
-        disabled={!editor.can().splitCell()}
+        disabled={!editor.isEditable || !editor.can().splitCell()}
         onClick={() => editor.chain().focus().splitCell().run()}
       />
     </FormatToolbar>

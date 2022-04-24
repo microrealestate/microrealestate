@@ -410,10 +410,12 @@ const Accounting = observer(() => {
   const getSettlementsAsCsv = useCallback(
     async (e) => {
       e.stopPropagation();
-      downloadDocument(
-        `/csv/settlements/${router.query.year}`,
-        t('Settlements - {{year}}.csv', { year: router.query.year })
-      );
+      downloadDocument({
+        endpoint: `/csv/settlements/${router.query.year}`,
+        documentName: t('Settlements - {{year}}.csv', {
+          year: router.query.year,
+        }),
+      });
     },
     [
       // t,
@@ -424,10 +426,12 @@ const Accounting = observer(() => {
   const getIncomingTenantsAsCsv = useCallback(
     async (e) => {
       e.stopPropagation();
-      downloadDocument(
-        `/csv/tenants/incoming/${router.query.year}`,
-        t('Incoming tenants - {{year}}.csv', { year: router.query.year })
-      );
+      downloadDocument({
+        endpoint: `/csv/tenants/incoming/${router.query.year}`,
+        documentName: t('Incoming tenants - {{year}}.csv', {
+          year: router.query.year,
+        }),
+      });
     },
     [
       // t,
@@ -438,10 +442,12 @@ const Accounting = observer(() => {
   const getOutgoingTenantsAsCsv = useCallback(
     async (e) => {
       e.stopPropagation();
-      downloadDocument(
-        `/csv/tenants/outgoing/${router.query.year}`,
-        t('Outgoing tenants - {{year}}.csv', { year: router.query.year })
-      );
+      downloadDocument({
+        endpoint: `/csv/tenants/outgoing/${router.query.year}`,
+        documentName: t('Outgoing tenants - {{year}}.csv', {
+          year: router.query.year,
+        }),
+      });
     },
     [
       // t,

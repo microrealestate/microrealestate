@@ -13,7 +13,7 @@ const DownloadLink = ({
   ...props
 }) => {
   const onClick = useCallback(
-    () => downloadDocument(url, documentName),
+    () => downloadDocument({ endpoint: url, documentName }),
     [url, documentName]
   );
 

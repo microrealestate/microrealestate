@@ -1,6 +1,7 @@
-import { Box, CircularProgress } from '@material-ui/core';
+import Box from '@material-ui/core/Box';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
-const Loading = ({ height = '100%' }) => {
+const LoadingAnimation = ({ height }) => {
   return (
     <Box
       display="flex"
@@ -11,6 +12,22 @@ const Loading = ({ height = '100%' }) => {
     >
       <CircularProgress />
     </Box>
+  );
+};
+const Loading = ({ height = '100%', fullScreen = false }) => {
+  return fullScreen ? (
+    <Box
+      position="fixed"
+      top={0}
+      left={0}
+      width="100vw"
+      height="100vh"
+      zIndex={9999}
+    >
+      <LoadingAnimation height={height} />
+    </Box>
+  ) : (
+    <LoadingAnimation height={height} />
   );
 };
 

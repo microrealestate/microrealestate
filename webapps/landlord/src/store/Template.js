@@ -68,7 +68,7 @@ export default class Template {
 
   *update(template) {
     try {
-      const response = yield apiFetcher().put('/templates', template);
+      const response = yield apiFetcher().patch('/templates', template);
       const updatedTemplate = response.data;
       const index = this.items.findIndex((item) => item._id === template._id);
       if (index > -1) {

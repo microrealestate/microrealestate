@@ -16,10 +16,12 @@ import useTranslation from 'next-translate/useTranslation';
 
 const validationSchema = Yup.object().shape({
   name: Yup.string().required(),
+  stepperMode: Yup.boolean(),
 });
 
 const initialValues = {
   name: '',
+  stepperMode: true,
 };
 
 const NewLeaseDialog = ({ open, setOpen, backPage, backPath }) => {
