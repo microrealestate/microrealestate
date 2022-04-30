@@ -33,7 +33,7 @@ export default class Template {
       }
       return { status: 200, data: response.data };
     } catch (error) {
-      return { status: error.response.status };
+      return { status: error?.response?.status };
     }
   }
 
@@ -50,7 +50,7 @@ export default class Template {
       }
       return { status: 200, data: updatedTemplate };
     } catch (error) {
-      return { status: error.response.status };
+      return { status: error?.response?.status };
     }
   }
 
@@ -62,7 +62,7 @@ export default class Template {
 
       return { status: 200, data: createdTemplate };
     } catch (error) {
-      return { status: error.response.status };
+      return { status: error?.response?.status };
     }
   }
 
@@ -79,7 +79,7 @@ export default class Template {
       }
       return { status: 200, data: updatedTemplate };
     } catch (error) {
-      return { status: error.response.status };
+      return { status: error?.response?.status };
     }
   }
 
@@ -92,7 +92,7 @@ export default class Template {
       }
       return { status: 200 };
     } catch (error) {
-      return { status: error.response.status };
+      return { status: error?.response?.status };
     }
   }
 
@@ -102,7 +102,7 @@ export default class Template {
       this.fields = response.data;
       return { status: 200 };
     } catch (error) {
-      return { status: error.response.status };
+      return { status: error?.response?.status };
     }
   }
 }

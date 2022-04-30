@@ -107,7 +107,7 @@ export default class Tenant {
       }
       return { status: 200, data: response.data };
     } catch (error) {
-      return { status: error.response.status };
+      return { status: error?.response?.status };
     }
   }
 
@@ -117,7 +117,7 @@ export default class Tenant {
 
       return { status: 200, data: response.data };
     } catch (error) {
-      return { status: error.response.status };
+      return { status: error?.response?.status };
     }
   }
 
@@ -129,7 +129,7 @@ export default class Tenant {
 
       return { status: 200, data: createdTenant };
     } catch (error) {
-      return { status: error.response.status };
+      return { status: error?.response?.status };
     }
   }
 
@@ -149,7 +149,7 @@ export default class Tenant {
       }
       return { status: 200, data: updatedTenant };
     } catch (error) {
-      return { status: error.response.status };
+      return { status: error?.response?.status };
     }
   }
 
@@ -158,7 +158,7 @@ export default class Tenant {
       yield apiFetcher().delete(`/tenants/${ids.join(',')}`);
       return { status: 200 };
     } catch (error) {
-      return { status: error.response.status };
+      return { status: error?.response?.status };
     }
   }
 }

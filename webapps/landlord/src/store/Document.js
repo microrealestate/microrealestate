@@ -30,7 +30,7 @@ export default class Document {
       }
       return { status: 200, data: response.data };
     } catch (error) {
-      return { status: error.response.status };
+      return { status: error?.response?.status };
     }
   }
 
@@ -47,7 +47,7 @@ export default class Document {
       }
       return { status: 200, data: updatedDocument };
     } catch (error) {
-      return { status: error.response.status };
+      return { status: error?.response?.status };
     }
   }
 
@@ -59,7 +59,7 @@ export default class Document {
 
       return { status: 200, data: createdDocument };
     } catch (error) {
-      return { status: error.response.status };
+      return { status: error?.response?.status };
     }
   }
 
@@ -76,7 +76,7 @@ export default class Document {
       }
       return { status: 200, data: updatedDocument };
     } catch (error) {
-      return { status: error.response.status };
+      return { status: error?.response?.status };
     }
   }
 
@@ -89,7 +89,7 @@ export default class Document {
       }
       return { status: 200 };
     } catch (error) {
-      return { status: error.response.status };
+      return { status: error?.response?.status };
     }
   }
 }

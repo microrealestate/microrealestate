@@ -4,7 +4,6 @@ import axios from 'axios';
 import FileDownload from 'js-file-download';
 import getConfig from 'next/config';
 import { getStoreInstance } from '../store';
-import { Mutex } from 'async-mutex';
 
 const { publicRuntimeConfig, serverRuntimeConfig } = getConfig();
 let apiFetch;
@@ -51,80 +50,71 @@ export const apiFetcher = () => {
       });
     }
 
-    // add client interceptors
-    if (isClient()) {
-      const refreshTokensAndUpdateConfig = async (store, config) => {
-        await store.user.refreshTokens();
-        if (store.user.signedIn) {
-          config.headers['Authorization'] =
-            apiFetch.defaults.headers.common['Authorization'];
-        }
-      };
-      // use mutex to avoid race condition when several requests are done in parallel
-      const RTMutex = new Mutex();
+    // manage refresh token on 401
+    let isRefreshingToken = false;
+    let requestQueue = []; // used when parallel requests
+    apiFetch.interceptors.response.use(
+      (response) => response,
+      async (error) => {
+        const originalRequest = error.config;
 
-      // force refresh token when expiration time is close to 10s
-      // this will let the time to propagate a valid RT in all back-end services
-      const minRTExpirationDelay = 10000; // 10s
-      apiFetch.interceptors.request.use(
-        async (config) => {
-          const store = getStoreInstance();
-          if (
-            store.user.signedIn &&
-            config.url !== '/authenticator/refreshtoken'
-          ) {
-            const isRefreshTokenAboutToExpire =
-              store.user.tokenExpiry * 1000 - Date.now() <=
-              minRTExpirationDelay;
+        // Try to to refresh token once get 401
+        if (error.response?.status === 401 && !originalRequest._retry) {
+          if (isRefreshingToken) {
+            // queued incomming request while refresh token is running
+            return new Promise(function (resolve, reject) {
+              requestQueue.push({ resolve, reject });
+            })
+              .then(async () => {
+                // use latest authorization token
+                originalRequest.headers['Authorization'] =
+                  apiFetch.defaults.headers.common['Authorization'];
 
-            if (isRefreshTokenAboutToExpire) {
-              if (RTMutex.isLocked()) {
-                await RTMutex.waitForUnlock();
-              } else {
-                await RTMutex.runExclusive(async () => {
-                  console.log(
-                    'accessToken is about to expire, call refresh tokens'
-                  );
-                  await refreshTokensAndUpdateConfig(store, config);
-                });
-              }
-            }
+                return apiFetch(originalRequest);
+              })
+              .catch((err) => Promise.reject(err));
           }
-          return config;
-        },
-        (error) => {
-          return Promise.reject(error);
-        }
-      );
 
-      // Force signin if an api responded 403
-      apiFetch.interceptors.response.use(
-        (response) => response,
-        (error) => {
-          if (error.response?.status === 403) {
-            return window.location.reload();
-          }
-          return Promise.reject(error);
-        }
-      );
-    }
+          originalRequest._retry = true;
+          isRefreshingToken = true;
 
-    // client/server interceptors
-    // For debugging purposes
-    if (process.env.NODE_ENV === 'development') {
-      apiFetch.interceptors.request.use(
-        (config) => {
-          if (config?.method && config?.url) {
-            console.log(`${config.method.toUpperCase()} ${config.url}`);
+          try {
+            const store = getStoreInstance();
+            await store.user.refreshTokens();
+
+            // run all requests queued
+            requestQueue.forEach((request) => {
+              request.resolve();
+            });
+
+            // use latest authorization token
+            originalRequest.headers['Authorization'] =
+              apiFetch.defaults.headers.common['Authorization'];
+
+            return apiFetch(originalRequest);
+          } finally {
+            isRefreshingToken = false;
+            requestQueue = [];
           }
-          console.log(config);
-          return config;
-        },
-        (error) => {
-          return Promise.reject(error);
         }
-      );
-    }
+        return Promise.reject(error);
+      }
+    );
+
+    // force signin on 403
+    apiFetch.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        // Force signin if an api responded 403
+        if (error.response?.status === 403) {
+          if (isClient()) {
+            window.location.reload();
+            throw new axios.Cancel('Operation canceled force login');
+          }
+        }
+        return Promise.reject(error);
+      }
+    );
 
     // For logging purposes
     apiFetch.interceptors.response.use(
@@ -155,7 +145,6 @@ export const apiFetcher = () => {
           );
         } else {
           console.error(error);
-          // return Promise.reject({ error });
         }
         return Promise.reject(error);
       }

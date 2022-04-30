@@ -67,7 +67,7 @@ export default class Property {
       }
       return { status: 200, data: response.data };
     } catch (error) {
-      return { status: error.response.status };
+      return { status: error?.response?.status };
     }
   }
 
@@ -77,7 +77,7 @@ export default class Property {
 
       return { status: 200, data: response.data };
     } catch (error) {
-      return { status: error.response.status };
+      return { status: error?.response?.status };
     }
   }
 
@@ -89,7 +89,7 @@ export default class Property {
 
       return { status: 200, data: createdProperty };
     } catch (error) {
-      return { status: error.response.status };
+      return { status: error?.response?.status };
     }
   }
 
@@ -109,7 +109,7 @@ export default class Property {
       }
       return { status: 200, data: updatedProperty };
     } catch (error) {
-      return { status: error.response.status };
+      return { status: error?.response?.status };
     }
   }
 
@@ -118,7 +118,7 @@ export default class Property {
       yield apiFetcher().delete(`/properties/${ids.join(',')}`);
       return { status: 200 };
     } catch (error) {
-      return { status: error.response.status };
+      return { status: error?.response?.status };
     }
   }
 }

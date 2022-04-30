@@ -31,7 +31,7 @@ export default class Lease {
       }
       return { status: 200, data: response.data };
     } catch (error) {
-      return { status: error.response.status };
+      return { status: error?.response?.status };
     }
   }
 
@@ -48,7 +48,7 @@ export default class Lease {
       }
       return { status: 200, data: updatedLease };
     } catch (error) {
-      return { status: error.response.status };
+      return { status: error?.response?.status };
     }
   }
 
@@ -60,7 +60,7 @@ export default class Lease {
 
       return { status: 200, data: createdLease };
     } catch (error) {
-      return { status: error.response.status };
+      return { status: error?.response?.status };
     }
   }
 
@@ -77,7 +77,7 @@ export default class Lease {
       }
       return { status: 200, data: updatedLease };
     } catch (error) {
-      return { status: error.response.status };
+      return { status: error?.response?.status };
     }
   }
 
@@ -90,7 +90,7 @@ export default class Lease {
       }
       return { status: 200 };
     } catch (error) {
-      return { status: error.response.status };
+      return { status: error?.response?.status };
     }
   }
 }
