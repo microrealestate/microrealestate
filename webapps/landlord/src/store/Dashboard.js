@@ -35,7 +35,7 @@ export default class Dashboard {
 
       return { status: 200, data: response.data };
     } catch (error) {
-      return { status: error.response.status };
+      return { status: error?.response?.status };
     }
   }
 }

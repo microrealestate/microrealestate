@@ -143,7 +143,7 @@ export default class User {
       this.tokenExpiry = undefined;
       setAccessToken(null);
       console.error(error);
-      return { status: error.response.status, error };
+      return { status: error?.response?.status, error };
     }
   }
 

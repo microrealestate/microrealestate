@@ -14,49 +14,9 @@ class RealmModel extends Model {
       contacts: Array, // [{ name, email, phone1, phone2 }]
       isCompany: Boolean,
       companyInfo: Object, // { name, legalStructure, capital, ein, dos, vatNumber, legalRepresentative }
+      thirdParties: Object, // { mailgun: { apiKey, domain, fromEmail, replyToEmail }, b2: { keyId, applicationKey, endpoint, bucket } },
       locale: String,
       currency: String,
-      tenants: Array, // [{ name, emails, access },]
-      thirdParties: Object, // { mailgun: { apiKey, domain, fromEmail, replyToEmail }, b2: { keyId, applicationKey, endpoint, bucket } },
-
-      // TODO to remove, replaced by companyInfo
-      creation: String,
-      company: String,
-      legalForm: String,
-      vatNumber: String,
-      capital: Number,
-      siret: String,
-      rcs: String,
-      manager: String,
-
-      // TODO to remove, replaced by bankInfo
-      bank: String,
-      rib: String,
-
-      // TODO to remove, replaced by contacts
-      contact: String,
-      email: String,
-      phone1: String,
-      phone2: String,
-
-      // TODO to remove, replaced by addresses
-      street1: String,
-      street2: String,
-      zipCode: String,
-      city: String,
-
-      // TODO to remove, replaced by members
-      administrator: String,
-      user1: String,
-      user2: String,
-      user3: String,
-      user4: String,
-      user5: String,
-      user6: String,
-      user7: String,
-      user8: String,
-      user9: String,
-      user10: String,
     });
   }
 

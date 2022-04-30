@@ -29,7 +29,6 @@
     "@tiptap/extension-underline": "2.0.0-beta.23",
     "@tiptap/react": "2.0.0-beta.108",
     "@tiptap/starter-kit": "2.0.0-beta.183",
-    "async-mutex": "0.3.2",
     "axios": "0.26.0",
     "currency-codes": "2.1.0",
     "currency-symbol-map": "5.0.1",

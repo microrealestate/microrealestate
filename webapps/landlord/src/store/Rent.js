@@ -148,7 +148,7 @@ export default class Rent {
       const response = yield apiFetcher().get(`/rents/${year}/${month}`);
       return { status: 200, data: response.data };
     } catch (error) {
-      return { status: error.response.status };
+      return { status: error?.response?.status };
     }
   }
 
@@ -184,7 +184,7 @@ export default class Rent {
 
       return { status: 200, data: response.data };
     } catch (error) {
-      return { status: error.response.status };
+      return { status: error?.response?.status };
     }
   }
 
@@ -194,7 +194,7 @@ export default class Rent {
       return { status: 200, data: response.data };
     } catch (error) {
       console.error(error);
-      return { status: error.response.status };
+      return { status: error?.response?.status };
     }
   }
 

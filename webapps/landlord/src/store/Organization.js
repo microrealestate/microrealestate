@@ -46,7 +46,7 @@ export default class Organization {
       return { status: 200, data: response.data };
     } catch (error) {
       console.error(error);
-      return { status: error.response.status };
+      return { status: error?.response?.status };
     }
   }
 
@@ -59,7 +59,7 @@ export default class Organization {
       return { status: 200, data: response.data };
     } catch (error) {
       console.error(error);
-      return { status: error.response.status };
+      return { status: error?.response?.status };
     }
   }
 }
