@@ -68,7 +68,7 @@ const NewPropertyDialog = ({ open, setOpen, backPage, backPath }) => {
       );
     },
     [
-      // t,
+      t,
       router,
       handleClose,
       store.organization,
@@ -85,9 +85,7 @@ const NewPropertyDialog = ({ open, setOpen, backPage, backPath }) => {
         value: type.id,
         label: t(type.labelId),
       })),
-    [
-      // t
-    ]
+    [t]
   );
 
   return (

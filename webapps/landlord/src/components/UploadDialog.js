@@ -141,12 +141,7 @@ export default function UploadDialog({ open, setOpen, onSave }) {
         setToastMessage(t('Cannot save document'));
       }
     },
-    [
-      //t,
-      handleClose,
-      onSave,
-      setToastMessage,
-    ]
+    [t, handleClose, onSave, setToastMessage]
   );
 
   return (

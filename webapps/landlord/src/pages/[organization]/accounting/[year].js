@@ -417,10 +417,7 @@ const Accounting = observer(() => {
         }),
       });
     },
-    [
-      // t,
-      router.query.year,
-    ]
+    [t, router.query.year]
   );
 
   const getIncomingTenantsAsCsv = useCallback(
@@ -433,10 +430,7 @@ const Accounting = observer(() => {
         }),
       });
     },
-    [
-      // t,
-      router.query.year,
-    ]
+    [t, router.query.year]
   );
 
   const getOutgoingTenantsAsCsv = useCallback(
@@ -449,10 +443,7 @@ const Accounting = observer(() => {
         }),
       });
     },
-    [
-      // t,
-      router.query.year,
-    ]
+    [t, router.query.year]
   );
 
   return (

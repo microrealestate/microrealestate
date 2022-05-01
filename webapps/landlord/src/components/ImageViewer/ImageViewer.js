@@ -30,11 +30,7 @@ export default function ImageViewer({ open, setOpen }) {
         }
       }
     })();
-  }, [
-    //t,
-    open,
-    setToastMessage,
-  ]);
+  }, [t, open, setToastMessage]);
 
   if (open && imageSrc) {
     return (

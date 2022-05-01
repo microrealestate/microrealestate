@@ -15,8 +15,8 @@ import {
 } from '@material-ui/core';
 import { getStoreInstance, StoreContext } from '../../../store';
 import { memo, useCallback, useContext, useState } from 'react';
-import _ from 'lodash';
 
+import _ from 'lodash';
 import AddIcon from '@material-ui/icons/Add';
 import { EmptyIllustration } from '../../../components/Illustrations';
 import { isServer } from '../../../utils';
@@ -71,13 +71,7 @@ const TenantListItem = memo(function TenantListItem({ tenant }) {
         t('Tenants')
       )}/${encodeURIComponent(router.asPath)}`
     );
-  }, [
-    //t,
-    router,
-    tenant,
-    store.organization.selected.name,
-    store.tenant,
-  ]);
+  }, [t, router, tenant, store.organization.selected.name, store.tenant]);
 
   return (
     <ListItem

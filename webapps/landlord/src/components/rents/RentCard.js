@@ -150,13 +150,7 @@ const Steps = memo(function Steps({ rent }) {
       receiptSentText,
       lastPayment,
     };
-  }, [
-    // t, *
-    rent.newBalance,
-    rent.status,
-    rent.emailStatus,
-    rent.payments,
-  ]);
+  }, [t, rent.newBalance, rent.status, rent.emailStatus, rent.payments]);
 
   return (
     <Stepper

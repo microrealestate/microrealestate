@@ -31,11 +31,7 @@ const RentPeriod = ({ term, frequency }) => {
   const { t } = useTranslation('common');
   const period = useMemo(
     () => getPeriod(t, term, frequency),
-    [
-      //t,
-      frequency,
-      term,
-    ]
+    [t, frequency, term]
   );
 
   return <Typography>{period}</Typography>;

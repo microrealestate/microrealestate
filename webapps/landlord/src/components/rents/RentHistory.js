@@ -100,7 +100,7 @@ const RentHistory = ({ tenantId }) => {
     };
 
     fetchTenantRents();
-  }, [tenantId, store.rent]);
+  }, [t, tenantId, store.rent]);
 
   useEffect(() => {
     if (!loading) {

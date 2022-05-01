@@ -246,7 +246,7 @@ const RentTable = () => {
 
       setSelected([]);
     },
-    [store.rent, selected]
+    [t, store.rent, selected]
   );
 
   const selectableRentNum = useMemo(
@@ -267,7 +267,7 @@ const RentTable = () => {
       { id: 'partiallypaid', label: t('Partially paid') },
       { id: 'paid', label: t('Paid') },
     ],
-    []
+    [t]
   );
 
   return (
