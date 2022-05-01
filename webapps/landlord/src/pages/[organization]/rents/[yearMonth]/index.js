@@ -100,12 +100,7 @@ const Rents = observer(() => {
         )}/${encodeURIComponent(router.asPath)}`
       );
     },
-    [
-      //t,
-      router,
-      store.rent,
-      store.organization.selected.name,
-    ]
+    [t, router, store.rent, store.organization.selected.name]
   );
 
   const filters = useMemo(
@@ -115,9 +110,7 @@ const Rents = observer(() => {
       { id: 'partiallypaid', label: t('Partially paid') },
       { id: 'paid', label: t('Paid') },
     ],
-    [
-      //t
-    ]
+    [t]
   );
 
   return (

@@ -42,12 +42,7 @@ export default function FirstConnection({
         onClick: handleCreateTenant,
       },
     ];
-  }, [
-    //t,
-    handleCreateContract,
-    handleCreateProperty,
-    handleCreateTenant,
-  ]);
+  }, [t, handleCreateContract, handleCreateProperty, handleCreateTenant]);
 
   return (
     <>

@@ -54,13 +54,7 @@ const PropertyTableRow = ({ property }) => {
         property._id
       }/${encodeURI(t('Properties'))}/${encodeURIComponent(router.asPath)}`
     );
-  }, [
-    //t,
-    property,
-    router,
-    store.organization.selected.name,
-    store.property,
-  ]);
+  }, [t, property, router, store.organization.selected.name, store.property]);
 
   return (
     <StyledTableRow hover onClick={onClick}>
@@ -121,9 +115,7 @@ const Properties = observer(() => {
       { id: 'vacant', label: t('Vacant') },
       { id: 'occupied', label: t('Occupied') },
     ],
-    [
-      // t
-    ]
+    [t]
   );
 
   const onSearch = useCallback(

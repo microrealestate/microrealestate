@@ -46,11 +46,7 @@ export default function PdfViewer({ open, setOpen }) {
         }
       }
     })();
-  }, [
-    //t,
-    open,
-    setToastMessage,
-  ]);
+  }, [t, open, setToastMessage]);
 
   const handleClose = useCallback(() => {
     setPdfSrc();

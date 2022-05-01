@@ -53,11 +53,7 @@ function TenantDocumentList({ disabled = false }) {
         value: template,
       })),
     ];
-  }, [
-    //t,
-    store.template?.items,
-    store.tenant?.selected?.leaseId,
-  ]);
+  }, [t, store.template?.items, store.tenant?.selected?.leaseId]);
 
   const handleClickEdit = useCallback((doc) => {
     if (doc.type === 'text') {
@@ -95,7 +91,7 @@ function TenantDocumentList({ disabled = false }) {
       setEditTextDocument(data);
     },
     [
-      // t,
+      t,
       store.document,
       store.tenant.selected?._id,
       store.tenant.selected?.leaseId,
@@ -145,7 +141,7 @@ function TenantDocumentList({ disabled = false }) {
       }
     },
     [
-      //t,
+      t,
       store.document,
       store.tenant.selected?._id,
       store.tenant.selected?.leaseId,

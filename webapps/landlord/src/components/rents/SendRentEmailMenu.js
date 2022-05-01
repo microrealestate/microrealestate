@@ -33,48 +33,37 @@ const SendRentEmailMenu = ({ period, tenant, terms, onError, ...props }) => {
         return onError(t('Cannot fetch rents from server'));
       }
     },
-    [
-      //t,
-      store.rent,
-      tenant,
-      terms,
-      onError,
-    ]
+    [t, store.rent, tenant, terms, onError]
   );
 
-  const menuItems = useMemo(
-    () => {
-      return [
-        {
-          key: 'first_notice',
-          label: t('First notice'),
-          illustration: <PendingIllustration />,
-          value: 'rentcall',
-        },
-        {
-          key: 'second_notice',
-          label: t('Second notice'),
-          illustration: <Pending2Illustration />,
-          value: 'rentcall_reminder',
-        },
-        {
-          key: 'last_notice',
-          label: t('Last notice'),
-          illustration: <AlertIllustration />,
-          value: 'rentcall_last_reminder',
-        },
-        {
-          key: 'invoice',
-          label: t('Invoice'),
-          illustration: <ReceiptIllustration />,
-          value: 'invoice',
-        },
-      ];
-    },
-    [
-      //t
-    ]
-  );
+  const menuItems = useMemo(() => {
+    return [
+      {
+        key: 'first_notice',
+        label: t('First notice'),
+        illustration: <PendingIllustration />,
+        value: 'rentcall',
+      },
+      {
+        key: 'second_notice',
+        label: t('Second notice'),
+        illustration: <Pending2Illustration />,
+        value: 'rentcall_reminder',
+      },
+      {
+        key: 'last_notice',
+        label: t('Last notice'),
+        illustration: <AlertIllustration />,
+        value: 'rentcall_last_reminder',
+      },
+      {
+        key: 'invoice',
+        label: t('Invoice'),
+        illustration: <ReceiptIllustration />,
+        value: 'invoice',
+      },
+    ];
+  }, [t]);
 
   return (
     <FullScreenDialogMenu

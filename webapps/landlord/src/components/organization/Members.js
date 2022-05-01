@@ -77,7 +77,7 @@ const FormDialog = memo(function FormDialog({ members = [], onSubmit }) {
 
   const roleValues = useMemo(
     () => ROLES.map((role) => ({ id: role, label: t(role), value: role })),
-    []
+    [t]
   );
 
   return (

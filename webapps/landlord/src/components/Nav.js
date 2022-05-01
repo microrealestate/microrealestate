@@ -111,9 +111,7 @@ const Nav = () => {
         dataCy: 'settingsNav',
       },
     ],
-    [
-      // t
-    ]
+    [t]
   );
 
   const mobileItems = useMemo(

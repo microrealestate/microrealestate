@@ -64,7 +64,7 @@ const PropertyForm = observer(({ onSubmit }) => {
         value: type.id,
         label: t(type.labelId),
       })),
-    []
+    [t]
   );
 
   return (

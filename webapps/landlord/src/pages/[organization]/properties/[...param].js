@@ -140,12 +140,7 @@ const Property = observer(() => {
     }
 
     await router.push(backPath);
-  }, [
-    // t,
-    router,
-    backPath,
-    store.property,
-  ]);
+  }, [t, router, backPath, store.property]);
 
   const onSubmit = useCallback(
     async (propertyPart) => {
@@ -190,12 +185,7 @@ const Property = observer(() => {
         );
       }
     },
-    [
-      // t,
-      router,
-      store.organization.selected.name,
-      store.property,
-    ]
+    [t, router, store.organization.selected.name, store.property]
   );
 
   return (

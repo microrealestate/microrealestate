@@ -89,9 +89,7 @@ const PaymentForm = ({ onSubmit }) => {
         value: 'transfer',
       },
     ],
-    [
-      //t
-    ]
+    [t]
   );
 
   const _onSubmit = useCallback(

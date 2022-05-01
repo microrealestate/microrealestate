@@ -175,11 +175,7 @@ const LeaseContractForm = observer((props) => {
         //disabled: selectedPropertyId !== _id && status === 'occupied'
       })),
     ];
-  }, [
-    //t,
-    store.tenant.selected.properties,
-    store.property.items,
-  ]);
+  }, [t, store.tenant.selected.properties, store.property.items]);
 
   const _onSubmit = async (lease) => {
     await onSubmit({

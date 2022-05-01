@@ -100,7 +100,7 @@ const NewTenantDialog = ({ open, setOpen, backPage, backPath }) => {
       );
     },
     [
-      // t,
+      t,
       router,
       handleClose,
       store.organization?.selected?.name,

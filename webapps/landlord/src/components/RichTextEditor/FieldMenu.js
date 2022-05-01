@@ -85,10 +85,7 @@ export default function FieldMenu({ editor, fields }) {
       editor.commands.addTemplate(marker, t(_id));
       editor.commands.focus();
     },
-    [
-      // t,
-      editor,
-    ]
+    [t, editor]
   );
 
   return (

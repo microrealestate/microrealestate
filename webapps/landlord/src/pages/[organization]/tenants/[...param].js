@@ -72,12 +72,7 @@ const Tenant = observer(() => {
     }
 
     await router.push(backPath);
-  }, [
-    // t,
-    router,
-    backPath,
-    store.tenant,
-  ]);
+  }, [t, router, backPath, store.tenant]);
 
   const onSubmit = useCallback(
     async (tenantPart) => {
@@ -134,12 +129,7 @@ const Tenant = observer(() => {
         );
       }
     },
-    [
-      // t,
-      router,
-      store.organization.selected.name,
-      store.tenant,
-    ]
+    [t, router, store.organization.selected.name, store.tenant]
   );
 
   const showTerminateLeaseButton = useMemo(

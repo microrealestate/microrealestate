@@ -123,7 +123,7 @@ const Settings = observer(() => {
       ]);
       setOrganizationId(updatedOrganization._id);
     },
-    [store.organization, store.user]
+    [t, store.organization, store.user]
   );
 
   return (

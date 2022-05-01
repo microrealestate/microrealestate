@@ -60,7 +60,7 @@ const NewLeaseDialog = ({ open, setOpen, backPage, backPath }) => {
       );
     },
     [
-      // t,
+      t,
       router,
       handleClose,
       store.lease,
