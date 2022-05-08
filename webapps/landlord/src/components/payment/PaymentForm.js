@@ -3,6 +3,7 @@ import * as Yup from 'yup';
 import { Box, Button, Grid } from '@material-ui/core';
 import {
   DateField,
+  FormNumberField,
   FormSection,
   FormTextField,
   SelectField,
@@ -136,7 +137,7 @@ const PaymentForm = ({ onSubmit }) => {
                     <Fragment key={index}>
                       <Grid container spacing={2}>
                         <Grid item xs={6}>
-                          <FormTextField
+                          <FormNumberField
                             label={t('Amount')}
                             name={`payments[${index}].amount`}
                           />

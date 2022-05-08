@@ -4,6 +4,7 @@ import { Box, Button, Grid } from '@material-ui/core';
 import {
   DateField,
   DateRangeField,
+  FormNumberField,
   FormSection,
   FormTextField,
   SelectField,
@@ -255,7 +256,7 @@ const LeaseContractForm = observer((props) => {
                   maxDate={values.endDate.toISOString()}
                   disabled={readOnly}
                 />
-                <FormTextField
+                <FormNumberField
                   label={t('Amount of the deposit refund')}
                   name="guarantyPayback"
                   disabled={readOnly}
@@ -281,7 +282,7 @@ const LeaseContractForm = observer((props) => {
                 duration={contractDuration}
                 disabled={!values.leaseId || readOnly}
               />
-              <FormTextField
+              <FormNumberField
                 label={t('Deposit')}
                 name="guaranty"
                 disabled={!values.leaseId || readOnly}
@@ -307,7 +308,7 @@ const LeaseContractForm = observer((props) => {
                             />
                           </Grid>
                           <Grid item xs={12} md={3}>
-                            <FormTextField
+                            <FormNumberField
                               label={t('Rent')}
                               name={`properties[${index}].rent`}
                               disabled={
@@ -325,7 +326,7 @@ const LeaseContractForm = observer((props) => {
                             />
                           </Grid>
                           <Grid item xs={12} md={3}>
-                            <FormTextField
+                            <FormNumberField
                               label={t('Amount')}
                               name={`properties[${index}].expense.amount`}
                               disabled={

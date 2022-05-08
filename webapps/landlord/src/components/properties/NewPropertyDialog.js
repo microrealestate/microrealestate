@@ -2,7 +2,12 @@ import * as Yup from 'yup';
 
 import { Box, DialogTitle, Grid } from '@material-ui/core';
 import { Form, Formik } from 'formik';
-import { FormTextField, SelectField, SubmitButton } from '../Form';
+import {
+  FormNumberField,
+  FormTextField,
+  SelectField,
+  SubmitButton,
+} from '../Form';
 import React, { useCallback, useContext, useMemo, useState } from 'react';
 
 import Button from '@material-ui/core/Button';
@@ -120,7 +125,7 @@ const NewPropertyDialog = ({ open, setOpen, backPage, backPath }) => {
                       <FormTextField label={t('Name')} name="name" />
                     </Grid>
                     <Grid item xs={12}>
-                      <FormTextField
+                      <FormNumberField
                         label={t('Rent without expenses')}
                         name="rent"
                       />
