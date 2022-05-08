@@ -2,6 +2,7 @@ import * as Yup from 'yup';
 
 import { Form, Formik } from 'formik';
 import {
+  FormNumberField,
   FormSection,
   FormTextField,
   RadioField,
@@ -210,7 +211,7 @@ const LandlordForm = observer(({ onSubmit, onSubmitted }) => {
                     name="dos"
                     onlyRoles={allowedRoles}
                   />
-                  <FormTextField
+                  <FormNumberField
                     label={t('Capital')}
                     name="capital"
                     onlyRoles={allowedRoles}

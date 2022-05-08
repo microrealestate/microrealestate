@@ -2,6 +2,7 @@ import * as Yup from 'yup';
 
 import {
   AddressField,
+  FormNumberField,
   FormSection,
   FormTextField,
   SelectField,
@@ -102,7 +103,7 @@ const PropertyForm = observer(({ onSubmit }) => {
                 ].includes(values.type) && (
                   <>
                     <Grid item xs={12} md={4}>
-                      <FormTextField label={t('Surface')} name="surface" />
+                      <FormNumberField label={t('Surface')} name="surface" />
                     </Grid>
                     <Grid item xs={12} md={4}>
                       <FormTextField label={t('Phone')} name="phone" />
@@ -118,7 +119,7 @@ const PropertyForm = observer(({ onSubmit }) => {
               <AddressField />
             </FormSection>
             <FormSection label={t('Rent')}>
-              <FormTextField label={t('Rent without expenses')} name="rent" />
+              <FormNumberField label={t('Rent without expenses')} name="rent" />
             </FormSection>
             <SubmitButton
               size="large"

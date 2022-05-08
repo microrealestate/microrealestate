@@ -1,7 +1,12 @@
 import * as Yup from 'yup';
 
 import { Form, Formik } from 'formik';
-import { FormSection, FormTextField, SubmitButton } from '../Form';
+import {
+  FormNumberField,
+  FormSection,
+  FormTextField,
+  SubmitButton,
+} from '../Form';
 import { useCallback, useContext, useMemo } from 'react';
 
 import { StoreContext } from '../../store';
@@ -74,7 +79,7 @@ const AdditionalCostDiscountForm = ({ onSubmit }) => {
               label={t('Additional cost')}
               defaultExpanded={!!initialValues.extracharge}
             >
-              <FormTextField
+              <FormNumberField
                 label={t('Amount')}
                 name="extracharge"
                 value={extracharge}
@@ -91,7 +96,11 @@ const AdditionalCostDiscountForm = ({ onSubmit }) => {
               label={t('Discount')}
               defaultExpanded={!!initialValues.promo}
             >
-              <FormTextField label={t('Discount')} name="promo" value={promo} />
+              <FormNumberField
+                label={t('Discount')}
+                name="promo"
+                value={promo}
+              />
               <FormTextField
                 label={t('Description')}
                 name="notepromo"

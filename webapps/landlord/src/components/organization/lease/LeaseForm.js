@@ -3,6 +3,7 @@ import * as Yup from 'yup';
 import { Box, Grid, Typography } from '@material-ui/core';
 import { Form, Formik } from 'formik';
 import {
+  FormNumberField,
   FormSection,
   FormTextField,
   SelectField,
@@ -109,7 +110,7 @@ const LeaseForm = ({ onSubmit }) => {
                     />
                   </Grid>
                   <Grid item xs={6}>
-                    <FormTextField
+                    <FormNumberField
                       label={t('Number of terms')}
                       name="numberOfTerms"
                       disabled={values.usedByTenants}

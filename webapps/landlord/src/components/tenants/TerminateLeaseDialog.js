@@ -9,7 +9,7 @@ import {
   Select,
   Typography,
 } from '@material-ui/core';
-import { DateField, FormTextField, SubmitButton } from '../Form';
+import { DateField, FormNumberField, SubmitButton } from '../Form';
 import { Form, Formik } from 'formik';
 import React, { useContext, useState } from 'react';
 
@@ -135,7 +135,7 @@ const TerminateLeaseDialog = ({ open, setOpen, tenantList }) => {
                         : undefined
                     }
                   />
-                  <FormTextField
+                  <FormNumberField
                     label={t('Amount of the deposit refund')}
                     name="guarantyPayback"
                   />

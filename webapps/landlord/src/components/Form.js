@@ -31,7 +31,7 @@ import useTranslation from 'next-translate/useTranslation';
 import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
 
-export const FormTextField = RestrictedComponent(
+const FormBaseField = RestrictedComponent(
   ({ label, disabled, showHidePassword = true, ...props }) => {
     const [displayPassword, showPassword] = useState(false);
     const [field, meta] = useField(props);
@@ -48,7 +48,7 @@ export const FormTextField = RestrictedComponent(
 
     return (
       <FormControl margin="normal" fullWidth>
-        <InputLabel htmlFor={props.name} error={hasError}>
+        <InputLabel htmlFor={props.name} error={hasError} shrink>
           {label}
         </InputLabel>
         <Input
@@ -81,6 +81,14 @@ export const FormTextField = RestrictedComponent(
     );
   }
 );
+
+export const FormTextField = (props) => {
+  return <FormBaseField {...props} />;
+};
+
+export const FormNumberField = (props) => {
+  return <FormBaseField {...props} type="number" />;
+};
 
 export const SelectField = RestrictedComponent(
   ({ label, values = [], disabled, ...props }) => {

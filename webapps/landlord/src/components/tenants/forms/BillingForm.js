@@ -2,6 +2,7 @@ import * as Yup from 'yup';
 
 import {
   CheckboxField,
+  FormNumberField,
   FormSection,
   FormTextField,
   SubmitButton,
@@ -82,7 +83,7 @@ const Billing = observer(({ readOnly, onSubmit }) => {
                       aria-label={t('Subject to VAT')}
                       disabled={readOnly}
                     />
-                    <FormTextField
+                    <FormNumberField
                       label={t('VAT percentage')}
                       name="vatRatio"
                       disabled={readOnly || !values.isVat}
@@ -90,7 +91,7 @@ const Billing = observer(({ readOnly, onSubmit }) => {
                   </Box>
                 )}
               {values.discount > 0 ? (
-                <FormTextField
+                <FormNumberField
                   label={t('Discount')}
                   name="discount"
                   disabled={readOnly}
