@@ -3,7 +3,7 @@ import * as Yup from 'yup';
 import { Box, Paper, Typography } from '@material-ui/core';
 import { Form, Formik } from 'formik';
 import { FormTextField, SubmitButton } from '../components/Form';
-import React, { useContext, useState } from 'react';
+import React, { useContext } from 'react';
 
 import ErrorPage from 'next/error';
 import getConfig from 'next/config';
@@ -11,7 +11,6 @@ import Link from '../components/Link';
 import LocationCityIcon from '@material-ui/icons/LocationCity';
 import { observer } from 'mobx-react-lite';
 import Page from '../components/Page';
-import RequestError from '../components/RequestError';
 import { StoreContext } from '../store';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
@@ -37,7 +36,6 @@ const validationSchema = Yup.object().shape({
 const SignUp = observer(({ pageError }) => {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
-  const [error, setError] = useState('');
   const router = useRouter();
 
   if (pageError) {
@@ -46,8 +44,6 @@ const SignUp = observer(({ pageError }) => {
 
   const signUp = async ({ firstName, lastName, email, password }) => {
     try {
-      setError('');
-
       const status = await store.user.signUp(
         firstName,
         lastName,
@@ -57,20 +53,32 @@ const SignUp = observer(({ pageError }) => {
       if (status !== 200) {
         switch (status) {
           case 422:
-            setError(t('Some fields are missing'));
+            store.pushToastMessage({
+              message: t('Some fields are missing'),
+              severity: 'error',
+            });
             return;
           case 409:
-            setError(t('This user is already registered'));
+            store.pushToastMessage({
+              message: t('This user is already registered'),
+              severity: 'error',
+            });
             return;
           default:
-            setError(t('Something went wrong'));
+            store.pushToastMessage({
+              message: t('Something went wrong'),
+              severity: 'error',
+            });
             return;
         }
       }
       router.push('/signin');
     } catch (error) {
       console.error(error);
-      setError(t('Something went wrong'));
+      store.pushToastMessage({
+        message: t('Something went wrong'),
+        severity: 'error',
+      });
     }
   };
 
@@ -86,7 +94,6 @@ const SignUp = observer(({ pageError }) => {
       </Box>
       <Paper>
         <Box px={4} pb={4} pt={2}>
-          <RequestError error={error} />
           <Formik
             initialValues={initialValues}
             validationSchema={validationSchema}

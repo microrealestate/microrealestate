@@ -19,7 +19,6 @@ import moment from 'moment';
 import { observer } from 'mobx-react-lite';
 import Page from '../../../components/Page';
 import RentOverviewCard from '../../../components/tenants/RentOverviewCard';
-import RequestError from '../../../components/RequestError';
 import RichTextEditorDialog from '../../../components/RichTextEditor/RichTextEditorDialog';
 import StopIcon from '@material-ui/icons/Stop';
 import TenantStepper from '../../../components/tenants/TenantStepper';
@@ -40,7 +39,6 @@ const Tenant = observer(() => {
     store.tenant.selected.terminated ||
       !!store.tenant.selected.properties?.length
   );
-  const [error, setError] = useState('');
   const [openTerminateLease, setOpenTerminateLease] = useState(false);
   const [openConfirmDeleteTenant, setOpenConfirmDeleteTenant] = useState(false);
   const [openConfirmEditTenant, setOpenConfirmEditTenant] = useState(false);
@@ -53,26 +51,36 @@ const Tenant = observer(() => {
   const isMobile = useMediaQuery((theme) => theme.breakpoints.down('sm'));
 
   const onDeleteTenant = useCallback(async () => {
-    setError('');
-
     const { status } = await store.tenant.delete([store.tenant.selected._id]);
     if (status !== 200) {
       switch (status) {
         case 422:
-          return setError(
-            t('Tenant cannot be deleted because some rents have been paid')
-          );
+          return store.pushToastMessage({
+            message: t(
+              'Tenant cannot be deleted because some rents have been paid'
+            ),
+            severity: 'error',
+          });
         case 404:
-          return setError(t('Tenant does not exist'));
+          return store.pushToastMessage({
+            message: t('Tenant does not exist'),
+            severity: 'error',
+          });
         case 403:
-          return setError(t('You are not allowed to delete the tenant'));
+          return store.pushToastMessage({
+            message: t('You are not allowed to delete the tenant'),
+            severity: 'error',
+          });
         default:
-          return setError(t('Something went wrong'));
+          return store.pushToastMessage({
+            message: t('Something went wrong'),
+            severity: 'error',
+          });
       }
     }
 
     await router.push(backPath);
-  }, [t, router, backPath, store.tenant]);
+  }, [store, router, backPath, t]);
 
   const onSubmit = useCallback(
     async (tenantPart) => {
@@ -94,18 +102,25 @@ const Tenant = observer(() => {
         ...tenantPart,
       };
 
-      setError('');
-
       if (tenant._id) {
         const { status, data } = await store.tenant.update(tenant);
         if (status !== 200) {
           switch (status) {
             case 422:
-              return setError(t('Tenant name is missing'));
+              return store.pushToastMessage({
+                message: t('Tenant name is missing'),
+                severity: 'error',
+              });
             case 403:
-              return setError(t('You are not allowed to update the tenant'));
+              return store.pushToastMessage({
+                message: t('You are not allowed to update the tenant'),
+                severity: 'error',
+              });
             default:
-              return setError(t('Something went wrong'));
+              return store.pushToastMessage({
+                message: t('Something went wrong'),
+                severity: 'error',
+              });
           }
         }
         store.tenant.setSelected(data);
@@ -114,13 +129,25 @@ const Tenant = observer(() => {
         if (status !== 200) {
           switch (status) {
             case 422:
-              return setError(t('Tenant name is missing'));
+              return store.pushToastMessage({
+                message: t('Tenant name is missing'),
+                severity: 'error',
+              });
             case 403:
-              return setError(t('You are not allowed to add a tenant'));
+              return store.pushToastMessage({
+                message: t('You are not allowed to add a tenant'),
+                severity: 'error',
+              });
             case 409:
-              return setError(t('The tenant already exists'));
+              return store.pushToastMessage({
+                message: t('The tenant already exists'),
+                severity: 'error',
+              });
             default:
-              return setError(t('Something went wrong'));
+              return store.pushToastMessage({
+                message: t('Something went wrong'),
+                severity: 'error',
+              });
           }
         }
         store.tenant.setSelected(data);
@@ -129,7 +156,7 @@ const Tenant = observer(() => {
         );
       }
     },
-    [t, router, store.organization.selected.name, store.tenant]
+    [store, t, router]
   );
 
   const showTerminateLeaseButton = useMemo(
@@ -149,14 +176,18 @@ const Tenant = observer(() => {
   );
 
   const onLoadContract = useCallback(async () => {
-    // TODO: handle errors
-    //setError('');
     let contents = '';
     let contractId = editContract?.contractId;
 
     if (contractId) {
       // document already generated
-      const { /*status,*/ data } = await store.document.fetchOne(contractId);
+      const { status, data } = await store.document.fetchOne(contractId);
+      if (status !== 200) {
+        return store.pushToastMessage({
+          message: t('Something went wrong'),
+          severity: 'error',
+        });
+      }
       contents = data.contents;
       return contents;
     }
@@ -167,46 +198,49 @@ const Tenant = observer(() => {
       ({ _id }) => _id === editContract?.leaseId
     );
     const templateId = lease?.templateId;
-    const { /*status,*/ data } = await store.document.create({
+    const { status, data } = await store.document.create({
       templateId,
       tenantId: editContract._id,
       leaseId: lease._id,
       type: 'text',
       name: editContract.name,
     });
+    if (status !== 200) {
+      return store.pushToastMessage({
+        message: t('Something went wrong'),
+        severity: 'error',
+      });
+    }
     contractId = data._id;
     contents = data.contents;
 
     await onSubmit({ contractId });
     return contents;
-  }, [store.document, store.lease.items, editContract, onSubmit]);
+  }, [
+    editContract?.contractId,
+    editContract._id,
+    editContract.name,
+    editContract?.leaseId,
+    store,
+    onSubmit,
+    t,
+  ]);
 
   const onSaveContract = useCallback(
     async (contents, html) => {
-      // TODO: handle errors
-      //setError('');
-      await store.document.update({
+      const { status } = await store.document.update({
         _id: editContract.contractId,
         contents,
         html,
       });
-      // if (status !== 200) {
-      //   // switch (status) {
-      //   //   case 422:
-      //   //     return setError(
-      //   //       t('')
-      //   //     );
-      //   //   case 404:
-      //   //     return setError(t('Template does not exist'));
-      //   //   case 403:
-      //   //     return setError(t(''));
-      //   //   default:
-      //   //     return setError(t('Something went wrong'));
-      //   // }
-      //   return console.error(status);
-      // }
+      if (status !== 200) {
+        return store.pushToastMessage({
+          message: t('Something went wrong'),
+          severity: 'error',
+        });
+      }
     },
-    [editContract, store.document]
+    [editContract.contractId, store, t]
   );
 
   return (
@@ -274,7 +308,6 @@ const Tenant = observer(() => {
         />
       }
     >
-      <RequestError error={error} />
       {store.tenant.selected.stepperMode ? (
         <Paper>
           <TenantStepper onSubmit={onSubmit} />

@@ -100,12 +100,14 @@ function TenantDocumentList({ disabled = false }) {
 
   const handleLoadTextDocument = useCallback(async () => {
     if (!editTextDocument?._id) {
-      //TODO: handle this error. It should not fall in this case.
-      // document id should always be provided
+      store.pushToastMessage({
+        message: t('Something went wrong'),
+        severity: 'error',
+      });
       return '';
     }
     return editTextDocument.contents;
-  }, [editTextDocument?._id, editTextDocument.contents]);
+  }, [editTextDocument?._id, editTextDocument.contents, store, t]);
 
   const handleSaveTextDocument = useCallback(
     async (title, contents, html) => {
@@ -116,10 +118,13 @@ function TenantDocumentList({ disabled = false }) {
         html,
       });
       if (status !== 200) {
-        return console.error(status);
+        return store.pushToastMessage({
+          message: t('Something went wrong'),
+          severity: 'error',
+        });
       }
     },
-    [editTextDocument, store.document]
+    [editTextDocument, store, t]
   );
 
   const handleSaveUploadDocument = useCallback(
@@ -137,23 +142,27 @@ function TenantDocumentList({ disabled = false }) {
         versionId: doc.versionId,
       });
       if (status !== 200) {
-        return console.error(status);
+        return store.pushToastMessage({
+          message: t('Something went wrong'),
+          severity: 'error',
+        });
       }
     },
-    [
-      t,
-      store.document,
-      store.tenant.selected?._id,
-      store.tenant.selected?.leaseId,
-    ]
+    [store, t]
   );
 
   const handleDeleteDocument = useCallback(async () => {
     if (!documentToRemove) {
       return;
     }
-    await store.document.delete([documentToRemove._id]);
-  }, [documentToRemove, store.document]);
+    const { status } = await store.document.delete([documentToRemove._id]);
+    if (status !== 200) {
+      return store.pushToastMessage({
+        message: t('Something went wrong'),
+        severity: 'error',
+      });
+    }
+  }, [documentToRemove, store, t]);
 
   return (
     <>

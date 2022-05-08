@@ -8,13 +8,12 @@ import {
   SubmitButton,
 } from '../Form';
 import { Form, Formik } from 'formik';
-import React, { useCallback, useContext, useState } from 'react';
+import React, { useCallback, useContext } from 'react';
 
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
-import RequestError from '../RequestError';
 import { StoreContext } from '../../store';
 import { toJS } from 'mobx';
 import { useRouter } from 'next/router';
@@ -39,7 +38,6 @@ const NewTenantDialog = ({ open, setOpen, backPage, backPath }) => {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const router = useRouter();
-  const [error, setError] = useState('');
 
   const handleClose = useCallback(() => {
     setOpen(false);
@@ -80,13 +78,25 @@ const NewTenantDialog = ({ open, setOpen, backPage, backPath }) => {
       if (status !== 200) {
         switch (status) {
           case 422:
-            return setError(t('Tenant name is missing'));
+            return store.pushToastMessage({
+              message: t('Tenant name is missing'),
+              severity: 'error',
+            });
           case 403:
-            return setError(t('You are not allowed to add a tenant'));
+            return store.pushToastMessage({
+              message: t('You are not allowed to add a tenant'),
+              severity: 'error',
+            });
           case 409:
-            return setError(t('The tenant already exists'));
+            return store.pushToastMessage({
+              message: t('The tenant already exists'),
+              severity: 'error',
+            });
           default:
-            return setError(t('Something went wrong'));
+            return store.pushToastMessage({
+              message: t('Something went wrong'),
+              severity: 'error',
+            });
         }
       }
 
@@ -99,15 +109,7 @@ const NewTenantDialog = ({ open, setOpen, backPage, backPath }) => {
         )}/${encodeURIComponent(backPath)}`
       );
     },
-    [
-      t,
-      router,
-      handleClose,
-      store.organization?.selected?.name,
-      store.tenant,
-      backPage,
-      backPath,
-    ]
+    [store, handleClose, router, backPage, backPath, t]
   );
 
   const tenants = store.tenant.items
@@ -134,7 +136,6 @@ const NewTenantDialog = ({ open, setOpen, backPage, backPath }) => {
     >
       <DialogTitle>{t('Add a new tenant')}</DialogTitle>
       <Box p={1}>
-        <RequestError error={error} />
         <Formik
           initialValues={initialValues}
           validationSchema={validationSchema}

@@ -11,7 +11,6 @@ import LeaseTabs from '../../../../components/organization/lease/LeaseTabs';
 import { observer } from 'mobx-react-lite';
 import Page from '../../../../components/Page';
 import { Paper } from '@material-ui/core';
-import RequestError from '../../../../components/RequestError';
 import { RestrictButton } from '../../../../components/RestrictedComponents';
 import router from 'next/router';
 import { toJS } from 'mobx';
@@ -21,7 +20,6 @@ import { withAuthentication } from '../../../../components/Authentication';
 const Lease = observer(() => {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
-  const [error, setError] = useState('');
   const [removeLease, setRemoveLease] = useState(false);
   const {
     query: {
@@ -31,8 +29,6 @@ const Lease = observer(() => {
 
   const onLeaseAddUpdate = useCallback(
     async (leasePart) => {
-      setError('');
-
       const lease = {
         ...store.lease.selected,
         ...leasePart,
@@ -50,19 +46,34 @@ const Lease = observer(() => {
       if (status !== 200) {
         switch (status) {
           case 422:
-            return setError(t('Some fields are missing'));
+            return store.pushToastMessage({
+              message: t('Some fields are missing'),
+              severity: 'error',
+            });
           case 403:
-            return setError(t('You are not allowed to update the contract'));
+            return store.pushToastMessage({
+              message: t('You are not allowed to update the contract'),
+              severity: 'error',
+            });
           case 404:
-            return setError(t('Contract is not found'));
+            return store.pushToastMessage({
+              message: t('Contract is not found'),
+              severity: 'error',
+            });
           case 409:
-            return setError(t('The contract already exists'));
+            return store.pushToastMessage({
+              message: t('The contract already exists'),
+              severity: 'error',
+            });
           default:
-            return setError(t('Something went wrong'));
+            return store.pushToastMessage({
+              message: t('Something went wrong'),
+              severity: 'error',
+            });
         }
       }
     },
-    [t, setError, store.lease]
+    [store, t]
   );
 
   const onLeaseRemove = useCallback(async () => {
@@ -70,17 +81,24 @@ const Lease = observer(() => {
     if (status !== 200) {
       switch (status) {
         case 422:
-          return setError(
-            t('Contract is used by tenants, it cannot be removed')
-          );
+          return store.pushToastMessage({
+            message: t('Contract is used by tenants, it cannot be removed'),
+            severity: 'error',
+          });
         case 403:
-          return setError(t('You are not allowed to update the contract'));
+          return store.pushToastMessage({
+            message: t('You are not allowed to update the contract'),
+            severity: 'error',
+          });
         default:
-          return setError(t('Something went wrong'));
+          return store.pushToastMessage({
+            message: t('Something went wrong'),
+            severity: 'error',
+          });
       }
     }
     router.push(`/${store.organization.selected.name}/settings#leases`);
-  }, [t, setError, store.lease, store.organization.selected.name]);
+  }, [store, t]);
 
   return (
     <Page
@@ -104,7 +122,6 @@ const Lease = observer(() => {
         />
       }
     >
-      <RequestError error={error} />
       {store.lease.selected?.stepperMode ? (
         <Paper>
           <LeaseStepper onSubmit={onLeaseAddUpdate} onRemove={onLeaseRemove} />

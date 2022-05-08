@@ -16,7 +16,7 @@ import TableRow from '@material-ui/core/TableRow';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 
-const Leases = observer(({ setError }) => {
+const Leases = observer(() => {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const router = useRouter();
@@ -30,19 +30,34 @@ const Leases = observer(({ setError }) => {
       if (status !== 200) {
         switch (status) {
           case 422:
-            return setError(t('Some fields are missing'));
+            return store.pushToastMessage({
+              message: t('Some fields are missing'),
+              severity: 'error',
+            });
           case 403:
-            return setError(t('You are not allowed to update the contract'));
+            return store.pushToastMessage({
+              message: t('You are not allowed to update the contract'),
+              severity: 'error',
+            });
           case 404:
-            return setError(t('Contract is not found'));
+            return store.pushToastMessage({
+              message: t('Contract is not found'),
+              severity: 'error',
+            });
           case 409:
-            return setError(t('The contract already exists'));
+            return store.pushToastMessage({
+              message: t('The contract already exists'),
+              severity: 'error',
+            });
           default:
-            return setError(t('Something went wrong'));
+            return store.pushToastMessage({
+              message: t('Something went wrong'),
+              severity: 'error',
+            });
         }
       }
     },
-    [t, setError, store.lease]
+    [store, t]
   );
 
   return (

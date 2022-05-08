@@ -10,7 +10,6 @@ import Link from '../components/Link';
 import LocationCityIcon from '@material-ui/icons/LocationCity';
 import { observer } from 'mobx-react-lite';
 import Page from '../components/Page';
-import RequestError from '../components/RequestError';
 import { setOrganizationId } from '../utils/fetch';
 import { StoreContext } from '../store';
 import { useRouter } from 'next/router';
@@ -35,7 +34,6 @@ const SignIn = observer(() => {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const [initialValues, setInitialValues] = useState(defaultValues);
-  const [error, setError] = useState('');
   const router = useRouter();
 
   useEffect(() => {
@@ -49,19 +47,26 @@ const SignIn = observer(() => {
 
   const signIn = async ({ email, password }) => {
     try {
-      setError('');
-
       const status = await store.user.signIn(email, password);
       if (status !== 200) {
         switch (status) {
           case 422:
-            setError(t('Some fields are missing'));
+            store.pushToastMessage({
+              message: t('Some fields are missing'),
+              severity: 'error',
+            });
             return;
           case 401:
-            setError(t('Incorrect email or password'));
+            store.pushToastMessage({
+              message: t('Incorrect email or password'),
+              severity: 'error',
+            });
             return;
           default:
-            setError(t('Something went wrong'));
+            store.pushToastMessage({
+              message: t('Something went wrong'),
+              severity: 'error',
+            });
             return;
         }
       }
@@ -83,7 +88,10 @@ const SignIn = observer(() => {
       }
     } catch (error) {
       console.error(error);
-      setError(t('Something went wrong'));
+      store.pushToastMessage({
+        message: t('Something went wrong'),
+        severity: 'error',
+      });
     }
   };
 
@@ -99,7 +107,6 @@ const SignIn = observer(() => {
       </Box>
       <Paper>
         <Box px={4} pb={4} pt={2}>
-          <RequestError error={error} />
           <Formik
             enableReinitialize={true}
             initialValues={initialValues}

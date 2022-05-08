@@ -13,7 +13,7 @@ import {
 import { CardRow, PageInfoCard } from '../../../../components/Cards';
 import { getStoreInstance, StoreContext } from '../../../../store';
 import { TabPanel, useTabChangeHelper } from '../../../../components/Tabs';
-import { useCallback, useContext, useMemo, useState } from 'react';
+import { useCallback, useContext, useMemo } from 'react';
 
 import AdditionalCostDiscountForm from '../../../../components/payment/AdditionalCostDiscountForm';
 import BalanceBar from '../../../../components/rents/BalanceBar';
@@ -31,7 +31,6 @@ import Page from '../../../../components/Page';
 import PaymentForm from '../../../../components/payment/PaymentForm';
 import ReceiptIcon from '@material-ui/icons/Receipt';
 import RentHistory from '../../../../components/rents/RentHistory';
-import RequestError from '../../../../components/RequestError';
 import SendIcon from '@material-ui/icons/Send';
 import SendRentEmailMenu from '../../../../components/rents/SendRentEmailMenu';
 import { toJS } from 'mobx';
@@ -192,7 +191,6 @@ const RentPayment = observer(() => {
   const {
     param: [term, backPage, backPath],
   } = router.query;
-  const [error /*setError*/] = useState('');
 
   const onSubmit = useCallback(
     async (paymentPart) => {
@@ -212,11 +210,14 @@ const RentPayment = observer(() => {
       try {
         await store.rent.pay(term, payment);
       } catch (error) {
-        //TODO manage errors
         console.error(error);
+        store.pushToastMessage({
+          message: t('Something went wrong'),
+          severity: 'error',
+        });
       }
     },
-    [term, store.rent]
+    [store, term, t]
   );
 
   return (
@@ -229,7 +230,6 @@ const RentPayment = observer(() => {
         />
       }
     >
-      <RequestError error={error} />
       <Grid container spacing={5}>
         <Grid item xs={12} md={7} lg={8}>
           <Hidden mdUp>
@@ -284,8 +284,6 @@ const RentPayment = observer(() => {
                   tenant={store.rent.selected.occupant}
                   terms={[store.rent.selected.term]}
                   period={store.rent.period}
-                  // TODO: handle errors
-                  onError={() => {}}
                 />
               }
             >

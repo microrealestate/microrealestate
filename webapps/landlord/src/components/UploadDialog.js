@@ -18,7 +18,6 @@ import moment from 'moment';
 import { StoreContext } from '../store';
 import { toJS } from 'mobx';
 import { uploadDocument } from '../utils/fetch';
-import { useToast } from '../utils/hooks';
 import useTranslation from 'next-translate/useTranslation';
 
 // TODO: constants to shate between frontend and backend
@@ -93,7 +92,6 @@ const FormDialog = ({ open, onClose, children }) => {
 export default function UploadDialog({ open, setOpen, onSave }) {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
-  const [Toast, setToastMessage] = useToast();
   const [templates, setTemplates] = useState([]);
 
   useEffect(() => {
@@ -129,7 +127,10 @@ export default function UploadDialog({ open, setOpen, onSave }) {
         doc.versionId = response.data.versionId;
       } catch (error) {
         console.error(error);
-        setToastMessage(t('Cannot upload document'));
+        store.pushToastMessage({
+          message: t('Cannot upload document'),
+          severity: 'error',
+        });
         return;
       }
       handleClose();
@@ -138,10 +139,13 @@ export default function UploadDialog({ open, setOpen, onSave }) {
         resetForm();
       } catch (error) {
         console.error(error);
-        setToastMessage(t('Cannot save document'));
+        store.pushToastMessage({
+          message: t('Cannot save document'),
+          severity: 'error',
+        });
       }
     },
-    [t, handleClose, onSave, setToastMessage]
+    [handleClose, t, onSave, store]
   );
 
   return (
@@ -191,7 +195,6 @@ export default function UploadDialog({ open, setOpen, onSave }) {
           );
         }}
       </Formik>
-      <Toast severity="error" />
     </>
   );
 }

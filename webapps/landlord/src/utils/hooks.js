@@ -1,7 +1,9 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 
 import Alert from '@material-ui/lab/Alert';
+import { observer } from 'mobx-react-lite';
 import Snackbar from '@material-ui/core/Snackbar';
+import { StoreContext } from '../store';
 
 export const useComponentMountedRef = () => {
   const mountedRef = useRef(false);
@@ -29,21 +31,24 @@ export const useTimeout = (fn, delay) => {
     timerRef.current && clearTimeout(timerRef.current);
   }, []);
 
-  const start = useCallback((...params) => {
-    clear();
-    setIsRunning(true);
-    setIsDone(false);
-    timerRef.current = setTimeout(async () => {
-      if (!mountedRef.current) {
-        return clear();
-      }
-      if (fnRef.current) {
-        await fnRef.current(...params);
-        setIsRunning(false);
-        setIsDone(true);
-      }
-    }, delay);
-  }, []);
+  const start = useCallback(
+    (...params) => {
+      clear();
+      setIsRunning(true);
+      setIsDone(false);
+      timerRef.current = setTimeout(async () => {
+        if (!mountedRef.current) {
+          return clear();
+        }
+        if (fnRef.current) {
+          await fnRef.current(...params);
+          setIsRunning(false);
+          setIsDone(true);
+        }
+      }, delay);
+    },
+    [clear, delay, mountedRef]
+  );
 
   return { start, clear, isRunning, isDone };
 };
@@ -62,46 +67,56 @@ export const useInterval = (fn, delay) => {
     timerRef.current && clearInterval(timerRef.current);
   }, []);
 
-  const start = useCallback((...params) => {
-    clear();
-    setIsRunning(true);
-    timerRef.current = setInterval(async () => {
-      if (!mountedRef.current) {
-        return clear();
-      }
-      if (fnRef.current) {
-        await fnRef.current(...params);
-        setIsRunning(false);
-      }
-    }, delay);
-  }, []);
+  const start = useCallback(
+    (...params) => {
+      clear();
+      setIsRunning(true);
+      timerRef.current = setInterval(async () => {
+        if (!mountedRef.current) {
+          return clear();
+        }
+        if (fnRef.current) {
+          await fnRef.current(...params);
+          setIsRunning(false);
+        }
+      }, delay);
+    },
+    [clear, delay, mountedRef]
+  );
 
   return { start, clear, isRunning };
 };
 
 export const useToast = () => {
-  const [toastMessage, setToastMessage] = useState('');
+  const Toast = () => {
+    const store = useContext(StoreContext);
 
-  const toastVisible = useMemo(() => !!toastMessage, [toastMessage]);
+    const toastData = store.toastMessages?.length
+      ? store.toastMessages[0]
+      : null;
 
-  const Toast = ({ severity, onClose }) => {
     const handleClose = useCallback(() => {
-      setToastMessage('');
-      onClose && onClose();
-    }, [onClose]);
+      store.shiftToastMessage();
+    }, [store]);
 
     return (
       <Snackbar
-        open={!!toastMessage}
+        open={!!toastData?.message}
         autoHideDuration={3000}
         onClose={handleClose}
       >
-        <Alert elevation={6} variant="filled" severity={severity}>
-          {toastMessage}
-        </Alert>
+        {toastData?.message ? (
+          <Alert
+            elevation={6}
+            variant="filled"
+            severity={toastData?.severity || 'error'}
+          >
+            {toastData?.message}
+          </Alert>
+        ) : null}
       </Snackbar>
     );
   };
 
-  return [Toast, setToastMessage, toastVisible];
+  return observer(Toast);
 };
