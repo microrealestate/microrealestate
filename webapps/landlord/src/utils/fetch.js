@@ -58,8 +58,16 @@ export const apiFetcher = () => {
       async (error) => {
         const originalRequest = error.config;
 
+        const isLoginRequest =
+          originalRequest?.url === '/authenticator/signin' &&
+          originalRequest?.method === 'post';
+
         // Try to to refresh token once get 401
-        if (error.response?.status === 401 && !originalRequest._retry) {
+        if (
+          error.response?.status === 401 &&
+          !isLoginRequest &&
+          !originalRequest._retry
+        ) {
           if (isRefreshingToken) {
             // queued incomming request while refresh token is running
             return new Promise(function (resolve, reject) {
