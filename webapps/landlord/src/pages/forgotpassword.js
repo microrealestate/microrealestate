@@ -9,7 +9,6 @@ import CheckCircleOutlineIcon from '@material-ui/icons/CheckCircleOutline';
 import LocationCityIcon from '@material-ui/icons/LocationCity';
 import { observer } from 'mobx-react-lite';
 import Page from '../components/Page';
-import RequestError from '../components/RequestError';
 import { StoreContext } from '../store';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
@@ -27,28 +26,34 @@ const ForgotPassword = observer(() => {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const [emailSent, setEmailSent] = useState('');
-  const [error, setError] = useState('');
   const router = useRouter();
 
   const forgotPassword = async ({ email }) => {
     try {
-      setError('');
-
       const status = await store.user.forgotPassword(email);
       if (status !== 200) {
         switch (status) {
           case 422:
-            setError(t('Some fields are missing'));
+            store.pushToastMessage({
+              message: t('Some fields are missing'),
+              severity: 'error',
+            });
             return;
           default:
-            setError(t('Something went wrong'));
+            store.pushToastMessage({
+              message: t('Something went wrong'),
+              severity: 'error',
+            });
             return;
         }
       }
       setEmailSent(email);
     } catch (error) {
       console.error(error);
-      setError(t('Something went wrong'));
+      store.pushToastMessage({
+        message: t('Something went wrong'),
+        severity: 'error',
+      });
     }
   };
 
@@ -70,7 +75,6 @@ const ForgotPassword = observer(() => {
       <Paper>
         {!emailSent && (
           <Box px={4} pb={4} pt={2}>
-            <RequestError error={error} />
             <Formik
               initialValues={initialValues}
               validationSchema={validationSchema}

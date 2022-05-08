@@ -13,7 +13,6 @@ import Link from '../Link';
 import Loading from '../Loading';
 import moment from 'moment';
 import { NumberFormat } from '../../utils/numberformat';
-import RequestError from '../RequestError';
 import { StoreContext } from '../../store';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -79,7 +78,6 @@ const RentHistory = ({ tenantId }) => {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState();
   const [tenant, setTenant] = useState();
   const selectedRowRef = useRef();
   const selectedTerm = useMemo(
@@ -92,7 +90,10 @@ const RentHistory = ({ tenantId }) => {
       setLoading(true);
       const response = await store.rent.fetchTenantRents(tenantId);
       if (response.status !== 200) {
-        setError(t('Cannot get tenant information'));
+        store.pushToastMessage({
+          message: t('Cannot get tenant information'),
+          severity: 'error',
+        });
       } else {
         setTenant(response.data);
       }
@@ -100,7 +101,7 @@ const RentHistory = ({ tenantId }) => {
     };
 
     fetchTenantRents();
-  }, [t, tenantId, store.rent]);
+  }, [t, tenantId, store.rent, store]);
 
   useEffect(() => {
     if (!loading) {
@@ -110,9 +111,9 @@ const RentHistory = ({ tenantId }) => {
 
   return (
     <>
-      {loading && <Loading />}
-      {error && <RequestError error={error} />}
-      {!loading && !error && (
+      {loading ? (
+        <Loading />
+      ) : (
         <>
           <Box pb={4}>
             <Typography variant="h5">{tenant.occupant.name}</Typography>

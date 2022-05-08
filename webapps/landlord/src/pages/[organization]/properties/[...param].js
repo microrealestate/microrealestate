@@ -30,7 +30,6 @@ import { NumberFormat } from '../../../utils/numberformat';
 import { observer } from 'mobx-react-lite';
 import Page from '../../../components/Page';
 import PropertyForm from '../../../components/properties/PropertyForm';
-import RequestError from '../../../components/RequestError';
 import TenantAvatar from '../../../components/tenants/TenantAvatar';
 import { toJS } from 'mobx';
 import { useRouter } from 'next/router';
@@ -105,7 +104,6 @@ const Property = observer(() => {
   const router = useRouter();
   const { handleTabChange, tabSelectedIndex, tabsReady } =
     useTabChangeHelper(hashes);
-  const [error, setError] = useState('');
   const [openConfirmDeleteProperty, setOpenConfirmDeleteProperty] =
     useState(false);
 
@@ -121,26 +119,36 @@ const Property = observer(() => {
   }, []);
 
   const onDeleteProperty = useCallback(async () => {
-    setError('');
-
     const { status } = await store.property.delete([
       store.property.selected._id,
     ]);
     if (status !== 200) {
       switch (status) {
         case 422:
-          return setError(t('Property cannot be deleted'));
+          return store.pushToastMessage({
+            message: t('Property cannot be deleted'),
+            severity: 'error',
+          });
         case 404:
-          return setError(t('Property does not exist'));
+          return store.pushToastMessage({
+            message: t('Property does not exist'),
+            severity: 'error',
+          });
         case 403:
-          return setError(t('You are not allowed to delete the Property'));
+          return store.pushToastMessage({
+            message: t('You are not allowed to delete the Property'),
+            severity: 'error',
+          });
         default:
-          return setError(t('Something went wrong'));
+          return store.pushToastMessage({
+            message: t('Something went wrong'),
+            severity: 'error',
+          });
       }
     }
 
     await router.push(backPath);
-  }, [t, router, backPath, store.property]);
+  }, [store, router, backPath, t]);
 
   const onSubmit = useCallback(
     async (propertyPart) => {
@@ -150,18 +158,25 @@ const Property = observer(() => {
         price: propertyPart.rent,
       };
 
-      setError('');
-
       if (property._id) {
         const { status, data } = await store.property.update(property);
         if (status !== 200) {
           switch (status) {
             case 422:
-              return setError(t('Property name is missing'));
+              return store.pushToastMessage({
+                message: t('Property name is missing'),
+                severity: 'error',
+              });
             case 403:
-              return setError(t('You are not allowed to update the property'));
+              return store.pushToastMessage({
+                message: t('You are not allowed to update the property'),
+                severity: 'error',
+              });
             default:
-              return setError(t('Something went wrong'));
+              return store.pushToastMessage({
+                message: t('Something went wrong'),
+                severity: 'error',
+              });
           }
         }
         store.property.setSelected(data);
@@ -170,13 +185,25 @@ const Property = observer(() => {
         if (status !== 200) {
           switch (status) {
             case 422:
-              return setError(t('Property name is missing'));
+              return store.pushToastMessage({
+                message: t('Property name is missing'),
+                severity: 'error',
+              });
             case 403:
-              return setError(t('You are not allowed to add a property'));
+              return store.pushToastMessage({
+                message: t('You are not allowed to add a property'),
+                severity: 'error',
+              });
             case 409:
-              return setError(t('The property already exists'));
+              return store.pushToastMessage({
+                message: t('The property already exists'),
+                severity: 'error',
+              });
             default:
-              return setError(t('Something went wrong'));
+              return store.pushToastMessage({
+                message: t('Something went wrong'),
+                severity: 'error',
+              });
           }
         }
         store.property.setSelected(data);
@@ -185,7 +212,7 @@ const Property = observer(() => {
         );
       }
     },
-    [t, router, store.organization.selected.name, store.property]
+    [store, t, router]
   );
 
   return (
@@ -208,7 +235,6 @@ const Property = observer(() => {
         />
       }
     >
-      <RequestError error={error} />
       <Grid container spacing={5}>
         <Grid item xs={12} md={7} lg={8}>
           {tabsReady && (

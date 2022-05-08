@@ -1,7 +1,7 @@
 import { getStoreInstance, StoreContext } from '../../../store';
 import { Paper, Tab, Tabs } from '@material-ui/core';
 import { TabPanel, useTabChangeHelper } from '../../../components/Tabs';
-import { useCallback, useContext, useState } from 'react';
+import { useCallback, useContext } from 'react';
 
 import BillingForm from '../../../components/organization/BillingForm';
 import getConfig from 'next/config';
@@ -11,7 +11,6 @@ import Leases from '../../../components/organization/Leases';
 import Members from '../../../components/organization/Members';
 import { observer } from 'mobx-react-lite';
 import Page from '../../../components/Page';
-import RequestError from '../../../components/RequestError';
 import { setOrganizationId } from '../../../utils/fetch';
 import ThirdPartiesForm from '../../../components/organization/ThirdPartiesForm';
 import { toJS } from 'mobx';
@@ -24,7 +23,7 @@ const {
 
 const hashes = ['landlord', 'billing', 'leases', 'access', 'third-parties'];
 
-const SettingTabs = observer(({ onSubmit, setError }) => {
+const SettingTabs = observer(({ onSubmit }) => {
   const store = useContext(StoreContext);
   const { t } = useTranslation('common');
   const { handleTabChange, tabSelectedIndex, tabsReady } =
@@ -63,7 +62,7 @@ const SettingTabs = observer(({ onSubmit, setError }) => {
           <BillingForm onSubmit={onSubmit} />
         </TabPanel>
         <TabPanel value={tabSelectedIndex} index={2}>
-          <Leases setError={setError} />
+          <Leases />
         </TabPanel>
         <TabPanel value={tabSelectedIndex} index={3}>
           <Members onSubmit={onSubmit} />
@@ -79,7 +78,6 @@ const SettingTabs = observer(({ onSubmit, setError }) => {
 const Settings = observer(() => {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
-  const [error, setError] = useState('');
 
   const onSubmit = useCallback(
     async (orgPart) => {
@@ -97,20 +95,30 @@ const Settings = observer(() => {
         ...orgPart,
       };
 
-      setError('');
-
       const { status, data: updatedOrganization } =
         await store.organization.update(organization);
       if (status !== 200) {
         switch (status) {
           case 422:
-            return setError(t('Some fields are missing'));
+            return store.pushToastMessage({
+              message: t('Some fields are missing'),
+              severity: 'error',
+            });
           case 403:
-            return setError(t('You are not allowed to update the settings'));
+            return store.pushToastMessage({
+              message: t('You are not allowed to update the settings'),
+              severity: 'error',
+            });
           case 409:
-            return setError(t('The organization name already exists'));
+            return store.pushToastMessage({
+              message: t('The organization name already exists'),
+              severity: 'error',
+            });
           default:
-            return setError(t('Something went wrong'));
+            return store.pushToastMessage({
+              message: t('Something went wrong'),
+              severity: 'error',
+            });
         }
       }
 
@@ -123,14 +131,13 @@ const Settings = observer(() => {
       ]);
       setOrganizationId(updatedOrganization._id);
     },
-    [t, store.organization, store.user]
+    [store, t]
   );
 
   return (
     <Page>
-      <RequestError error={error} />
       <Paper>
-        <SettingTabs onSubmit={onSubmit} setError={setError} />
+        <SettingTabs onSubmit={onSubmit} />
       </Paper>
     </Page>
   );

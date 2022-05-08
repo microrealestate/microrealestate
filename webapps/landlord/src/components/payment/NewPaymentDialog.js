@@ -34,15 +34,17 @@ const NewPaymentDialog = ({ open, setOpen, backPage, backPath }) => {
       if (mountedRef.current) {
         setLoading(false);
         if (status !== 200) {
-          //TODO: handle error
-          // setError('')
+          store.pushToastMessage({
+            message: t('Something went wrong'),
+            severity: 'error',
+          });
           return setRents([]);
         }
         setRents(data.rents);
       }
     };
     fetchRents();
-  }, [mountedRef, store.rent]);
+  }, [mountedRef, store, store.rent, t]);
 
   const onRentChange = (event) => {
     setSelectedRent(event.target.value);

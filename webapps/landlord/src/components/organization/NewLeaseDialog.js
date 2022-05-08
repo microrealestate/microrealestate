@@ -3,13 +3,12 @@ import * as Yup from 'yup';
 import { Box, DialogTitle } from '@material-ui/core';
 import { Form, Formik } from 'formik';
 import { FormTextField, SubmitButton } from '../Form';
-import React, { useCallback, useContext, useState } from 'react';
+import React, { useCallback, useContext } from 'react';
 
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
-import RequestError from '../RequestError';
 import { StoreContext } from '../../store';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
@@ -28,7 +27,6 @@ const NewLeaseDialog = ({ open, setOpen, backPage, backPath }) => {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const router = useRouter();
-  const [error, setError] = useState('');
 
   const handleClose = useCallback(() => {
     setOpen(false);
@@ -40,13 +38,25 @@ const NewLeaseDialog = ({ open, setOpen, backPage, backPath }) => {
       if (status !== 200) {
         switch (status) {
           case 422:
-            return setError(t('Contract name is missing'));
+            return store.pushToastMessage({
+              message: t('Contract name is missing'),
+              severity: 'error',
+            });
           case 403:
-            return setError(t('You are not allowed to create a contract'));
+            return store.pushToastMessage({
+              message: t('You are not allowed to create a contract'),
+              severity: 'error',
+            });
           case 409:
-            return setError(t('The contract already exists'));
+            return store.pushToastMessage({
+              message: t('The contract already exists'),
+              severity: 'error',
+            });
           default:
-            return setError(t('Something went wrong'));
+            return store.pushToastMessage({
+              message: t('Something went wrong'),
+              severity: 'error',
+            });
         }
       }
 
@@ -59,15 +69,7 @@ const NewLeaseDialog = ({ open, setOpen, backPage, backPath }) => {
         }/${encodeURI(backPage)}/${encodeURIComponent(backPath)}`
       );
     },
-    [
-      t,
-      router,
-      handleClose,
-      store.lease,
-      store.organization?.selected?.name,
-      backPage,
-      backPath,
-    ]
+    [store, handleClose, router, backPage, backPath, t]
   );
 
   return (
@@ -80,7 +82,6 @@ const NewLeaseDialog = ({ open, setOpen, backPage, backPath }) => {
     >
       <DialogTitle>{t('Create a new contract')}</DialogTitle>
       <Box p={1}>
-        <RequestError error={error} />
         <Formik
           initialValues={initialValues}
           validationSchema={validationSchema}

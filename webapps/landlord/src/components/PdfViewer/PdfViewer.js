@@ -6,7 +6,7 @@ import {
   Typography,
   withStyles,
 } from '@material-ui/core';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { Viewer, Worker } from '@react-pdf-viewer/core';
 
 import { apiFetcher } from '../../utils/fetch';
@@ -14,7 +14,7 @@ import EditorButton from '../RichTextEditor/EditorButton';
 import { grayColor } from '../../styles/styles';
 import Loading from '../Loading';
 import { printPlugin } from '@react-pdf-viewer/print';
-import { useToast } from '../../utils/hooks';
+import { StoreContext } from '../../store';
 import useTranslation from 'next-translate/useTranslation';
 
 const StyledDialog = withStyles(() => ({
@@ -26,11 +26,16 @@ const StyledDialog = withStyles(() => ({
 
 export default function PdfViewer({ open, setOpen }) {
   const { t } = useTranslation('common');
+  const store = useContext(StoreContext);
   const [pdfSrc, setPdfSrc] = useState();
-  const [Toast, setToastMessage, toastVisible] = useToast();
 
   const printPluginInstance = printPlugin();
   const { Print } = printPluginInstance;
+
+  const handleClose = useCallback(() => {
+    setPdfSrc();
+    setOpen(false);
+  }, [setOpen]);
 
   useEffect(() => {
     (async () => {
@@ -41,17 +46,16 @@ export default function PdfViewer({ open, setOpen }) {
           });
           setPdfSrc(URL.createObjectURL(response.data));
         } catch (error) {
+          handleClose();
           console.error(error);
-          setToastMessage(t('Document not found'));
+          store.pushToastMessage({
+            message: t('Document not found'),
+            severity: 'error',
+          });
         }
       }
     })();
-  }, [t, open, setToastMessage]);
-
-  const handleClose = useCallback(() => {
-    setPdfSrc();
-    setOpen(false);
-  }, [setOpen]);
+  }, [t, open, store, handleClose]);
 
   if (open && pdfSrc) {
     return (
@@ -89,9 +93,9 @@ export default function PdfViewer({ open, setOpen }) {
     );
   }
 
-  if (open && !pdfSrc && !toastVisible) {
+  if (open && !pdfSrc) {
     return <Loading fullScreen />;
   }
 
-  return <Toast severity="error" onClose={handleClose} />;
+  return null;
 }

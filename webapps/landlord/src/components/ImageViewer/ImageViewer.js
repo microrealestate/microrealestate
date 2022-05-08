@@ -1,15 +1,15 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useContext, useEffect, useState } from 'react';
 
 import { apiFetcher } from '../../utils/fetch';
 import Lightbox from 'react-awesome-lightbox';
 import Loading from '../Loading';
-import { useToast } from '../../utils/hooks';
+import { StoreContext } from '../../store';
 import useTranslation from 'next-translate/useTranslation';
 
 export default function ImageViewer({ open, setOpen }) {
-  const [imageSrc, setImageSrc] = useState();
   const { t } = useTranslation('common');
-  const [Toast, setToastMessage, toastVisible] = useToast();
+  const store = useContext(StoreContext);
+  const [imageSrc, setImageSrc] = useState();
 
   const handleClose = useCallback(() => {
     setImageSrc();
@@ -25,21 +25,25 @@ export default function ImageViewer({ open, setOpen }) {
           });
           setImageSrc(URL.createObjectURL(response.data));
         } catch (error) {
+          handleClose();
           console.error(error);
-          setToastMessage(t('Document not found'));
+          store.pushToastMessage({
+            message: t('Document not found'),
+            severity: 'error',
+          });
         }
       }
     })();
-  }, [t, open, setToastMessage]);
+  }, [t, open, store, handleClose]);
 
   if (open && imageSrc) {
     return (
       <Lightbox image={imageSrc} title={open.title} onClose={handleClose} />
     );
   }
-  if (open && !imageSrc && !toastVisible) {
+  if (open && !imageSrc) {
     return <Loading fullScreen />;
   }
 
-  return <Toast severity="error" onClose={handleClose} />;
+  return null;
 }

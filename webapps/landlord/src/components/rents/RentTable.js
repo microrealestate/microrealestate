@@ -23,7 +23,6 @@ import {
 import DownloadLink from '../DownloadLink';
 import moment from 'moment';
 import { NumberFormat } from '../../utils/numberformat';
-import RequestError from '../RequestError';
 import SearchFilterBar from '../SearchFilterBar';
 import { StoreContext } from '../../store';
 import Table from '@material-ui/core/Table';
@@ -170,7 +169,6 @@ const RentTable = () => {
     searchText: '',
     filter: '',
   });
-  const [error, setError] = useState('');
   const theme = useTheme();
 
   useEffect(() => {
@@ -226,8 +224,6 @@ const RentTable = () => {
 
   const onSend = useCallback(
     async (docName) => {
-      setError('');
-
       const sendStatus = await store.rent.sendEmail({
         document: docName,
         tenantIds: selected.map((r) => r._id),
@@ -235,18 +231,24 @@ const RentTable = () => {
       });
       if (sendStatus !== 200) {
         // TODO check error code to show a more detail error message
-        return setError(t('Email service cannot send emails'));
+        return store.pushToastMessage({
+          message: t('Email service cannot send emails'),
+          severity: 'error',
+        });
       }
 
       const response = await store.rent.fetch();
       if (response.status !== 200) {
         // TODO check error code to show a more detail error message
-        return setError(t('Cannot fetch rents from server'));
+        return store.pushToastMessage({
+          message: t('Cannot fetch rents from server'),
+          severity: 'error',
+        });
       }
 
       setSelected([]);
     },
-    [t, store.rent, selected]
+    [store, selected, t]
   );
 
   const selectableRentNum = useMemo(
@@ -272,7 +274,6 @@ const RentTable = () => {
 
   return (
     <>
-      <RequestError error={error} />
       <Box pt={2} pb={1} width={600}>
         <SearchFilterBar
           filters={filters}

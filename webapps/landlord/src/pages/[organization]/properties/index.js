@@ -21,7 +21,6 @@ import { NumberFormat } from '../../../utils/numberformat';
 import { observer } from 'mobx-react-lite';
 import Page from '../../../components/Page';
 import PropertyAvatar from '../../../components/properties/PropertyAvatar';
-import RequestError from '../../../components/RequestError';
 import SearchFilterBar from '../../../components/SearchFilterBar';
 import { toJS } from 'mobx';
 import { useRouter } from 'next/router';
@@ -106,7 +105,6 @@ const Properties = observer(() => {
   const store = useContext(StoreContext);
   const router = useRouter();
   const [openNewPropertyDialog, setOpenNewPropertyDialog] = useState(false);
-  const [error /* setError*/] = useState('');
   const isMobile = useMediaQuery((theme) => theme.breakpoints.down('sm'));
 
   const filters = useMemo(
@@ -156,7 +154,6 @@ const Properties = observer(() => {
         />
       }
     >
-      <RequestError error={error} />
       {store.property.filteredItems?.length ? (
         <Paper variant="outlined" square>
           <Table aria-label="property table">

@@ -8,13 +8,12 @@ import {
   SelectField,
   SubmitButton,
 } from '../Form';
-import React, { useCallback, useContext, useMemo, useState } from 'react';
+import React, { useCallback, useContext, useMemo } from 'react';
 
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
-import RequestError from '../RequestError';
 import { StoreContext } from '../../store';
 import types from './types';
 import { useRouter } from 'next/router';
@@ -36,7 +35,6 @@ const NewPropertyDialog = ({ open, setOpen, backPage, backPath }) => {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const router = useRouter();
-  const [error, setError] = useState('');
 
   const handleClose = useCallback(() => {
     setOpen(false);
@@ -53,13 +51,25 @@ const NewPropertyDialog = ({ open, setOpen, backPage, backPath }) => {
       if (status !== 200) {
         switch (status) {
           case 422:
-            return setError(t('Property name is missing'));
+            return store.pushToastMessage({
+              message: t('Property name is missing'),
+              severity: 'error',
+            });
           case 403:
-            return setError(t('You are not allowed to add a property'));
+            return store.pushToastMessage({
+              message: t('You are not allowed to add a property'),
+              severity: 'error',
+            });
           case 409:
-            return setError(t('The property already exists'));
+            return store.pushToastMessage({
+              message: t('The property already exists'),
+              severity: 'error',
+            });
           default:
-            return setError(t('Something went wrong'));
+            return store.pushToastMessage({
+              message: t('Something went wrong'),
+              severity: 'error',
+            });
         }
       }
 
@@ -72,15 +82,7 @@ const NewPropertyDialog = ({ open, setOpen, backPage, backPath }) => {
         }/${encodeURI(backPage)}/${encodeURIComponent(backPath)}`
       );
     },
-    [
-      t,
-      router,
-      handleClose,
-      store.organization,
-      store.property,
-      backPage,
-      backPath,
-    ]
+    [store, handleClose, router, backPage, backPath, t]
   );
 
   const propertyTypes = useMemo(
@@ -103,7 +105,6 @@ const NewPropertyDialog = ({ open, setOpen, backPage, backPath }) => {
     >
       <DialogTitle>{t('Add a new property')}</DialogTitle>
       <Box p={1}>
-        <RequestError error={error} />
         <Formik
           initialValues={initialValues}
           validationSchema={validationSchema}

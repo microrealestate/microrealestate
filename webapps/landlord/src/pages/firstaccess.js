@@ -1,12 +1,11 @@
 import { Box, Paper, Typography } from '@material-ui/core';
 import { getStoreInstance, StoreContext } from '../store';
 import { isServer, redirect } from '../utils';
-import React, { useContext, useState } from 'react';
+import React, { useContext } from 'react';
 
 import Landlord from '../components/organization/LandlordForm';
 import { observer } from 'mobx-react-lite';
 import Page from '../components/Page';
-import RequestError from '../components/RequestError';
 import { setOrganizationId } from '../utils/fetch';
 import { toJS } from 'mobx';
 import { useRouter } from 'next/router';
@@ -15,14 +14,11 @@ import { withAuthentication } from '../components/Authentication';
 
 const FirstAccess = observer(() => {
   const { t } = useTranslation('common');
-  const [error, setError] = useState('');
   const store = useContext(StoreContext);
   const router = useRouter();
 
   const onSubmit = async (organization) => {
     try {
-      setError('');
-
       // set current user as administrator of the org
       organization.members = [
         {
@@ -37,7 +33,10 @@ const FirstAccess = observer(() => {
       if (status !== 200) {
         switch (status) {
           default:
-            setError(t('Something went wrong'));
+            store.pushToastMessage({
+              message: t('Something went wrong'),
+              severity: 'error',
+            });
             return;
         }
       }
@@ -46,7 +45,10 @@ const FirstAccess = observer(() => {
       setOrganizationId(data._id);
     } catch (error) {
       console.error(error);
-      setError(t('Something went wrong'));
+      store.pushToastMessage({
+        message: t('Something went wrong'),
+        severity: 'error',
+      });
     }
   };
 
@@ -73,7 +75,6 @@ const FirstAccess = observer(() => {
       </Box>
       <Paper>
         <Box px={4} pb={4} pt={2}>
-          <RequestError error={error} />
           <Landlord onSubmit={onSubmit} onSubmitted={onSubmitted} />
         </Box>
       </Paper>

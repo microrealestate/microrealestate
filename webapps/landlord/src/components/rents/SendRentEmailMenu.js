@@ -11,7 +11,7 @@ import SendIcon from '@material-ui/icons/Send';
 import { StoreContext } from '../../store';
 import useTranslation from 'next-translate/useTranslation';
 
-const SendRentEmailMenu = ({ period, tenant, terms, onError, ...props }) => {
+const SendRentEmailMenu = ({ period, tenant, terms, ...props }) => {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
 
@@ -24,16 +24,22 @@ const SendRentEmailMenu = ({ period, tenant, terms, onError, ...props }) => {
       });
       if (sendStatus !== 200) {
         // TODO check error code to show a more detailed error message
-        return onError(t('Email service cannot send emails'));
+        return store.pushToastMessage({
+          message: t('Email service cannot send emails'),
+          severity: 'error',
+        });
       }
 
       const response = await store.rent.fetch();
       if (response.status !== 200) {
         // TODO check error code to show a more detail error message
-        return onError(t('Cannot fetch rents from server'));
+        return store.pushToastMessage({
+          message: t('Cannot fetch rents from server'),
+          severity: 'error',
+        });
       }
     },
-    [t, store.rent, tenant, terms, onError]
+    [store, tenant._id, terms, t]
   );
 
   const menuItems = useMemo(() => {

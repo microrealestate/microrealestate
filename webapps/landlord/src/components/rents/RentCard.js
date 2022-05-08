@@ -251,7 +251,6 @@ const RentCard = observer(({ rent, onEdit }) => {
             terms={[rent.term]}
             size="small"
             variant="contained"
-            onError={() => {}}
           />
           <Button onClick={_onEdit} size="small" variant="contained">
             {t('Settlement')}
