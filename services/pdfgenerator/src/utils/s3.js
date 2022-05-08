@@ -16,10 +16,10 @@ function _initS3(b2Config) {
 module.exports = {
   isEnabled: (b2Config) => {
     return !!(
-      b2Config.keyId &&
-      b2Config.applicationKey &&
-      b2Config.endpoint &&
-      b2Config.bucket
+      b2Config?.keyId &&
+      b2Config?.applicationKey &&
+      b2Config?.endpoint &&
+      b2Config?.bucket
     );
   },
 
