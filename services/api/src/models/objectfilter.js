@@ -15,6 +15,7 @@ module.exports = class ObjectFilter {
 
       if (typeof value != 'undefined') {
         if (type === Date) {
+          filteredData[key] = null;
           if (typeof value == 'string') {
             const m = moment(value, 'DD/MM/YYYY');
             if (m.isValid()) {
