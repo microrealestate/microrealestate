@@ -1,9 +1,8 @@
 import { getStoreInstance, StoreContext } from '../../../../store';
-import { useCallback, useContext, useState } from 'react';
+import { useCallback, useContext } from 'react';
 
 import { ADMIN_ROLE } from '../../../../store/User';
 import BreadcrumbBar from '../../../../components/BreadcrumbBar';
-import ConfirmDialog from '../../../../components/ConfirmDialog';
 import DeleteIcon from '@material-ui/icons/Delete';
 import { isServer } from '../../../../utils';
 import LeaseStepper from '../../../../components/organization/lease/LeaseStepper';
@@ -14,13 +13,15 @@ import { Paper } from '@material-ui/core';
 import { RestrictButton } from '../../../../components/RestrictedComponents';
 import router from 'next/router';
 import { toJS } from 'mobx';
+import useConfirmDialog from '../../../../components/ConfirmDialog';
 import useTranslation from 'next-translate/useTranslation';
 import { withAuthentication } from '../../../../components/Authentication';
 
 const Lease = observer(() => {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
-  const [removeLease, setRemoveLease] = useState(false);
+  const [ConfirmDialog, setRemoveLease] = useConfirmDialog();
+
   const {
     query: {
       param: [, backPage, backPath],
@@ -134,8 +135,6 @@ const Lease = observer(() => {
       <ConfirmDialog
         title={t('Are you sure to remove this contract?')}
         subTitle={store.lease.selected?.name}
-        open={removeLease}
-        setOpen={setRemoveLease}
         onConfirm={onLeaseRemove}
       />
     </Page>

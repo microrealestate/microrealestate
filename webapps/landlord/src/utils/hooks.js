@@ -5,7 +5,7 @@ import { observer } from 'mobx-react-lite';
 import Snackbar from '@material-ui/core/Snackbar';
 import { StoreContext } from '../store';
 
-export const useComponentMountedRef = () => {
+export function useComponentMountedRef() {
   const mountedRef = useRef(false);
 
   useEffect(() => {
@@ -14,9 +14,9 @@ export const useComponentMountedRef = () => {
   });
 
   return mountedRef;
-};
+}
 
-export const useTimeout = (fn, delay) => {
+export function useTimeout(fn, delay) {
   const mountedRef = useComponentMountedRef();
   const fnRef = useRef(fn);
   const timerRef = useRef();
@@ -51,9 +51,9 @@ export const useTimeout = (fn, delay) => {
   );
 
   return { start, clear, isRunning, isDone };
-};
+}
 
-export const useInterval = (fn, delay) => {
+export function useInterval(fn, delay) {
   const mountedRef = useComponentMountedRef();
   const fnRef = useRef(fn);
   const timerRef = useRef();
@@ -85,9 +85,9 @@ export const useInterval = (fn, delay) => {
   );
 
   return { start, clear, isRunning };
-};
+}
 
-export const useToast = () => {
+export function useToast() {
   const Toast = () => {
     const store = useContext(StoreContext);
 
@@ -119,4 +119,14 @@ export const useToast = () => {
   };
 
   return observer(Toast);
-};
+}
+
+export function useDialog(DialogComponent) {
+  const [open, setOpen] = useState(false);
+
+  const Dialog = (props) => {
+    return <DialogComponent {...props} open={open} setOpen={setOpen} />;
+  };
+
+  return [Dialog, setOpen, open];
+}

@@ -11,18 +11,18 @@ import {
   useMediaQuery,
 } from '@material-ui/core';
 import { getStoreInstance, StoreContext } from '../../../store';
-import { useCallback, useContext, useMemo, useState } from 'react';
+import { useCallback, useContext, useMemo } from 'react';
 
 import AddIcon from '@material-ui/icons/Add';
 import { EmptyIllustration } from '../../../components/Illustrations';
 import { isServer } from '../../../utils';
-import NewPropertyDialog from '../../../components/properties/NewPropertyDialog';
 import { NumberFormat } from '../../../utils/numberformat';
 import { observer } from 'mobx-react-lite';
 import Page from '../../../components/Page';
 import PropertyAvatar from '../../../components/properties/PropertyAvatar';
 import SearchFilterBar from '../../../components/SearchFilterBar';
 import { toJS } from 'mobx';
+import useNewPropertyDialog from '../../../components/properties/NewPropertyDialog';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 import { withAuthentication } from '../../../components/Authentication';
@@ -104,7 +104,7 @@ const Properties = observer(() => {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const router = useRouter();
-  const [openNewPropertyDialog, setOpenNewPropertyDialog] = useState(false);
+  const [NewPropertyDialog, setOpenNewPropertyDialog] = useNewPropertyDialog();
   const isMobile = useMediaQuery((theme) => theme.breakpoints.down('sm'));
 
   const filters = useMemo(
@@ -125,7 +125,7 @@ const Properties = observer(() => {
 
   const onNewProperty = useCallback(() => {
     setOpenNewPropertyDialog(true);
-  }, []);
+  }, [setOpenNewPropertyDialog]);
 
   return (
     <Page
@@ -183,12 +183,7 @@ const Properties = observer(() => {
       ) : (
         <EmptyIllustration label={t('No properties found')} />
       )}
-      <NewPropertyDialog
-        open={openNewPropertyDialog}
-        setOpen={setOpenNewPropertyDialog}
-        backPage={t('Properties')}
-        backPath={router.asPath}
-      />
+      <NewPropertyDialog backPage={t('Properties')} backPath={router.asPath} />
     </Page>
   );
 });

@@ -17,7 +17,7 @@ import {
   validateYupSchema,
   yupToFormErrors,
 } from 'formik';
-import { Fragment, useContext, useMemo, useState } from 'react';
+import { Fragment, useCallback, useContext, useMemo, useState } from 'react';
 
 import moment from 'moment';
 import { observer } from 'mobx-react-lite';
@@ -178,29 +178,32 @@ const LeaseContractForm = observer((props) => {
     ];
   }, [t, store.tenant.selected.properties, store.property.items]);
 
-  const _onSubmit = async (lease) => {
-    await onSubmit({
-      leaseId: lease.leaseId,
-      frequency: store.lease.items.find(({ _id }) => _id === lease.leaseId)
-        .timeRange,
-      beginDate: lease.beginDate?.format('DD/MM/YYYY') || '',
-      endDate: lease.endDate?.format('DD/MM/YYYY') || '',
-      terminationDate: lease.terminationDate?.format('DD/MM/YYYY') || '',
-      guaranty: lease.guaranty || 0,
-      guarantyPayback: lease.guarantyPayback || 0,
-      properties: lease.properties
-        .filter((property) => !!property._id)
-        .map((property) => {
-          return {
-            propertyId: property._id,
-            rent: property.rent,
-            expenses: property.expense.title ? [property.expense] : [],
-            entryDate: property.entryDate?.format('DD/MM/YYYY'),
-            exitDate: property.exitDate?.format('DD/MM/YYYY'),
-          };
-        }),
-    });
-  };
+  const _onSubmit = useCallback(
+    async (lease) => {
+      await onSubmit({
+        leaseId: lease.leaseId,
+        frequency: store.lease.items.find(({ _id }) => _id === lease.leaseId)
+          .timeRange,
+        beginDate: lease.beginDate?.format('DD/MM/YYYY') || '',
+        endDate: lease.endDate?.format('DD/MM/YYYY') || '',
+        terminationDate: lease.terminationDate?.format('DD/MM/YYYY') || '',
+        guaranty: lease.guaranty || 0,
+        guarantyPayback: lease.guarantyPayback || 0,
+        properties: lease.properties
+          .filter((property) => !!property._id)
+          .map((property) => {
+            return {
+              propertyId: property._id,
+              rent: property.rent,
+              expenses: property.expense.title ? [property.expense] : [],
+              entryDate: property.entryDate?.format('DD/MM/YYYY'),
+              exitDate: property.exitDate?.format('DD/MM/YYYY'),
+            };
+          }),
+      });
+    },
+    [onSubmit, store.lease.items]
+  );
 
   return (
     <Formik

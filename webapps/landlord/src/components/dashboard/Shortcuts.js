@@ -1,19 +1,19 @@
 import { Box, Grid, Paper } from '@material-ui/core';
-import { useContext, useMemo, useState } from 'react';
+import { useCallback, useContext, useMemo } from 'react';
 
 import DescriptionIcon from '@material-ui/icons/Description';
 import FirstConnection from './FirstConnection';
-import NewLeaseDialog from '../../components/organization/NewLeaseDialog';
-import NewPaymentDialog from '../../components/payment/NewPaymentDialog';
-import NewPropertyDialog from '../../components/properties/NewPropertyDialog';
-import NewTenantDialog from '../../components/tenants/NewTenantDialog';
 import PeopleIcon from '@material-ui/icons/People';
 import ReceiptIcon from '@material-ui/icons/Receipt';
 import ShortcutButton from '../../components/ShortcutButton';
 import StopIcon from '@material-ui/icons/Stop';
 import { StoreContext } from '../../store';
-import TerminateLeaseDialog from '../../components/tenants/TerminateLeaseDialog';
+import useNewLeaseDialog from '../organization/NewLeaseDialog';
+import useNewPaymentDialog from '../payment/NewPaymentDialog';
+import useNewPropertyDialog from '../properties/NewPropertyDialog';
+import useNewTenantDialog from '../tenants/NewTenantDialog';
 import { useRouter } from 'next/router';
+import useTerminateLeaseDialog from '../tenants/TerminateLeaseDialog';
 import useTranslation from 'next-translate/useTranslation';
 import VpnKeyIcon from '@material-ui/icons/VpnKey';
 import { WelcomeIllustration } from '../../components/Illustrations';
@@ -22,12 +22,12 @@ export default function Shortcuts({ firstConnection = false }) {
   const store = useContext(StoreContext);
   const router = useRouter();
   const { t } = useTranslation('common');
-
-  const [openNewTenantDialog, setOpenNewTenantDialog] = useState(false);
-  const [openNewPropertyDialog, setOpenNewPropertyDialog] = useState(false);
-  const [openNewLeaseDialog, setOpenNewLeaseDialog] = useState(false);
-  const [openNewPaymentDialog, setOpenNewPaymentDialog] = useState(false);
-  const [openTerminateLease, setOpenTerminateLease] = useState(false);
+  const [NewLeaseDialog, setOpenNewLeaseDialog] = useNewLeaseDialog();
+  const [NewTenantDialog, setOpenNewTenantDialog] = useNewTenantDialog();
+  const [NewPropertyDialog, setOpenNewPropertyDialog] = useNewPropertyDialog();
+  const [NewPaymentDialog, setOpenNewPaymentDialog] = useNewPaymentDialog();
+  const [TerminateLeaseDialog, setOpenTerminateLeaseDialog] =
+    useTerminateLeaseDialog();
 
   const tenantsNotTerminated = useMemo(
     () => store.tenant.items.filter((t) => !t.terminated),
@@ -37,6 +37,26 @@ export default function Shortcuts({ firstConnection = false }) {
   const hasContract = !!store.lease?.items?.length;
   const hasProperty = !!store.dashboard.data.overview?.propertyCount;
   const hasTenant = !!store.tenant?.items?.length;
+
+  const handleCreateContract = useCallback(() => {
+    setOpenNewLeaseDialog(true);
+  }, [setOpenNewLeaseDialog]);
+
+  const handleCreateProperty = useCallback(() => {
+    setOpenNewPropertyDialog(true);
+  }, [setOpenNewPropertyDialog]);
+
+  const handleCreateTenant = useCallback(() => {
+    setOpenNewTenantDialog(true);
+  }, [setOpenNewTenantDialog]);
+
+  const handlePayment = useCallback(() => {
+    setOpenNewPaymentDialog(true);
+  }, [setOpenNewPaymentDialog]);
+
+  const handleTerminateLease = useCallback(() => {
+    setOpenTerminateLeaseDialog(true);
+  }, [setOpenTerminateLeaseDialog]);
 
   return (
     <>
@@ -53,9 +73,9 @@ export default function Shortcuts({ firstConnection = false }) {
                 hasContract={hasContract}
                 hasProperty={hasProperty}
                 hasTenant={hasTenant}
-                handleCreateContract={() => setOpenNewLeaseDialog(true)}
-                handleCreateProperty={() => setOpenNewPropertyDialog(true)}
-                handleCreateTenant={() => setOpenNewTenantDialog(true)}
+                handleCreateContract={handleCreateContract}
+                handleCreateProperty={handleCreateProperty}
+                handleCreateTenant={handleCreateTenant}
               />
             </Grid>
           </Grid>
@@ -77,35 +97,35 @@ export default function Shortcuts({ firstConnection = false }) {
                         Icon={ReceiptIcon}
                         label={t('Enter a rent settlement')}
                         disabled={!store.dashboard.data?.overview?.tenantCount}
-                        onClick={() => setOpenNewPaymentDialog(true)}
+                        onClick={handlePayment}
                       />
                     </Grid>
                     <Grid item xs={12}>
                       <ShortcutButton
                         Icon={StopIcon}
                         label={t('Terminate a lease')}
-                        onClick={() => setOpenTerminateLease(true)}
+                        onClick={handleTerminateLease}
                       />
                     </Grid>
                     <Grid item xs={12}>
                       <ShortcutButton
                         Icon={VpnKeyIcon}
                         label={t('Add a new property')}
-                        onClick={() => setOpenNewPropertyDialog(true)}
+                        onClick={handleCreateProperty}
                       />
                     </Grid>
                     <Grid item xs={12}>
                       <ShortcutButton
                         Icon={PeopleIcon}
                         label={t('Add a new tenant')}
-                        onClick={() => setOpenNewTenantDialog(true)}
+                        onClick={handleCreateTenant}
                       />
                     </Grid>
                     <Grid item xs={12}>
                       <ShortcutButton
                         Icon={DescriptionIcon}
                         label={t('Create a new contract')}
-                        onClick={() => setOpenNewLeaseDialog(true)}
+                        onClick={handleCreateContract}
                       />
                     </Grid>
                   </Grid>
@@ -114,36 +134,15 @@ export default function Shortcuts({ firstConnection = false }) {
             </Grid>
           </Paper>
           <NewPaymentDialog
-            open={openNewPaymentDialog}
-            setOpen={setOpenNewPaymentDialog}
             backPage={t('Dashboard')}
             backPath={router.asPath}
           />
-          <TerminateLeaseDialog
-            open={openTerminateLease}
-            setOpen={setOpenTerminateLease}
-            tenantList={tenantsNotTerminated}
-          />
+          <TerminateLeaseDialog tenantList={tenantsNotTerminated} />
         </>
       )}
-      <NewTenantDialog
-        open={openNewTenantDialog}
-        setOpen={setOpenNewTenantDialog}
-        backPage={t('Dashboard')}
-        backPath={router.asPath}
-      />
-      <NewPropertyDialog
-        open={openNewPropertyDialog}
-        setOpen={setOpenNewPropertyDialog}
-        backPage={t('Dashboard')}
-        backPath={router.asPath}
-      />
-      <NewLeaseDialog
-        open={openNewLeaseDialog}
-        setOpen={setOpenNewLeaseDialog}
-        backPage={t('Dashboard')}
-        backPath={router.asPath}
-      />
+      <NewTenantDialog backPage={t('Dashboard')} backPath={router.asPath} />
+      <NewPropertyDialog backPage={t('Dashboard')} backPath={router.asPath} />
+      <NewLeaseDialog backPage={t('Dashboard')} backPath={router.asPath} />
     </>
   );
 }

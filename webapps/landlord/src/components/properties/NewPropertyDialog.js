@@ -16,6 +16,7 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import { StoreContext } from '../../store';
 import types from './types';
+import { useDialog } from '../../utils/hooks';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 
@@ -31,7 +32,7 @@ const initialValues = {
   rent: '',
 };
 
-const NewPropertyDialog = ({ open, setOpen, backPage, backPath }) => {
+function NewPropertyDialog({ open, setOpen, backPage, backPath }) {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const router = useRouter();
@@ -148,6 +149,8 @@ const NewPropertyDialog = ({ open, setOpen, backPage, backPath }) => {
       </Box>
     </Dialog>
   );
-};
+}
 
-export default NewPropertyDialog;
+export default function useNewPropertyDialog() {
+  return useDialog(NewPropertyDialog);
+}

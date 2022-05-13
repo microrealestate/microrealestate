@@ -20,6 +20,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import moment from 'moment';
 import { StoreContext } from '../../store';
 import { toJS } from 'mobx';
+import { useDialog } from '../../utils/hooks';
 import useTranslation from 'next-translate/useTranslation';
 
 const validationSchema = Yup.object().shape({
@@ -27,7 +28,7 @@ const validationSchema = Yup.object().shape({
   guarantyPayback: Yup.number().min(0),
 });
 
-const TerminateLeaseDialog = ({ open, setOpen, tenantList }) => {
+function TerminateLeaseDialog({ open, setOpen, tenantList }) {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const [selectedTenant, setSelectedTenant] = useState({});
@@ -165,6 +166,8 @@ const TerminateLeaseDialog = ({ open, setOpen, tenantList }) => {
       </Box>
     </Dialog>
   );
-};
+}
 
-export default TerminateLeaseDialog;
+export default function useTerminateLeaseDialog() {
+  return useDialog(TerminateLeaseDialog);
+}

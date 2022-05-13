@@ -1,21 +1,24 @@
 import { Box, Button } from '@material-ui/core';
-import { useCallback, useContext, useState } from 'react';
+import { useCallback, useContext } from 'react';
 
 import AddIcon from '@material-ui/icons/Add';
-import ConfirmDialog from '../../ConfirmDialog';
 import DocumentList from '../../DocumentList';
-import FileDescriptorDialog from './FileDescriptorDialog';
 import { observer } from 'mobx-react-lite';
-import RichTextEditorDialog from '../../RichTextEditor/RichTextEditorDialog';
 import { StoreContext } from '../../../store';
+import useConfirmDialog from '../../ConfirmDialog';
+import useFileDescriptorDialog from './FileDescriptorDialog';
+import useRichTextEditorDialog from '../../RichTextEditor/RichTextEditorDialog';
 import useTranslation from 'next-translate/useTranslation';
 
 const TemplateList = () => {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
-  const [editTemplate, setEditTemplate] = useState(false);
-  const [editFileDescriptor, setEditFileDescriptor] = useState(false);
-  const [templateToRemove, setTemplateToRemove] = useState(false);
+  const [ConfirmDialog, setTemplateToRemove, templateToRemove] =
+    useConfirmDialog();
+  const [RichTextEditorDialog, setEditTemplate, editTemplate] =
+    useRichTextEditorDialog();
+  const [FileDescriptorDialog, setEditFileDescriptor, editFileDescriptor] =
+    useFileDescriptorDialog();
 
   // TODO optimize the rendering here
   const templates = store.template.items.filter(({ linkedResourceIds = [] }) =>
@@ -137,21 +140,24 @@ const TemplateList = () => {
     editTemplate.linkedResourceIds,
   ]);
 
-  const handleClickEdit = useCallback((template) => {
-    if (template.type === 'text') {
-      setEditTemplate(template);
-    } else if (template.type === 'fileDescriptor') {
-      setEditFileDescriptor(template);
-    }
-  }, []);
+  const handleClickEdit = useCallback(
+    (template) => {
+      if (template.type === 'text') {
+        setEditTemplate(template);
+      } else if (template.type === 'fileDescriptor') {
+        setEditFileDescriptor(template);
+      }
+    },
+    [setEditFileDescriptor, setEditTemplate]
+  );
 
   const handleClickAddFileDescriptor = useCallback(() => {
     setEditFileDescriptor({});
-  }, []);
+  }, [setEditFileDescriptor]);
 
   const handleClickAddText = useCallback(() => {
     setEditTemplate({});
-  }, []);
+  }, [setEditTemplate]);
 
   return (
     <>
@@ -181,23 +187,15 @@ const TemplateList = () => {
         onDelete={setTemplateToRemove}
       />
       <RichTextEditorDialog
-        open={editTemplate}
-        setOpen={setEditTemplate}
         onLoad={onLoadTemplate}
         onSave={onSaveTextTemplate}
         title={editTemplate.name}
         fields={store.template.fields}
       />
-      <FileDescriptorDialog
-        open={editFileDescriptor}
-        setOpen={setEditFileDescriptor}
-        onSave={onSaveUploadTemplate}
-      />
+      <FileDescriptorDialog onSave={onSaveUploadTemplate} />
       <ConfirmDialog
         title={t('Are you sure to remove this template document?')}
         subTitle={templateToRemove.name}
-        open={templateToRemove}
-        setOpen={setTemplateToRemove}
         onConfirm={onDeleteTemplate}
       />
     </>

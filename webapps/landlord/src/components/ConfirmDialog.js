@@ -1,21 +1,22 @@
 import { Box, Typography } from '@material-ui/core';
-import { memo, useCallback } from 'react';
 
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
+import { useCallback } from 'react';
+import { useDialog } from '../utils/hooks';
 import useTranslation from 'next-translate/useTranslation';
 import WarningIcon from '@material-ui/icons/ReportProblemOutlined';
 
-const ConfirmDialog = ({
+function ConfirmDialog({
   title,
   subTitle,
   subTitle2,
   open,
   setOpen,
   onConfirm,
-}) => {
+}) {
   const { t } = useTranslation('common');
   const handleClose = useCallback(() => setOpen(false), [setOpen]);
   const handleConfirm = useCallback(() => {
@@ -68,6 +69,8 @@ const ConfirmDialog = ({
       </Box>
     </Dialog>
   );
-};
+}
 
-export default memo(ConfirmDialog);
+export default function useConfirmDialog() {
+  return useDialog(ConfirmDialog);
+}
