@@ -17,10 +17,9 @@ import {
 import { CardRow, PageInfoCard } from '../../../components/Cards';
 import { getStoreInstance, StoreContext } from '../../../store';
 import { TabPanel, useTabChangeHelper } from '../../../components/Tabs';
-import { useCallback, useContext, useState } from 'react';
+import { useCallback, useContext } from 'react';
 
 import BreadcrumbBar from '../../../components/BreadcrumbBar';
-import ConfirmDialog from '../../../components/ConfirmDialog';
 import DeleteIcon from '@material-ui/icons/Delete';
 import HistoryIcon from '@material-ui/icons/History';
 import { isServer } from '../../../utils';
@@ -32,6 +31,7 @@ import Page from '../../../components/Page';
 import PropertyForm from '../../../components/properties/PropertyForm';
 import TenantAvatar from '../../../components/tenants/TenantAvatar';
 import { toJS } from 'mobx';
+import useConfirmDialog from '../../../components/ConfirmDialog';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 import VpnKeyIcon from '@material-ui/icons/VpnKey';
@@ -104,8 +104,7 @@ const Property = observer(() => {
   const router = useRouter();
   const { handleTabChange, tabSelectedIndex, tabsReady } =
     useTabChangeHelper(hashes);
-  const [openConfirmDeleteProperty, setOpenConfirmDeleteProperty] =
-    useState(false);
+  const [ConfirmDialog, setOpenConfirmDeleteProperty] = useConfirmDialog();
 
   const {
     query: {
@@ -116,7 +115,7 @@ const Property = observer(() => {
 
   const onConfirmDeleteProperty = useCallback(() => {
     setOpenConfirmDeleteProperty(true);
-  }, []);
+  }, [setOpenConfirmDeleteProperty]);
 
   const onDeleteProperty = useCallback(async () => {
     const { status } = await store.property.delete([
@@ -269,8 +268,6 @@ const Property = observer(() => {
       <ConfirmDialog
         title={t('Are you sure to definitely remove this property?')}
         subTitle={store.property.selected.name}
-        open={openConfirmDeleteProperty}
-        setOpen={setOpenConfirmDeleteProperty}
         onConfirm={onDeleteProperty}
       />
     </Page>

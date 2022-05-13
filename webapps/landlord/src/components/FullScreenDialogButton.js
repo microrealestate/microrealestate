@@ -82,7 +82,7 @@ const FullScreenDialogButton = ({
         </AppBar>
 
         <Box py={2} px={3}>
-          {children}
+          {open ? children : null}
         </Box>
       </Dialog>
     </>

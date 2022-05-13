@@ -1,11 +1,10 @@
 import { Box, Paper, Switch, TableHead, Typography } from '@material-ui/core';
-import React, { useCallback, useContext, useState } from 'react';
+import React, { useCallback, useContext } from 'react';
 
 import AddIcon from '@material-ui/icons/Add';
 import { ADMIN_ROLE } from '../../store/User';
 import { FormSection } from '../Form';
 import Link from '../Link';
-import NewLeaseDialog from './NewLeaseDialog';
 import { observer } from 'mobx-react-lite';
 import { RestrictButton } from '../RestrictedComponents';
 import { StoreContext } from '../../store';
@@ -13,6 +12,7 @@ import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
+import useNewLeaseDialog from './NewLeaseDialog';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 
@@ -20,7 +20,11 @@ const Leases = observer(() => {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const router = useRouter();
-  const [openNewLeaseDialog, setOpenNewLeaseDialog] = useState(false);
+  const [NewLeaseDialog, setOpenNewLeaseDialog] = useNewLeaseDialog();
+
+  const handleNewLeaseDialog = useCallback(() => {
+    setOpenNewLeaseDialog(true);
+  }, [setOpenNewLeaseDialog]);
 
   const onLeaseChange = useCallback(
     async (active, lease) => {
@@ -66,7 +70,7 @@ const Leases = observer(() => {
         <RestrictButton
           variant="contained"
           color="primary"
-          onClick={() => setOpenNewLeaseDialog(true)}
+          onClick={handleNewLeaseDialog}
           startIcon={<AddIcon />}
           onlyRoles={[ADMIN_ROLE]}
         >
@@ -133,12 +137,7 @@ const Leases = observer(() => {
           </TableBody>
         </Table>
       </Paper>
-      <NewLeaseDialog
-        open={openNewLeaseDialog}
-        setOpen={setOpenNewLeaseDialog}
-        backPage={t('Settings')}
-        backPath={router.asPath}
-      />
+      <NewLeaseDialog backPage={t('Settings')} backPath={router.asPath} />
     </FormSection>
   );
 });

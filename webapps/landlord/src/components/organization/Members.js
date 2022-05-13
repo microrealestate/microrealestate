@@ -23,7 +23,6 @@ import { memo, useCallback, useContext, useMemo, useState } from 'react';
 import { RestrictButton, RestrictIconButton } from '../RestrictedComponents';
 
 import AddIcon from '@material-ui/icons/Add';
-import ConfirmDialog from '../ConfirmDialog';
 import DeleteIcon from '@material-ui/icons/Delete';
 import { observer } from 'mobx-react-lite';
 import PersonIcon from '@material-ui/icons/Person';
@@ -33,6 +32,7 @@ import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
+import useConfirmDialog from '../ConfirmDialog';
 import useTranslation from 'next-translate/useTranslation';
 import WarningIcon from '@material-ui/icons/Warning';
 
@@ -145,7 +145,7 @@ const FormDialog = memo(function FormDialog({ members = [], onSubmit }) {
 const Members = observer(({ onSubmit }) => {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
-  const [memberToRemove, setMemberToRemove] = useState(false);
+  const [ConfirmDialog, setMemberToRemove, memberToRemove] = useConfirmDialog();
   const [updating, setUpdating] = useState();
 
   const onAddMember = useCallback(
@@ -292,8 +292,6 @@ const Members = observer(({ onSubmit }) => {
         <ConfirmDialog
           title={t('Are you sure to remove this collaborator?')}
           subTitle={memberToRemove.name}
-          open={memberToRemove}
-          setOpen={setMemberToRemove}
           onConfirm={removeMember}
         />
       </Paper>

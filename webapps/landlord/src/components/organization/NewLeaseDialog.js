@@ -10,6 +10,7 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import { StoreContext } from '../../store';
+import { useDialog } from '../../utils/hooks';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 
@@ -23,7 +24,7 @@ const initialValues = {
   stepperMode: true,
 };
 
-const NewLeaseDialog = ({ open, setOpen, backPage, backPath }) => {
+function NewLeaseDialog({ open, setOpen, backPage, backPath }) {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const router = useRouter();
@@ -108,6 +109,8 @@ const NewLeaseDialog = ({ open, setOpen, backPage, backPath }) => {
       </Box>
     </Dialog>
   );
-};
+}
 
-export default NewLeaseDialog;
+export default function useNewLeaseDialog() {
+  return useDialog(NewLeaseDialog);
+}

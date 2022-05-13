@@ -10,7 +10,6 @@ import { getStoreInstance, StoreContext } from '../../../store';
 import { useCallback, useContext, useMemo, useState } from 'react';
 
 import BreadcrumbBar from '../../../components/BreadcrumbBar';
-import ConfirmDialog from '../../../components/ConfirmDialog';
 import ContractOverviewCard from '../../../components/tenants/ContractOverviewCard';
 import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
@@ -19,13 +18,14 @@ import moment from 'moment';
 import { observer } from 'mobx-react-lite';
 import Page from '../../../components/Page';
 import RentOverviewCard from '../../../components/tenants/RentOverviewCard';
-import RichTextEditorDialog from '../../../components/RichTextEditor/RichTextEditorDialog';
 import StopIcon from '@material-ui/icons/Stop';
 import TenantStepper from '../../../components/tenants/TenantStepper';
 import TenantTabs from '../../../components/tenants/TenantTabs';
-import TerminateLeaseDialog from '../../../components/tenants/TerminateLeaseDialog';
 import { toJS } from 'mobx';
+import useConfirmDialog from '../../../components/ConfirmDialog';
+import useRichTextEditorDialog from '../../../components/RichTextEditor/RichTextEditorDialog';
 import { useRouter } from 'next/router';
+import useTerminateLeaseDialog from '../../../components/tenants/TerminateLeaseDialog';
 import useTranslation from 'next-translate/useTranslation';
 import { withAuthentication } from '../../../components/Authentication';
 
@@ -34,21 +34,27 @@ const Tenant = observer(() => {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const router = useRouter();
+  const isMobile = useMediaQuery((theme) => theme.breakpoints.down('sm'));
+  const [ConfirmEditDialog, setOpenConfirmEditTenant] = useConfirmDialog();
+  const [ConfirmDeleteDialog, setOpenConfirmDeleteTenant] = useConfirmDialog();
 
   const [readOnly, setReadOnly] = useState(
     store.tenant.selected.terminated ||
       !!store.tenant.selected.properties?.length
   );
-  const [openTerminateLease, setOpenTerminateLease] = useState(false);
-  const [openConfirmDeleteTenant, setOpenConfirmDeleteTenant] = useState(false);
-  const [openConfirmEditTenant, setOpenConfirmEditTenant] = useState(false);
-  const [editContract, setEditContract] = useState(false);
+  const [TerminateLeaseDialog, setOpenTerminateLeaseDialog] =
+    useTerminateLeaseDialog();
+
+  const [RichTextEditorDialog, , editContract] = useRichTextEditorDialog();
   const {
     query: {
       param: [, backPage, backPath],
     },
   } = router;
-  const isMobile = useMediaQuery((theme) => theme.breakpoints.down('sm'));
+
+  const onEditTenant = useCallback(() => {
+    setReadOnly(false);
+  }, []);
 
   const onDeleteTenant = useCallback(async () => {
     const { status } = await store.tenant.delete([store.tenant.selected._id]);
@@ -243,6 +249,21 @@ const Tenant = observer(() => {
     [editContract.contractId, store, t]
   );
 
+  const handleDeleteTenant = useCallback(
+    () => setOpenConfirmDeleteTenant(true),
+    [setOpenConfirmDeleteTenant]
+  );
+
+  const handleTerminateLease = useCallback(
+    () => setOpenTerminateLeaseDialog(true),
+    [setOpenTerminateLeaseDialog]
+  );
+
+  const handleEditTenant = useCallback(
+    () => setOpenConfirmEditTenant(true),
+    [setOpenConfirmEditTenant]
+  );
+
   return (
     <Page
       ActionToolbar={
@@ -263,7 +284,7 @@ const Tenant = observer(() => {
                   startIcon={<DeleteIcon />}
                   disabled={store.tenant.selected.hasPayments}
                   size={isMobile ? 'small' : 'medium'}
-                  onClick={() => setOpenConfirmDeleteTenant(true)}
+                  onClick={handleDeleteTenant}
                 >
                   {t('Delete')}
                 </Button>
@@ -277,7 +298,7 @@ const Tenant = observer(() => {
                 startIcon={<StopIcon />}
                 disabled={store.tenant.selected.terminated}
                 size={isMobile ? 'small' : 'medium'}
-                onClick={() => setOpenTerminateLease(true)}
+                onClick={handleTerminateLease}
               >
                 {t('Terminate')}
               </Button>
@@ -292,7 +313,7 @@ const Tenant = observer(() => {
                   !(!!store.tenant.selected.properties?.length && readOnly)
                 }
                 size={isMobile ? 'small' : 'medium'}
-                onClick={() => setOpenConfirmEditTenant(true)}
+                onClick={handleEditTenant}
               >
                 {t('Edit')}
               </Button>
@@ -332,18 +353,13 @@ const Tenant = observer(() => {
             )}
           </Grid>
           <RichTextEditorDialog
-            open={editContract}
-            setOpen={setEditContract}
             onLoad={onLoadContract}
             onSave={onSaveContract}
             title={store.tenant.selected.name}
             hideFields={true}
           />
-          <TerminateLeaseDialog
-            open={openTerminateLease}
-            setOpen={setOpenTerminateLease}
-          />
-          <ConfirmDialog
+          <TerminateLeaseDialog />
+          <ConfirmEditDialog
             title={
               store.tenant.selected.terminated
                 ? t('Lease terminated on {{terminationDate}}', {
@@ -358,17 +374,13 @@ const Tenant = observer(() => {
               'Modifying this form might break the contract signed with the tenant'
             )}
             subTitle2={t('Continue editing?')}
-            open={openConfirmEditTenant}
-            setOpen={setOpenConfirmEditTenant}
-            onConfirm={() => setReadOnly(false)}
+            onConfirm={onEditTenant}
           />
         </>
       )}
-      <ConfirmDialog
+      <ConfirmDeleteDialog
         title={t('Are you sure to definitely remove this tenant?')}
         subTitle={store.tenant.selected.name}
-        open={openConfirmDeleteTenant}
-        setOpen={setOpenConfirmDeleteTenant}
         onConfirm={onDeleteTenant}
       />
     </Page>

@@ -6,25 +6,27 @@ import { Box, Button } from '@material-ui/core';
 import { useCallback, useContext, useMemo, useState } from 'react';
 
 import AddIcon from '@material-ui/icons/Add';
-import ConfirmDialog from '../ConfirmDialog';
 import DocumentList from '../DocumentList';
 import { downloadDocument } from '../../utils/fetch';
 import FullScreenDialogMenu from '../FullScreenDialogMenu';
 import ImageViewer from '../ImageViewer/ImageViewer';
 import { observer } from 'mobx-react-lite';
 import PdfViewer from '../PdfViewer/PdfViewer';
-import RichTextEditorDialog from '../RichTextEditor/RichTextEditorDialog';
 import { StoreContext } from '../../store';
-import UploadDialog from '../UploadDialog';
+import useConfirmDialog from '../ConfirmDialog';
+import useRichTextEditorDialog from '../RichTextEditor/RichTextEditorDialog';
 import useTranslation from 'next-translate/useTranslation';
+import useUploadDialog from '../UploadDialog';
 
 function TenantDocumentList({ disabled = false }) {
   const store = useContext(StoreContext);
   const { t } = useTranslation('common');
+  const [ConfirmDialog, setDocumentToRemove, documentToRemove] =
+    useConfirmDialog();
+  const [UploadDialog, setEditUploadDocument] = useUploadDialog();
 
-  const [editTextDocument, setEditTextDocument] = useState(false);
-  const [editUploadDocument, setEditUploadDocument] = useState(false);
-  const [documentToRemove, setDocumentToRemove] = useState(false);
+  const [RichTextEditorDialog, setEditTextDocument, editTextDocument] =
+    useRichTextEditorDialog();
   const [openImageViewer, setOpenImageViewer] = useState(false);
   const [openPdfViewer, setOpenPdfViewer] = useState(false);
 
@@ -55,26 +57,29 @@ function TenantDocumentList({ disabled = false }) {
     ];
   }, [t, store.template?.items, store.tenant?.selected?.leaseId]);
 
-  const handleClickEdit = useCallback((doc) => {
-    if (doc.type === 'text') {
-      setEditTextDocument(doc);
-    } else if (doc.type === 'file') {
-      if (doc.mimeType.indexOf('image/') !== -1) {
-        setOpenImageViewer({ url: `/documents/${doc._id}`, title: doc.name });
-      } else if (doc.mimeType.indexOf('application/pdf') !== -1) {
-        setOpenPdfViewer({ url: `/documents/${doc._id}`, title: doc.name });
-      } else {
-        downloadDocument({
-          endpoint: `/documents/${doc._id}`,
-          documentName: doc.name,
-        });
+  const handleClickEdit = useCallback(
+    (doc) => {
+      if (doc.type === 'text') {
+        setEditTextDocument(doc);
+      } else if (doc.type === 'file') {
+        if (doc.mimeType.indexOf('image/') !== -1) {
+          setOpenImageViewer({ url: `/documents/${doc._id}`, title: doc.name });
+        } else if (doc.mimeType.indexOf('application/pdf') !== -1) {
+          setOpenPdfViewer({ url: `/documents/${doc._id}`, title: doc.name });
+        } else {
+          downloadDocument({
+            endpoint: `/documents/${doc._id}`,
+            documentName: doc.name,
+          });
+        }
       }
-    }
-  }, []);
+    },
+    [setEditTextDocument]
+  );
 
   const handleClickUpload = useCallback(() => {
     setEditUploadDocument(true);
-  }, []);
+  }, [setEditUploadDocument]);
 
   const handleClickAddText = useCallback(
     async (template) => {
@@ -91,10 +96,11 @@ function TenantDocumentList({ disabled = false }) {
       setEditTextDocument(data);
     },
     [
-      t,
       store.document,
       store.tenant.selected?._id,
       store.tenant.selected?.leaseId,
+      t,
+      setEditTextDocument,
     ]
   );
 
@@ -196,25 +202,17 @@ function TenantDocumentList({ disabled = false }) {
         disabled={disabled}
       />
       <RichTextEditorDialog
-        open={editTextDocument}
-        setOpen={setEditTextDocument}
         onLoad={handleLoadTextDocument}
         onSave={handleSaveTextDocument}
         title={editTextDocument.name}
         editable={!disabled}
       />
 
-      <UploadDialog
-        open={editUploadDocument}
-        setOpen={setEditUploadDocument}
-        onSave={handleSaveUploadDocument}
-      />
+      <UploadDialog onSave={handleSaveUploadDocument} />
 
       <ConfirmDialog
         title={t('Are you sure to remove this document?')}
         subTitle={documentToRemove.name}
-        open={documentToRemove}
-        setOpen={setDocumentToRemove}
         onConfirm={handleDeleteDocument}
       />
 

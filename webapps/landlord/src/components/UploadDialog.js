@@ -18,6 +18,7 @@ import moment from 'moment';
 import { StoreContext } from '../store';
 import { toJS } from 'mobx';
 import { uploadDocument } from '../utils/fetch';
+import { useDialog } from '../utils/hooks';
 import useTranslation from 'next-translate/useTranslation';
 
 // TODO: constants to shate between frontend and backend
@@ -89,7 +90,7 @@ const FormDialog = ({ open, onClose, children }) => {
   );
 };
 
-export default function UploadDialog({ open, setOpen, onSave }) {
+function UploadDialog({ open, setOpen, onSave }) {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const [templates, setTemplates] = useState([]);
@@ -197,4 +198,8 @@ export default function UploadDialog({ open, setOpen, onSave }) {
       </Formik>
     </>
   );
+}
+
+export default function useUploadDialog() {
+  return useDialog(UploadDialog);
 }

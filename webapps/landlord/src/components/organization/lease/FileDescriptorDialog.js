@@ -10,6 +10,7 @@ import { CheckboxField } from '../../Form';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
+import { useDialog } from '../../../utils/hooks';
 import useTranslation from 'next-translate/useTranslation';
 
 const validationSchema = Yup.object().shape({
@@ -25,7 +26,7 @@ const initialValues = {
   hasExpiryDate: false,
 };
 
-export default function FileDescriptorDialog({ open, setOpen, onSave }) {
+function FileDescriptorDialog({ open, setOpen, onSave }) {
   const { t } = useTranslation('common');
 
   const handleClose = useCallback(() => {
@@ -94,4 +95,8 @@ export default function FileDescriptorDialog({ open, setOpen, onSave }) {
       </Box>
     </Dialog>
   );
+}
+
+export default function useFileDescriptorDialog() {
+  return useDialog(FileDescriptorDialog);
 }

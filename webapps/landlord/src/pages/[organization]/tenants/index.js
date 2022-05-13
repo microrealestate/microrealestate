@@ -14,20 +14,20 @@ import {
   useMediaQuery,
 } from '@material-ui/core';
 import { getStoreInstance, StoreContext } from '../../../store';
-import { memo, useCallback, useContext, useState } from 'react';
+import { memo, useCallback, useContext } from 'react';
 
 import _ from 'lodash';
 import AddIcon from '@material-ui/icons/Add';
 import { EmptyIllustration } from '../../../components/Illustrations';
 import { isServer } from '../../../utils';
 import moment from 'moment';
-import NewTenantDialog from '../../../components/tenants/NewTenantDialog';
 import { observer } from 'mobx-react-lite';
 import Page from '../../../components/Page';
 import PropertyIcon from '../../../components/properties/PropertyIcon';
 import SearchFilterBar from '../../../components/SearchFilterBar';
 import TenantAvatar from '../../../components/tenants/TenantAvatar';
 import { toJS } from 'mobx';
+import useNewTenantDialog from '../../../components/tenants/NewTenantDialog';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 import { withAuthentication } from '../../../components/Authentication';
@@ -176,7 +176,7 @@ const Tenants = observer(() => {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const router = useRouter();
-  const [openNewTenantDialog, setOpenNewTenantDialog] = useState(false);
+  const [NewTenantDialog, setOpenNewTenantDialog] = useNewTenantDialog();
   const isMobile = useMediaQuery((theme) => theme.breakpoints.down('sm'));
 
   const onSearch = useCallback(
@@ -188,7 +188,7 @@ const Tenants = observer(() => {
 
   const onNewTenant = useCallback(() => {
     setOpenNewTenantDialog(true);
-  }, []);
+  }, [setOpenNewTenantDialog]);
 
   return (
     <Page
@@ -222,12 +222,7 @@ const Tenants = observer(() => {
       }
     >
       <TenantList />
-      <NewTenantDialog
-        open={openNewTenantDialog}
-        setOpen={setOpenNewTenantDialog}
-        backPage={t('Tenants')}
-        backPath={router.asPath}
-      />
+      <NewTenantDialog backPage={t('Tenants')} backPath={router.asPath} />
     </Page>
   );
 });

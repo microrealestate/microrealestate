@@ -16,6 +16,7 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import { StoreContext } from '../../store';
 import { toJS } from 'mobx';
+import { useDialog } from '../../utils/hooks';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 
@@ -34,7 +35,7 @@ const initialValues = {
   isCopyFrom: false,
 };
 
-const NewTenantDialog = ({ open, setOpen, backPage, backPath }) => {
+function NewTenantDialog({ open, setOpen, backPage, backPath }) {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const router = useRouter();
@@ -178,6 +179,8 @@ const NewTenantDialog = ({ open, setOpen, backPage, backPath }) => {
       </Box>
     </Dialog>
   );
-};
+}
 
-export default NewTenantDialog;
+export default function useNewTenantDialog() {
+  return useDialog(NewTenantDialog);
+}

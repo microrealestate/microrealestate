@@ -112,7 +112,7 @@ const RentHistory = ({ tenantId }) => {
   return (
     <>
       {loading ? (
-        <Loading />
+        <Loading fullScreen />
       ) : (
         <>
           <Box pb={4}>
