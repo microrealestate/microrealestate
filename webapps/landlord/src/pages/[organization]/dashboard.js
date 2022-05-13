@@ -1,5 +1,4 @@
 import { Box, Hidden } from '@material-ui/core';
-import { useComponentMountedRef, useInterval } from '../../utils/hooks';
 import { useContext, useMemo, useState } from 'react';
 
 import GeneralFigures from '../../components/dashboard/GeneralFigures';
@@ -8,6 +7,7 @@ import { observer } from 'mobx-react-lite';
 import Page from '../../components/Page';
 import Shortcuts from '../../components/dashboard/Shortcuts';
 import { StoreContext } from '../../store';
+import { useComponentMountedRef } from '../../utils/hooks';
 import { useEffect } from 'react';
 import Welcome from '../../components/dashboard/Welcome';
 import { withAuthentication } from '../../components/Authentication';
@@ -28,10 +28,6 @@ const Dashboard = observer(() => {
   const store = useContext(StoreContext);
   const [ready, setReady] = useState(false);
   const mountedRef = useComponentMountedRef();
-  const triggerRefreshData = useInterval(
-    () => fetchDashboardData(store),
-    10000
-  );
 
   useEffect(() => {
     const fetchData = async () => {
@@ -42,14 +38,6 @@ const Dashboard = observer(() => {
     };
     fetchData();
   }, [mountedRef, store]);
-
-  useEffect(() => {
-    if (mountedRef.current && ready) {
-      triggerRefreshData.start();
-    }
-
-    return () => triggerRefreshData.clear();
-  }, [mountedRef, triggerRefreshData, ready]);
 
   const isFirstConnection = useMemo(() => {
     return (
