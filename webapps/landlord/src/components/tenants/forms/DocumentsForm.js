@@ -21,7 +21,7 @@ export default function DocumentsForm({ onSubmit, readOnly }) {
       </FormSection>
       {store.tenant?.selected.stepperMode ? (
         <Button variant="contained" color="primary" onClick={handleNext}>
-          {t('Finish')}
+          {t('Save')}
         </Button>
       ) : null}
     </>
