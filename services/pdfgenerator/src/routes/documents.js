@@ -304,11 +304,16 @@ documentsApi.post('/upload', (req, res) => {
           fileName: req.body.fileName,
           url: [req.body.s3Dir, req.body.fileName].join('/'),
         });
-        fs.removeSync(req.file.path);
         return res.status(201).send(data);
       } catch (error) {
         logger.error(error);
         return res.status(500).send({ errors: ['Cannot store file in s3'] });
+      } finally {
+        try {
+          fs.removeSync(req.file.path);
+        } catch (err) {
+          // catch error
+        }
       }
     } else {
       return res.status(201).send({

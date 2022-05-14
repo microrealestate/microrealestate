@@ -22,7 +22,7 @@ import { useDialog } from '../utils/hooks';
 import useTranslation from 'next-translate/useTranslation';
 
 // TODO: constants to share between frontend and backend
-const MAX_FILE_SIZE = 268_435_456; // 2Go in bytes
+const MAX_FILE_SIZE = 20_971_520; // 20M in bytes
 const SUPPORTED_MIMETYPES = [
   'image/gif',
   'image/png',
@@ -125,7 +125,10 @@ function UploadDialog({ open, setOpen, onSave }) {
           endpoint: '/documents/upload',
           documentName: doc.template.name,
           file: doc.file,
-          folder: 'contract_scanned_documents',
+          folder: [
+            store.tenant.selected.name,
+            'contract_scanned_documents',
+          ].join('/'),
         });
 
         doc.url = response.data.key;

@@ -26,7 +26,7 @@ const storage = multer.diskStorage({
       if (req.body.folder.indexOf('..') !== -1) {
         return cb(new Error('invalid folder'));
       }
-      const folder = req.body.folder.replace(/[/\\]/g, '');
+      const folder = req.body.folder;
       localDir = path.join(localDir, folder);
       req.body.localDir = localDir;
       req.body.s3Dir = [s3Dir, folder].join('/');
