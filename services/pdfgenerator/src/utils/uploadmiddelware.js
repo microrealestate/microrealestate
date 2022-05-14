@@ -38,7 +38,10 @@ const storage = multer.diskStorage({
     if (!SUPPORTED_MIMETYPES.includes(file.mimetype)) {
       return cb(new Error('file not supported'));
     }
-    const fileNameNoExt = req.body.fileName || 'noname';
+    const fileNameNoExt = (req.body.fileName || 'noname').replace(
+      /[/\\]/g,
+      '_'
+    );
     const suffix = Math.round(Math.random() * 1e9);
     const extension = SUPPORTED_FILE_EXTENSIONS[file.mimetype];
     const fileName = `${fileNameNoExt}-${suffix}.${extension}`;
