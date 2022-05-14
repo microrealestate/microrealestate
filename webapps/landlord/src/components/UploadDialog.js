@@ -126,7 +126,7 @@ function UploadDialog({ open, setOpen, onSave }) {
           documentName: doc.template.name,
           file: doc.file,
           folder: [
-            store.tenant.selected.name,
+            store.tenant.selected.name.replace(/[/\\]/g, '_'),
             'contract_scanned_documents',
           ].join('/'),
         });
