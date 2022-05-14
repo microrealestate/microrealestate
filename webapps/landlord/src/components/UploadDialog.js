@@ -21,8 +21,8 @@ import { uploadDocument } from '../utils/fetch';
 import { useDialog } from '../utils/hooks';
 import useTranslation from 'next-translate/useTranslation';
 
-// TODO: constants to shate between frontend and backend
-const MAX_FILE_SIZE = 2_097_152; // 2Go
+// TODO: constants to share between frontend and backend
+const MAX_FILE_SIZE = 268_435_456; // 2Go in bytes
 const SUPPORTED_MIMETYPES = [
   'image/gif',
   'image/png',
