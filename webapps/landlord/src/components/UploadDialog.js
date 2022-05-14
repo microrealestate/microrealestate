@@ -97,7 +97,11 @@ function UploadDialog({ open, setOpen, onSave }) {
 
   useEffect(() => {
     const uploadTemplates = store.template.items
-      .filter((template) => template.type === 'fileDescriptor')
+      .filter(
+        (template) =>
+          template.type === 'fileDescriptor' &&
+          template.linkedResourceIds?.includes(store.tenant.selected?.leaseId)
+      )
       .map((template) => ({
         id: template._id,
         label: template.name,
@@ -105,7 +109,7 @@ function UploadDialog({ open, setOpen, onSave }) {
         value: toJS(template),
       }));
     setTemplates(uploadTemplates);
-  }, [store.template.items]);
+  }, [store.template.items, store.tenant.selected]);
 
   const handleClose = useCallback(() => {
     setOpen(false);
