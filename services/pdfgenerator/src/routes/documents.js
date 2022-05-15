@@ -297,12 +297,13 @@ documentsApi.post('/upload', (req, res) => {
       return res.status(500).send({ errors: ['Cannot store file on disk'] });
     }
 
+    const key = [req.body.s3Dir, req.body.fileName].join('/');
     if (s3.isEnabled(req.realm.thirdParties.b2)) {
       try {
         const data = await s3.uploadFile(req.realm.thirdParties.b2, {
           file: req.file,
           fileName: req.body.fileName,
-          url: [req.body.s3Dir, req.body.fileName].join('/'),
+          url: key,
         });
         return res.status(201).send(data);
       } catch (error) {
@@ -318,7 +319,7 @@ documentsApi.post('/upload', (req, res) => {
     } else {
       return res.status(201).send({
         fileName: req.body.fileName,
-        key: path.join(req.body.s3Dir, req.body.fileName),
+        key,
       });
     }
   });
