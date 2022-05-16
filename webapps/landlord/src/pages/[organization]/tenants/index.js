@@ -2,11 +2,8 @@ import {
   Box,
   Button,
   Chip,
-  Grid,
-  Hidden,
   List,
   ListItem,
-  ListItemAvatar,
   ListItemText,
   makeStyles,
   Paper,
@@ -14,7 +11,7 @@ import {
   useMediaQuery,
 } from '@material-ui/core';
 import { getStoreInstance, StoreContext } from '../../../store';
-import { memo, useCallback, useContext } from 'react';
+import React, { memo, useCallback, useContext } from 'react';
 
 import _ from 'lodash';
 import AddIcon from '@material-ui/icons/Add';
@@ -34,10 +31,20 @@ import { withAuthentication } from '../../../components/Authentication';
 
 const useStyles = makeStyles((theme) => ({
   avatarInProgress: {
-    backgroundColor: theme.palette.success.main,
+    backgroundColor: theme.palette.success.dark,
   },
-  inProgress: {
-    color: theme.palette.success.dark,
+  avatarTerminated: {
+    backgroundColor: theme.palette.text.disabled,
+  },
+  chipInProgress: {
+    color: theme.palette.common.white,
+    backgroundColor: theme.palette.success.dark,
+    borderRadius: 4,
+  },
+  chipTerminated: {
+    color: theme.palette.common.white,
+    backgroundColor: theme.palette.text.disabled,
+    borderRadius: 4,
   },
 }));
 
@@ -46,11 +53,17 @@ const Properties = memo(function Properties({ tenant }) {
     <Box display="flex" height="100%" alignItems="center" flexWrap="wrap">
       {tenant.properties?.map(({ property }) => {
         return (
-          <Box key={property._id} m={0.5}>
-            <Chip
-              icon={<PropertyIcon type={property.type} color="action" />}
-              label={property.name}
-            />
+          <Box
+            key={property._id}
+            display="flex"
+            alignItems="center"
+            color="text.secondary"
+            mr={1}
+          >
+            <PropertyIcon type={property.type} color="inherit" />
+            <Typography variant="caption" color="inherit">
+              {property.name}
+            </Typography>
           </Box>
         );
       })}
@@ -81,23 +94,39 @@ const TenantListItem = memo(function TenantListItem({ tenant }) {
       }}
       onClick={onEdit}
     >
-      <Hidden smDown>
-        <ListItemAvatar>
-          <TenantAvatar
-            tenant={tenant}
-            className={
-              !!tenant.beginDate && !tenant.terminated
-                ? classes.avatarInProgress
-                : null
-            }
-          />
-        </ListItemAvatar>
-      </Hidden>
       <ListItemText
         primary={
-          <Grid container spacing={1}>
-            <Grid item xs={12} md={4}>
-              <Typography variant="h5">{tenant.name}</Typography>
+          <>
+            <Box display="flex" justifyContent="space-between">
+              <Box display="flex" alignItems="center" mr={1}>
+                <TenantAvatar
+                  tenant={tenant}
+                  className={
+                    !!tenant.beginDate && !tenant.terminated
+                      ? classes.avatarInProgress
+                      : classes.avatarTerminated
+                  }
+                />
+                <Typography variant="h5">{tenant.name}</Typography>
+              </Box>
+              {!!tenant.beginDate && (
+                <Chip
+                  size="small"
+                  label={
+                    <Typography variant="caption">
+                      {tenant.terminated ? t('Terminated') : t('In progress')}
+                    </Typography>
+                  }
+                  className={
+                    !tenant.terminated
+                      ? classes.chipInProgress
+                      : classes.chipTerminated
+                  }
+                />
+              )}
+            </Box>
+
+            <Box mt={1}>
               {tenant.isCompany && (
                 <Typography
                   variant="caption"
@@ -107,6 +136,8 @@ const TenantListItem = memo(function TenantListItem({ tenant }) {
                   {_.startCase(_.capitalize(tenant.manager))}
                 </Typography>
               )}
+            </Box>
+            <Box mt={1}>
               <Typography
                 variant="caption"
                 color="textSecondary"
@@ -129,22 +160,11 @@ const TenantListItem = memo(function TenantListItem({ tenant }) {
                     )
                   : t('No associated contract')}
               </Typography>
-
-              {!!tenant.beginDate && (
-                <Typography
-                  variant="caption"
-                  color="textSecondary"
-                  component="div"
-                  className={!tenant.terminated ? classes.inProgress : null}
-                >
-                  {tenant.terminated ? t('Terminated') : t('In progress')}
-                </Typography>
-              )}
-            </Grid>
-            <Grid item xs={12} md={8}>
+            </Box>
+            <Box my={1}>
               <Properties tenant={tenant} />
-            </Grid>
-          </Grid>
+            </Box>
+          </>
         }
       />
     </ListItem>

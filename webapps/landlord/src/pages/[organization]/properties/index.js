@@ -1,12 +1,12 @@
 import {
+  Box,
   Button,
+  Chip,
+  List,
+  ListItem,
+  ListItemText,
   makeStyles,
   Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
   Typography,
   useMediaQuery,
 } from '@material-ui/core';
@@ -26,25 +26,31 @@ import useNewPropertyDialog from '../../../components/properties/NewPropertyDial
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 import { withAuthentication } from '../../../components/Authentication';
-import { withStyles } from '@material-ui/core/styles';
 
 const useStyles = makeStyles((theme) => ({
-  vacant: {
-    color: theme.palette.success.dark,
+  avatarVacant: {
+    backgroundColor: theme.palette.success.dark,
+  },
+  avatarOccupied: {
+    backgroundColor: theme.palette.text.disabled,
+  },
+  chipOccupied: {
+    color: theme.palette.common.white,
+    backgroundColor: theme.palette.text.disabled,
+    borderRadius: 4,
+  },
+  chipVacant: {
+    color: theme.palette.common.white,
+    backgroundColor: theme.palette.success.dark,
+    borderRadius: 4,
   },
 }));
 
-const StyledTableRow = withStyles(() => ({
-  root: {
-    cursor: 'pointer',
-  },
-}))(TableRow);
-
-const PropertyTableRow = ({ property }) => {
-  const store = useContext(StoreContext);
+const PropertyListItem = ({ property }) => {
   const router = useRouter();
-  const classes = useStyles();
+  const store = useContext(StoreContext);
   const { t } = useTranslation('common');
+  const classes = useStyles();
 
   const onClick = useCallback(async () => {
     store.property.setSelected(property);
@@ -56,49 +62,124 @@ const PropertyTableRow = ({ property }) => {
   }, [t, property, router, store.organization.selected.name, store.property]);
 
   return (
-    <StyledTableRow hover onClick={onClick}>
-      <TableCell align="center">
-        <PropertyAvatar type={property.type} status={property.status} />
-      </TableCell>
-      <TableCell>
-        <Typography noWrap>{property.name}</Typography>
-        <Typography noWrap>{property.description}</Typography>
-        <Typography
-          variant="caption"
-          color="textSecondary"
-          component="div"
-          className={property.status === 'vacant' ? classes.vacant : null}
-        >
-          {property.status === 'vacant'
-            ? t('Vacant')
-            : t('Occupied by {{tenant}}', {
-                tenant: property.occupantLabel,
-              })}
-        </Typography>
-      </TableCell>
-      <TableCell>
-        {property.address && (
+    <ListItem
+      button
+      style={{
+        marginBottom: 20,
+      }}
+      onClick={onClick}
+    >
+      <ListItemText
+        primary={
           <>
-            <Typography>{property.address.street1}</Typography>
-            {property.address.street2 && (
-              <Typography>{property.address.street2}</Typography>
+            <Box display="flex" justifyContent="space-between">
+              <Box display="flex" alignItems="center" mr={1}>
+                <PropertyAvatar
+                  type={property.type}
+                  className={
+                    property.status === 'vacant'
+                      ? classes.avatarVacant
+                      : classes.avatarOccupied
+                  }
+                />
+                <Typography variant="h5">{property.name}</Typography>
+              </Box>
+              <Chip
+                size="small"
+                label={
+                  <Typography variant="caption">
+                    {property.status === 'vacant' ? t('Vacant') : t('Occupied')}
+                  </Typography>
+                }
+                className={
+                  property.status === 'vacant'
+                    ? classes.chipVacant
+                    : classes.chipOccupied
+                }
+              />
+            </Box>
+            <Box mt={1}>
+              <Typography variant="caption" color="textSecondary">
+                {property.description}
+              </Typography>
+            </Box>
+            {/* <Box mt={1}>
+              {property.address && (
+                <>
+                  <Typography
+                    variant="caption"
+                    color="textSecondary"
+                    component="div"
+                  >
+                    {property.address.street1}
+                  </Typography>
+                  {property.address.street2 && (
+                    <Typography
+                      variant="caption"
+                      color="textSecondary"
+                      component="div"
+                    >
+                      {property.address.street2}
+                    </Typography>
+                  )}
+                  <Typography
+                    variant="caption"
+                    color="textSecondary"
+                    component="div"
+                  >
+                    {property.address.zipCode} {property.address.city}
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    color="textSecondary"
+                    component="div"
+                  >
+                    {property.address.state ? `${property.address.state} ` : ''}
+                    {property.address.country}
+                  </Typography>
+                </>
+              )}
+            </Box> */}
+            {property.status !== 'vacant' && (
+              <Box mt={1}>
+                <Typography variant="caption" color="textSecondary">
+                  {t('Occupied by {{tenant}}', {
+                    tenant: property.occupantLabel,
+                  })}
+                </Typography>
+              </Box>
             )}
-            <Typography>
-              {property.address.zipCode} {property.address.city}
-            </Typography>
-            <Typography>
-              {property.address.state ? `${property.address.state} ` : ''}
-              {property.address.country}
-            </Typography>
+            <Box my={1}>
+              <Typography variant="caption" color="textSecondary">
+                {t('Rent without expenses')}
+              </Typography>
+              <NumberFormat variant="h5" value={property.price} />
+            </Box>
           </>
-        )}
-      </TableCell>
-      <TableCell align="right">
-        <NumberFormat value={property.price} />
-      </TableCell>
-    </StyledTableRow>
+        }
+      />
+    </ListItem>
   );
 };
+
+const PropertyList = observer(() => {
+  const { t } = useTranslation('common');
+  const store = useContext(StoreContext);
+
+  return store.property.filteredItems?.length ? (
+    <List component="nav" aria-labelledby="property-list">
+      {store.property.filteredItems.map((property) => {
+        return (
+          <Paper key={property._id}>
+            <PropertyListItem property={property} />
+          </Paper>
+        );
+      })}
+    </List>
+  ) : (
+    <EmptyIllustration label={t('No properties found')} />
+  );
+});
 
 const Properties = observer(() => {
   const { t } = useTranslation('common');
@@ -154,35 +235,7 @@ const Properties = observer(() => {
         />
       }
     >
-      {store.property.filteredItems?.length ? (
-        <Paper variant="outlined" square>
-          <Table aria-label="property table">
-            <TableHead>
-              <TableRow>
-                <TableCell align="center" padding="checkbox"></TableCell>
-                <TableCell>
-                  <Typography>{t('Property')}</Typography>
-                </TableCell>
-                <TableCell>
-                  <Typography>{t('Location')}</Typography>
-                </TableCell>
-                <TableCell align="right">
-                  <Typography>{t('Rent')}</Typography>
-                </TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {store.property.filteredItems.map((property) => {
-                return (
-                  <PropertyTableRow key={property._id} property={property} />
-                );
-              })}
-            </TableBody>
-          </Table>
-        </Paper>
-      ) : (
-        <EmptyIllustration label={t('No properties found')} />
-      )}
+      <PropertyList />
       <NewPropertyDialog backPage={t('Properties')} backPath={router.asPath} />
     </Page>
   );

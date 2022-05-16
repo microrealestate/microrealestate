@@ -1,6 +1,5 @@
+import { Avatar, Box } from '@material-ui/core';
 import { memo, useMemo } from 'react';
-
-import { Avatar } from '@material-ui/core';
 
 const TenantAvatar = memo(function TenantAvatar({ tenant, className }) {
   const avatar = useMemo(
@@ -19,7 +18,13 @@ const TenantAvatar = memo(function TenantAvatar({ tenant, className }) {
     [tenant.name]
   );
 
-  return <Avatar className={className}>{avatar}</Avatar>;
+  return (
+    <Box mr={1}>
+      <Avatar variant="rounded" className={className}>
+        {avatar}
+      </Avatar>
+    </Box>
+  );
 });
 
 export default TenantAvatar;
