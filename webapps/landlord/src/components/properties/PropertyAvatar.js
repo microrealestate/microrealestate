@@ -1,21 +1,15 @@
-import { Avatar, makeStyles } from '@material-ui/core';
+import { Avatar, Box } from '@material-ui/core';
 
 import { memo } from 'react';
 import PropertyIcon from './PropertyIcon';
 
-const useStyles = makeStyles((theme) => ({
-  vacant: {
-    backgroundColor: theme.palette.success.main,
-  },
-}));
-
-const PropertyAvatar = ({ type, status }) => {
-  const classes = useStyles();
-
+const PropertyAvatar = ({ type, className }) => {
   return (
-    <Avatar className={status === 'vacant' ? classes.vacant : null}>
-      <PropertyIcon type={type} />
-    </Avatar>
+    <Box mr={1}>
+      <Avatar variant="rounded" className={className}>
+        <PropertyIcon type={type} />
+      </Avatar>
+    </Box>
   );
 };
 

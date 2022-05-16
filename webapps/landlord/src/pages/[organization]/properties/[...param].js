@@ -40,7 +40,7 @@ import { withAuthentication } from '../../../components/Authentication';
 const PropertyOverview = () => {
   const store = useContext(StoreContext);
   return (
-    <>
+    <Box py={2}>
       <CardRow>
         <Typography color="textSecondary" noWrap>
           {store.property.selected.name}
@@ -52,7 +52,7 @@ const PropertyOverview = () => {
         />
       </CardRow>
       <Map address={store.property.selected.address} />
-    </>
+    </Box>
   );
 };
 
