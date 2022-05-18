@@ -7,7 +7,7 @@ module.exports = {
   ...baseConfig,
   PRODUCTIVE: process.env.NODE_ENV === 'production',
   PORT: process.env.PORT || 8082,
-  DATA_DIRECTORY: process.env.PDF_DIRECTORY || path.join(root_dir, '/data'),
+  DATA_DIRECTORY: process.env.DATA_DIRECTORY || path.join(root_dir, '/data'),
   TEMPLATES_DIRECTORY:
     process.env.TEMPLATES_DIRECTORY || path.join(root_dir, '/templates'),
   TEMPORARY_DIRECTORY:
