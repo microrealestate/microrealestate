@@ -8,16 +8,14 @@ import {
   Paper,
   Tab,
   Tabs,
-  Typography,
 } from '@material-ui/core';
-import { CardRow, PageInfoCard } from '../../../../components/Cards';
 import { getStoreInstance, StoreContext } from '../../../../store';
 import { TabPanel, useTabChangeHelper } from '../../../../components/Tabs';
-import { useCallback, useContext, useMemo } from 'react';
-
+import { useCallback, useContext } from 'react';
 import AdditionalCostDiscountForm from '../../../../components/payment/AdditionalCostDiscountForm';
 import BalanceBar from '../../../../components/rents/BalanceBar';
 import BreadcrumbBar from '../../../../components/BreadcrumbBar';
+
 import DownloadLink from '../../../../components/DownloadLink';
 import { EmptyIllustration } from '../../../../components/Illustrations';
 import FullScreenDialogButton from '../../../../components/FullScreenDialogButton';
@@ -25,11 +23,13 @@ import HistoryIcon from '@material-ui/icons/History';
 import InternalNoteForm from '../../../../components/payment/InternalNoteForm';
 import { isServer } from '../../../../utils';
 import moment from 'moment';
-import { NumberFormat } from '../../../../utils/numberformat';
 import { observer } from 'mobx-react-lite';
 import Page from '../../../../components/Page';
+import { PageInfoCard } from '../../../../components/Cards';
+
 import PaymentForm from '../../../../components/payment/PaymentForm';
 import ReceiptIcon from '@material-ui/icons/Receipt';
+import RentDetails from '../../../../components/rents/RentDetails';
 import RentHistory from '../../../../components/rents/RentHistory';
 import SendIcon from '@material-ui/icons/Send';
 import SendRentEmailMenu from '../../../../components/rents/SendRentEmailMenu';
@@ -45,109 +45,6 @@ const StyledListItem = withStyles(() => ({
     paddingRight: 0,
   },
 }))(ListItem);
-
-const _rentDetails = (rent) => {
-  const turnToNegative = (amount) => (amount !== 0 ? amount * -1 : 0);
-
-  return {
-    balance: turnToNegative(rent.balance),
-    newBalance: rent.newBalance,
-    additionalCosts: turnToNegative(rent.extracharge),
-    rent: turnToNegative(
-      rent.totalWithoutBalanceAmount + rent.promo - rent.extracharge
-    ),
-    discount: rent.promo,
-    payment: rent.payment,
-    totalAmount: rent.totalAmount,
-  };
-};
-
-export const PaymentBalance = () => {
-  const { t } = useTranslation('common');
-  const store = useContext(StoreContext);
-  const rentDetails = useMemo(
-    () => _rentDetails(store.rent.selected),
-    [store.rent.selected]
-  );
-
-  return (
-    <>
-      <CardRow>
-        <Typography color="textSecondary" noWrap>
-          {t('Prev balance')}
-        </Typography>
-        <NumberFormat
-          color="textSecondary"
-          value={rentDetails.balance}
-          noWrap
-          withColor
-        />
-      </CardRow>
-      <CardRow>
-        <Typography color="textSecondary" noWrap>
-          {t('Rent')}
-        </Typography>
-        <NumberFormat color="textSecondary" value={rentDetails.rent} noWrap />
-      </CardRow>
-      <CardRow>
-        <Typography color="textSecondary" noWrap>
-          {t('Additional costs')}
-        </Typography>
-        <NumberFormat
-          color="textSecondary"
-          value={rentDetails.additionalCosts}
-          noWrap
-        />
-      </CardRow>
-      <CardRow pb={1.5}>
-        <Typography color="textSecondary" noWrap>
-          {t('Discount')}
-        </Typography>
-        <NumberFormat
-          color="textSecondary"
-          value={rentDetails.discount}
-          noWrap
-        />
-      </CardRow>
-      <Divider />
-      <CardRow pt={1.5}>
-        <Typography color="textSecondary" noWrap>
-          {t('Total to pay')}
-        </Typography>
-        <NumberFormat
-          color="textSecondary"
-          value={rentDetails.totalAmount}
-          noWrap
-        />
-      </CardRow>
-      <CardRow pb={1.5}>
-        <Typography color="textSecondary" noWrap>
-          {t('Settlements')}
-        </Typography>
-        <NumberFormat
-          color="textSecondary"
-          value={rentDetails.payment}
-          noWrap
-          withColor
-        />
-      </CardRow>
-      <Divider />
-      <CardRow pt={1.5}>
-        <Typography color="textSecondary" noWrap>
-          {rentDetails.newBalance < 0
-            ? t('Debit balance')
-            : t('Credit balance')}
-        </Typography>
-        <NumberFormat
-          color="textSecondary"
-          value={rentDetails.newBalance}
-          noWrap
-          withColor
-        />
-      </CardRow>
-    </>
-  );
-};
 
 const hashes = ['payments', 'costanddiscount', 'internalnote'];
 
@@ -271,7 +168,7 @@ const RentPayment = observer(() => {
                 </Box>
                 <Divider />
                 <Box pt={1}>
-                  <PaymentBalance />
+                  <RentDetails rent={store.rent.selected} />
                 </Box>
               </PageInfoCard>
             </Box>

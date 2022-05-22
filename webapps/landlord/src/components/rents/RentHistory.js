@@ -1,4 +1,11 @@
-import { Box, Paper, Typography } from '@material-ui/core';
+import {
+  Box,
+  List,
+  ListItem,
+  ListItemText,
+  Paper,
+  Typography,
+} from '@material-ui/core';
 import React, {
   memo,
   useContext,
@@ -8,21 +15,20 @@ import React, {
   useState,
 } from 'react';
 
+import getConfig from 'next/config';
 import { getPeriod } from './RentPeriod';
-import Link from '../Link';
 import Loading from '../Loading';
 import moment from 'moment';
-import { NumberFormat } from '../../utils/numberformat';
+import RentDetails from './RentDetails';
 import { StoreContext } from '../../store';
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
-import TableHead from '@material-ui/core/TableHead';
-import TableRow from '@material-ui/core/TableRow';
 import useTranslation from 'next-translate/useTranslation';
 
-const NavTableRow = React.forwardRef(function NavTableRow(
-  { tenantId, tenant, rent, selected },
+const {
+  publicRuntimeConfig: { BASE_PATH },
+} = getConfig();
+
+const RentListItem = React.forwardRef(function RentListItem(
+  { rent, tenant /*, selected*/ },
   ref
 ) {
   const { t } = useTranslation('common');
@@ -35,42 +41,45 @@ const NavTableRow = React.forwardRef(function NavTableRow(
     date: moment(rent.term, 'YYYYMMDDHHMM').format('MMM YYYY'),
   });
   return (
-    <TableRow ref={ref} key={rent.term} hover selected={selected} size="small">
-      <TableCell>
-        <Link
-          color="inherit"
-          variant="body1"
-          underline="always"
-          href={`/${store.organization.selected.name}/payment/${tenantId}/${
-            rent.term
-          }/${encodeURI(backPage)}/${encodeURIComponent(backPath)}`}
-        >
-          {getPeriod(t, rent.term, tenant.occupant.frequency)}
-        </Link>
-      </TableCell>
-      <TableCell align="right">
-        <NumberFormat
-          variant="body1"
-          value={rent.totalWithoutBalanceAmount + rent.promo - rent.extracharge}
+    <Paper>
+      <ListItem
+        button
+        component="a"
+        ref={ref}
+        // selected={selected}
+        style={{
+          marginBottom: 20,
+        }}
+        href={`${BASE_PATH}/${store.organization.selected.locale}/${
+          store.organization.selected.name
+        }/payment/${tenant.occupant._id}/${rent.term}/${encodeURI(
+          backPage
+        )}/${encodeURIComponent(backPath)}`}
+      >
+        <ListItemText
+          primary={
+            <>
+              <Box>
+                <Typography variant="h5" component="div">
+                  {getPeriod(t, rent.term, tenant.occupant.frequency)}
+                </Typography>
+              </Box>
+              <Box mt={1} px={1}>
+                <RentDetails rent={rent} />
+              </Box>
+              {!!rent.description && (
+                <Box mt={2} px={1}>
+                  <Typography color="textSecondary">{t('Note')}</Typography>
+                  <Typography variant="caption" color="textSecondary">
+                    {rent.description}
+                  </Typography>
+                </Box>
+              )}
+            </>
+          }
         />
-      </TableCell>
-      <TableCell align="right">
-        {rent.extracharge > 0 && (
-          <NumberFormat variant="body1" value={rent.extracharge} />
-        )}
-      </TableCell>
-      <TableCell align="right">
-        {rent.promo > 0 && <NumberFormat variant="body1" value={rent.promo} />}
-      </TableCell>
-      <TableCell align="right">
-        {rent.payment > 0 && (
-          <NumberFormat variant="body1" value={rent.payment} withColor />
-        )}
-      </TableCell>
-      <TableCell align="right">
-        <NumberFormat variant="body1" value={rent.newBalance} />
-      </TableCell>
-    </TableRow>
+      </ListItem>
+    </Paper>
   );
 });
 
@@ -131,47 +140,21 @@ const RentHistory = ({ tenantId }) => {
               </Typography>
             )}
           </Box>
-          <Paper variant="outlined" square>
-            <Table stickyHeader aria-label="rents history table">
-              <TableHead>
-                <TableRow>
-                  <TableCell>
-                    <Typography>{t('Period')}</Typography>
-                  </TableCell>
-                  <TableCell align="right">
-                    <Typography>{t('Rent')}</Typography>
-                  </TableCell>
-                  <TableCell align="right">
-                    <Typography>{t('Additional costs')}</Typography>
-                  </TableCell>
-                  <TableCell align="right">
-                    <Typography>{t('Discounts')}</Typography>
-                  </TableCell>
-                  <TableCell align="right">
-                    <Typography>{t('Settlement')}</Typography>
-                  </TableCell>
-                  <TableCell align="right">
-                    <Typography>{t('Balance')}</Typography>
-                  </TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {tenant?.rents?.map((rent) => {
-                  const isSelected = String(rent.term) === selectedTerm;
-                  return (
-                    <NavTableRow
-                      key={rent.term}
-                      ref={isSelected ? selectedRowRef : null}
-                      tenantId={tenantId}
-                      tenant={tenant}
-                      rent={rent}
-                      selected={isSelected}
-                    />
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </Paper>
+
+          <List component="nav" aria-labelledby="rent-history">
+            {tenant?.rents?.map((rent) => {
+              const isSelected = String(rent.term) === selectedTerm;
+              return (
+                <RentListItem
+                  key={rent.term}
+                  ref={isSelected ? selectedRowRef : null}
+                  rent={rent}
+                  tenant={tenant}
+                  selected={isSelected}
+                />
+              );
+            })}
+          </List>
         </>
       )}
     </>

@@ -1,9 +1,17 @@
-import { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
 import Alert from '@material-ui/lab/Alert';
 import { observer } from 'mobx-react-lite';
 import Snackbar from '@material-ui/core/Snackbar';
 import { StoreContext } from '../store';
+import useTranslation from 'next-translate/useTranslation';
 
 export function useComponentMountedRef() {
   const mountedRef = useRef(false);
@@ -85,6 +93,43 @@ export function useInterval(fn, delay) {
   );
 
   return { start, clear, isRunning };
+}
+
+export function usePaymentTypes() {
+  const { t } = useTranslation('common');
+
+  return useMemo(() => {
+    const itemList = [
+      {
+        id: 'cheque',
+        label: t('Cheque'),
+        value: 'cheque',
+      },
+      {
+        id: 'cash',
+        label: t('Cash'),
+        value: 'cash',
+      },
+      {
+        id: 'levy',
+        label: t('Levy'),
+        value: 'levy',
+      },
+      {
+        id: 'transfer',
+        label: t('Transfer'),
+        value: 'transfer',
+      },
+    ];
+
+    return {
+      itemList,
+      itemMap: itemList.reduce((acc, { id, label, value }) => {
+        acc[id] = { label, value };
+        return acc;
+      }, {}),
+    };
+  }, [t]);
 }
 
 export function useToast() {

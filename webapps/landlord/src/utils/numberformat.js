@@ -38,31 +38,50 @@ export const useFormatNumber = () => {
   };
 };
 
+const PositiveNumber = withStyles((theme) => ({
+  root: {
+    color: theme.palette.success.dark,
+  },
+}))(Typography);
+
+const NegativeNumber = withStyles((theme) => ({
+  root: {
+    color: theme.palette.warning.dark,
+  },
+}))(Typography);
+
 export const NumberFormat = ({
   value,
   minimumFractionDigits = 2,
   style = 'currency',
   withColor,
+  debitColor,
+  creditColor,
   ...props
 }) => {
   const formatNumber = useFormatNumber();
 
-  const StyledTypography = withStyles((theme) => {
-    const classes = {};
-    if (withColor && value !== 0) {
-      classes.root = {
-        color:
-          value > 0 ? theme.palette.success.dark : theme.palette.warning.dark,
-      };
-    }
-    return classes;
-  })(Typography);
+  if ((withColor && value < 0) || debitColor) {
+    return (
+      <NegativeNumber noWrap {...props}>
+        {formatNumber(value, style, minimumFractionDigits)}
+      </NegativeNumber>
+    );
+  }
+
+  if ((withColor && value > 0) || creditColor) {
+    return (
+      <PositiveNumber noWrap {...props}>
+        {formatNumber(value, style, minimumFractionDigits)}
+      </PositiveNumber>
+    );
+  }
 
   return (
-    <StyledTypography noWrap {...props}>
+    <Typography noWrap {...props}>
       {value !== undefined && value != null
         ? formatNumber(value, style, minimumFractionDigits)
         : '--'}
-    </StyledTypography>
+    </Typography>
   );
 };
