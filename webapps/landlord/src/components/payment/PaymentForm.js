@@ -15,6 +15,7 @@ import { Fragment, useCallback, useContext, useMemo } from 'react';
 import _ from 'lodash';
 import moment from 'moment';
 import { StoreContext } from '../../store';
+import { usePaymentTypes } from '../../utils/hooks';
 import useTranslation from 'next-translate/useTranslation';
 
 const validationSchema = Yup.object().shape({
@@ -48,6 +49,7 @@ const emptyPayment = {
 const PaymentForm = ({ onSubmit }) => {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
+  const paymentTypes = usePaymentTypes();
 
   const initialValues = useMemo(
     () => ({
@@ -65,32 +67,6 @@ const PaymentForm = ({ onSubmit }) => {
         : [emptyPayment],
     }),
     [store.rent.selected]
-  );
-
-  const paymentTypes = useMemo(
-    () => [
-      {
-        id: 'cheque',
-        label: t('Cheque'),
-        value: 'cheque',
-      },
-      {
-        id: 'cash',
-        label: t('Cash'),
-        value: 'cash',
-      },
-      {
-        id: 'levy',
-        label: t('Levy'),
-        value: 'levy',
-      },
-      {
-        id: 'transfer',
-        label: t('Transfer'),
-        value: 'transfer',
-      },
-    ],
-    [t]
   );
 
   const _onSubmit = useCallback(
@@ -160,7 +136,7 @@ const PaymentForm = ({ onSubmit }) => {
                           <SelectField
                             label={t('Type')}
                             name={`payments[${index}].type`}
-                            values={paymentTypes}
+                            values={paymentTypes.itemList}
                           />
                         </Grid>
                         {payments[index].type !== 'cash' && (

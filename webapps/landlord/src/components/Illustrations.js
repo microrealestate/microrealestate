@@ -23,13 +23,7 @@ const Illustration = ({
     width={width}
   >
     <Box height={height} width={width} position="relative">
-      <Image
-        src={`${BASE_PATH}/${imgName}.svg`}
-        width="100%"
-        height={height}
-        layout="fill"
-        alt={alt}
-      />
+      <Image src={`${BASE_PATH}/${imgName}.svg`} layout="fill" alt={alt} />
     </Box>
     {!!label && (
       <Box pt={1} color="text.disabled">

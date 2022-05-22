@@ -54,8 +54,8 @@
   },
   "devDependencies": {
     "@babel/core": "7.17.10",
-    "fdir": "5.2.0",
-    "@netlify/plugin-nextjs": "4.7.0"
+    "@netlify/plugin-nextjs": "4.7.0",
+    "fdir": "5.2.0"
   },
   "babel": {
     "presets": [
