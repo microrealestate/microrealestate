@@ -1,4 +1,4 @@
-import { Tab, Tabs } from '@material-ui/core';
+import { Paper, Tab, Tabs } from '@material-ui/core';
 import { TabPanel, useTabChangeHelper } from '../Tabs';
 
 import BillingForm from './forms/BillingForm';
@@ -16,7 +16,7 @@ export default function TenantTabs({ onSubmit /*, setError*/, readOnly }) {
 
   return (
     tabsReady && (
-      <>
+      <Paper>
         <Tabs
           variant="scrollable"
           value={tabSelectedIndex}
@@ -40,7 +40,7 @@ export default function TenantTabs({ onSubmit /*, setError*/, readOnly }) {
         <TabPanel value={tabSelectedIndex} index={3}>
           <DocumentsForm onSubmit={onSubmit} readOnly={readOnly} />
         </TabPanel>
-      </>
+      </Paper>
     )
   );
 }

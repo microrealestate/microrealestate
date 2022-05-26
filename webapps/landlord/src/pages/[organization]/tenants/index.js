@@ -17,6 +17,7 @@ import _ from 'lodash';
 import AddIcon from '@material-ui/icons/Add';
 import { EmptyIllustration } from '../../../components/Illustrations';
 import { isServer } from '../../../utils';
+import { MobileButton } from '../../../components/MobileMenuButton';
 import moment from 'moment';
 import { observer } from 'mobx-react-lite';
 import Page from '../../../components/Page';
@@ -37,12 +38,12 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: theme.palette.text.disabled,
   },
   chipInProgress: {
-    color: theme.palette.common.white,
+    color: theme.palette.info.contrastText,
     backgroundColor: theme.palette.success.dark,
     borderRadius: 4,
   },
   chipTerminated: {
-    color: theme.palette.common.white,
+    color: theme.palette.info.contrastText,
     backgroundColor: theme.palette.text.disabled,
     borderRadius: 4,
   },
@@ -212,22 +213,23 @@ const Tenants = observer(() => {
 
   return (
     <Page
+      title={t('Tenants')}
       ActionToolbar={
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          size={isMobile ? 'small' : 'medium'}
-          onClick={onNewTenant}
-        >
-          {t('New tenant')}
-        </Button>
-      }
-      NavBar={
         !isMobile ? (
-          <Typography color="textSecondary" variant="h5" noWrap>
-            {t('Tenants')}
-          </Typography>
-        ) : null
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={onNewTenant}
+          >
+            {t('New tenant')}
+          </Button>
+        ) : (
+          <MobileButton
+            label={t('New tenant')}
+            Icon={AddIcon}
+            onClick={onNewTenant}
+          />
+        )
       }
       SearchBar={
         <SearchFilterBar

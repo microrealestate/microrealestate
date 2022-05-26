@@ -28,10 +28,8 @@ export default function RentOverview() {
           >
             <span>
               <FullScreenDialogButton
-                variant="contained"
-                size="small"
                 buttonLabel={t('Rent schedule')}
-                startIcon={<HistoryIcon />}
+                Icon={HistoryIcon}
                 dialogTitle={t('Rent schedule')}
                 cancelButtonLabel={t('Close')}
                 showCancel

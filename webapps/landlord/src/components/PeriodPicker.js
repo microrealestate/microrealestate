@@ -1,4 +1,4 @@
-import { Box, IconButton } from '@material-ui/core';
+import { Box, Hidden, IconButton } from '@material-ui/core';
 import { memo, useCallback, useState } from 'react';
 
 import ArrowLeftIcon from '@material-ui/icons/ArrowLeft';
@@ -6,7 +6,7 @@ import ArrowRightIcon from '@material-ui/icons/ArrowRight';
 import { DatePicker } from '@material-ui/pickers';
 import moment from 'moment';
 
-const PeriodPicker = ({ value, period, format, onChange }) => {
+function PeriodPicker({ value, period, format, onChange }) {
   const [selectedPeriod, setSelectedPeriod] = useState(value);
 
   const _onPeriodChange = useCallback(
@@ -29,26 +29,36 @@ const PeriodPicker = ({ value, period, format, onChange }) => {
 
   return (
     <Box display="flex" alignItems="center">
-      <IconButton
-        onClick={_onPreviousPeriod}
-        aria-label="previous period"
-        size="small"
-      >
-        <ArrowLeftIcon />
-      </IconButton>
-      <DatePicker
-        autoOk
-        views={[period]}
-        value={selectedPeriod}
-        onChange={_onPeriodChange}
-        size="small"
-        format={format}
-      />
-      <IconButton onClick={_onNextPeriod} aria-label="next period" size="small">
-        <ArrowRightIcon />
-      </IconButton>
+      <Hidden smDown>
+        <IconButton
+          onClick={_onPreviousPeriod}
+          aria-label="previous period"
+          size="small"
+        >
+          <ArrowLeftIcon />
+        </IconButton>
+      </Hidden>
+      <Box width={100}>
+        <DatePicker
+          autoOk
+          views={[period]}
+          value={selectedPeriod}
+          onChange={_onPeriodChange}
+          size="small"
+          format={format}
+        />
+      </Box>
+      <Hidden smDown>
+        <IconButton
+          onClick={_onNextPeriod}
+          aria-label="next period"
+          size="small"
+        >
+          <ArrowRightIcon />
+        </IconButton>
+      </Hidden>
     </Box>
   );
-};
+}
 
 export default memo(PeriodPicker);

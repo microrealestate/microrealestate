@@ -1,10 +1,4 @@
-import {
-  Box,
-  Grid,
-  Hidden,
-  Typography,
-  useMediaQuery,
-} from '@material-ui/core';
+import { Box, Grid, Hidden, Typography } from '@material-ui/core';
 import { getStoreInstance, StoreContext } from '../../../../store';
 import { useCallback, useContext, useMemo } from 'react';
 
@@ -29,10 +23,19 @@ import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 import { withAuthentication } from '../../../../components/Authentication';
 
-const PeriodToolbar = ({ onChange }) => {
+function MobileToolbar({ rentPeriod, onChange }) {
+  return (
+    <PeriodPicker
+      format="MMM YYYY"
+      period="month"
+      value={rentPeriod}
+      onChange={onChange}
+    />
+  );
+}
+
+function DesktopToolbar({ rentPeriod, onChange }) {
   const { t } = useTranslation('common');
-  const router = useRouter();
-  const rentPeriod = moment(router.query.yearMonth, 'YYYY.MM');
   return (
     <Grid container alignItems="center" spacing={2} wrap="nowrap">
       <Grid item>
@@ -50,14 +53,29 @@ const PeriodToolbar = ({ onChange }) => {
       </Grid>
     </Grid>
   );
-};
+}
+
+function PeriodToolbar({ onChange }) {
+  const router = useRouter();
+  const rentPeriod = moment(router.query.yearMonth, 'YYYY.MM');
+
+  return (
+    <>
+      <Hidden smDown>
+        <DesktopToolbar rentPeriod={rentPeriod} onChange={onChange} />
+      </Hidden>
+      <Hidden mdUp>
+        <MobileToolbar rentPeriod={rentPeriod} onChange={onChange} />
+      </Hidden>
+    </>
+  );
+}
 
 const Rents = observer(() => {
   console.log('Rents functional component');
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const router = useRouter();
-  const isMobile = useMediaQuery((theme) => theme.breakpoints.down('sm'));
 
   const onSearch = useCallback(
     (status, searchText) => {
@@ -115,12 +133,11 @@ const Rents = observer(() => {
 
   return (
     <Page
+      title={t('Rents')}
       ActionToolbar={
         <FullScreenDialogButton
-          variant="contained"
-          size={isMobile ? 'small' : 'medium'}
           buttonLabel={t('Send mass emails')}
-          startIcon={<SendIcon />}
+          Icon={SendIcon}
           dialogTitle={t('Send mass emails')}
           cancelButtonLabel={t('Close')}
           showCancel

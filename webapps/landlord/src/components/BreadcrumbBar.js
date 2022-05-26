@@ -1,22 +1,16 @@
-import {
-  Box,
-  Breadcrumbs,
-  Button,
-  Typography,
-  useMediaQuery,
-} from '@material-ui/core';
+import { Box, Breadcrumbs, Typography, useMediaQuery } from '@material-ui/core';
 
 import { memo, useCallback } from 'react';
-import ArrowBackIosIcon from '@material-ui/icons/ArrowBackIos';
+import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import Link from './Link';
+import { MobileButton } from './MobileMenuButton';
 import NavigateNextIcon from '@material-ui/icons/NavigateNext';
 import { useRouter } from 'next/router';
-import useTranslation from 'next-translate/useTranslation';
 
 function BreadcrumbBar({ backPath, backPage, currentPage }) {
-  const { t } = useTranslation('common');
   const router = useRouter();
   const isMobile = useMediaQuery((theme) => theme.breakpoints.down('sm'));
+
   const handleClick = useCallback(() => {
     router.push(backPath);
   }, [router, backPath]);
@@ -32,19 +26,11 @@ function BreadcrumbBar({ backPath, backPage, currentPage }) {
     </Breadcrumbs>
   ) : (
     <Box display="flex" alignItems="center" width="100%">
-      <Button
-        startIcon={<ArrowBackIosIcon />}
-        variant="contained"
-        size="small"
+      <MobileButton
+        // label={t('Back')}
+        Icon={ArrowBackIcon}
         onClick={handleClick}
-      >
-        {t('Back')}
-      </Button>
-      <Box flexGrow={1}>
-        <Typography variant="h6" align="center" noWrap>
-          {currentPage}
-        </Typography>
-      </Box>
+      />
     </Box>
   );
 }

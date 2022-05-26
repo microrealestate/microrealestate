@@ -14,6 +14,7 @@ import ContractOverviewCard from '../../../components/tenants/ContractOverviewCa
 import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
 import { isServer } from '../../../utils';
+import { MobileButton } from '../../../components/MobileMenuButton';
 import moment from 'moment';
 import { observer } from 'mobx-react-lite';
 import Page from '../../../components/Page';
@@ -171,14 +172,22 @@ const Tenant = observer(() => {
         store.tenant.selected.beginDate &&
         store.tenant.selected.endDate &&
         !store.tenant.selected.terminationDate &&
-        !store.tenant.selected.stepperMode
+        !store.tenant.selected.stepperMode &&
+        !store.tenant.selected.terminated
       ),
     [store.tenant.selected]
   );
 
   const showEditButton = useMemo(
-    () => !store.tenant.selected.stepperMode,
-    [store.tenant.selected]
+    () =>
+      !store.tenant.selected.stepperMode &&
+      store.tenant.selected.properties?.length > 0 &&
+      readOnly,
+    [
+      readOnly,
+      store.tenant.selected.properties?.length,
+      store.tenant.selected.stepperMode,
+    ]
   );
 
   const onLoadContract = useCallback(async () => {
@@ -266,60 +275,90 @@ const Tenant = observer(() => {
 
   return (
     <Page
+      title={store.tenant.selected.name}
       ActionToolbar={
-        <Grid container spacing={!isMobile ? 2 : 1}>
-          <Grid item>
-            <Tooltip
-              title={
-                store.tenant.selected.hasPayments
-                  ? t(
-                      'This tenant cannot be deleted because some rent settlements have been recorded'
-                    )
-                  : ''
-              }
-            >
-              <span>
+        !isMobile ? (
+          <Grid container spacing={2}>
+            <Grid item>
+              <Tooltip
+                title={
+                  store.tenant.selected.hasPayments
+                    ? t(
+                        'This tenant cannot be deleted because some rent settlements have been recorded'
+                      )
+                    : ''
+                }
+              >
+                <span>
+                  <Button
+                    variant="contained"
+                    startIcon={<DeleteIcon />}
+                    disabled={store.tenant.selected.hasPayments}
+                    onClick={handleDeleteTenant}
+                  >
+                    {t('Delete')}
+                  </Button>
+                </span>
+              </Tooltip>
+            </Grid>
+            {showTerminateLeaseButton && (
+              <Grid item>
                 <Button
                   variant="contained"
-                  startIcon={<DeleteIcon />}
-                  disabled={store.tenant.selected.hasPayments}
-                  size={isMobile ? 'small' : 'medium'}
-                  onClick={handleDeleteTenant}
+                  startIcon={<StopIcon />}
+                  disabled={store.tenant.selected.terminated}
+                  onClick={handleTerminateLease}
                 >
-                  {t('Delete')}
+                  {t('Terminate')}
                 </Button>
-              </span>
-            </Tooltip>
+              </Grid>
+            )}
+            {showEditButton && (
+              <Grid item>
+                <Button
+                  variant="contained"
+                  startIcon={<EditIcon />}
+                  disabled={
+                    !(!!store.tenant.selected.properties?.length && readOnly)
+                  }
+                  onClick={handleEditTenant}
+                >
+                  {t('Edit')}
+                </Button>
+              </Grid>
+            )}
           </Grid>
-          {showTerminateLeaseButton && (
-            <Grid item>
-              <Button
-                variant="contained"
-                startIcon={<StopIcon />}
-                disabled={store.tenant.selected.terminated}
-                size={isMobile ? 'small' : 'medium'}
-                onClick={handleTerminateLease}
-              >
-                {t('Terminate')}
-              </Button>
-            </Grid>
-          )}
-          {showEditButton && (
-            <Grid item>
-              <Button
-                variant="contained"
-                startIcon={<EditIcon />}
-                disabled={
-                  !(!!store.tenant.selected.properties?.length && readOnly)
-                }
-                size={isMobile ? 'small' : 'medium'}
-                onClick={handleEditTenant}
-              >
-                {t('Edit')}
-              </Button>
-            </Grid>
-          )}
-        </Grid>
+        ) : (
+          <Grid container>
+            {!store.tenant.selected.hasPayments && (
+              <Grid item>
+                <MobileButton
+                  label={t('Delete')}
+                  Icon={DeleteIcon}
+                  onClick={handleDeleteTenant}
+                />
+              </Grid>
+            )}
+            {showTerminateLeaseButton && (
+              <Grid item>
+                <MobileButton
+                  label={t('Terminate')}
+                  Icon={StopIcon}
+                  onClick={handleTerminateLease}
+                />
+              </Grid>
+            )}
+            {showEditButton && (
+              <Grid item>
+                <MobileButton
+                  label={t('Edit')}
+                  Icon={EditIcon}
+                  onClick={handleEditTenant}
+                />
+              </Grid>
+            )}
+          </Grid>
+        )
       }
       NavBar={
         <BreadcrumbBar
@@ -336,10 +375,8 @@ const Tenant = observer(() => {
       ) : (
         <>
           <Grid container spacing={5}>
-            <Grid item sm={12} md={7} lg={8}>
-              <Paper>
-                <TenantTabs onSubmit={onSubmit} readOnly={readOnly} />
-              </Paper>
+            <Grid item xs={12} md={7} lg={8}>
+              <TenantTabs onSubmit={onSubmit} readOnly={readOnly} />
             </Grid>
             {!!store.tenant.selected.properties && (
               <Grid item xs={12} md={5} lg={4}>

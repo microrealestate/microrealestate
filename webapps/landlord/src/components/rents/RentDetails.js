@@ -40,7 +40,7 @@ export default function RentDetails({ rent }) {
         <Typography color="textSecondary" noWrap>
           {rentDetails.balance === 0
             ? t('Previous balance')
-            : rentDetails.isDebitNewBalance
+            : rentDetails.isDebitBalance
             ? t('Previous debit balance')
             : t('Previous credit balance')}
         </Typography>

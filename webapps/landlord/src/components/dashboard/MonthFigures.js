@@ -1,6 +1,7 @@
 import {
   Box,
   Grid,
+  Hidden,
   List,
   ListItem,
   Paper,
@@ -23,11 +24,13 @@ function TenantListItem({ tenant, balance, onClick }) {
   return (
     <ListItem button onClick={onClick}>
       <Box display="flex" alignItems="center" width="100%">
-        <Box mr={1}>
-          <TenantAvatar tenant={tenant} />
-        </Box>
+        <Hidden smDown>
+          <Box mr={1}>
+            <TenantAvatar tenant={tenant} />
+          </Box>
+        </Hidden>
         <Box flexGrow={1}>
-          <Typography>{tenant.name}</Typography>
+          <Typography variant="body2">{tenant.name}</Typography>
         </Box>
         <NumberFormat value={balance} withColor variant="h6" />
       </Box>

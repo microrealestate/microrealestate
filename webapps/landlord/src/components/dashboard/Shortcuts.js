@@ -90,7 +90,7 @@ export default function Shortcuts({ firstConnection = false }) {
                 </Box>
               </Grid>
               <Grid item xs={12} md={6}>
-                <Box p={3} height={362} display="flex" alignItems="center">
+                <Box p={3} display="flex" alignItems="center">
                   <Grid container spacing={2}>
                     <Grid item xs={12}>
                       <ShortcutButton
