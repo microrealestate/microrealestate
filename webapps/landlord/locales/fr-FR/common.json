@@ -371,7 +371,7 @@
   "The tenant belongs to": "Le locataire est",
   "Third-parties": "Tierces parties",
   "This contract is currently used, only some fields can be updated": "Ce contrat est en cours d'utilisation, seuls certains champs peuvent être modifiés",
-  "This tenant cannot be deleted because some rent settlements have been recorded": "Ce locataire ne peut être supprimé parce que certains règlements de loyers ont été enregistrés",
+  "This tenant cannot be deleted because some rent settlements have been recorded": "Ce locataire ne peut être supprimé car certains règlements de loyers ont été enregistrés",
   "This user is already registered": "Cet utilisateur est déjà enregistré",
   "Top 5 of not paid rents": "Top 5 des loyers non payés",
   "Total": "Total",

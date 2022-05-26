@@ -24,6 +24,7 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import HistoryIcon from '@material-ui/icons/History';
 import { isServer } from '../../../utils';
 import Map from '../../../components/Map';
+import { MobileButton } from '../../../components/MobileMenuButton';
 import moment from 'moment';
 import { NumberFormat } from '../../../utils/numberformat';
 import { observer } from 'mobx-react-lite';
@@ -216,15 +217,23 @@ const Property = observer(() => {
 
   return (
     <Page
+      title={store.property.selected.name}
       ActionToolbar={
-        <Button
-          variant="contained"
-          startIcon={<DeleteIcon />}
-          size={isMobile ? 'small' : 'medium'}
-          onClick={onConfirmDeleteProperty}
-        >
-          {t('Delete')}
-        </Button>
+        !isMobile ? (
+          <Button
+            variant="contained"
+            startIcon={<DeleteIcon />}
+            onClick={onConfirmDeleteProperty}
+          >
+            {t('Delete')}
+          </Button>
+        ) : (
+          <MobileButton
+            label={t('Delete')}
+            Icon={DeleteIcon}
+            onClick={onConfirmDeleteProperty}
+          />
+        )
       }
       NavBar={
         <BreadcrumbBar

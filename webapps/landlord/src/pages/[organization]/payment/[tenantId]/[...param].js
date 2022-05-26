@@ -119,6 +119,7 @@ const RentPayment = observer(() => {
 
   return (
     <Page
+      title={store.rent.selected.occupant.name}
       NavBar={
         <BreadcrumbBar
           backPath={backPath}
@@ -151,10 +152,8 @@ const RentPayment = observer(() => {
                 title={t('Rent')}
                 Toolbar={
                   <FullScreenDialogButton
-                    variant="contained"
                     buttonLabel={t('Rent schedule')}
-                    size="small"
-                    startIcon={<HistoryIcon />}
+                    Icon={HistoryIcon}
                     dialogTitle={t('Rent schedule')}
                     cancelButtonLabel={t('Close')}
                     showCancel

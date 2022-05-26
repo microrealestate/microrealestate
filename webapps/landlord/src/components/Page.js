@@ -2,11 +2,11 @@ import {
   AppBar,
   Box,
   Container,
-  Hidden,
   IconButton,
   Toolbar,
   Tooltip,
   Typography,
+  useMediaQuery,
 } from '@material-ui/core';
 import { memo, useCallback, useContext, useEffect, useState } from 'react';
 
@@ -54,109 +54,121 @@ const EnvironmentBar = memo(function EnvironmentBar() {
   ) : null;
 });
 
-const Toolbars = memo(function Toolbars({
-  visible,
+const MobileToolbars = ({
   loading,
   NavBar,
   SearchBar,
   ActionBar,
   maxWidth,
-}) {
+  onSignOut,
+}) => {
+  const store = useContext(StoreContext);
+
+  return (
+    // <ElevationScroll>
+    <AppBar position="sticky">
+      <EnvironmentBar />
+      <MobileMenu>
+        <Container maxWidth={maxWidth}>
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+          >
+            {!!(
+              store.organization.items && store.organization.items.length
+            ) && <OrganizationSwitcher />}
+            <Box flexGrow={1}>{!loading && SearchBar}</Box>
+            <IconButton
+              aria-label="sign out"
+              onClick={onSignOut}
+              color="inherit"
+              data-cy="signout"
+            >
+              <PowerSettingsNewIcon />
+            </IconButton>
+          </Box>
+        </Container>
+      </MobileMenu>
+      {!loading ? (
+        <Container maxWidth={maxWidth}>
+          {NavBar ? (
+            <Box display="flex" justifyContent="space-between">
+              <Toolbar disableGutters>{NavBar}</Toolbar>
+              {!!ActionBar && <Toolbar disableGutters>{ActionBar}</Toolbar>}
+            </Box>
+          ) : (
+            <Box display="flex" justifyContent="end">
+              {!!ActionBar && <Toolbar disableGutters>{ActionBar}</Toolbar>}
+            </Box>
+          )}
+        </Container>
+      ) : null}
+    </AppBar>
+    // </ElevationScroll>
+  );
+};
+
+const DesktopToolbars = ({
+  loading,
+  NavBar,
+  SearchBar,
+  ActionBar,
+  maxWidth,
+  onSignOut,
+}) => {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
 
-  const signOut = useCallback(
-    async (event) => {
-      event.preventDefault();
-      await store.user.signOut();
-      window.location.assign(BASE_PATH); // will be redirected to /signin
-    },
-    [store.user]
-  );
-
-  return visible ? (
+  return (
     <>
       <ElevationScroll>
         <AppBar position="sticky">
           <EnvironmentBar />
-          <Hidden smDown>
-            <Container maxWidth={maxWidth}>
-              <Toolbar disableGutters>
-                <Box display="flex" alignItems="center" width="100%">
-                  <Typography variant="h5">{APP_NAME}</Typography>
-                  <Box flexGrow={1} mx={10}>
-                    {!loading && SearchBar}
-                  </Box>
-                  <Box display="flex">
-                    {!!(
-                      store.organization.items &&
-                      store.organization.items.length
-                    ) && <OrganizationSwitcher />}
-                    <Tooltip title={t('Sign out')} aria-label="sign out">
-                      <IconButton
-                        aria-label="sign out"
-                        onClick={signOut}
-                        color="default"
-                        data-cy="signout"
-                      >
-                        <PowerSettingsNewIcon />
-                      </IconButton>
-                    </Tooltip>
-                  </Box>
+
+          <Container maxWidth={maxWidth}>
+            <Toolbar disableGutters>
+              <Box display="flex" alignItems="center" width="100%">
+                <Typography variant="h5">{APP_NAME}</Typography>
+                <Box flexGrow={1} mx={10}>
+                  {!loading && SearchBar}
                 </Box>
-              </Toolbar>
-            </Container>
-          </Hidden>
-          <Hidden mdUp>
-            <MobileMenu>
-              <Container maxWidth={maxWidth}>
-                <Box
-                  display="flex"
-                  justifyContent="space-between"
-                  alignItems="center"
-                >
+                <Box display="flex">
                   {!!(
                     store.organization.items && store.organization.items.length
                   ) && <OrganizationSwitcher />}
-                  <Box flexGrow={1}>{!loading && SearchBar}</Box>
-                  <IconButton
-                    aria-label="sign out"
-                    onClick={signOut}
-                    color="inherit"
-                    data-cy="signout"
-                  >
-                    <PowerSettingsNewIcon />
-                  </IconButton>
+                  <Tooltip title={t('Sign out')} aria-label="sign out">
+                    <IconButton
+                      aria-label="sign out"
+                      onClick={onSignOut}
+                      color="default"
+                      data-cy="signout"
+                    >
+                      <PowerSettingsNewIcon />
+                    </IconButton>
+                  </Tooltip>
                 </Box>
-              </Container>
-            </MobileMenu>
-            {!loading ? (
-              <Container maxWidth={maxWidth}>
-                {NavBar ? <Toolbar disableGutters>{NavBar}</Toolbar> : null}
-                {ActionBar ? (
-                  <Toolbar disableGutters>{ActionBar}</Toolbar>
-                ) : null}
-              </Container>
-            ) : null}
-          </Hidden>
+              </Box>
+            </Toolbar>
+          </Container>
         </AppBar>
       </ElevationScroll>
-      <Hidden smDown>
-        {!loading && NavBar ? (
-          <Container maxWidth={maxWidth}>
-            <Box mt={1}>
-              <SubToolbar PrimaryBar={NavBar} SecondaryBar={ActionBar} />
-            </Box>
-          </Container>
-        ) : null}
-      </Hidden>
+
+      {!loading && NavBar ? (
+        <Container maxWidth={maxWidth}>
+          <Box mt={1}>
+            <SubToolbar PrimaryBar={NavBar} SecondaryBar={ActionBar} />
+          </Box>
+        </Container>
+      ) : null}
     </>
-  ) : null;
-});
+  );
+};
 
 const Page = observer(
   ({
     children,
+    title = '',
     SearchBar,
     NavBar,
     ActionToolbar,
@@ -165,6 +177,7 @@ const Page = observer(
   }) => {
     console.log('Page functional component');
     const store = useContext(StoreContext);
+    const isMobile = useMediaQuery((theme) => theme.breakpoints.down('sm'));
     const [routeloading, setRouteLoading] = useState(false);
     const router = useRouter();
 
@@ -189,25 +202,47 @@ const Page = observer(
       };
     }, [router]);
 
+    const handleSignOut = useCallback(
+      async (event) => {
+        event.preventDefault();
+        await store.user.signOut();
+        window.location.assign(BASE_PATH); // will be redirected to /signin
+      },
+      [store.user]
+    );
+
     return (
       <>
-        <Toolbars
-          visible={store.user.signedIn}
-          NavBar={NavBar}
-          SearchBar={SearchBar}
-          ActionBar={ActionToolbar}
-          loading={loading || routeloading}
-          maxWidth={maxWidth}
-        />
+        {store.user.signedIn && !isMobile && (
+          <DesktopToolbars
+            title={title}
+            NavBar={NavBar}
+            SearchBar={SearchBar}
+            ActionBar={ActionToolbar}
+            loading={loading || routeloading}
+            maxWidth={maxWidth}
+            onSignOut={handleSignOut}
+          />
+        )}
+
+        {store.user.signedIn && isMobile && (
+          <MobileToolbars
+            title={title}
+            NavBar={NavBar}
+            SearchBar={SearchBar}
+            ActionBar={ActionToolbar}
+            loading={loading || routeloading}
+            maxWidth={maxWidth}
+            onSignOut={handleSignOut}
+          />
+        )}
 
         <Container maxWidth={maxWidth}>
-          <>
-            {!loading && !routeloading ? (
-              <Box mt={1}>{children}</Box>
-            ) : (
-              <Loading fullScreen />
-            )}
-          </>
+          {!loading && !routeloading ? (
+            <Box mt={1}>{children}</Box>
+          ) : (
+            <Loading fullScreen />
+          )}
         </Container>
       </>
     );

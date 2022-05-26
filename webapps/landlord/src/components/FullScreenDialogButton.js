@@ -1,8 +1,9 @@
-import { AppBar, Box, Grid } from '@material-ui/core';
+import { AppBar, Box, Grid, useMediaQuery } from '@material-ui/core';
 import React, { memo, useCallback } from 'react';
 
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
+import { MobileButton } from './MobileMenuButton';
 import Slide from '@material-ui/core/Slide';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
@@ -19,11 +20,13 @@ const FullScreenDialogButton = ({
   cancelButtonLabel,
   showSave,
   showCancel,
+  Icon,
   children,
   ...props
 }) => {
   const { t } = useTranslation('common');
   const [open, setOpen] = React.useState(false);
+  const isMobile = useMediaQuery((theme) => theme.breakpoints.down('sm'));
 
   const handleClickOpen = useCallback(() => {
     setOpen(true);
@@ -39,13 +42,25 @@ const FullScreenDialogButton = ({
 
   return (
     <>
-      <Button
-        {...props}
-        onClick={handleClickOpen}
-        style={{ whiteSpace: 'nowrap' }}
-      >
-        {buttonLabel}
-      </Button>
+      {!isMobile ? (
+        <Button
+          {...props}
+          size="small"
+          variant="contained"
+          startIcon={<Icon />}
+          onClick={handleClickOpen}
+          style={{ whiteSpace: 'nowrap' }}
+        >
+          {buttonLabel}
+        </Button>
+      ) : (
+        <MobileButton
+          {...props}
+          Icon={Icon}
+          label={buttonLabel}
+          onClick={handleClickOpen}
+        />
+      )}
       <Dialog
         fullScreen
         open={open}

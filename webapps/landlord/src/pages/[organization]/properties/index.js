@@ -16,6 +16,7 @@ import { useCallback, useContext, useMemo } from 'react';
 import AddIcon from '@material-ui/icons/Add';
 import { EmptyIllustration } from '../../../components/Illustrations';
 import { isServer } from '../../../utils';
+import { MobileButton } from '../../../components/MobileMenuButton';
 import { NumberFormat } from '../../../utils/numberformat';
 import { observer } from 'mobx-react-lite';
 import Page from '../../../components/Page';
@@ -35,12 +36,12 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: theme.palette.text.disabled,
   },
   chipOccupied: {
-    color: theme.palette.common.white,
+    color: theme.palette.info.contrastText,
     backgroundColor: theme.palette.text.disabled,
     borderRadius: 4,
   },
   chipVacant: {
-    color: theme.palette.common.white,
+    color: theme.palette.info.contrastText,
     backgroundColor: theme.palette.success.dark,
     borderRadius: 4,
   },
@@ -149,7 +150,11 @@ const PropertyListItem = ({ property }) => {
                 </Typography>
               </Box>
             )}
-            <Box my={1}>
+            <Box
+              display="flex"
+              justifyContent="space-between"
+              alignItems="center"
+            >
               <Typography variant="caption" color="textSecondary">
                 {t('Rent without expenses')}
               </Typography>
@@ -210,22 +215,23 @@ const Properties = observer(() => {
 
   return (
     <Page
+      title={t('Properties')}
       ActionToolbar={
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          size={isMobile ? 'small' : 'medium'}
-          onClick={onNewProperty}
-        >
-          {t('New property')}
-        </Button>
-      }
-      NavBar={
         !isMobile ? (
-          <Typography color="textSecondary" variant="h5" noWrap>
-            {t('Properties')}
-          </Typography>
-        ) : null
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={onNewProperty}
+          >
+            {t('New property')}
+          </Button>
+        ) : (
+          <MobileButton
+            label={t('New property')}
+            Icon={AddIcon}
+            onClick={onNewProperty}
+          />
+        )
       }
       SearchBar={
         <SearchFilterBar

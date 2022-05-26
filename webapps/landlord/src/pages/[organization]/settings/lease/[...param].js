@@ -103,6 +103,7 @@ const Lease = observer(() => {
 
   return (
     <Page
+      title={store.lease.selected?.name || t('New contract')}
       ActionToolbar={
         <RestrictButton
           variant="contained"
