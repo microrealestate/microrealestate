@@ -172,7 +172,7 @@ const PropertyList = observer(() => {
   const store = useContext(StoreContext);
 
   return store.property.filteredItems?.length ? (
-    <List component="nav" aria-labelledby="property-list">
+    <List component="nav" disablePadding aria-labelledby="property-list">
       {store.property.filteredItems.map((property) => {
         return (
           <Paper key={property._id}>

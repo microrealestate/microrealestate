@@ -256,7 +256,12 @@ const RentCard = observer(({ rent, onEdit }) => {
             terms={[rent.term]}
           />
           {!isMobile ? (
-            <Button startIcon={<PaymentIcon />} onClick={_onEdit} size="small">
+            <Button
+              variant="contained"
+              startIcon={<PaymentIcon />}
+              onClick={_onEdit}
+              size="small"
+            >
               {t('Settle the rent')}
             </Button>
           ) : (

@@ -178,7 +178,7 @@ const TenantList = memo(
     const store = useContext(StoreContext);
 
     return store.tenant.filteredItems?.length ? (
-      <List component="nav" aria-labelledby="tenant-list">
+      <List component="nav" disablePadding aria-labelledby="tenant-list">
         {store.tenant.filteredItems.map((tenant) => {
           return (
             <Paper key={tenant._id}>

@@ -141,7 +141,7 @@ const RentHistory = ({ tenantId }) => {
             )}
           </Box>
 
-          <List component="nav" aria-labelledby="rent-history">
+          <List component="nav" disablePadding aria-labelledby="rent-history">
             {tenant?.rents?.map((rent) => {
               const isSelected = String(rent.term) === selectedTerm;
               return (
