@@ -11,6 +11,7 @@ import {
   Stepper,
   Tooltip,
   Typography,
+  useMediaQuery,
 } from '@material-ui/core';
 import { memo, useCallback, useMemo } from 'react';
 
@@ -18,8 +19,10 @@ import _ from 'lodash';
 import BalanceBar from './BalanceBar';
 import { CardRow } from '../Cards';
 import DownloadLink from '../DownloadLink';
+import { MobileButton } from '../MobileMenuButton';
 import moment from 'moment';
 import { observer } from 'mobx-react-lite';
+import PaymentIcon from '@material-ui/icons/Payment';
 import SendRentEmailMenu from './SendRentEmailMenu';
 import { useStyles } from '../../styles/components/RentCards.styles';
 import useTranslation from 'next-translate/useTranslation';
@@ -229,6 +232,8 @@ const Steps = memo(function Steps({ rent }) {
 
 const RentCard = observer(({ rent, onEdit }) => {
   const { t } = useTranslation('common');
+  const isMobile = useMediaQuery((theme) => theme.breakpoints.down('sm'));
+
   const _onEdit = useCallback(() => onEdit(rent), [rent, onEdit]);
   const period = useMemo(() => moment(rent.term, 'YYYYMMDDHH'), [rent.term]);
 
@@ -249,12 +254,18 @@ const RentCard = observer(({ rent, onEdit }) => {
             period={period}
             tenant={rent.occupant}
             terms={[rent.term]}
-            size="small"
-            variant="contained"
           />
-          <Button onClick={_onEdit} size="small" variant="contained">
-            {t('Settlement')}
-          </Button>
+          {!isMobile ? (
+            <Button startIcon={<PaymentIcon />} onClick={_onEdit} size="small">
+              {t('Settle the rent')}
+            </Button>
+          ) : (
+            <MobileButton
+              label={t('Settle the rent')}
+              Icon={PaymentIcon}
+              onClick={_onEdit}
+            />
+          )}
         </CardRow>
       </CardActions>
     </Card>

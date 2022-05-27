@@ -8,6 +8,7 @@ import {
   Paper,
   Tab,
   Tabs,
+  useMediaQuery,
 } from '@material-ui/core';
 import { getStoreInstance, StoreContext } from '../../../../store';
 import { TabPanel, useTabChangeHelper } from '../../../../components/Tabs';
@@ -84,6 +85,7 @@ const RentPayment = observer(() => {
   console.log('RentPayment functional component');
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
+  const isMobile = useMediaQuery((theme) => theme.breakpoints.down('sm'));
   const router = useRouter();
   const {
     param: [term, backPage, backPath],
@@ -120,6 +122,27 @@ const RentPayment = observer(() => {
   return (
     <Page
       title={store.rent.selected.occupant.name}
+      ActionToolbar={
+        isMobile ? (
+          <>
+            <FullScreenDialogButton
+              variant="contained"
+              buttonLabel={t('Rent schedule')}
+              Icon={HistoryIcon}
+              dialogTitle={t('Rent schedule')}
+              cancelButtonLabel={t('Close')}
+              showCancel
+            >
+              <RentHistory tenantId={store.rent.selected.occupant._id} />
+            </FullScreenDialogButton>
+            <SendRentEmailMenu
+              tenant={store.rent.selected.occupant}
+              terms={[store.rent.selected.term]}
+              period={store.rent.period}
+            />
+          </>
+        ) : null
+      }
       NavBar={
         <BreadcrumbBar
           backPath={backPath}
@@ -152,6 +175,7 @@ const RentPayment = observer(() => {
                 title={t('Rent')}
                 Toolbar={
                   <FullScreenDialogButton
+                    variant="contained"
                     buttonLabel={t('Rent schedule')}
                     Icon={HistoryIcon}
                     dialogTitle={t('Rent schedule')}

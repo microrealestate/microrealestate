@@ -11,7 +11,6 @@ import { useCallback } from 'react';
 
 const StyledButton = withStyles(() => ({
   root: {
-    width: '100%',
     fontSize: 9,
   },
 }))(Button);
@@ -19,14 +18,15 @@ const StyledButton = withStyles(() => ({
 const StyleMenuButton = withStyles((theme) => ({
   root: {
     color: 'rgba(' + hexToRgb(theme.palette.info.contrastText) + ', 0.8)',
+    fontSize: 9,
     padding: 0,
     margin: 0,
     paddingTop: 2,
     borderRadius: 0,
   },
-}))(StyledButton);
+}))(Button);
 
-function MobileMenuButton({ item, selected, onClick }) {
+function MobileMenuButton({ label, Icon, selected, item, onClick }) {
   const theme = useTheme();
 
   const handleClick = useCallback(() => {
@@ -38,13 +38,13 @@ function MobileMenuButton({ item, selected, onClick }) {
       borderTop={`5px solid ${
         selected ? theme.palette.primary.main : 'transparent'
       }`}
-      width={72}
-      height={72}
     >
       <StyleMenuButton onClick={handleClick}>
         <Box display="flex" flexDirection="column">
-          <Box pb={0.2}>{item.icon}</Box>
-          <Typography variant="inherit">{item.value}</Typography>
+          <Box>
+            <Icon fontSize="small" />
+          </Box>
+          <Typography variant="inherit">{label}</Typography>
         </Box>
       </StyleMenuButton>
     </Box>
@@ -60,7 +60,7 @@ export function MobileButton({ label, Icon, onClick, ...props }) {
 
   return (
     <StyledButton {...props} size="small" onClick={handleClick}>
-      <Box display="flex" flexDirection="column" fontSize={9}>
+      <Box display="flex" flexDirection="column">
         <Box>
           <Icon fontSize="small" />
         </Box>

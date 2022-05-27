@@ -136,6 +136,7 @@ const Rents = observer(() => {
       title={t('Rents')}
       ActionToolbar={
         <FullScreenDialogButton
+          variant="contained"
           buttonLabel={t('Send mass emails')}
           Icon={SendIcon}
           dialogTitle={t('Send mass emails')}

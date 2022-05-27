@@ -2,7 +2,7 @@ import {
   BlankDocumentIllustration,
   TermsDocumentIllustration,
 } from '../Illustrations';
-import { Box, Button } from '@material-ui/core';
+import { Box, Button, useMediaQuery } from '@material-ui/core';
 import { useCallback, useContext, useMemo, useState } from 'react';
 
 import AddIcon from '@material-ui/icons/Add';
@@ -10,6 +10,7 @@ import DocumentList from '../DocumentList';
 import { downloadDocument } from '../../utils/fetch';
 import FullScreenDialogMenu from '../FullScreenDialogMenu';
 import ImageViewer from '../ImageViewer/ImageViewer';
+import { MobileButton } from '../MobileMenuButton';
 import { observer } from 'mobx-react-lite';
 import PdfViewer from '../PdfViewer/PdfViewer';
 import { StoreContext } from '../../store';
@@ -21,6 +22,8 @@ import useUploadDialog from '../UploadDialog';
 function TenantDocumentList({ disabled = false }) {
   const store = useContext(StoreContext);
   const { t } = useTranslation('common');
+  const isMobile = useMediaQuery((theme) => theme.breakpoints.down('sm'));
+
   const [ConfirmDialog, setDocumentToRemove, documentToRemove] =
     useConfirmDialog();
   const [UploadDialog, setEditUploadDocument] = useUploadDialog();
@@ -173,20 +176,27 @@ function TenantDocumentList({ disabled = false }) {
   return (
     <>
       <Box display="flex" mb={1}>
-        <Button
-          variant="contained"
-          color="primary"
-          startIcon={<AddIcon />}
-          onClick={handleClickUpload}
-          disabled={disabled}
-        >
-          {t('Upload document')}
-        </Button>
+        {!isMobile ? (
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={handleClickUpload}
+            disabled={disabled}
+          >
+            {t('Upload document')}
+          </Button>
+        ) : (
+          <MobileButton
+            label={t('Upload document')}
+            Icon={AddIcon}
+            onClick={handleClickUpload}
+            disabled={disabled}
+          />
+        )}
         <Box ml={1}>
           <FullScreenDialogMenu
             variant="contained"
-            color="primary"
-            startIcon={<AddIcon />}
+            Icon={AddIcon}
             buttonLabel={t('Create document')}
             dialogTitle={t('Create a document')}
             menuItems={menuItems}
