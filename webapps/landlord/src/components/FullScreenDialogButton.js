@@ -46,7 +46,6 @@ const FullScreenDialogButton = ({
         <Button
           {...props}
           size="small"
-          variant="contained"
           startIcon={<Icon />}
           onClick={handleClickOpen}
           style={{ whiteSpace: 'nowrap' }}
@@ -56,6 +55,7 @@ const FullScreenDialogButton = ({
       ) : (
         <MobileButton
           {...props}
+          variant="text"
           Icon={Icon}
           label={buttonLabel}
           onClick={handleClickOpen}

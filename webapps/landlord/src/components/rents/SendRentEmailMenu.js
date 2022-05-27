@@ -79,7 +79,7 @@ const SendRentEmailMenu = ({ period, tenant, terms, ...props }) => {
         tenantName: tenant.name,
       })}
       size="small"
-      startIcon={<SendIcon />}
+      Icon={SendIcon}
       menuItems={menuItems}
       onClick={onSend}
       {...props}

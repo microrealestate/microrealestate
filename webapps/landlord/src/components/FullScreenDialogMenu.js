@@ -14,6 +14,7 @@ import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
 import { hexToRgb } from '../styles/styles';
 import Loading from './Loading';
+import { MobileButton } from './MobileMenuButton';
 import Slide from '@material-ui/core/Slide';
 import Typography from '@material-ui/core/Typography';
 import { useComponentMountedRef } from '../utils/hooks';
@@ -73,15 +74,18 @@ const CardMenuItem = ({ value, illustration, label, description, onClick }) => {
 const FullScreenDialogMenu = ({
   buttonLabel,
   dialogTitle,
+  Icon,
   menuItems,
   onClick,
   ...props
 }) => {
-  const mountedRef = useComponentMountedRef();
-  const [open, setOpen] = useState(false);
-  const [runningAction, setRunningAction] = useState(false);
-  const theme = useTheme();
   const { t } = useTranslation('common');
+  const mountedRef = useComponentMountedRef();
+  const theme = useTheme();
+  const isMobile = useMediaQuery((theme) => theme.breakpoints.down('sm'));
+
+  const [runningAction, setRunningAction] = useState(false);
+  const [open, setOpen] = useState(false);
 
   const handleClickOpen = useCallback(() => {
     setOpen(true);
@@ -105,13 +109,25 @@ const FullScreenDialogMenu = ({
 
   return (
     <>
-      <Button
-        {...props}
-        onClick={handleClickOpen}
-        style={{ whiteSpace: 'nowrap' }}
-      >
-        {buttonLabel}
-      </Button>
+      {!isMobile ? (
+        <Button
+          {...props}
+          size="small"
+          startIcon={<Icon />}
+          onClick={handleClickOpen}
+          style={{ whiteSpace: 'nowrap' }}
+        >
+          {buttonLabel}
+        </Button>
+      ) : (
+        <MobileButton
+          {...props}
+          variant="text"
+          Icon={Icon}
+          label={buttonLabel}
+          onClick={handleClickOpen}
+        />
+      )}
       <Dialog
         fullScreen
         open={open}

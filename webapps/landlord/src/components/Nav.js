@@ -20,19 +20,14 @@ import { useTimeout } from '../utils/hooks';
 import useTranslation from 'next-translate/useTranslation';
 import VpnKeyIcon from '@material-ui/icons/VpnKey';
 
-const MenuItem = memo(function MenuItem({
-  item,
-  selected,
-  open,
-  onMouseEnter,
-  onMouseLeave,
-  onClick,
-}) {
+function MenuItem({ item, selected, open, onClick }) {
   const classes = useStyles();
 
   const onMenuClick = useCallback(() => {
     onClick(item);
   }, [item, onClick]);
+
+  const Icon = useMemo(() => item.Icon, [item.Icon]);
 
   return (
     <ListItem
@@ -40,22 +35,20 @@ const MenuItem = memo(function MenuItem({
       button
       selected={selected}
       onClick={onMenuClick}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
       data-cy={item.dataCy}
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        {item.icon}
+        <Icon />
       </ListItemIcon>
       <ListItemText
         className={`${classes.itemText} ${
           open ? classes.itemTextOpen : classes.itemTextClose
         }`}
-        primary={<Typography noWrap>{item.value}</Typography>}
+        primary={<Typography noWrap>{item.label}</Typography>}
       />
     </ListItem>
   );
-});
+}
 
 const Nav = () => {
   const classes = useStyles();
@@ -70,44 +63,44 @@ const Nav = () => {
     () => [
       {
         key: 'dashboard',
-        value: t('Dashboard'),
+        label: t('Dashboard'),
         pathname: '/dashboard',
-        icon: <DashboardIcon />,
+        Icon: DashboardIcon,
         dataCy: 'dashboardNav',
       },
       {
         key: 'rents',
-        value: t('Rents'),
+        label: t('Rents'),
         pathname: '/rents/[yearMonth]',
-        icon: <ReceiptIcon />,
+        Icon: ReceiptIcon,
         dataCy: 'rentsNav',
       },
       {
         key: 'tenants',
-        value: t('Tenants'),
+        label: t('Tenants'),
         pathname: '/tenants',
-        icon: <PeopleAltIcon />,
+        Icon: PeopleAltIcon,
         dataCy: 'tenantsNav',
       },
       {
         key: 'properties',
-        value: t('Properties'),
+        label: t('Properties'),
         pathname: '/properties',
-        icon: <VpnKeyIcon />,
+        Icon: VpnKeyIcon,
         dataCy: 'propertiesNav',
       },
       {
         key: 'accounting',
-        value: t('Accounting'),
+        label: t('Accounting'),
         pathname: `/accounting/[year]`,
-        icon: <AccountBalanceWalletIcon />,
+        Icon: AccountBalanceWalletIcon,
         dataCy: 'accountingNav',
       },
       {
         key: 'settings',
-        value: t('Settings'),
+        label: t('Settings'),
         pathname: '/settings',
-        icon: <SettingsIcon />,
+        Icon: SettingsIcon,
         dataCy: 'settingsNav',
       },
     ],
@@ -157,6 +150,7 @@ const Nav = () => {
     openDebounced && triggerClose.start();
   }, [openDebounced, triggerOpen, triggerClose]);
 
+  console.log({ openDebounced });
   return (
     <>
       <Hidden smDown>
@@ -168,6 +162,8 @@ const Nav = () => {
           classes={{
             paper: openDebounced ? classes.drawerOpen : classes.drawerClose,
           }}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
         >
           <List className={classes.list}>
             {menuItems.map((item) => {
@@ -177,8 +173,6 @@ const Nav = () => {
                   item={item}
                   selected={pathname.indexOf(item.pathname) !== -1}
                   open={openDebounced}
-                  onMouseEnter={handleMouseEnter}
-                  onMouseLeave={handleMouseLeave}
                   onClick={handleMenuClick}
                 />
               );
@@ -198,8 +192,10 @@ const Nav = () => {
             return (
               <MobileMenuButton
                 key={item.key}
-                item={item}
+                label={item.label}
+                Icon={item.Icon}
                 selected={pathname.indexOf(item.pathname) !== -1}
+                item={item}
                 onClick={handleMenuClick}
               />
             );
