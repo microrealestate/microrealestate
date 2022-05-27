@@ -66,18 +66,14 @@ const Dashboard = observer(() => {
             <Box mb={10}>
               <Shortcuts />
             </Box>
-            <Box my={10}>
+            <Box mb={10}>
               <GeneralFigures />
             </Box>
-            <Box my={10}>
+            <Box mb={10}>
               <MonthFigures />
             </Box>
             <Hidden smDown>
-              {!!store.dashboard.data.overview && (
-                <Box my={10}>
-                  <YearFigures />
-                </Box>
-              )}
+              {!!store.dashboard.data.overview && <YearFigures />}
             </Hidden>
           </>
         )}

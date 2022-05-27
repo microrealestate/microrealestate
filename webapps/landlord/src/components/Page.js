@@ -65,47 +65,51 @@ const MobileToolbars = ({
   const store = useContext(StoreContext);
 
   return (
-    // <ElevationScroll>
-    <AppBar position="sticky">
-      <EnvironmentBar />
-      <MobileMenu>
-        <Container maxWidth={maxWidth}>
-          <Box
-            display="flex"
-            justifyContent="space-between"
-            alignItems="center"
-          >
-            {!!(
-              store.organization.items && store.organization.items.length
-            ) && <OrganizationSwitcher />}
-            <Box flexGrow={1}>{!loading && SearchBar}</Box>
-            <IconButton
-              aria-label="sign out"
-              onClick={onSignOut}
-              color="inherit"
-              data-cy="signout"
-            >
-              <PowerSettingsNewIcon />
-            </IconButton>
-          </Box>
-        </Container>
-      </MobileMenu>
-      {!loading ? (
-        <Container maxWidth={maxWidth}>
-          {NavBar ? (
-            <Box display="flex" justifyContent="space-between">
-              <Toolbar disableGutters>{NavBar}</Toolbar>
-              {!!ActionBar && <Toolbar disableGutters>{ActionBar}</Toolbar>}
-            </Box>
-          ) : (
-            <Box display="flex" justifyContent="end">
-              {!!ActionBar && <Toolbar disableGutters>{ActionBar}</Toolbar>}
-            </Box>
-          )}
-        </Container>
-      ) : null}
-    </AppBar>
-    // </ElevationScroll>
+    <>
+      <ElevationScroll>
+        <AppBar position="fixed">
+          <EnvironmentBar />
+          <MobileMenu>
+            <Container maxWidth={maxWidth}>
+              <Box
+                display="flex"
+                justifyContent="space-between"
+                alignItems="center"
+              >
+                {!!(
+                  store.organization.items && store.organization.items.length
+                ) && <OrganizationSwitcher />}
+                <Box flexGrow={1}>{!loading && SearchBar}</Box>
+                <IconButton
+                  aria-label="sign out"
+                  onClick={onSignOut}
+                  color="inherit"
+                  data-cy="signout"
+                >
+                  <PowerSettingsNewIcon />
+                </IconButton>
+              </Box>
+            </Container>
+          </MobileMenu>
+          {!loading ? (
+            <Container maxWidth={maxWidth}>
+              {NavBar ? (
+                <Box display="flex" justifyContent="space-between">
+                  <Toolbar disableGutters>{NavBar}</Toolbar>
+                  {!!ActionBar && <Toolbar disableGutters>{ActionBar}</Toolbar>}
+                </Box>
+              ) : (
+                <Box display="flex" justifyContent="end">
+                  {!!ActionBar && <Toolbar disableGutters>{ActionBar}</Toolbar>}
+                </Box>
+              )}
+            </Container>
+          ) : null}
+        </AppBar>
+      </ElevationScroll>
+      <Toolbar />
+      {(!!NavBar || !!ActionBar) && <Toolbar />}
+    </>
   );
 };
 
@@ -156,9 +160,7 @@ const DesktopToolbars = ({
 
       {!loading && NavBar ? (
         <Container maxWidth={maxWidth}>
-          <Box mt={1}>
-            <SubToolbar PrimaryBar={NavBar} SecondaryBar={ActionBar} />
-          </Box>
+          <SubToolbar PrimaryBar={NavBar} SecondaryBar={ActionBar} />
         </Container>
       ) : null}
     </>
@@ -238,10 +240,10 @@ const Page = observer(
         )}
 
         <Container maxWidth={maxWidth}>
-          {!loading && !routeloading ? (
-            <Box mt={1}>{children}</Box>
-          ) : (
+          {loading || routeloading ? (
             <Loading fullScreen />
+          ) : (
+            <Box my={2}>{children}</Box>
           )}
         </Container>
       </>
