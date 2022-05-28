@@ -50,6 +50,7 @@ const checkOrganization = () => {
 
     // check if organizationid header exists
     if (!organizationId) {
+      logger.warn('organizationId not pass in request');
       return res.sendStatus(404);
     }
 
@@ -59,11 +60,13 @@ const checkOrganization = () => {
       req.realm._id = req.realm._id?.toString();
     } else {
       // send 404 if req.realm is not set
+      logger.warn('impossible to set organizationId in request');
       return res.sendStatus(404);
     }
 
     // current user is not a member of the organization
     if (!req.realms.find(({ _id }) => _id === req.realm._id)) {
+      logger.warn('current user is not a member of the organization');
       return res.sendStatus(404);
     }
 
