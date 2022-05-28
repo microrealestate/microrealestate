@@ -68,12 +68,12 @@ export default class User {
       });
       const { accessToken } = response.data;
       const {
-        account: { firstname, lastname },
+        account: { firstname, lastname, email: decodedEmail },
         exp,
       } = jwt.decode(accessToken);
       this.firstName = firstname;
       this.lastName = lastname;
-      this.email = email;
+      this.email = decodedEmail;
       this.token = accessToken;
       this.tokenExpiry = exp;
       setAccessToken(accessToken);
