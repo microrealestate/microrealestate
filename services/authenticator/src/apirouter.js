@@ -134,6 +134,7 @@ apiRouter.post('/refreshtoken', async (req, res) => {
   const oldRefreshToken = req.cookies.refreshToken;
   logger.debug(`give a new refresh token for ${oldRefreshToken}`);
   if (!oldRefreshToken) {
+    // TODO: double check why here it's 401 rather than 403 to force relogin
     return res.sendStatus(401);
   }
 

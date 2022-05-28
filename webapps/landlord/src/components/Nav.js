@@ -150,7 +150,6 @@ const Nav = () => {
     openDebounced && triggerClose.start();
   }, [openDebounced, triggerOpen, triggerClose]);
 
-  console.log({ openDebounced });
   return (
     <>
       <Hidden smDown>

@@ -50,7 +50,7 @@ const checkOrganization = () => {
 
     // check if organizationid header exists
     if (!organizationId) {
-      logger.warn('organizationId not pass in request');
+      logger.warn('organizationId not passed in request');
       return res.sendStatus(404);
     }
 
