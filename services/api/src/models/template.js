@@ -13,6 +13,8 @@ class TemplateModel extends Model {
       contents: Object,
       html: String,
       linkedResourceIds: Array,
+      required: Boolean,
+      requiredOnceContractTerminated: Boolean,
     });
   }
 }

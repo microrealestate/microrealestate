@@ -353,11 +353,80 @@ async function remove(req, res) {
 
 async function all(req, res) {
   try {
-    const tenants = await Tenant.find({ realmId: req.realm._id })
-      .populate('properties.propertyId')
-      .sort({
-        name: 1,
-      });
+    const tenants = await Tenant.aggregate([
+      { $match: { realmId: req.realm._id } },
+      {
+        $lookup: {
+          from: 'templates',
+          let: {
+            tenant_realmId: '$realmId',
+            tenant_tenantId: { $toString: '$_id' },
+            tenant_leaseId: '$leaseId',
+          },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ['$realmId', '$$tenant_realmId'] },
+                    { $in: ['$$tenant_leaseId', '$linkedResourceIds'] },
+                    { $eq: ['$type', 'fileDescriptor'] },
+                  ],
+                },
+              },
+            },
+            {
+              $lookup: {
+                from: 'documents',
+                let: { template_templateId: { $toString: '$_id' } },
+                pipeline: [
+                  {
+                    $match: {
+                      $expr: {
+                        $and: [
+                          { $eq: ['$realmId', '$$tenant_realmId'] },
+                          { $eq: ['$tenantId', '$$tenant_tenantId'] },
+                          { $eq: ['$leaseId', '$$tenant_leaseId'] },
+                          { $eq: ['$type', 'file'] },
+                          { $eq: ['$templateId', '$$template_templateId'] },
+                        ],
+                      },
+                    },
+                  },
+                  {
+                    $project: {
+                      realmId: 0,
+                      leaseId: 0,
+                      tenantId: 0,
+                      type: 0,
+                      mimeType: 0,
+                      templateId: 0,
+                      url: 0,
+                    },
+                  },
+                ],
+                as: 'documents',
+              },
+            },
+            {
+              $project: {
+                realmId: 0,
+                linkedResourceIds: 0,
+                type: 0,
+                hasExpiryDate: 0,
+              },
+            },
+          ],
+          as: 'filesToUpload',
+        },
+      },
+      { $sort: { name: 1 } },
+    ]);
+
+    await Tenant.populate(tenants, {
+      path: 'properties.propertyId',
+    });
+
     res.json(tenants.map((tenant) => FD.toOccupantData(tenant)));
   } catch (error) {
     logger.error(error);

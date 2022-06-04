@@ -1,9 +1,14 @@
 import * as Yup from 'yup';
 
-import { Box, DialogContentText, DialogTitle, Grid } from '@material-ui/core';
+import { Box, DialogContentText, DialogTitle } from '@material-ui/core';
 import { Form, Formik } from 'formik';
-import { FormTextField, SubmitButton } from '../../Form';
-import React, { useCallback } from 'react';
+import {
+  FormTextField,
+  RadioField,
+  RadioFieldGroup,
+  SubmitButton,
+} from '../../Form';
+import React, { useCallback, useMemo } from 'react';
 
 import Button from '@material-ui/core/Button';
 import { CheckboxField } from '../../Form';
@@ -24,10 +29,27 @@ const initialValues = {
   name: '',
   description: '',
   hasExpiryDate: false,
+  required: 'notRequired',
 };
 
 function FileDescriptorDialog({ open, setOpen, onSave }) {
   const { t } = useTranslation('common');
+
+  const formData = useMemo(() => {
+    if (open === false) {
+      return initialValues;
+    }
+    console.log({ open });
+    return {
+      ...initialValues,
+      ...open,
+      required: open.required
+        ? 'required'
+        : open.requiredOnceContractTerminated
+        ? 'requiredOnceContractTerminated'
+        : 'notRequired',
+    };
+  }, [open]);
 
   const handleClose = useCallback(() => {
     setOpen(false);
@@ -35,8 +57,13 @@ function FileDescriptorDialog({ open, setOpen, onSave }) {
 
   const _onSubmit = useCallback(
     async (fileDescriptor) => {
+      await onSave({
+        ...fileDescriptor,
+        required: fileDescriptor.required === 'required',
+        requiredOnceContractTerminated:
+          fileDescriptor.required === 'requiredOnceContractTerminated',
+      });
       handleClose();
-      onSave(fileDescriptor);
     },
     [handleClose, onSave]
   );
@@ -53,7 +80,7 @@ function FileDescriptorDialog({ open, setOpen, onSave }) {
       </DialogContent>
       <Box p={1}>
         <Formik
-          initialValues={open?.name ? open : initialValues}
+          initialValues={formData}
           validationSchema={validationSchema}
           onSubmit={_onSubmit}
         >
@@ -61,31 +88,41 @@ function FileDescriptorDialog({ open, setOpen, onSave }) {
             return (
               <Form autoComplete="off">
                 <DialogContent>
-                  <Grid container>
-                    <Grid item xs={12}>
-                      <FormTextField label={t('Name')} name="name" />
-                    </Grid>
-                    <Grid item xs={12}>
-                      <FormTextField
-                        label={t('Description')}
-                        name="description"
+                  <Box width="100%">
+                    <FormTextField label={t('Name')} name="name" />
+                    <FormTextField
+                      label={t('Description')}
+                      name="description"
+                    />
+                  </Box>
+                  <Box width="100%" my={2}>
+                    <CheckboxField
+                      name="hasExpiryDate"
+                      label={t('An expiry date must be provided')}
+                      aria-label={t('An expiry date must be provided')}
+                    />
+                  </Box>
+                  <Box width="100%" mb={2}>
+                    <RadioFieldGroup
+                      aria-label={t('The document is')}
+                      label={t('The document is')}
+                      name="required"
+                    >
+                      <RadioField value="notRequired" label={t('Optional')} />
+                      <RadioField value="required" label={t('Mandatory')} />
+                      <RadioField
+                        value="requiredOnceContractTerminated"
+                        label={t('Mandatory only when contract is terminated')}
                       />
-                    </Grid>
-                    <Grid item xs={12}>
-                      <CheckboxField
-                        name="hasExpiryDate"
-                        label={t('Expiry date required')}
-                        aria-label={t('Expiry date required')}
-                      />
-                    </Grid>
-                  </Grid>
+                    </RadioFieldGroup>
+                  </Box>
                 </DialogContent>
                 <DialogActions>
                   <Button onClick={handleClose} color="primary">
                     {t('Cancel')}
                   </Button>
                   <SubmitButton
-                    label={open?._id >= 0 ? t('Update') : t('Add')}
+                    label={formData?._id ? t('Update') : t('Add')}
                   />
                 </DialogActions>
               </Form>
