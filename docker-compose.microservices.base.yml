@@ -19,7 +19,7 @@ services:
   # Mongo
   ###############################################################################
   mongo:
-    image: mongo:3.6
+    image: mongo:4.0
     expose:
       - '$MONGO_PORT'
     volumes:
