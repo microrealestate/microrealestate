@@ -365,6 +365,8 @@ templatesApi.post('/', (req, res) => {
       contents,
       html,
       linkedResourceIds,
+      required,
+      requiredOnceContractTerminated,
     } = req.body || {};
     const createdTemplate = await Template.create({
       realmId: organizationId,
@@ -375,6 +377,8 @@ templatesApi.post('/', (req, res) => {
       contents,
       html,
       linkedResourceIds,
+      required,
+      requiredOnceContractTerminated,
     });
 
     res.status(201).json(createdTemplate);

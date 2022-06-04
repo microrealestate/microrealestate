@@ -1,6 +1,5 @@
 import {
   Box,
-  Chip,
   IconButton,
   List,
   ListItem,
@@ -11,10 +10,10 @@ import {
 } from '@material-ui/core';
 import { useCallback, useMemo } from 'react';
 
+import Alert from './Alert';
 import DeleteIcon from '@material-ui/icons/Delete';
 import DescriptionOutlinedIcon from '@material-ui/icons/DescriptionOutlined';
 import moment from 'moment';
-import ReportProblemIcon from '@material-ui/icons/ReportProblem';
 import ScannerOutlinedIcon from '@material-ui/icons/ScannerOutlined';
 import useTranslation from 'next-translate/useTranslation';
 
@@ -68,22 +67,17 @@ const DocumentItem = ({ document, onEdit, onDelete, disabled }) => {
             <Box display="flex" alignItems="center">
               {expiryMoment ? (
                 <>
-                  {isExpired && (
-                    <ReportProblemIcon color="error" fontSize="small" />
-                  )}
-                  <Typography
-                    variant="caption"
-                    display="inline"
-                    color={isExpired ? 'error' : 'inherit'}
-                  >
-                    {t('expiry {{relativeDate}}', {
-                      relativeDate: expiryMoment.fromNow(),
-                    })}
-                  </Typography>
+                  <Alert
+                    severity={isExpired ? 'warning' : 'info'}
+                    label={
+                      isExpired
+                        ? t('expired document')
+                        : t('expiry {{relativeDate}}', {
+                            relativeDate: expiryMoment.fromNow(),
+                          })
+                    }
+                  />
                 </>
-              ) : null}
-              {document.hasExpiryDate ? (
-                <Chip size="small" label={t('Expiry date required')} />
               ) : null}
             </Box>
           </Box>

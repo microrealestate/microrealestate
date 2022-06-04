@@ -112,7 +112,6 @@ const FullScreenDialogMenu = ({
       {!isMobile ? (
         <Button
           {...props}
-          size="small"
           startIcon={<Icon />}
           onClick={handleClickOpen}
           style={{ whiteSpace: 'nowrap' }}

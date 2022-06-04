@@ -10,6 +10,8 @@ const TemplateSchema = mongoose.Schema({
   contents: Object,
   html: String,
   linkedResourceIds: Array,
+  required: Boolean,
+  requiredOnceContractTerminated: Boolean,
 });
 
 module.exports = mongoose.model('Template', TemplateSchema);

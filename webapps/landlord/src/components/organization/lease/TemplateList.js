@@ -99,13 +99,11 @@ const TemplateList = () => {
   );
 
   const onSaveUploadTemplate = useCallback(
-    async ({ name, description, hasExpiryDate }) => {
+    async (template) => {
       await onSaveTemplate({
+        ...template,
         _id: editFileDescriptor?._id,
-        name,
-        description,
         type: 'fileDescriptor',
-        hasExpiryDate,
         linkedResourceIds: store.lease.selected?._id
           ? [store.lease.selected._id]
           : [],
