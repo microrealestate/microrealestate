@@ -64,22 +64,18 @@ const DocumentItem = ({ document, onEdit, onDelete, disabled }) => {
                 </Typography>
               </Box>
             </Box>
-            <Box display="flex" alignItems="center">
-              {expiryMoment ? (
-                <>
-                  <Alert
-                    severity={isExpired ? 'warning' : 'info'}
-                    label={
-                      isExpired
-                        ? t('expired document')
-                        : t('expiry {{relativeDate}}', {
-                            relativeDate: expiryMoment.fromNow(),
-                          })
-                    }
-                  />
-                </>
-              ) : null}
-            </Box>
+            {expiryMoment ? (
+              <Alert
+                severity={isExpired ? 'warning' : 'info'}
+                title={
+                  isExpired
+                    ? t('expired document')
+                    : t('expiry {{relativeDate}}', {
+                        relativeDate: expiryMoment.fromNow(),
+                      })
+                }
+              />
+            ) : null}
           </Box>
         }
       />

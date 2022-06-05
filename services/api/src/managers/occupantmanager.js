@@ -2,6 +2,7 @@ const logger = require('winston');
 const { customAlphabet } = require('nanoid');
 const moment = require('moment');
 const { default: axios } = require('axios');
+const mongoose = require('mongoose');
 const Tenant = require('@mre/common/models/tenant');
 const FD = require('./frontdata');
 const Contract = require('./contract');
@@ -351,82 +352,94 @@ async function remove(req, res) {
   }
 }
 
+async function _fetchTenants(realmId, tenantId) {
+  const $match = {
+    realmId,
+  };
+  if (tenantId) {
+    $match._id = mongoose.Types.ObjectId(tenantId);
+  }
+
+  const tenants = await Tenant.aggregate([
+    { $match },
+    {
+      $lookup: {
+        from: 'templates',
+        let: {
+          tenant_realmId: '$realmId',
+          tenant_tenantId: { $toString: '$_id' },
+          tenant_leaseId: '$leaseId',
+        },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ['$realmId', '$$tenant_realmId'] },
+                  { $in: ['$$tenant_leaseId', '$linkedResourceIds'] },
+                  { $eq: ['$type', 'fileDescriptor'] },
+                ],
+              },
+            },
+          },
+          {
+            $lookup: {
+              from: 'documents',
+              let: { template_templateId: { $toString: '$_id' } },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        { $eq: ['$realmId', '$$tenant_realmId'] },
+                        { $eq: ['$tenantId', '$$tenant_tenantId'] },
+                        { $eq: ['$leaseId', '$$tenant_leaseId'] },
+                        { $eq: ['$type', 'file'] },
+                        { $eq: ['$templateId', '$$template_templateId'] },
+                      ],
+                    },
+                  },
+                },
+                {
+                  $project: {
+                    realmId: 0,
+                    leaseId: 0,
+                    tenantId: 0,
+                    type: 0,
+                    mimeType: 0,
+                    templateId: 0,
+                    url: 0,
+                  },
+                },
+              ],
+              as: 'documents',
+            },
+          },
+          {
+            $project: {
+              realmId: 0,
+              linkedResourceIds: 0,
+              type: 0,
+              hasExpiryDate: 0,
+            },
+          },
+        ],
+        as: 'filesToUpload',
+      },
+    },
+    { $sort: { name: 1 } },
+  ]);
+
+  await Tenant.populate(tenants, {
+    path: 'properties.propertyId',
+  });
+
+  return tenants;
+}
+
 async function all(req, res) {
   try {
-    const tenants = await Tenant.aggregate([
-      { $match: { realmId: req.realm._id } },
-      {
-        $lookup: {
-          from: 'templates',
-          let: {
-            tenant_realmId: '$realmId',
-            tenant_tenantId: { $toString: '$_id' },
-            tenant_leaseId: '$leaseId',
-          },
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $and: [
-                    { $eq: ['$realmId', '$$tenant_realmId'] },
-                    { $in: ['$$tenant_leaseId', '$linkedResourceIds'] },
-                    { $eq: ['$type', 'fileDescriptor'] },
-                  ],
-                },
-              },
-            },
-            {
-              $lookup: {
-                from: 'documents',
-                let: { template_templateId: { $toString: '$_id' } },
-                pipeline: [
-                  {
-                    $match: {
-                      $expr: {
-                        $and: [
-                          { $eq: ['$realmId', '$$tenant_realmId'] },
-                          { $eq: ['$tenantId', '$$tenant_tenantId'] },
-                          { $eq: ['$leaseId', '$$tenant_leaseId'] },
-                          { $eq: ['$type', 'file'] },
-                          { $eq: ['$templateId', '$$template_templateId'] },
-                        ],
-                      },
-                    },
-                  },
-                  {
-                    $project: {
-                      realmId: 0,
-                      leaseId: 0,
-                      tenantId: 0,
-                      type: 0,
-                      mimeType: 0,
-                      templateId: 0,
-                      url: 0,
-                    },
-                  },
-                ],
-                as: 'documents',
-              },
-            },
-            {
-              $project: {
-                realmId: 0,
-                linkedResourceIds: 0,
-                type: 0,
-                hasExpiryDate: 0,
-              },
-            },
-          ],
-          as: 'filesToUpload',
-        },
-      },
-      { $sort: { name: 1 } },
-    ]);
-
-    await Tenant.populate(tenants, {
-      path: 'properties.propertyId',
-    });
-
+    const tenants = await _fetchTenants(req.realm._id);
     res.json(tenants.map((tenant) => FD.toOccupantData(tenant)));
   } catch (error) {
     logger.error(error);
@@ -439,11 +452,8 @@ async function all(req, res) {
 async function one(req, res) {
   const occupantId = req.params.id;
   try {
-    const tenant = await Tenant.findOne({
-      realmId: req.realm._id,
-      _id: occupantId,
-    }).populate('properties.propertyId');
-    res.json(FD.toOccupantData(tenant));
+    const tenants = await _fetchTenants(req.realm._id, occupantId);
+    res.json(FD.toOccupantData(tenants.length ? tenants[0] : null));
   } catch (error) {
     return res.status(500).json({
       errors: ['an error occurred when fetching a tenant from db'],

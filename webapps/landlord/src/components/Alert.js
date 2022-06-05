@@ -1,26 +1,36 @@
-import MuiAlert from '@material-ui/lab/Alert';
+import { AlertTitle, Alert as MuiAlert } from '@material-ui/lab';
 import { withStyles } from '@material-ui/core';
 
-const StyledAlert = withStyles((theme) => ({
+const AlertWithContent = withStyles({
+  root: {
+    '& ul': {
+      margin: 0,
+    },
+  },
+})(MuiAlert);
+
+const InlineAlert = withStyles((theme) => ({
   root: {
     padding: '0 6px',
     '& .MuiAlert-icon': {
-      fontSize: 18,
       marginRight: 6,
-      padding: '4px 0',
     },
     '& .MuiAlert-message': {
       fontSize: theme.typography.caption.fontSize,
-      padding: '4px 0',
     },
   },
 }))(MuiAlert);
 
-function Alert({ label, ...props }) {
-  return (
-    <StyledAlert severity="warning" variant="filled" {...props}>
-      {label}
-    </StyledAlert>
+function Alert({ title, children, ...props }) {
+  return children ? (
+    <AlertWithContent severity="warning" {...props}>
+      <AlertTitle>{title}</AlertTitle>
+      {children}
+    </AlertWithContent>
+  ) : (
+    <InlineAlert severity="warning" {...props}>
+      {title}
+    </InlineAlert>
   );
 }
 
