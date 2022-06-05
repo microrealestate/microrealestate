@@ -11,11 +11,11 @@ import {
   useMediaQuery,
 } from '@material-ui/core';
 import { getStoreInstance, StoreContext } from '../../../store';
-import React, { Fragment, memo, useCallback, useContext, useMemo } from 'react';
+import React, { Fragment, memo, useCallback, useContext } from 'react';
 
 import _ from 'lodash';
 import AddIcon from '@material-ui/icons/Add';
-import Alert from '../../../components/Alert';
+import CompulsoryDocumentStatus from '../../../components/tenants/CompulsaryDocumentStatus';
 import { EmptyIllustration } from '../../../components/Illustrations';
 import { isServer } from '../../../utils';
 import { MobileButton } from '../../../components/MobileMenuButton';
@@ -73,44 +73,11 @@ const Properties = memo(function Properties({ tenant }) {
   );
 });
 
-const now = moment();
-const CompulsoryDocumentStatus = ({ missingDocuments }) => {
-  const { t } = useTranslation('common');
-
-  return (
-    <>
-      {!!missingDocuments.length &&
-        missingDocuments.map(({ _id, name }) => {
-          return (
-            <Box key={_id} display="flex" mb={1}>
-              <Alert
-                label={t('The document {{documentTitle}} is missing', {
-                  documentTitle: name,
-                })}
-              />
-            </Box>
-          );
-        })}
-    </>
-  );
-};
-
 const TenantListItem = memo(function TenantListItem({ tenant }) {
   const router = useRouter();
   const store = useContext(StoreContext);
   const { t } = useTranslation('common');
   const classes = useStyles();
-
-  const missingDocuments = useMemo(() => {
-    return tenant.filesToUpload.filter(
-      ({ required, requiredOnceContractTerminated, documents }) =>
-        (required || (requiredOnceContractTerminated && tenant.terminated)) &&
-        (!documents.length ||
-          !documents.some(({ expiryDate }) =>
-            expiryDate ? moment(expiryDate).isSameOrAfter(now) : true
-          ))
-    );
-  }, [tenant.filesToUpload, tenant.terminated]);
 
   const onEdit = useCallback(async () => {
     store.tenant.setSelected(tenant);
@@ -199,11 +166,8 @@ const TenantListItem = memo(function TenantListItem({ tenant }) {
             <Box mt={1}>
               <Properties tenant={tenant} />
             </Box>
-            {!!missingDocuments.length && (
-              <Box mt={2}>
-                <CompulsoryDocumentStatus missingDocuments={missingDocuments} />
-              </Box>
-            )}
+
+            <CompulsoryDocumentStatus tenant={tenant} mt={2} />
           </>
         }
       />

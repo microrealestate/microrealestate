@@ -10,6 +10,7 @@ import { getStoreInstance, StoreContext } from '../../../store';
 import { useCallback, useContext, useMemo, useState } from 'react';
 
 import BreadcrumbBar from '../../../components/BreadcrumbBar';
+import CompulsoryDocumentStatus from '../../../components/tenants/CompulsaryDocumentStatus';
 import ContractOverviewCard from '../../../components/tenants/ContractOverviewCard';
 import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
@@ -374,6 +375,8 @@ const Tenant = observer(() => {
         </Paper>
       ) : (
         <>
+          <CompulsoryDocumentStatus tenant={store.tenant.selected} mb={4} />
+
           <Grid container spacing={5}>
             <Grid item xs={12} md={7} lg={8}>
               <TenantTabs onSubmit={onSubmit} readOnly={readOnly} />

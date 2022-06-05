@@ -4,6 +4,7 @@ import {
   hexToRgb,
   primaryColor,
   successColor,
+  warningColor,
   whiteColor,
 } from './styles';
 
@@ -22,6 +23,12 @@ const theme = createTheme({
       light: successColor[0],
       main: successColor[1],
       dark: successColor[2],
+      contrastText: 'rgba(0, 0, 0, 0.87)',
+    },
+    warning: {
+      light: warningColor[0],
+      main: warningColor[1],
+      dark: warningColor[2],
       contrastText: 'rgba(0, 0, 0, 0.87)',
     },
     backgroundColor: grayColor[10],
