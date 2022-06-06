@@ -2,7 +2,6 @@ import { EditorContent, useEditor } from '@tiptap/react';
 import { useCallback, useEffect, useState } from 'react';
 
 import EditorMenu from './EditorMenu';
-import Gapcursor from '@tiptap/extension-gapcursor';
 import { handlePageBreaks } from './helpers';
 import jsesc from 'jsesc';
 import Placeholder from '@tiptap/extension-placeholder';
@@ -48,7 +47,6 @@ const RichTextEditor = ({
         types: ['heading', 'paragraph'],
       }),
       Superscript,
-      Gapcursor,
       Table.configure({
         resizable: true,
       }),

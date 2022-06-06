@@ -3,14 +3,36 @@ import { useCallback, useContext } from 'react';
 
 import AddIcon from '@material-ui/icons/Add';
 import DocumentList from '../../DocumentList';
-import { observer } from 'mobx-react-lite';
+import { Observer } from 'mobx-react-lite';
 import { StoreContext } from '../../../store';
 import useConfirmDialog from '../../ConfirmDialog';
 import useFileDescriptorDialog from './FileDescriptorDialog';
 import useRichTextEditorDialog from '../../RichTextEditor/RichTextEditorDialog';
 import useTranslation from 'next-translate/useTranslation';
 
-const TemplateList = () => {
+function TemplateItems({ onEdit, onDelete }) {
+  const store = useContext(StoreContext);
+  return (
+    <Observer>
+      {() => {
+        const templates = store.template.items.filter(
+          ({ linkedResourceIds = [] }) =>
+            linkedResourceIds.includes(store.lease.selected?._id)
+        );
+
+        return (
+          <DocumentList
+            documents={templates}
+            onEdit={onEdit}
+            onDelete={onDelete}
+          />
+        );
+      }}
+    </Observer>
+  );
+}
+
+function TemplateList() {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const [ConfirmDialog, setTemplateToRemove, templateToRemove] =
@@ -19,11 +41,6 @@ const TemplateList = () => {
     useRichTextEditorDialog();
   const [FileDescriptorDialog, setEditFileDescriptor, editFileDescriptor] =
     useFileDescriptorDialog();
-
-  // TODO optimize the rendering here
-  const templates = store.template.items.filter(({ linkedResourceIds = [] }) =>
-    linkedResourceIds.includes(store.lease.selected?._id)
-  );
 
   const onLoadTemplate = useCallback(async () => {
     if (!editTemplate || !editTemplate._id) {
@@ -179,11 +196,9 @@ const TemplateList = () => {
           </Button>
         </Box>
       </Box>
-      <DocumentList
-        documents={templates}
-        onEdit={handleClickEdit}
-        onDelete={setTemplateToRemove}
-      />
+
+      <TemplateItems onEdit={handleClickEdit} onDelete={setTemplateToRemove} />
+
       <RichTextEditorDialog
         onLoad={onLoadTemplate}
         onSave={onSaveTextTemplate}
@@ -198,6 +213,6 @@ const TemplateList = () => {
       />
     </>
   );
-};
+}
 
-export default observer(TemplateList);
+export default TemplateList;
