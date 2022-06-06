@@ -37,33 +37,27 @@ const DocumentItem = ({ document, onEdit, onDelete, disabled }) => {
   }, [expiryMoment]);
 
   return (
-    <ListItem button onClick={handleEditClick}>
+    <ListItem button divider dense onClick={handleEditClick}>
       <ListItemText
         id={document._id}
         primary={
           <Box
             display="flex"
-            justifyContent="space-between"
-            alignContent="center"
-            mr={2}
+            flexDirection="column"
+            justifyContent="center"
+            minHeight={65.5}
           >
-            <Box>
-              <Box display="flex" alignContent="center">
-                <Box mr={1}>
-                  {document.type === 'text' ? (
-                    <DescriptionOutlinedIcon color="action" />
-                  ) : (
-                    <ScannerOutlinedIcon color="action" />
-                  )}
-                </Box>
-                <Typography>{document.name}</Typography>
+            <Box display="flex">
+              <Box mr={1}>
+                {document.type === 'text' ? (
+                  <DescriptionOutlinedIcon color="action" />
+                ) : (
+                  <ScannerOutlinedIcon color="action" />
+                )}
               </Box>
-              <Box ml={4}>
-                <Typography variant="caption">
-                  {document.description}
-                </Typography>
-              </Box>
+              <Typography component="div">{document.name}</Typography>
             </Box>
+
             {expiryMoment ? (
               <Alert
                 severity={isExpired ? 'warning' : 'info'}
@@ -75,7 +69,13 @@ const DocumentItem = ({ document, onEdit, onDelete, disabled }) => {
                       })
                 }
               />
-            ) : null}
+            ) : (
+              !!document.description && (
+                <Typography variant="caption">
+                  {document.description}
+                </Typography>
+              )
+            )}
           </Box>
         }
       />

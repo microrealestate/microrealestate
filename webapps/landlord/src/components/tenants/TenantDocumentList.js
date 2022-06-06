@@ -11,13 +11,36 @@ import { downloadDocument } from '../../utils/fetch';
 import FullScreenDialogMenu from '../FullScreenDialogMenu';
 import ImageViewer from '../ImageViewer/ImageViewer';
 import { MobileButton } from '../MobileMenuButton';
-import { observer } from 'mobx-react-lite';
+import { Observer } from 'mobx-react-lite';
 import PdfViewer from '../PdfViewer/PdfViewer';
 import { StoreContext } from '../../store';
 import useConfirmDialog from '../ConfirmDialog';
 import useRichTextEditorDialog from '../RichTextEditor/RichTextEditorDialog';
 import useTranslation from 'next-translate/useTranslation';
 import useUploadDialog from '../UploadDialog';
+
+function DocumentItems({ onView, onEdit, onDelete, disabled }) {
+  const store = useContext(StoreContext);
+  return (
+    <Observer>
+      {() => {
+        const documents = store.document.items.filter(
+          ({ tenantId }) => store.tenant.selected?._id === tenantId
+        );
+
+        return (
+          <DocumentList
+            documents={documents}
+            onView={onView}
+            onEdit={onEdit}
+            onDelete={onDelete}
+            disabled={disabled}
+          />
+        );
+      }}
+    </Observer>
+  );
+}
 
 function TenantDocumentList({ disabled = false }) {
   const store = useContext(StoreContext);
@@ -32,11 +55,6 @@ function TenantDocumentList({ disabled = false }) {
     useRichTextEditorDialog();
   const [openImageViewer, setOpenImageViewer] = useState(false);
   const [openPdfViewer, setOpenPdfViewer] = useState(false);
-
-  // TODO: optimize to not recompute the document list on each rendered
-  const documents = store.document.items.filter(
-    ({ tenantId }) => store.tenant.selected?._id === tenantId
-  );
 
   const menuItems = useMemo(() => {
     const templates = store.template.items.filter(
@@ -205,8 +223,7 @@ function TenantDocumentList({ disabled = false }) {
           />
         </Box>
       </Box>
-      <DocumentList
-        documents={documents}
+      <DocumentItems
         onEdit={handleClickEdit}
         onDelete={setDocumentToRemove}
         disabled={disabled}
@@ -233,4 +250,4 @@ function TenantDocumentList({ disabled = false }) {
   );
 }
 
-export default observer(TenantDocumentList);
+export default TenantDocumentList;
