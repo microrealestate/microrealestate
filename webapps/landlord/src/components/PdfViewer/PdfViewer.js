@@ -84,7 +84,7 @@ export default function PdfViewer({ open, setOpen }) {
         </AppBar>
         <Box overflow="auto">
           <Box pt={8} maxWidth="230mm">
-            <Worker workerUrl="https://unpkg.com/pdfjs-dist@2.13.216/build/pdf.worker.js">
+            <Worker workerUrl="https://unpkg.com/pdfjs-dist@2.14.305/build/pdf.worker.js">
               <Viewer fileUrl={pdfSrc} plugins={[printPluginInstance]} />
             </Worker>
           </Box>

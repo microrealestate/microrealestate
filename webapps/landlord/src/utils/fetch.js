@@ -116,9 +116,9 @@ export const apiFetcher = () => {
         // Force signin if an api responded 403
         if (error.response?.status === 403) {
           if (isClient()) {
-            window.location.reload();
-            throw new axios.Cancel('Operation canceled force login');
+            window.location.assign(`${publicRuntimeConfig.BASE_PATH}`);
           }
+          throw new axios.Cancel('Operation canceled force login');
         }
         return Promise.reject(error);
       }

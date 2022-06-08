@@ -52,7 +52,6 @@ describe('User access', () => {
     cy.get('input[name=company]');
     cy.get('input[name=ein]');
     cy.get('input[name=capital]');
-    cy.get('[data-cy=submit]').should('be.disabled');
 
     cy.registerLandlord("John's properties", 'Français (France)', 'Euro (€)');
     cy.checkUrl("/fr-FR/John's%20properties/dashboard");
