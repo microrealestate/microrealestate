@@ -1,4 +1,4 @@
-import { Box, Paper, Typography } from '@material-ui/core';
+import { Box, Container, Paper, Typography } from '@material-ui/core';
 import { getStoreInstance, StoreContext } from '../store';
 import { isServer, redirect } from '../utils';
 import React, { useContext } from 'react';
@@ -59,25 +59,27 @@ const FirstAccess = observer(() => {
   };
 
   return !store.organization.selected?.name ? (
-    <Page maxWidth="sm">
-      <Box py={2}>
-        <Typography component="h1" variant="h4" align="center">
-          {t('Welcome {{firstName}} {{lastName}}!', {
-            firstName: store.user.firstName,
-            lastName: store.user.lastName,
-          })}
-        </Typography>
-      </Box>
-      <Box pb={4}>
-        <Typography variant="subtitle2" align="center" color="textSecondary">
-          {t('One more step, tell us who will rent the properties')}
-        </Typography>
-      </Box>
-      <Paper>
-        <Box px={4} pb={4} pt={2}>
-          <Landlord onSubmit={onSubmit} onSubmitted={onSubmitted} />
+    <Page>
+      <Container maxWidth="sm">
+        <Box py={2}>
+          <Typography component="h1" variant="h4" align="center">
+            {t('Welcome {{firstName}} {{lastName}}!', {
+              firstName: store.user.firstName,
+              lastName: store.user.lastName,
+            })}
+          </Typography>
         </Box>
-      </Paper>
+        <Box pb={4}>
+          <Typography variant="subtitle2" align="center" color="textSecondary">
+            {t('One more step, tell us who will rent the properties')}
+          </Typography>
+        </Box>
+        <Paper>
+          <Box px={4} pb={4} pt={2}>
+            <Landlord onSubmit={onSubmit} onSubmitted={onSubmitted} />
+          </Box>
+        </Paper>
+      </Container>
     </Page>
   ) : null;
 });

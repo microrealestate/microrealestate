@@ -129,14 +129,17 @@ const Nav = () => {
           store.rent.periodAsString
         );
         pathname = pathname.replace('[year]', moment().year());
-        router.push(`/${store.organization.selected.name}${pathname}`);
+        router.push(`/${store.organization.selected.name}${pathname}`, null, {
+          locale: store.organization.selected.locale,
+        });
       }
     },
     [
-      router,
       triggerOpen,
       store.organization.selected?.name,
+      store.organization.selected?.locale,
       store.rent?.periodAsString,
+      router,
     ]
   );
 

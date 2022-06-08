@@ -158,7 +158,7 @@ const DesktopToolbars = ({
         </AppBar>
       </ElevationScroll>
 
-      {!loading && NavBar ? (
+      {!loading && (NavBar || ActionBar) ? (
         <Container maxWidth={maxWidth}>
           <SubToolbar PrimaryBar={NavBar} SecondaryBar={ActionBar} />
         </Container>
