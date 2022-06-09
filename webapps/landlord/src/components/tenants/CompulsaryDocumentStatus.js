@@ -10,7 +10,7 @@ function CompulsoryDocumentStatus({ tenant, ...boxProps }) {
   const { t } = useTranslation('common');
 
   const missingDocuments = useMemo(() => {
-    return tenant.filesToUpload.filter(
+    return tenant.filesToUpload?.filter(
       ({ required, requiredOnceContractTerminated, documents }) =>
         (required || (requiredOnceContractTerminated && tenant.terminated)) &&
         (!documents.length ||
@@ -21,7 +21,7 @@ function CompulsoryDocumentStatus({ tenant, ...boxProps }) {
   }, [tenant.filesToUpload, tenant.terminated]);
 
   return (
-    !!missingDocuments.length && (
+    !!missingDocuments?.length && (
       <Box {...boxProps}>
         <Alert
           title={
