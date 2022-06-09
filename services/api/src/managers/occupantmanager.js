@@ -27,6 +27,91 @@ function _buildPropertyMap(realm, callback) {
   });
 }
 
+async function _fetchTenants(realmId, tenantId) {
+  const $match = {
+    realmId,
+  };
+  if (tenantId) {
+    $match._id = mongoose.Types.ObjectId(tenantId);
+  }
+
+  const tenants = await Tenant.aggregate([
+    { $match },
+    {
+      $lookup: {
+        from: 'templates',
+        let: {
+          tenant_realmId: '$realmId',
+          tenant_tenantId: { $toString: '$_id' },
+          tenant_leaseId: '$leaseId',
+        },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ['$realmId', '$$tenant_realmId'] },
+                  { $in: ['$$tenant_leaseId', '$linkedResourceIds'] },
+                  { $eq: ['$type', 'fileDescriptor'] },
+                ],
+              },
+            },
+          },
+          {
+            $lookup: {
+              from: 'documents',
+              let: { template_templateId: { $toString: '$_id' } },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        { $eq: ['$realmId', '$$tenant_realmId'] },
+                        { $eq: ['$tenantId', '$$tenant_tenantId'] },
+                        { $eq: ['$leaseId', '$$tenant_leaseId'] },
+                        { $eq: ['$type', 'file'] },
+                        { $eq: ['$templateId', '$$template_templateId'] },
+                      ],
+                    },
+                  },
+                },
+                {
+                  $project: {
+                    realmId: 0,
+                    leaseId: 0,
+                    tenantId: 0,
+                    type: 0,
+                    mimeType: 0,
+                    templateId: 0,
+                    url: 0,
+                  },
+                },
+              ],
+              as: 'documents',
+            },
+          },
+          {
+            $project: {
+              realmId: 0,
+              linkedResourceIds: 0,
+              type: 0,
+              hasExpiryDate: 0,
+            },
+          },
+        ],
+        as: 'filesToUpload',
+      },
+    },
+    { $sort: { name: 1 } },
+  ]);
+
+  await Tenant.populate(tenants, {
+    path: 'properties.propertyId',
+  });
+
+  return tenants;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Exported functions
 ////////////////////////////////////////////////////////////////////////////////
@@ -92,13 +177,14 @@ function add(req, res) {
       occupant.rents = contract.rents;
     }
 
-    occupantModel.add(realm, occupant, (errors, occupant) => {
+    occupantModel.add(realm, occupant, async (errors, occupant) => {
       if (errors) {
         return res.status(500).json({
           errors: errors,
         });
       }
-      res.json(FD.toOccupantData(occupant));
+      const tenants = await _fetchTenants(req.realm._id, occupant._id);
+      res.json(FD.toOccupantData(tenants.length ? tenants[0] : null));
     });
   });
 }
@@ -230,13 +316,15 @@ function update(req, res) {
         }
       }
 
-      occupantModel.update(realm, occupant, (errors) => {
+      occupantModel.update(realm, occupant, async (errors) => {
         if (errors) {
           return res.status(500).json({
             errors: errors,
           });
         }
-        res.json(FD.toOccupantData(occupant));
+
+        const tenants = await _fetchTenants(req.realm._id, occupant._id);
+        res.json(FD.toOccupantData(tenants.length ? tenants[0] : null));
       });
     });
   });
@@ -350,91 +438,6 @@ async function remove(req, res) {
       errors: ['a problem occured when deleting tenants'],
     });
   }
-}
-
-async function _fetchTenants(realmId, tenantId) {
-  const $match = {
-    realmId,
-  };
-  if (tenantId) {
-    $match._id = mongoose.Types.ObjectId(tenantId);
-  }
-
-  const tenants = await Tenant.aggregate([
-    { $match },
-    {
-      $lookup: {
-        from: 'templates',
-        let: {
-          tenant_realmId: '$realmId',
-          tenant_tenantId: { $toString: '$_id' },
-          tenant_leaseId: '$leaseId',
-        },
-        pipeline: [
-          {
-            $match: {
-              $expr: {
-                $and: [
-                  { $eq: ['$realmId', '$$tenant_realmId'] },
-                  { $in: ['$$tenant_leaseId', '$linkedResourceIds'] },
-                  { $eq: ['$type', 'fileDescriptor'] },
-                ],
-              },
-            },
-          },
-          {
-            $lookup: {
-              from: 'documents',
-              let: { template_templateId: { $toString: '$_id' } },
-              pipeline: [
-                {
-                  $match: {
-                    $expr: {
-                      $and: [
-                        { $eq: ['$realmId', '$$tenant_realmId'] },
-                        { $eq: ['$tenantId', '$$tenant_tenantId'] },
-                        { $eq: ['$leaseId', '$$tenant_leaseId'] },
-                        { $eq: ['$type', 'file'] },
-                        { $eq: ['$templateId', '$$template_templateId'] },
-                      ],
-                    },
-                  },
-                },
-                {
-                  $project: {
-                    realmId: 0,
-                    leaseId: 0,
-                    tenantId: 0,
-                    type: 0,
-                    mimeType: 0,
-                    templateId: 0,
-                    url: 0,
-                  },
-                },
-              ],
-              as: 'documents',
-            },
-          },
-          {
-            $project: {
-              realmId: 0,
-              linkedResourceIds: 0,
-              type: 0,
-              hasExpiryDate: 0,
-            },
-          },
-        ],
-        as: 'filesToUpload',
-      },
-    },
-    { $sort: { name: 1 } },
-  ]);
-
-  await Tenant.populate(tenants, {
-    path: 'properties.propertyId',
-  });
-
-  return tenants;
 }
 
 async function all(req, res) {
