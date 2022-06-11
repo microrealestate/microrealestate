@@ -105,9 +105,14 @@ async function _fetchTenants(realmId, tenantId) {
     { $sort: { name: 1 } },
   ]);
 
-  await Tenant.populate(tenants, {
-    path: 'properties.propertyId',
-  });
+  await Tenant.populate(tenants, [
+    {
+      path: 'leaseId',
+    },
+    {
+      path: 'properties.propertyId',
+    },
+  ]);
 
   return tenants;
 }

@@ -42,11 +42,11 @@ export default function Shortcuts({ firstConnection = false }) {
     setOpenNewLeaseDialog(true);
   }, [setOpenNewLeaseDialog]);
 
-  const handleCreateProperty = useCallback(() => {
+  const handleAddProperty = useCallback(() => {
     setOpenNewPropertyDialog(true);
   }, [setOpenNewPropertyDialog]);
 
-  const handleCreateTenant = useCallback(() => {
+  const handleAddTenant = useCallback(() => {
     setOpenNewTenantDialog(true);
   }, [setOpenNewTenantDialog]);
 
@@ -74,8 +74,8 @@ export default function Shortcuts({ firstConnection = false }) {
                 hasProperty={hasProperty}
                 hasTenant={hasTenant}
                 handleCreateContract={handleCreateContract}
-                handleCreateProperty={handleCreateProperty}
-                handleCreateTenant={handleCreateTenant}
+                handleAddProperty={handleAddProperty}
+                handleAddTenant={handleAddTenant}
               />
             </Grid>
           </Grid>
@@ -98,6 +98,7 @@ export default function Shortcuts({ firstConnection = false }) {
                         label={t('Enter a rent settlement')}
                         disabled={!store.dashboard.data?.overview?.tenantCount}
                         onClick={handlePayment}
+                        data-cy="shortcutSettleRent"
                       />
                     </Grid>
                     <Grid item xs={12}>
@@ -105,20 +106,23 @@ export default function Shortcuts({ firstConnection = false }) {
                         Icon={StopIcon}
                         label={t('Terminate a lease')}
                         onClick={handleTerminateLease}
+                        data-cy="shortcutTerminateLease"
                       />
                     </Grid>
                     <Grid item xs={12}>
                       <ShortcutButton
                         Icon={VpnKeyIcon}
                         label={t('Add a new property')}
-                        onClick={handleCreateProperty}
+                        onClick={handleAddProperty}
+                        data-cy="shortcutAddProperty"
                       />
                     </Grid>
                     <Grid item xs={12}>
                       <ShortcutButton
                         Icon={PeopleIcon}
                         label={t('Add a new tenant')}
-                        onClick={handleCreateTenant}
+                        onClick={handleAddTenant}
+                        data-cy="shortcutAddTenant"
                       />
                     </Grid>
                     <Grid item xs={12}>
@@ -126,6 +130,7 @@ export default function Shortcuts({ firstConnection = false }) {
                         Icon={DescriptionIcon}
                         label={t('Create a new contract')}
                         onClick={handleCreateContract}
+                        data-cy="shortcutCreateContract"
                       />
                     </Grid>
                   </Grid>

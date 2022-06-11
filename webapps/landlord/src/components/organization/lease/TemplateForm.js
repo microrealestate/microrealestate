@@ -23,7 +23,12 @@ export default function TemplateForm({ onSubmit }) {
         <TemplateList />
       </FormSection>
       {store.lease?.selected.stepperMode ? (
-        <Button variant="contained" color="primary" onClick={handleNext}>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleNext}
+          data-cy="submit"
+        >
           {t('Save')}
         </Button>
       ) : null}

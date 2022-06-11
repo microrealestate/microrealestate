@@ -134,7 +134,6 @@ const SignIn = observer(() => {
                     <SubmitButton
                       fullWidth
                       label={!isSubmitting ? t('Sign in') : t('Signing in')}
-                      data-cy="submit"
                     />
                   </Box>
                 </Form>

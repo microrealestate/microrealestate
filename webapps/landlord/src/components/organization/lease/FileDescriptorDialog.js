@@ -39,7 +39,6 @@ function FileDescriptorDialog({ open, setOpen, onSave }) {
     if (open === false) {
       return initialValues;
     }
-    console.log({ open });
     return {
       ...initialValues,
       ...open,
@@ -108,11 +107,20 @@ function FileDescriptorDialog({ open, setOpen, onSave }) {
                       label={t('The document is')}
                       name="required"
                     >
-                      <RadioField value="notRequired" label={t('Optional')} />
-                      <RadioField value="required" label={t('Mandatory')} />
+                      <RadioField
+                        value="notRequired"
+                        label={t('Optional')}
+                        data-cy="fileOptional"
+                      />
+                      <RadioField
+                        value="required"
+                        label={t('Mandatory')}
+                        data-cy="fileRequired"
+                      />
                       <RadioField
                         value="requiredOnceContractTerminated"
                         label={t('Mandatory only when contract is terminated')}
+                        data-cy="fileRequiredOnceContractTerminated"
                       />
                     </RadioFieldGroup>
                   </Box>
@@ -123,6 +131,7 @@ function FileDescriptorDialog({ open, setOpen, onSave }) {
                   </Button>
                   <SubmitButton
                     label={formData?._id ? t('Update') : t('Add')}
+                    data-cy="submitFileDescriptor"
                   />
                 </DialogActions>
               </Form>

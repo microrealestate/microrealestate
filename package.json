@@ -29,7 +29,8 @@
     "webapps/*"
   ],
   "scripts": {
-    "e2e": "yarn workspace e2e run cypress:open",
+    "e2e": "yarn workspace e2e run cypress:run",
+    "e2e:open": "yarn workspace e2e run cypress:open",
     "format": "yarn workspaces run format",
     "lint": "yarn workspaces run lint"
   },

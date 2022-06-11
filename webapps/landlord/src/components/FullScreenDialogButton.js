@@ -85,7 +85,12 @@ const FullScreenDialogButton = ({
                   </Grid>
                   <Grid item>
                     {showSave && (
-                      <Button autoFocus color="primary" onClick={handleSave}>
+                      <Button
+                        autoFocus
+                        color="primary"
+                        onClick={handleSave}
+                        data-cy="submit"
+                      >
                         {saveButtonLabel || t('Save')}
                       </Button>
                     )}

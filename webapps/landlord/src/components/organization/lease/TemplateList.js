@@ -182,6 +182,7 @@ function TemplateList() {
           color="primary"
           startIcon={<AddIcon />}
           onClick={handleClickAddFileDescriptor}
+          data-cy="addFileDescriptor"
         >
           {t('Upload template')}
         </Button>
@@ -191,6 +192,7 @@ function TemplateList() {
             color="primary"
             startIcon={<AddIcon />}
             onClick={handleClickAddText}
+            data-cy="addTextDocument"
           >
             {t('Text template')}
           </Button>

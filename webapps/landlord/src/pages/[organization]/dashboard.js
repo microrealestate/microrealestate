@@ -9,7 +9,7 @@ import Shortcuts from '../../components/dashboard/Shortcuts';
 import { StoreContext } from '../../store';
 import { useComponentMountedRef } from '../../utils/hooks';
 import { useEffect } from 'react';
-import Welcome from '../../components/dashboard/Welcome';
+import Welcome from '../../components/Welcome';
 import { withAuthentication } from '../../components/Authentication';
 import YearFigures from '../../components/dashboard/YearFigures';
 

@@ -1,37 +1,20 @@
-const userWithPersonalAccount = {
-  firstName: 'John',
-  lastName: 'Doe',
-  email: 'jdoe@test.com',
-  password: 'test1234',
-};
-
-const userWithCompanyAccount = {
-  firstName: 'Jane',
-  lastName: 'Doe',
-  email: 'janedoe@test.com',
-  password: 'test1234',
-};
-
 import i18n from '../support/i18n';
+import userWithCompanyAccount from '../fixtures/user_admin_company_account.json';
+import userWithPersonalAccount from '../fixtures/user_admin_personal_account.json';
 
 describe('User access', () => {
   before(() => {
-    cy.resetAppData(Cypress.env('API_BASEURL'));
+    cy.resetAppData();
   });
 
   it('Register a landlord with a personal account', () => {
     cy.visit('/signup');
     cy.get('[data-cy=signin]').click();
     cy.get('[data-cy=signup]').click();
-    cy.registerUser(
-      userWithPersonalAccount.firstName,
-      userWithPersonalAccount.lastName,
-      userWithPersonalAccount.email,
-      userWithPersonalAccount.password
-    );
+    cy.signUp(userWithPersonalAccount);
     cy.checkUrl('/signin');
 
-    cy.signin(userWithPersonalAccount.email, userWithPersonalAccount.password);
+    cy.signIn(userWithPersonalAccount);
     cy.checkUrl('/firstaccess');
     cy.contains(
       i18n.getFixedT('en')('Welcome {{firstName}} {{lastName}}!', {
@@ -53,24 +36,21 @@ describe('User access', () => {
     cy.get('input[name=ein]');
     cy.get('input[name=capital]');
 
-    cy.registerLandlord("John's properties", 'Français (France)', 'Euro (€)');
-    cy.checkUrl("/fr-FR/John's%20properties/dashboard");
-    cy.signout();
+    cy.registerLandlord(userWithPersonalAccount);
+    cy.checkUrl(
+      `/fr-FR/${encodeURI(userWithPersonalAccount.orgName)}/dashboard`
+    );
+    cy.signOut();
   });
 
   it('Register a landlord with a company account', () => {
     cy.visit('/signup');
     cy.get('[data-cy=signin]').click();
     cy.get('[data-cy=signup]').click();
-    cy.registerUser(
-      userWithCompanyAccount.firstName,
-      userWithCompanyAccount.lastName,
-      userWithCompanyAccount.email,
-      userWithCompanyAccount.password
-    );
+    cy.signUp(userWithCompanyAccount);
     cy.checkUrl('/signin');
 
-    cy.signin(userWithCompanyAccount.email, userWithCompanyAccount.password);
+    cy.signIn(userWithCompanyAccount);
     cy.checkUrl('/firstaccess');
     cy.contains(
       i18n.getFixedT('en')('Welcome {{firstName}} {{lastName}}!', {
@@ -79,23 +59,16 @@ describe('User access', () => {
       })
     );
 
-    cy.registerLandlord(
-      "Jane's properties",
-      'Français (France)',
-      'Euro (€)',
-      'My company',
-      'Jane Doe',
-      'Inc',
-      'AER33333',
-      30000
+    cy.registerLandlord(userWithCompanyAccount);
+    cy.checkUrl(
+      `/fr-FR/${encodeURI(userWithCompanyAccount.orgName)}/dashboard`
     );
-    cy.checkUrl("/fr-FR/Jane's%20properties/dashboard");
-    cy.signout();
+    cy.signOut();
   });
 
   it('Check page navigation', () => {
     cy.visit('/');
-    cy.signin(userWithPersonalAccount.email, userWithPersonalAccount.password);
+    cy.signIn(userWithPersonalAccount);
 
     cy.navToPage('rents');
     const now = new Date();
@@ -133,18 +106,19 @@ describe('User access', () => {
     cy.navToPage('dashboard');
     cy.checkUrl('/dashboard');
     cy.contains(
-      i18n.getFixedT('fr-FR')('Welcome {{firstName}}', {
+      i18n.getFixedT('fr-FR')('Welcome {{firstName}} {{lastName}}!', {
         firstName: userWithPersonalAccount.firstName,
+        lastName: userWithPersonalAccount.lastName,
       })
     );
 
-    cy.signout();
+    cy.signOut();
     cy.checkUrl('/signin');
   });
 
   it('Incorrect email or password', () => {
     cy.visit('/');
-    cy.signin('demo@demo.com', 'demo');
+    cy.signIn({ email: 'demo@demo.com', password: 'demo' });
     cy.get('.MuiAlert-message').should(
       'have.text',
       i18n.getFixedT('en')('Incorrect email or password')
@@ -155,12 +129,7 @@ describe('User access', () => {
     cy.visit('/signup');
     cy.get('[data-cy=signin]').click();
     cy.get('[data-cy=signup]').click();
-    cy.registerUser(
-      userWithPersonalAccount.firstName,
-      userWithPersonalAccount.lastName,
-      userWithPersonalAccount.email,
-      userWithPersonalAccount.password
-    );
+    cy.signUp(userWithPersonalAccount);
     cy.checkUrl('/signup');
     cy.get('.MuiAlert-message').should(
       'have.text',

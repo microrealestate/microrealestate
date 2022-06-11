@@ -61,6 +61,7 @@ const CardMenuItem = ({ value, illustration, label, description, onClick }) => {
       pr={!isMobile ? 2 : 0}
       pb={2}
       onClick={onMenuClick}
+      data-cy={`template-${label.replace(/\s/g, '')}`}
     >
       <CardMenuItemContent
         illustration={illustration}

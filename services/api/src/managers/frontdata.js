@@ -413,6 +413,12 @@ function toOccupantData(inputOccupant) {
     occupant.terminated = true;
     occupant.status = 'stopped';
   }
+
+  if (occupant.leaseId) {
+    occupant.lease = occupant.leaseId;
+    occupant.leaseId = occupant.leaseId._id;
+  }
+
   if (occupant.properties) {
     occupant.office = {
       surface: 0,

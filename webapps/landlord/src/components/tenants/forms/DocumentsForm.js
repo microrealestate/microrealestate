@@ -16,7 +16,12 @@ export default function DocumentsForm({ onSubmit, readOnly }) {
       <FormSection label={t('Documents')}>
         <TenantDocumentList disabled={readOnly} />
       </FormSection>
-      <Button variant="contained" color="primary" onClick={handleNext}>
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={handleNext}
+        data-cy="submit"
+      >
         {t('Save')}
       </Button>
     </>

@@ -2,6 +2,7 @@ const logger = require('winston');
 const mongoosedb = require('@mre/common/models/db');
 const Template = require('@mre/common/models/template');
 const Document = require('@mre/common/models/document');
+const Tenant = require('@mre/common/models/tenant');
 
 async function withDB(job) {
   let failure = false;
@@ -27,6 +28,10 @@ module.exports = async (processExitOnCompleted = false) => {
   try {
     failure = await withDB(async () => {
       await Promise.all([
+        Tenant.updateMany(
+          { leaseId: 'undefined' },
+          { $set: { leaseId: null } }
+        ),
         Template.updateMany({ type: 'contract' }, { $set: { type: 'text' } }),
         Document.updateMany({ type: 'contract' }, { $set: { type: 'text' } }),
       ]);

@@ -1,0 +1,57 @@
+[
+  {
+    "name": "Camel Aissani",
+    "isCompany": false,
+    "address": {
+      "street1": "123 rue Saint-Jacques",
+      "street2": "",
+      "zipCode": "75005",
+      "city": "Paris",
+      "state": "Île-de-France",
+      "country": "France"
+    },
+    "contacts": [
+      {
+        "name": "Camel Aissani",
+        "email": "camel@test.com",
+        "phone1": "0123456789",
+        "phone2": "9876543210"
+      },
+      {
+        "name": "Elon ksum",
+        "email": "elon@test.com",
+        "phone1": "0123456789",
+        "phone2": "2468013579"
+      }
+    ],
+    "lease": {
+      "contract": "369",
+      "beginDate": "01/06/2022",
+      "endDate": "31/05/2031",
+      "properties": [
+        {
+          "name": "Appartement Paris",
+          "expense": {
+            "title": "charges locatives",
+            "amount": 10
+          },
+          "entryDate": "01/06/2022",
+          "exitDate": "31/05/2031"
+        }
+      ]
+    },
+    "billing": {
+      "isVat": true,
+      "percentageVatRatio": 20
+    },
+    "documents": [
+      { "type": "text", "templateName": "Bail" },
+      {
+        "type": "text",
+        "title": "Mon document",
+        "templateName": "Document vierge",
+        "content": "Ici un exemple de document personalisé non basé sur un modèle existant."
+      }
+    ]
+  }
+]

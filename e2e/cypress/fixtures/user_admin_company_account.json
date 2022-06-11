@@ -1,0 +1,16 @@
+{
+  "firstName": "Jeanne",
+  "lastName": "Doe",
+  "email": "jeannedoe@test.com",
+  "password": "test1234",
+  "locale": "fr-FR",
+  "currency": "EUR",
+  "orgName": "Les biens de Jane",
+  "company": {
+    "name": "Ma boite de location",
+    "legalRepresentative": "Jeanne Doe",
+    "legalStructure": "SCI",
+    "ein": "AER33333",
+    "capital": 30000
+  }
+}

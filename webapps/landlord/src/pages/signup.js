@@ -115,7 +115,6 @@ const SignUp = observer(({ pageError }) => {
                     <SubmitButton
                       fullWidth
                       label={!isSubmitting ? t('Agree & Join') : t('Joining')}
-                      data-cy="submit"
                     />
                   </Box>
                 </Form>

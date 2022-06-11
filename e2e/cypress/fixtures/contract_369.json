@@ -1,0 +1,22 @@
+{
+  "name": "369",
+  "description": "Bail commercial 369",
+  "timeRange": "months",
+  "numberOfTerms": 108,
+  "templates": [
+    {
+      "type": "text",
+      "title": "Bail",
+      "content": "Ici un exemple de bail à parapher et signer."
+    },
+    {
+      "type": "fileDescriptor",
+      "title": "PI",
+      "description": "Pièce d'identité du responsable légal",
+      "hasExpiryDate": true,
+      "required": true,
+      "requiredOnceContractTerminated": false,
+      "optional": false
+    }
+  ]
+}
