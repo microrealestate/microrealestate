@@ -1,0 +1,9 @@
+{
+  "firstName": "Jean",
+  "lastName": "Doe",
+  "email": "jdoe@test.com",
+  "password": "test1234",
+  "locale": "fr-FR",
+  "currency": "EUR",
+  "orgName": "Les biens de Jean"
+}

@@ -358,6 +358,7 @@ const LeaseContractForm = observer((props) => {
                               color="primary"
                               size="small"
                               onClick={() => arrayHelpers.remove(index)}
+                              data-cy="removeTenantProperty"
                             >
                               {t('Remove property')}
                             </Button>
@@ -372,6 +373,7 @@ const LeaseContractForm = observer((props) => {
                           color="primary"
                           size="small"
                           onClick={() => arrayHelpers.push(emptyProperty)}
+                          data-cy="addTenantProperty"
                         >
                           {t('Add property')}
                         </Button>

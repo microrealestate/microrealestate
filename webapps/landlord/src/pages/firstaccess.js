@@ -10,6 +10,7 @@ import { setOrganizationId } from '../utils/fetch';
 import { toJS } from 'mobx';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
+import Welcome from '../components/Welcome';
 import { withAuthentication } from '../components/Authentication';
 
 const FirstAccess = observer(() => {
@@ -61,13 +62,8 @@ const FirstAccess = observer(() => {
   return !store.organization.selected?.name ? (
     <Page>
       <Container maxWidth="sm">
-        <Box py={2}>
-          <Typography component="h1" variant="h4" align="center">
-            {t('Welcome {{firstName}} {{lastName}}!', {
-              firstName: store.user.firstName,
-              lastName: store.user.lastName,
-            })}
-          </Typography>
+        <Box my={5}>
+          <Welcome />
         </Box>
         <Box pb={4}>
           <Typography variant="subtitle2" align="center" color="textSecondary">

@@ -14,8 +14,8 @@ export default function FirstConnection({
   hasProperty,
   hasTenant,
   handleCreateContract,
-  handleCreateProperty,
-  handleCreateTenant,
+  handleAddProperty,
+  handleAddTenant,
 }) {
   const { t } = useTranslation('common');
   const [activeStep] = React.useState(
@@ -25,24 +25,30 @@ export default function FirstConnection({
     return [
       {
         key: 0,
-        label: t('Create my first contract'),
+        stepLabel: t('Create my first contract'),
+        buttonLabel: t('Create'),
         content: '',
         onClick: handleCreateContract,
+        dataCy: 'shortcutCreateContract',
       },
       {
         key: 1,
-        label: t('Add my first property'),
+        stepLabel: t('Add my first property'),
+        buttonLabel: t('Add'),
         content: '',
-        onClick: handleCreateProperty,
+        onClick: handleAddProperty,
+        dataCy: 'shortcutAddProperty',
       },
       {
         key: 2,
-        label: t('Add my first tenant'),
+        stepLabel: t('Add my first tenant'),
+        buttonLabel: t('Add'),
         content: '',
-        onClick: handleCreateTenant,
+        onClick: handleAddTenant,
+        dataCy: 'shortcutAddTenant',
       },
     ];
-  }, [t, handleCreateContract, handleCreateProperty, handleCreateTenant]);
+  }, [t, handleCreateContract, handleAddProperty, handleAddTenant]);
 
   return (
     <>
@@ -52,19 +58,26 @@ export default function FirstConnection({
         </Typography>
       </Box>
       <Stepper activeStep={activeStep} orientation="vertical">
-        {steps.map(({ key, label, content, onClick }) => (
-          <Step key={key}>
-            <StepLabel>{label}</StepLabel>
-            <StepContent>
-              <Typography>{content}</Typography>
-              <Box mt={2} mb={1}>
-                <Button variant="contained" color="primary" onClick={onClick}>
-                  {key > 0 ? t('Add') : t('Create')}
-                </Button>
-              </Box>
-            </StepContent>
-          </Step>
-        ))}
+        {steps.map(
+          ({ key, stepLabel, buttonLabel, content, onClick, dataCy }) => (
+            <Step key={key}>
+              <StepLabel>{stepLabel}</StepLabel>
+              <StepContent>
+                <Typography>{content}</Typography>
+                <Box mt={2} mb={1}>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={onClick}
+                    data-cy={dataCy}
+                  >
+                    {buttonLabel}
+                  </Button>
+                </Box>
+              </StepContent>
+            </Step>
+          )
+        )}
       </Stepper>
     </>
   );

@@ -154,11 +154,13 @@ const TenantForm = observer(({ readOnly, onSubmit }) => {
                   value="false"
                   label={t('A personal account')}
                   disabled={readOnly}
+                  data-cy="tenantIsPersonalAccount"
                 />
                 <RadioField
                   value="true"
                   label={t('A business or an institution')}
                   disabled={readOnly}
+                  data-cy="tenantIsBusinessAccount"
                 />
               </RadioFieldGroup>
               {values.isCompany === 'true' && (
@@ -215,6 +217,7 @@ const TenantForm = observer(({ readOnly, onSubmit }) => {
                               color="primary"
                               size="small"
                               onClick={() => arrayHelpers.remove(index)}
+                              data-cy="removeTenantContact"
                             >
                               {t('Remove contact')}
                             </Button>
@@ -229,6 +232,7 @@ const TenantForm = observer(({ readOnly, onSubmit }) => {
                           color="primary"
                           size="small"
                           onClick={() => arrayHelpers.push(emptyContact)}
+                          data-cy="addTenantContact"
                         >
                           {t('Add contact')}
                         </Button>

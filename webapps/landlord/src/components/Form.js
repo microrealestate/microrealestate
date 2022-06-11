@@ -299,6 +299,7 @@ export const SubmitButton = ({ label, disabled, ...props }) => {
       endIcon={
         isSubmitting ? <CircularProgress color="inherit" size={20} /> : null
       }
+      data-cy="submit"
       {...props}
     >
       {label}

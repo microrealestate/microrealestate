@@ -1,0 +1,19 @@
+[
+  {
+    "name": "Appartement Paris",
+    "type": "apartment",
+    "description": "Mon appartement préféré sur Paris",
+    "surface": 60,
+    "phone": "0123456789",
+    "digiCode": "0412",
+    "address": {
+      "street1": "123 rue Saint-Jacques",
+      "street2": "",
+      "zipCode": "75005",
+      "city": "Paris",
+      "state": "Île-de-France",
+      "country": "France"
+    },
+    "rent": 100
+  }
+]

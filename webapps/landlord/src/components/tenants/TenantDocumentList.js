@@ -200,6 +200,7 @@ function TenantDocumentList({ disabled = false }) {
             startIcon={<AddIcon />}
             onClick={handleClickUpload}
             disabled={disabled}
+            data-cy="addTenantFile"
           >
             {t('Upload document')}
           </Button>
@@ -220,6 +221,7 @@ function TenantDocumentList({ disabled = false }) {
             menuItems={menuItems}
             onClick={handleClickAddText}
             disabled={disabled}
+            data-cy="addTenantTextDocument"
           />
         </Box>
       </Box>

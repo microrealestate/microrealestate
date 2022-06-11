@@ -51,6 +51,7 @@ const EditorMenu = ({
                   onChange={onTitleChange}
                   fullWidth
                   readOnly={!editable}
+                  name="title"
                 />
               </Box>
               <Box color="text.disabled" ml={2}>
@@ -61,18 +62,26 @@ const EditorMenu = ({
                       variant="caption"
                       color="inherit"
                       component="span"
+                      data-cy="savingTextDocument"
                     >
                       {t('Saving')}
                     </Typography>
                   </Box>
                 )}
                 {saving === false && (
-                  <Typography variant="caption">{t('Saved')}</Typography>
+                  <Typography variant="caption" data-cy="savedTextDocument">
+                    {t('Saved')}
+                  </Typography>
                 )}
               </Box>
             </Box>
             <Box display="flex">
-              <Button variant="contained" size="small" onClick={onClose}>
+              <Button
+                variant="contained"
+                size="small"
+                onClick={onClose}
+                data-cy="close"
+              >
                 {t('Close')}
               </Button>
             </Box>

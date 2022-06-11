@@ -149,7 +149,7 @@ const TenantListItem = memo(function TenantListItem({ tenant }) {
                   ? t(
                       'Contract {{contract}} - from {{startDate}} to {{endDate}}',
                       {
-                        contract: tenant.contract,
+                        contract: tenant.lease?.name || t('custom'),
                         startDate: moment(
                           tenant.beginDate,
                           'DD/MM/YYYY'

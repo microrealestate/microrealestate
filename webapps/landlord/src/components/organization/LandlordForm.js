@@ -223,7 +223,6 @@ const LandlordForm = observer(({ onSubmit, onSubmitted }) => {
               size="large"
               label={!isSubmitting ? t('Save') : t('Saving')}
               onlyRoles={allowedRoles}
-              data-cy="submit"
             />
           </Form>
         );
