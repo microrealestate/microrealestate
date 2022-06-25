@@ -19,7 +19,7 @@ const refreshTokenCookieAttributes = {
 const _generateTokens = async (dbAccount) => {
   const { _id, password, ...account } = dbAccount;
   const refreshToken = jwt.sign({ account }, config.REFRESH_TOKEN_SECRET, {
-    expiresIn: '1h',
+    expiresIn: '600s',
   });
   const accessToken = jwt.sign({ account }, config.ACCESS_TOKEN_SECRET, {
     expiresIn: '30s',

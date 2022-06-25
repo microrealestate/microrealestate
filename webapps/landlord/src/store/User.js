@@ -1,9 +1,8 @@
+import * as jose from 'jose';
 import { action, computed, flow, makeObservable, observable } from 'mobx';
 import { apiFetcher, authApiFetcher, setAccessToken } from '../utils/fetch';
 
 import { isServer } from '../utils';
-
-const jwt = require('jsonwebtoken');
 
 export const ADMIN_ROLE = 'administrator';
 export const RENTER_ROLE = 'renter';
@@ -27,6 +26,7 @@ export default class User {
       signedIn: computed,
       isAdministrator: computed,
       setRole: action,
+      setUserFromToken: action,
       signUp: flow,
       signIn: flow,
       signOut: flow,
@@ -44,7 +44,22 @@ export default class User {
     return this.role === 'administrator';
   }
 
-  setRole = (role) => (this.role = role);
+  setRole(role) {
+    this.role = role;
+  }
+
+  setUserFromToken(accessToken) {
+    const {
+      account: { firstname, lastname, email },
+      exp,
+    } = jose.decodeJwt(accessToken);
+    this.firstName = firstname;
+    this.lastName = lastname;
+    this.email = email;
+    this.token = accessToken;
+    this.tokenExpiry = exp;
+    setAccessToken(accessToken);
+  }
 
   *signUp(firstname, lastname, email, password) {
     try {
@@ -67,16 +82,7 @@ export default class User {
         password,
       });
       const { accessToken } = response.data;
-      const {
-        account: { firstname, lastname, email: decodedEmail },
-        exp,
-      } = jwt.decode(accessToken);
-      this.firstName = firstname;
-      this.lastName = lastname;
-      this.email = decodedEmail;
-      this.token = accessToken;
-      this.tokenExpiry = exp;
-      setAccessToken(accessToken);
+      this.setUserFromToken(accessToken);
       return 200;
     } catch (error) {
       console.error(error);
@@ -116,16 +122,7 @@ export default class User {
       // set access token in store
       if (response?.data?.accessToken) {
         const { accessToken } = response.data;
-        const {
-          account: { firstname, lastname, email },
-          exp,
-        } = jwt.decode(accessToken);
-        this.firstName = firstname;
-        this.lastName = lastname;
-        this.email = email;
-        this.token = accessToken;
-        this.tokenExpiry = exp;
-        setAccessToken(accessToken);
+        this.setUserFromToken(accessToken);
         return { status: 200 };
       } else {
         this.firstName = undefined;

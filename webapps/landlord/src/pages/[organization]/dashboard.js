@@ -53,31 +53,29 @@ const Dashboard = observer(() => {
 
   return (
     <Page loading={!ready}>
-      <>
-        <Box my={5}>
-          <Welcome />
+      <Box my={5}>
+        <Welcome />
+      </Box>
+      {isFirstConnection ? (
+        <Box mt={10}>
+          <Shortcuts firstConnection={true} />
         </Box>
-        {isFirstConnection ? (
-          <Box mt={10}>
-            <Shortcuts firstConnection={true} />
+      ) : (
+        <>
+          <Box mb={10}>
+            <Shortcuts />
           </Box>
-        ) : (
-          <>
-            <Box mb={10}>
-              <Shortcuts />
-            </Box>
-            <Box mb={10}>
-              <GeneralFigures />
-            </Box>
-            <Box mb={10}>
-              <MonthFigures />
-            </Box>
-            <Hidden smDown>
-              {!!store.dashboard.data.overview && <YearFigures />}
-            </Hidden>
-          </>
-        )}
-      </>
+          <Box mb={10}>
+            <GeneralFigures />
+          </Box>
+          <Box mb={10}>
+            <MonthFigures />
+          </Box>
+          <Hidden smDown>
+            {!!store.dashboard.data.overview && <YearFigures />}
+          </Hidden>
+        </>
+      )}
     </Page>
   );
 });
