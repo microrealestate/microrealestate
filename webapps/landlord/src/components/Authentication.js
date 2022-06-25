@@ -51,8 +51,11 @@ export function withAuthentication(PageComponent) {
         setAcceptLanguage(context.req.headers['accept-language']);
 
         // Force the refresh tokens to get an accessToken
-        await store.user.refreshTokens(context);
-
+        const { status } = await store.user.refreshTokens(context);
+        if (status !== 200) {
+          console.log('current refresh token invalid redirecting to /signin');
+          redirect(context, '/signin');
+        }
         // Fetch user's organizations
         await store.organization.fetch();
         if (store.organization.items.length) {
