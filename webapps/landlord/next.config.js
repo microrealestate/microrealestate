@@ -1,6 +1,14 @@
 const nextTranslate = require('next-translate');
+const path = require('path');
 
 module.exports = nextTranslate({
+  webpack: (config /*{ buildId, dev, isServer, defaultLoaders, webpack }*/) => {
+    config.resolve.alias['pdfjs-dist'] = path.join(
+      __dirname,
+      '../../node_modules/pdfjs-dist/legacy/build/pdf'
+    );
+    return config;
+  },
   serverRuntimeConfig: {
     API_URL: process.env.DOCKER_API_URL || process.env.API_URL,
     REFRESH_TOKEN_SECRET: process.env.REFRESH_TOKEN_SECRET,
