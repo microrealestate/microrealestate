@@ -3,6 +3,7 @@ const nextTranslate = require('next-translate');
 module.exports = nextTranslate({
   serverRuntimeConfig: {
     API_URL: process.env.DOCKER_API_URL || process.env.API_URL,
+    REFRESH_TOKEN_SECRET: process.env.REFRESH_TOKEN_SECRET,
   },
   publicRuntimeConfig: {
     DEMO_MODE: process.env.DEMO_MODE === 'true',
