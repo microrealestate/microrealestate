@@ -8,7 +8,6 @@ import {
 } from '@material-ui/core';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { Viewer, Worker } from '@react-pdf-viewer/core';
-
 import { apiFetcher } from '../../utils/fetch';
 import EditorButton from '../RichTextEditor/EditorButton';
 import { grayColor } from '../../styles/styles';
@@ -84,7 +83,7 @@ export default function PdfViewer({ open, setOpen }) {
         </AppBar>
         <Box overflow="auto">
           <Box pt={8} maxWidth="230mm">
-            <Worker workerUrl="https://unpkg.com/pdfjs-dist@2.14.305/build/pdf.worker.js">
+            <Worker workerUrl="https://unpkg.com/pdfjs-dist@2.14.305/legacy/build/pdf.worker.js">
               <Viewer fileUrl={pdfSrc} plugins={[printPluginInstance]} />
             </Worker>
           </Box>
