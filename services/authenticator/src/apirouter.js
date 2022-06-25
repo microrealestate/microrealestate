@@ -141,6 +141,7 @@ apiRouter.post('/refreshtoken', async (req, res) => {
   try {
     const { refreshToken, accessToken } = await _refreshTokens(oldRefreshToken);
     if (!refreshToken) {
+      res.clearCookie('refreshToken', refreshTokenCookieAttributes);
       return res.sendStatus(403);
     }
 
