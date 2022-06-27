@@ -262,7 +262,9 @@ const RentCard = observer(({ rent, onEdit }) => {
               onClick={_onEdit}
               size="small"
             >
-              {t('Settle the rent')}
+              <Typography variant="inherit" noWrap>
+                {t('Settle the rent')}
+              </Typography>
             </Button>
           ) : (
             <MobileButton

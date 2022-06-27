@@ -1,5 +1,4 @@
 import {
-  blackColor,
   grayColor,
   hexToRgb,
   primaryColor,
@@ -63,8 +62,6 @@ const theme = createTheme({
     },
     MuiDrawer: {
       paper: {
-        backgroundColor: blackColor,
-        //opacity: 0.8,
         overflowX: 'hidden',
       },
     },

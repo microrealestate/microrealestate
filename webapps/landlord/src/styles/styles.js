@@ -51,7 +51,7 @@ const hexToRgb = (input) => {
 // // // Variables - Styles that are used on more than one component
 // #############################
 
-const drawerWidth = 230;
+const drawerWidth = 250;
 const toolbarHeight = 64;
 const viewHeight = `calc(100vh - ${toolbarHeight}px - 16px)`;
 

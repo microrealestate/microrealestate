@@ -22,10 +22,10 @@ function MobileApplication({ children, showNav }) {
 
 function DesktopApplication({ children, showNav }) {
   return (
-    <Box display="flex">
+    <>
       {showNav && <Nav />}
-      <Box flexGrow={1}>{children}</Box>
-    </Box>
+      {children}
+    </>
   );
 }
 
