@@ -31,13 +31,13 @@ function MenuItem({ item, selected, open, onClick }) {
 
   return (
     <ListItem
-      className={`${classes.item} ${selected ? classes.itemSelected : ''}`}
+      className={selected ? classes.itemSelected : ''}
       button
       selected={selected}
       onClick={onMenuClick}
       data-cy={item.dataCy}
     >
-      <ListItemIcon classes={{ root: classes.itemIcon }}>
+      <ListItemIcon classes={{ root: selected ? classes.itemSelected : '' }}>
         <Icon />
       </ListItemIcon>
       <ListItemText
@@ -72,6 +72,7 @@ const Nav = () => {
         key: 'rents',
         label: t('Rents'),
         pathname: '/rents/[yearMonth]',
+        subPathnames: ['/payment/[tenantId]/[...param]'],
         Icon: ReceiptIcon,
         dataCy: 'rentsNav',
       },
@@ -173,7 +174,10 @@ const Nav = () => {
                 <MenuItem
                   key={item.key}
                   item={item}
-                  selected={pathname.indexOf(item.pathname) !== -1}
+                  selected={
+                    pathname.indexOf(item.pathname) !== -1 ||
+                    item.subPathnames?.some((p) => pathname.includes(p))
+                  }
                   open={openDebounced}
                   onClick={handleMenuClick}
                 />
@@ -196,7 +200,10 @@ const Nav = () => {
                 key={item.key}
                 label={item.label}
                 Icon={item.Icon}
-                selected={pathname.indexOf(item.pathname) !== -1}
+                selected={
+                  pathname.indexOf(item.pathname) !== -1 ||
+                  item.subPathnames?.some((p) => pathname.includes(p))
+                }
                 item={item}
                 onClick={handleMenuClick}
               />

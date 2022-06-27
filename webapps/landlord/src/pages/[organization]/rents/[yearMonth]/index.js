@@ -203,7 +203,7 @@ const Rents = observer(() => {
       {store.rent?.filteredItems.length ? (
         <Grid container spacing={3}>
           {store.rent.filteredItems.map((rent) => (
-            <Grid key={rent._id} item xs={12} md={4}>
+            <Grid key={rent._id} item xs={12} md={6} lg={4}>
               <RentCard rent={rent} onEdit={onEdit} />
             </Grid>
           ))}

@@ -123,45 +123,50 @@ const DesktopToolbars = ({
 }) => {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
+  const isMobile = useMediaQuery((theme) => theme.breakpoints.down('sm'));
 
   return (
     <>
       <ElevationScroll>
         <AppBar position="sticky">
           <EnvironmentBar />
-
-          <Container maxWidth={maxWidth}>
-            <Toolbar disableGutters>
-              <Box display="flex" alignItems="center" width="100%">
-                <Typography variant="h5">{APP_NAME}</Typography>
-                <Box flexGrow={1} mx={10}>
-                  {!loading && SearchBar}
+          <Box ml={!isMobile ? 7 : 0}>
+            <Container maxWidth={maxWidth}>
+              <Toolbar disableGutters>
+                <Box display="flex" alignItems="center" width="100%">
+                  <Typography variant="h5">{APP_NAME}</Typography>
+                  <Box flexGrow={1} mx={10}>
+                    {!loading && SearchBar}
+                  </Box>
+                  <Box display="flex">
+                    {!!(
+                      store.organization.items &&
+                      store.organization.items.length
+                    ) && <OrganizationSwitcher />}
+                    <Tooltip title={t('Sign out')} aria-label="sign out">
+                      <IconButton
+                        aria-label="sign out"
+                        onClick={onSignOut}
+                        color="default"
+                        data-cy="signout"
+                      >
+                        <PowerSettingsNewIcon />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
                 </Box>
-                <Box display="flex">
-                  {!!(
-                    store.organization.items && store.organization.items.length
-                  ) && <OrganizationSwitcher />}
-                  <Tooltip title={t('Sign out')} aria-label="sign out">
-                    <IconButton
-                      aria-label="sign out"
-                      onClick={onSignOut}
-                      color="default"
-                      data-cy="signout"
-                    >
-                      <PowerSettingsNewIcon />
-                    </IconButton>
-                  </Tooltip>
-                </Box>
-              </Box>
-            </Toolbar>
-          </Container>
+              </Toolbar>
+            </Container>
+          </Box>
         </AppBar>
       </ElevationScroll>
 
       {!loading && (NavBar || ActionBar) ? (
-        <Container maxWidth={maxWidth}>
-          <SubToolbar PrimaryBar={NavBar} SecondaryBar={ActionBar} />
-        </Container>
+        <Box ml={!isMobile ? 7 : 0}>
+          <Container maxWidth={maxWidth}>
+            <SubToolbar PrimaryBar={NavBar} SecondaryBar={ActionBar} />
+          </Container>
+        </Box>
       ) : null}
     </>
   );
@@ -238,14 +243,15 @@ const Page = observer(
             onSignOut={handleSignOut}
           />
         )}
-
-        <Container maxWidth={maxWidth}>
-          {loading || routeloading ? (
-            <Loading fullScreen />
-          ) : (
-            <Box my={2}>{children}</Box>
-          )}
-        </Container>
+        <Box ml={!isMobile ? 7 : 0}>
+          <Container maxWidth={maxWidth}>
+            {loading || routeloading ? (
+              <Loading fullScreen />
+            ) : (
+              <Box my={2}>{children}</Box>
+            )}
+          </Container>
+        </Box>
       </>
     );
   }
