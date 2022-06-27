@@ -52,9 +52,10 @@ export function withAuthentication(PageComponent) {
 
         // Force the refresh tokens to get an accessToken
         const { status } = await store.user.refreshTokens(context);
-        if (status !== 200) {
+        if (status === 403) {
           console.log('current refresh token invalid redirecting to /signin');
           redirect(context, '/signin');
+          return {};
         }
         // Fetch user's organizations
         await store.organization.fetch();

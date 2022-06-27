@@ -22,7 +22,7 @@ const _generateTokens = async (dbAccount) => {
     expiresIn: '600s',
   });
   const accessToken = jwt.sign({ account }, config.ACCESS_TOKEN_SECRET, {
-    expiresIn: '30s',
+    expiresIn: '10s',
   });
 
   // save tokens
@@ -134,8 +134,7 @@ apiRouter.post('/refreshtoken', async (req, res) => {
   const oldRefreshToken = req.cookies.refreshToken;
   logger.debug(`give a new refresh token for ${oldRefreshToken}`);
   if (!oldRefreshToken) {
-    // TODO: double check why here it's 401 rather than 403 to force relogin
-    return res.sendStatus(401);
+    return res.sendStatus(403);
   }
 
   try {
