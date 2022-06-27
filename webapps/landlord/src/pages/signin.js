@@ -3,7 +3,7 @@ import * as Yup from 'yup';
 import { Box, Paper, Typography } from '@material-ui/core';
 import { Form, Formik } from 'formik';
 import { FormTextField, SubmitButton } from '../components/Form';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 
 import getConfig from 'next/config';
 import Link from '../components/Link';
@@ -29,7 +29,7 @@ const validationSchema = Yup.object().shape({
   password: Yup.string().required(),
 });
 
-const SignIn = observer(() => {
+function SignIn() {
   console.log('Signin functional component');
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
@@ -45,55 +45,58 @@ const SignIn = observer(() => {
     }
   }, []);
 
-  const signIn = async ({ email, password }) => {
-    try {
-      const status = await store.user.signIn(email, password);
-      if (status !== 200) {
-        switch (status) {
-          case 422:
-            store.pushToastMessage({
-              message: t('Some fields are missing'),
-              severity: 'error',
-            });
-            return;
-          case 401:
-            store.pushToastMessage({
-              message: t('Incorrect email or password'),
-              severity: 'error',
-            });
-            return;
-          default:
-            store.pushToastMessage({
-              message: t('Something went wrong'),
-              severity: 'error',
-            });
-            return;
+  const signIn = useCallback(
+    async ({ email, password }) => {
+      try {
+        const status = await store.user.signIn(email, password);
+        if (status !== 200) {
+          switch (status) {
+            case 422:
+              store.pushToastMessage({
+                message: t('Some fields are missing'),
+                severity: 'error',
+              });
+              return;
+            case 401:
+              store.pushToastMessage({
+                message: t('Incorrect email or password'),
+                severity: 'error',
+              });
+              return;
+            default:
+              store.pushToastMessage({
+                message: t('Something went wrong'),
+                severity: 'error',
+              });
+              return;
+          }
         }
-      }
 
-      await store.organization.fetch();
-      if (store.organization.items.length) {
-        if (!store.organization.selected) {
-          store.organization.setSelected(
-            store.organization.items[0],
-            store.user
-          );
+        await store.organization.fetch();
+        if (store.organization.items.length) {
+          if (!store.organization.selected) {
+            store.organization.setSelected(
+              store.organization.items[0],
+              store.user
+            );
+          }
+          setOrganizationId(store.organization.selected._id);
+          router.push(`/${store.organization.selected.name}/dashboard`, null, {
+            locale: store.organization.selected.locale,
+          });
+        } else {
+          router.push('/firstaccess');
         }
-        setOrganizationId(store.organization.selected._id);
-        router.push(`/${store.organization.selected.name}/dashboard`, null, {
-          locale: store.organization.selected.locale,
+      } catch (error) {
+        console.error(error);
+        store.pushToastMessage({
+          message: t('Something went wrong'),
+          severity: 'error',
         });
-      } else {
-        router.push('/firstaccess');
       }
-    } catch (error) {
-      console.error(error);
-      store.pushToastMessage({
-        message: t('Something went wrong'),
-        severity: 'error',
-      });
-    }
-  };
+    },
+    [router, store, t]
+  );
 
   return !store.user.signedIn ? (
     <Page maxWidth="sm">
@@ -159,6 +162,6 @@ const SignIn = observer(() => {
       )}
     </Page>
   ) : null;
-});
+}
 
-export default SignIn;
+export default observer(SignIn);

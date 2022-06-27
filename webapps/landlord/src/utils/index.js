@@ -1,7 +1,7 @@
 import getConfig from 'next/config';
 
 const {
-  publicRuntimeConfig: { BASE_PATH },
+  publicRuntimeConfig: { APP_URL },
 } = getConfig();
 
 export const isServer = () => typeof window === 'undefined';
@@ -14,7 +14,7 @@ export const redirect = (context, path) => {
   }
 
   context.res.writeHead(302, {
-    Location: `${BASE_PATH}/${context.locale}${path}`,
+    Location: `${APP_URL}/${context.locale}${path}`,
   });
   context.res.end();
 };

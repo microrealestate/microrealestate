@@ -167,12 +167,14 @@ export const authApiFetcher = (cookie) => {
   }
 
   const { serverRuntimeConfig } = getConfig();
-  authApiFetch = axios.create({
+  const axiosConfig = {
     baseURL: serverRuntimeConfig.API_URL,
-    headers: { cookie },
     withCredentials,
-  });
-
+  };
+  if (cookie) {
+    axiosConfig.headers = { cookie };
+  }
+  authApiFetch = axios.create(axiosConfig);
   return authApiFetch;
 };
 
