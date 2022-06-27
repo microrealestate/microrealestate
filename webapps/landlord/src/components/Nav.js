@@ -1,5 +1,12 @@
 import { Hidden, ListItemIcon, Typography } from '@material-ui/core';
-import { memo, useCallback, useContext, useMemo, useState } from 'react';
+import {
+  memo,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 
 import AccountBalanceWalletIcon from '@material-ui/icons/AccountBalanceWallet';
 import DashboardIcon from '@material-ui/icons/Dashboard';
@@ -20,8 +27,59 @@ import { useTimeout } from '../utils/hooks';
 import useTranslation from 'next-translate/useTranslation';
 import VpnKeyIcon from '@material-ui/icons/VpnKey';
 
+const MENU_ITEMS = [
+  {
+    key: 'dashboard',
+    labelId: 'Dashboard',
+    pathname: '/dashboard',
+    Icon: DashboardIcon,
+    dataCy: 'dashboardNav',
+  },
+  {
+    key: 'rents',
+    labelId: 'Rents',
+    pathname: '/rents/[yearMonth]',
+    subPathnames: ['/payment/[tenantId]/[...param]'],
+    Icon: ReceiptIcon,
+    dataCy: 'rentsNav',
+  },
+  {
+    key: 'tenants',
+    labelId: 'Tenants',
+    pathname: '/tenants',
+    Icon: PeopleAltIcon,
+    dataCy: 'tenantsNav',
+  },
+  {
+    key: 'properties',
+    labelId: 'Properties',
+    pathname: '/properties',
+    Icon: VpnKeyIcon,
+    dataCy: 'propertiesNav',
+  },
+  {
+    key: 'accounting',
+    labelId: 'Accounting',
+    pathname: `/accounting/[year]`,
+    Icon: AccountBalanceWalletIcon,
+    dataCy: 'accountingNav',
+  },
+  {
+    key: 'settings',
+    labelId: 'Settings',
+    pathname: '/settings',
+    Icon: SettingsIcon,
+    dataCy: 'settingsNav',
+  },
+];
+
+const MOBILE_MENU_ITEMS = MENU_ITEMS.filter(
+  ({ key }) => !['accounting'].includes(key)
+);
+
 function MenuItem({ item, selected, open, onClick }) {
   const classes = useStyles();
+  const { t } = useTranslation('common');
 
   const onMenuClick = useCallback(() => {
     onClick(item);
@@ -44,7 +102,7 @@ function MenuItem({ item, selected, open, onClick }) {
         className={`${classes.itemText} ${
           open ? classes.itemTextOpen : classes.itemTextClose
         }`}
-        primary={<Typography noWrap>{item.label}</Typography>}
+        primary={<Typography noWrap>{t(item.labelId)}</Typography>}
       />
     </ListItem>
   );
@@ -52,66 +110,14 @@ function MenuItem({ item, selected, open, onClick }) {
 
 const Nav = () => {
   const classes = useStyles();
-  const { t } = useTranslation('common');
+  const [selectedPathname, setSelectedPathname] = useState('');
   const [openDebounced, setOpenDebounced] = useState(false);
   const store = useContext(StoreContext);
-
   const router = useRouter();
-  const { pathname } = router;
 
-  const menuItems = useMemo(
-    () => [
-      {
-        key: 'dashboard',
-        label: t('Dashboard'),
-        pathname: '/dashboard',
-        Icon: DashboardIcon,
-        dataCy: 'dashboardNav',
-      },
-      {
-        key: 'rents',
-        label: t('Rents'),
-        pathname: '/rents/[yearMonth]',
-        subPathnames: ['/payment/[tenantId]/[...param]'],
-        Icon: ReceiptIcon,
-        dataCy: 'rentsNav',
-      },
-      {
-        key: 'tenants',
-        label: t('Tenants'),
-        pathname: '/tenants',
-        Icon: PeopleAltIcon,
-        dataCy: 'tenantsNav',
-      },
-      {
-        key: 'properties',
-        label: t('Properties'),
-        pathname: '/properties',
-        Icon: VpnKeyIcon,
-        dataCy: 'propertiesNav',
-      },
-      {
-        key: 'accounting',
-        label: t('Accounting'),
-        pathname: `/accounting/[year]`,
-        Icon: AccountBalanceWalletIcon,
-        dataCy: 'accountingNav',
-      },
-      {
-        key: 'settings',
-        label: t('Settings'),
-        pathname: '/settings',
-        Icon: SettingsIcon,
-        dataCy: 'settingsNav',
-      },
-    ],
-    [t]
-  );
-
-  const mobileItems = useMemo(
-    () => menuItems.filter(({ key }) => !['accounting'].includes(key)),
-    [menuItems]
-  );
+  useEffect(() => {
+    setSelectedPathname(router.pathname.replace('/[organization]', ''));
+  }, [router.pathname]);
 
   const triggerOpen = useTimeout(() => {
     !openDebounced && setOpenDebounced(true);
@@ -124,6 +130,7 @@ const Nav = () => {
   const handleMenuClick = useCallback(
     (menuItem) => {
       triggerOpen.clear();
+      setSelectedPathname(menuItem.pathname);
       if (store.organization.selected?.name && store.rent?.periodAsString) {
         let pathname = menuItem.pathname.replace(
           '[yearMonth]',
@@ -169,14 +176,14 @@ const Nav = () => {
           onMouseLeave={handleMouseLeave}
         >
           <List className={classes.list}>
-            {menuItems.map((item) => {
+            {MENU_ITEMS.map((item) => {
               return (
                 <MenuItem
                   key={item.key}
                   item={item}
                   selected={
-                    pathname.indexOf(item.pathname) !== -1 ||
-                    item.subPathnames?.some((p) => pathname.includes(p))
+                    selectedPathname.indexOf(item.pathname) !== -1 ||
+                    item.subPathnames?.some((p) => selectedPathname.includes(p))
                   }
                   open={openDebounced}
                   onClick={handleMenuClick}
@@ -194,15 +201,15 @@ const Nav = () => {
           display="flex"
           justifyContent="space-around"
         >
-          {mobileItems.map((item) => {
+          {MOBILE_MENU_ITEMS.map((item) => {
             return (
               <MobileMenuButton
                 key={item.key}
-                label={item.label}
+                labelId={item.labelId}
                 Icon={item.Icon}
                 selected={
-                  pathname.indexOf(item.pathname) !== -1 ||
-                  item.subPathnames?.some((p) => pathname.includes(p))
+                  selectedPathname.indexOf(item.pathname) !== -1 ||
+                  item.subPathnames?.some((p) => selectedPathname.includes(p))
                 }
                 item={item}
                 onClick={handleMenuClick}
