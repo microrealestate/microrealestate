@@ -8,6 +8,7 @@ import {
 
 import { hexToRgb } from '../styles/styles';
 import { useCallback } from 'react';
+import useTranslation from 'next-translate/useTranslation';
 
 const StyledButton = withStyles(() => ({
   root: {
@@ -26,8 +27,9 @@ const StyleMenuButton = withStyles((theme) => ({
   },
 }))(Button);
 
-function MobileMenuButton({ label, Icon, selected, item, onClick }) {
+function MobileMenuButton({ labelId, Icon, selected, item, onClick }) {
   const theme = useTheme();
+  const { t } = useTranslation('common');
 
   const handleClick = useCallback(() => {
     onClick(item);
@@ -44,7 +46,7 @@ function MobileMenuButton({ label, Icon, selected, item, onClick }) {
           <Box>
             <Icon fontSize="small" />
           </Box>
-          <Typography variant="inherit">{label}</Typography>
+          <Typography variant="inherit">{t(labelId)}</Typography>
         </Box>
       </StyleMenuButton>
     </Box>
