@@ -43,8 +43,8 @@
     ]
   },
   "devDependencies": {
-    "eslint": "8.17.0",
-    "eslint-config-next": "12.1.6",
+    "eslint": "8.18.0",
+    "eslint-config-next": "12.2.0",
     "eslint-config-prettier": "8.5.0",
     "eslint-plugin-cypress": "2.12.1",
     "eslint-plugin-import": "2.26.0",
