@@ -6,6 +6,7 @@ const MobileMenu = withStyles((theme) => ({
   root: {
     backgroundColor: theme.palette.common.black,
     color: 'rgba(' + hexToRgb(theme.palette.info.contrastText) + ', 0.8)',
+    zIndex: theme.zIndex.appBar + 1,
   },
 }))(Box);
 
