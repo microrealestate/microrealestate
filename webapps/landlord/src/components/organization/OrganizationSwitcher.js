@@ -43,7 +43,7 @@ const OrganizationSwitcher = observer(() => {
     [options, store.organization.selected]
   );
 
-  return (
+  return store.organization?.items?.length > 0 ? (
     <ToggleMenu
       startIcon={<LocationCityIcon />}
       options={options}
@@ -51,7 +51,7 @@ const OrganizationSwitcher = observer(() => {
       noLabel={isMobile}
       onChange={onChange}
     />
-  );
+  ) : null;
 });
 
 export default OrganizationSwitcher;
