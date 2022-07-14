@@ -32,7 +32,6 @@ const RichTextEditor = ({
   editable = true,
 }) => {
   const { t } = useTranslation('common');
-  const [ready, setReady] = useState(false);
   const [title, setTitle] = useState(initialTitle || t('Untitled document'));
   const [saving, setSaving] = useState();
   const editor = useEditor({
@@ -71,7 +70,6 @@ const RichTextEditor = ({
         return;
       }
       const data = await onLoad();
-      setReady(true);
       if (data) {
         editor.commands.setContent(toJS(data));
       }
@@ -106,7 +104,7 @@ const RichTextEditor = ({
 
   return (
     <>
-      {editor && ready ? (
+      {editor ? (
         <>
           <EditorMenu
             editor={editor}
