@@ -1,18 +1,16 @@
 import * as Yup from 'yup';
 
-import {
-  CheckboxField,
-  FormNumberField,
-  FormSection,
-  FormTextField,
-  SubmitButton,
-} from '../../Form';
 import { Form, Formik } from 'formik';
 import { useContext, useMemo } from 'react';
 
 import { Box } from '@material-ui/core';
+import CheckboxField from '../../FormFields/CheckboxField';
+import NumberField from '../../FormFields/NumberField';
 import { observer } from 'mobx-react-lite';
+import Section from '../../FormFields/Section';
 import { StoreContext } from '../../../store';
+import SubmitButton from '../../FormFields/SubmitButton';
+import TextField from '../../FormFields/TextField';
 import useTranslation from 'next-translate/useTranslation';
 
 const validationSchema = Yup.object().shape({
@@ -65,11 +63,11 @@ const Billing = observer(({ readOnly, onSubmit }) => {
       {({ isSubmitting, values }) => {
         return (
           <Form autoComplete="off">
-            <FormSection
+            <Section
               label={t('Billing information')}
               visible={!store.tenant.selected.stepperMode}
             >
-              <FormTextField
+              <TextField
                 label={t('Tenant reference')}
                 name="reference"
                 disabled={readOnly}
@@ -83,7 +81,7 @@ const Billing = observer(({ readOnly, onSubmit }) => {
                       aria-label={t('Subject to VAT')}
                       disabled={readOnly}
                     />
-                    <FormNumberField
+                    <NumberField
                       label={t('VAT percentage')}
                       name="vatRatio"
                       disabled={readOnly || !values.isVat}
@@ -91,13 +89,13 @@ const Billing = observer(({ readOnly, onSubmit }) => {
                   </Box>
                 )}
               {values.discount > 0 ? (
-                <FormNumberField
+                <NumberField
                   label={t('Discount')}
                   name="discount"
                   disabled={readOnly}
                 />
               ) : null}
-            </FormSection>
+            </Section>
             {!readOnly && (
               <SubmitButton
                 size="large"

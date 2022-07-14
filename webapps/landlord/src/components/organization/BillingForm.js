@@ -1,18 +1,15 @@
 import * as Yup from 'yup';
 
-import {
-  AddressField,
-  ContactForm,
-  FormSection,
-  FormTextField,
-  SubmitButton,
-} from '../Form';
 import { Form, Formik } from 'formik';
 import { useCallback, useContext, useMemo } from 'react';
 
-import { ADMIN_ROLE } from '../../store/User';
+import AddressField from '../FormFields/AddressField';
+import ContactField from '../FormFields/ContactField';
 import { observer } from 'mobx-react-lite';
+import Section from '../FormFields/Section';
 import { StoreContext } from '../../store';
+import SubmitButton from '../FormFields/SubmitButton';
+import TextField from '../FormFields/TextField';
 import useTranslation from 'next-translate/useTranslation';
 
 const validationSchema = Yup.object().shape({
@@ -32,8 +29,6 @@ const validationSchema = Yup.object().shape({
     country: Yup.string().required(),
   }),
 });
-
-const allowedRoles = [ADMIN_ROLE];
 
 const BillingForm = observer(({ onSubmit }) => {
   const store = useContext(StoreContext);
@@ -96,35 +91,22 @@ const BillingForm = observer(({ onSubmit }) => {
           <Form autoComplete="off">
             {store.organization.selected &&
               store.organization.selected.isCompany && (
-                <FormSection label={t('Billing information')}>
-                  <FormTextField
-                    label={t('VAT number')}
-                    name="vatNumber"
-                    onlyRoles={allowedRoles}
-                  />
-                  <FormTextField
-                    label={t('Bank name')}
-                    name="bankName"
-                    onlyRoles={allowedRoles}
-                  />
-                  <FormTextField
-                    label={t('IBAN')}
-                    name="iban"
-                    onlyRoles={allowedRoles}
-                  />
-                </FormSection>
+                <Section label={t('Billing information')}>
+                  <TextField label={t('VAT number')} name="vatNumber" />
+                  <TextField label={t('Bank name')} name="bankName" />
+                  <TextField label={t('IBAN')} name="iban" />
+                </Section>
               )}
-            <FormSection label={t('Contact')}>
-              <ContactForm onlyRoles={allowedRoles} />
-            </FormSection>
-            <FormSection label={t('Address')}>
-              <AddressField onlyRoles={allowedRoles} />
-            </FormSection>
+            <Section label={t('Contact')}>
+              <ContactField />
+            </Section>
+            <Section label={t('Address')}>
+              <AddressField />
+            </Section>
 
             <SubmitButton
               size="large"
               label={!isSubmitting ? t('Save') : t('Saving')}
-              onlyRoles={allowedRoles}
             />
           </Form>
         );

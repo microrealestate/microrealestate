@@ -1,21 +1,19 @@
 import * as Yup from 'yup';
 
 import { Form, Formik } from 'formik';
-import {
-  FormNumberField,
-  FormSection,
-  FormTextField,
-  RadioField,
-  RadioFieldGroup,
-  SelectField,
-  SubmitButton,
-} from '../Form';
 import { useCallback, useContext, useMemo } from 'react';
 
 import cc from 'currency-codes';
 import getSymbolFromCurrency from 'currency-symbol-map';
+import NumberField from '../FormFields/NumberField';
 import { observer } from 'mobx-react-lite';
+import RadioField from '../FormFields/RadioField';
+import RadioFieldGroup from '../FormFields/RadioFieldGroup';
+import Section from '../FormFields/Section';
+import SelectField from '../FormFields/SelectField';
 import { StoreContext } from '../../store';
+import SubmitButton from '../FormFields/SubmitButton';
+import TextField from '../FormFields/TextField';
 import useTranslation from 'next-translate/useTranslation';
 
 const validationSchema = Yup.object().shape({
@@ -134,11 +132,6 @@ const LandlordForm = observer(({ onSubmit, onSubmitted }) => {
     ]
   );
 
-  const allowedRoles = useMemo(
-    () => (store.organization.items ? ['administrator'] : null),
-    [store.organization.items]
-  );
-
   return (
     <Formik
       initialValues={initialValues}
@@ -148,23 +141,17 @@ const LandlordForm = observer(({ onSubmit, onSubmitted }) => {
       {({ values, isSubmitting }) => {
         return (
           <Form autoComplete="off">
-            <FormSection label={t('Landlord information')}>
-              <FormTextField
-                label={t('Name')}
-                name="name"
-                onlyRoles={allowedRoles}
-              />
+            <Section label={t('Landlord information')}>
+              <TextField label={t('Name')} name="name" />
               <SelectField
                 label={t('Language')}
                 name="locale"
                 values={languages}
-                onlyRoles={allowedRoles}
               />
               <SelectField
                 label={t('Currency')}
                 name="currency"
                 values={currencies}
-                onlyRoles={allowedRoles}
               />
               <RadioFieldGroup
                 aria-label="organization type"
@@ -174,55 +161,43 @@ const LandlordForm = observer(({ onSubmit, onSubmitted }) => {
                 <RadioField
                   value="false"
                   label={t('A personal account')}
-                  onlyRoles={allowedRoles}
                   data-cy="companyFalse"
                 />
                 <RadioField
                   value="true"
                   label={t('A business or an institution')}
-                  onlyRoles={allowedRoles}
                   data-cy="companyTrue"
                 />
               </RadioFieldGroup>
               {values.isCompany === 'true' && (
                 <>
-                  <FormTextField
+                  <TextField
                     label={t('Legal representative')}
                     name="legalRepresentative"
-                    onlyRoles={allowedRoles}
                   />
-                  <FormTextField
+                  <TextField
                     label={t('Legal structure')}
                     name="legalStructure"
-                    onlyRoles={allowedRoles}
                   />
-                  <FormTextField
+                  <TextField
                     label={t('Name of business or institution')}
                     name="company"
-                    onlyRoles={allowedRoles}
                   />
-                  <FormTextField
+                  <TextField
                     label={t('Employer Identification Number')}
                     name="ein"
-                    onlyRoles={allowedRoles}
                   />
-                  <FormTextField
+                  <TextField
                     label={t('Administrative jurisdiction')}
                     name="dos"
-                    onlyRoles={allowedRoles}
                   />
-                  <FormNumberField
-                    label={t('Capital')}
-                    name="capital"
-                    onlyRoles={allowedRoles}
-                  />
+                  <NumberField label={t('Capital')} name="capital" />
                 </>
               )}
-            </FormSection>
+            </Section>
             <SubmitButton
               size="large"
               label={!isSubmitting ? t('Save') : t('Saving')}
-              onlyRoles={allowedRoles}
             />
           </Form>
         );

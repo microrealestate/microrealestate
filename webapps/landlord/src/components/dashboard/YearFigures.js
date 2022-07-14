@@ -13,7 +13,7 @@ import { useCallback, useContext, useMemo } from 'react';
 import moment from 'moment';
 import { observer } from 'mobx-react-lite';
 import { StoreContext } from '../../store';
-import { useFormatNumber } from '../../utils/numberformat';
+import useFormatNumber from '../../hooks/useFormatNumber';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 

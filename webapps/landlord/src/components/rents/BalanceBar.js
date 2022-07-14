@@ -3,7 +3,7 @@ import { Box, Tooltip, Typography, useTheme } from '@material-ui/core';
 import { memo, useMemo } from 'react';
 
 import { CardRow } from '../Cards';
-import { NumberFormat } from '../../utils/numberformat';
+import NumberFormat from '../NumberFormat';
 import RentPeriod from './RentPeriod';
 import useTranslation from 'next-translate/useTranslation';
 

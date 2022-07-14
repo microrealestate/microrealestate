@@ -1,8 +1,9 @@
 import { Divider, Typography } from '@material-ui/core';
+
 import { CardRow } from '../Cards';
-import { NumberFormat } from '../../utils/numberformat';
+import NumberFormat from '../NumberFormat';
 import { useMemo } from 'react';
-import { usePaymentTypes } from '../../utils/hooks';
+import usePaymentTypes from '../../hooks/usePaymentTypes';
 import useTranslation from 'next-translate/useTranslation';
 
 function _rentDetails(rent) {

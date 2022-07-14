@@ -26,7 +26,7 @@ import { isServer } from '../../../utils';
 import Map from '../../../components/Map';
 import { MobileButton } from '../../../components/MobileMenuButton';
 import moment from 'moment';
-import { NumberFormat } from '../../../utils/numberformat';
+import NumberFormat from '../../../components/NumberFormat';
 import { observer } from 'mobx-react-lite';
 import Page from '../../../components/Page';
 import PropertyForm from '../../../components/properties/PropertyForm';

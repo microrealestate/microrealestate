@@ -3,7 +3,7 @@ import { CardRow, PageInfoCard } from '../Cards';
 
 import FullScreenDialogButton from '../FullScreenDialogButton';
 import HistoryIcon from '@material-ui/icons/History';
-import { NumberFormat } from '../../utils/numberformat';
+import NumberFormat from '../NumberFormat';
 import ReceiptIcon from '@material-ui/icons/Receipt';
 import RentHistory from '../rents/RentHistory';
 import { StoreContext } from '../../store';

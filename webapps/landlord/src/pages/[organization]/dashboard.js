@@ -7,7 +7,7 @@ import { observer } from 'mobx-react-lite';
 import Page from '../../components/Page';
 import Shortcuts from '../../components/dashboard/Shortcuts';
 import { StoreContext } from '../../store';
-import { useComponentMountedRef } from '../../utils/hooks';
+import useComponentMountedRef from '../../hooks/useComponentMountedRef';
 import { useEffect } from 'react';
 import Welcome from '../../components/Welcome';
 import { withAuthentication } from '../../components/Authentication';

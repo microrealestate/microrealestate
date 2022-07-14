@@ -2,13 +2,14 @@ import * as Yup from 'yup';
 
 import { Box, Button, Grid, Paper, Typography } from '@material-ui/core';
 import { Form, Formik } from 'formik';
-import { FormTextField, SubmitButton } from '../../components/Form';
 import React, { useContext } from 'react';
 
 import LocationCityIcon from '@material-ui/icons/LocationCity';
 import { observer } from 'mobx-react-lite';
 import Page from '../../components/Page';
 import { StoreContext } from '../../store';
+import SubmitButton from '../../components/FormFields/SubmitButton';
+import TextField from '../../components/FormFields/TextField';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 
@@ -91,12 +92,12 @@ const ResetPassword = observer(() => {
             {({ isSubmitting }) => {
               return (
                 <Form>
-                  <FormTextField
+                  <TextField
                     label={t('New password')}
                     name="password"
                     type="password"
                   />
-                  <FormTextField
+                  <TextField
                     label={t('Confirmation password')}
                     name="confirmationPassword"
                     type="password"

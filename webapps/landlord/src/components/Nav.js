@@ -23,7 +23,7 @@ import SettingsIcon from '@material-ui/icons/Settings';
 import { StoreContext } from '../store';
 import { useRouter } from 'next/router';
 import { useStyles } from '../styles/components/Nav.styles';
-import { useTimeout } from '../utils/hooks';
+import useTimeout from '../hooks/useTimeout';
 import useTranslation from 'next-translate/useTranslation';
 import VpnKeyIcon from '@material-ui/icons/VpnKey';
 

@@ -2,7 +2,7 @@ import { CardRow, PageInfoCard } from '../Cards';
 import { Typography, withStyles } from '@material-ui/core';
 
 import moment from 'moment';
-import { NumberFormat } from '../../utils/numberformat';
+import NumberFormat from '../NumberFormat';
 import { StoreContext } from '../../store';
 import SubjectIcon from '@material-ui/icons/Subject';
 import { useContext } from 'react';

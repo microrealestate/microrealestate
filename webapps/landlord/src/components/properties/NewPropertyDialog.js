@@ -2,21 +2,19 @@ import * as Yup from 'yup';
 
 import { Box, DialogTitle, Grid } from '@material-ui/core';
 import { Form, Formik } from 'formik';
-import {
-  FormNumberField,
-  FormTextField,
-  SelectField,
-  SubmitButton,
-} from '../Form';
 import React, { useCallback, useContext, useMemo } from 'react';
 
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
+import NumberField from '../FormFields/NumberField';
+import SelectField from '../FormFields/SelectField';
 import { StoreContext } from '../../store';
+import SubmitButton from '../FormFields/SubmitButton';
+import TextField from '../FormFields/TextField';
 import types from './types';
-import { useDialog } from '../../utils/hooks';
+import useDialog from '../../hooks/useDialog';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 
@@ -124,10 +122,10 @@ function NewPropertyDialog({ open, setOpen, backPage, backPath }) {
                       />
                     </Grid>
                     <Grid item xs={12} md={8}>
-                      <FormTextField label={t('Name')} name="name" />
+                      <TextField label={t('Name')} name="name" />
                     </Grid>
                     <Grid item xs={12}>
-                      <FormNumberField
+                      <NumberField
                         label={t('Rent without expenses')}
                         name="rent"
                       />

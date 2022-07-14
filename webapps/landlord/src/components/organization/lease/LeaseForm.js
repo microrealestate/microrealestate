@@ -2,17 +2,15 @@ import * as Yup from 'yup';
 
 import { Box, Grid, Typography } from '@material-ui/core';
 import { Form, Formik } from 'formik';
-import {
-  FormNumberField,
-  FormSection,
-  FormTextField,
-  SelectField,
-  SubmitButton,
-} from '../../Form';
 import { useContext, useMemo } from 'react';
 
+import NumberField from '../../FormFields/NumberField';
 import { observer } from 'mobx-react-lite';
+import Section from '../../FormFields/Section';
+import SelectField from '../../FormFields/SelectField';
 import { StoreContext } from '../../../store';
+import SubmitButton from '../../FormFields/SubmitButton';
+import TextField from '../../FormFields/TextField';
 import useTranslation from 'next-translate/useTranslation';
 
 const timeRanges = ['days', 'weeks', 'months', 'years'];
@@ -81,16 +79,16 @@ const LeaseForm = ({ onSubmit }) => {
               </Box>
             )}
             <Form autoComplete="off">
-              <FormSection
+              <Section
                 label={t('Contract information')}
                 visible={!store.lease.selected?.stepperMode}
               >
                 <Grid container spacing={1}>
                   <Grid item xs={12}>
-                    <FormTextField label={t('Name')} name="name" />
+                    <TextField label={t('Name')} name="name" />
                   </Grid>
                   <Grid item xs={12}>
-                    <FormTextField
+                    <TextField
                       label={t('Description')}
                       name="description"
                       multiline
@@ -110,14 +108,14 @@ const LeaseForm = ({ onSubmit }) => {
                     />
                   </Grid>
                   <Grid item xs={6}>
-                    <FormNumberField
+                    <NumberField
                       label={t('Number of terms')}
                       name="numberOfTerms"
                       disabled={values.usedByTenants}
                     />
                   </Grid>
                 </Grid>
-              </FormSection>
+              </Section>
               <SubmitButton
                 label={!isSubmitting ? t('Save') : t('Submitting')}
               />

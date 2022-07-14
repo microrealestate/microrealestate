@@ -2,11 +2,10 @@ import { Box, Paper, Switch, TableHead, Typography } from '@material-ui/core';
 import React, { useCallback, useContext } from 'react';
 
 import AddIcon from '@material-ui/icons/Add';
-import { ADMIN_ROLE } from '../../store/User';
-import { FormSection } from '../Form';
 import Link from '../Link';
 import { observer } from 'mobx-react-lite';
 import { RestrictButton } from '../RestrictedComponents';
+import Section from '../FormFields/Section';
 import { StoreContext } from '../../store';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -65,14 +64,13 @@ const Leases = observer(() => {
   );
 
   return (
-    <FormSection label={t('Manage contracts')}>
+    <Section label={t('Manage contracts')}>
       <Box py={2}>
         <RestrictButton
           variant="contained"
           color="primary"
           onClick={handleNewLeaseDialog}
           startIcon={<AddIcon />}
-          onlyRoles={[ADMIN_ROLE]}
         >
           {t('New contract')}
         </RestrictButton>
@@ -138,7 +136,7 @@ const Leases = observer(() => {
         </Table>
       </Paper>
       <NewLeaseDialog backPage={t('Settings')} backPath={router.asPath} />
-    </FormSection>
+    </Section>
   );
 });
 

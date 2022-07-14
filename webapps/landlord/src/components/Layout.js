@@ -1,6 +1,7 @@
 import { Box, Hidden } from '@material-ui/core';
+
 import Nav from './Nav';
-import { useToast } from '../utils/hooks';
+import useToast from '../hooks/useToast';
 
 export default function Layout({ showNav, children }) {
   const Toast = useToast();

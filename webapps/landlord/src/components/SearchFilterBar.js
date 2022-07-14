@@ -10,7 +10,7 @@ import { useCallback, useMemo, useState } from 'react';
 import FilterListIcon from '@material-ui/icons/FilterList';
 import SearchIcon from '@material-ui/icons/Search';
 import ToggleMenu from './ToggleMenu';
-import { useTimeout } from '../utils/hooks';
+import useTimeout from '../hooks/useTimeout';
 import useTranslation from 'next-translate/useTranslation';
 
 const StyledTextField = withStyles({

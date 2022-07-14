@@ -1,11 +1,13 @@
 import * as Yup from 'yup';
 
 import { Form, Formik } from 'formik';
-import { FormSection, FormTextField, SubmitButton } from '../Form';
 import { useCallback, useContext, useMemo } from 'react';
 
 import { observer } from 'mobx-react-lite';
+import Section from '../FormFields/Section';
 import { StoreContext } from '../../store';
+import SubmitButton from '../FormFields/SubmitButton';
+import TextField from '../FormFields/TextField';
 import { Typography } from '@material-ui/core';
 import useTranslation from 'next-translate/useTranslation';
 
@@ -85,11 +87,6 @@ const ThirdPartiesForm = observer(({ onSubmit }) => {
     ]
   );
 
-  const allowedRoles = useMemo(
-    () => (store.organization.items ? ['administrator'] : null),
-    [store.organization.items]
-  );
-
   return (
     <Formik
       initialValues={initialValues}
@@ -99,70 +96,46 @@ const ThirdPartiesForm = observer(({ onSubmit }) => {
       {({ values, isSubmitting }) => {
         return (
           <Form autoComplete="off">
-            <FormSection label="Mailgun">
+            <Section label="Mailgun">
               <Typography>
                 {t(
                   'Configuration required for sending invoices, notices and all kind of communication to the tenants'
                 )}
               </Typography>
-              <FormTextField
+              <TextField
                 label={t('Private API key')}
                 name="apiKey"
                 type="password"
                 showHidePassword={values.apiKey !== initialValues.apiKey}
-                onlyRoles={allowedRoles}
               />
-              <FormTextField
-                label={t('Domain')}
-                name="domain"
-                onlyRoles={allowedRoles}
-              />
-              <FormTextField
-                label={t('From Email')}
-                name="fromEmail"
-                onlyRoles={allowedRoles}
-              />
-              <FormTextField
-                label={t('Reply to email')}
-                name="replyToEmail"
-                onlyRoles={allowedRoles}
-              />
-            </FormSection>
-            <FormSection label="Backblaze B2 Cloud Storage">
+              <TextField label={t('Domain')} name="domain" />
+              <TextField label={t('From Email')} name="fromEmail" />
+              <TextField label={t('Reply to email')} name="replyToEmail" />
+            </Section>
+            <Section label="Backblaze B2 Cloud Storage">
               <Typography>
                 {t('Configuration required to store documents in the cloud')}
               </Typography>
-              <FormTextField
+              <TextField
                 label="KeyId"
                 name="keyId"
                 type="password"
                 showHidePassword={values.keyId !== initialValues.keyId}
-                onlyRoles={allowedRoles}
               />
-              <FormTextField
+              <TextField
                 label="ApplicationKey"
                 name="applicationKey"
                 type="password"
                 showHidePassword={
                   values.applicationKey !== initialValues.applicationKey
                 }
-                onlyRoles={allowedRoles}
               />
-              <FormTextField
-                label={t('Bucket')}
-                name="bucket"
-                onlyRoles={allowedRoles}
-              />
-              <FormTextField
-                label={t('Bucket endpoint')}
-                name="endpoint"
-                onlyRoles={allowedRoles}
-              />
-            </FormSection>
+              <TextField label={t('Bucket')} name="bucket" />
+              <TextField label={t('Bucket endpoint')} name="endpoint" />
+            </Section>
             <SubmitButton
               size="large"
               label={!isSubmitting ? t('Save') : t('Saving')}
-              onlyRoles={allowedRoles}
             />
           </Form>
         );

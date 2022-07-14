@@ -1,22 +1,20 @@
 import * as Yup from 'yup';
 
 import { Box, DialogTitle } from '@material-ui/core';
-import {
-  CheckboxField,
-  FormTextField,
-  SelectField,
-  SubmitButton,
-} from '../Form';
 import { Form, Formik } from 'formik';
 import React, { useCallback, useContext } from 'react';
 
 import Button from '@material-ui/core/Button';
+import CheckboxField from '../FormFields/CheckboxField';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
+import SelectField from '../FormFields/SelectField';
 import { StoreContext } from '../../store';
+import SubmitButton from '../FormFields/SubmitButton';
+import TextField from '../FormFields/TextField';
 import { toJS } from 'mobx';
-import { useDialog } from '../../utils/hooks';
+import useDialog from '../../hooks/useDialog';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 
@@ -146,7 +144,7 @@ function NewTenantDialog({ open, setOpen, backPage, backPath }) {
             return (
               <Form autoComplete="off">
                 <DialogContent>
-                  <FormTextField label={t('Name')} name="name" />
+                  <TextField label={t('Name')} name="name" />
                   {!!tenants.length && (
                     <>
                       <CheckboxField

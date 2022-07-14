@@ -1,7 +1,6 @@
 import { getStoreInstance, StoreContext } from '../../../../store';
 import { useCallback, useContext } from 'react';
 
-import { ADMIN_ROLE } from '../../../../store/User';
 import BreadcrumbBar from '../../../../components/BreadcrumbBar';
 import DeleteIcon from '@material-ui/icons/Delete';
 import { isServer } from '../../../../utils';
@@ -111,7 +110,6 @@ const Lease = observer(() => {
           onClick={() => setRemoveLease(true)}
           disabled={store.lease.selected?.usedByTenants}
           disabledTooltipTitle={t('Contract currently used')}
-          onlyRoles={[ADMIN_ROLE]}
         >
           {t('Delete')}
         </RestrictButton>

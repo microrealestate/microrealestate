@@ -2,15 +2,6 @@ import * as Yup from 'yup';
 
 import { Box, Button, Grid } from '@material-ui/core';
 import {
-  DateField,
-  DateRangeField,
-  FormNumberField,
-  FormSection,
-  FormTextField,
-  SelectField,
-  SubmitButton,
-} from '../../Form';
-import {
   FieldArray,
   Form,
   Formik,
@@ -19,9 +10,16 @@ import {
 } from 'formik';
 import { Fragment, useCallback, useContext, useMemo, useState } from 'react';
 
+import DateField from '../../FormFields/DateField';
 import moment from 'moment';
+import NumberField from '../../FormFields/NumberField';
 import { observer } from 'mobx-react-lite';
+import RangeDateField from '../../FormFields/RangeDateField';
+import Section from '../../FormFields/Section';
+import SelectField from '../../FormFields/SelectField';
 import { StoreContext } from '../../../store';
+import SubmitButton from '../../FormFields/SubmitButton';
+import TextField from '../../FormFields/TextField';
 import useTranslation from 'next-translate/useTranslation';
 
 const validationSchema = Yup.object().shape({
@@ -251,7 +249,7 @@ const LeaseContractForm = observer((props) => {
         return (
           <Form autoComplete="off">
             {values.terminated && (
-              <FormSection label={t('Termination')}>
+              <Section label={t('Termination')}>
                 <DateField
                   label={t('Termination date')}
                   name="terminationDate"
@@ -259,14 +257,14 @@ const LeaseContractForm = observer((props) => {
                   maxDate={values.endDate.toISOString()}
                   disabled={readOnly}
                 />
-                <FormNumberField
+                <NumberField
                   label={t('Amount of the deposit refund')}
                   name="guarantyPayback"
                   disabled={readOnly}
                 />
-              </FormSection>
+              </Section>
             )}
-            <FormSection
+            <Section
               label={t('Lease')}
               visible={!store.tenant.selected.stepperMode}
             >
@@ -277,7 +275,7 @@ const LeaseContractForm = observer((props) => {
                 onChange={onLeaseChange}
                 disabled={readOnly}
               />
-              <DateRangeField
+              <RangeDateField
                 beginLabel={t('Start date')}
                 beginName="beginDate"
                 endLabel={t('End date')}
@@ -285,13 +283,13 @@ const LeaseContractForm = observer((props) => {
                 duration={contractDuration}
                 disabled={!values.leaseId || readOnly}
               />
-              <FormNumberField
+              <NumberField
                 label={t('Deposit')}
                 name="guaranty"
                 disabled={!values.leaseId || readOnly}
               />
-            </FormSection>
-            <FormSection label={t('Properties')}>
+            </Section>
+            <Section label={t('Properties')}>
               <FieldArray
                 name="properties"
                 render={(arrayHelpers) => (
@@ -311,7 +309,7 @@ const LeaseContractForm = observer((props) => {
                             />
                           </Grid>
                           <Grid item xs={12} md={3}>
-                            <FormNumberField
+                            <NumberField
                               label={t('Rent')}
                               name={`properties[${index}].rent`}
                               disabled={
@@ -320,7 +318,7 @@ const LeaseContractForm = observer((props) => {
                             />
                           </Grid>
                           <Grid item xs={12} md={9}>
-                            <FormTextField
+                            <TextField
                               label={t('Expense')}
                               name={`properties[${index}].expense.title`}
                               disabled={
@@ -329,7 +327,7 @@ const LeaseContractForm = observer((props) => {
                             />
                           </Grid>
                           <Grid item xs={12} md={3}>
-                            <FormNumberField
+                            <NumberField
                               label={t('Amount')}
                               name={`properties[${index}].expense.amount`}
                               disabled={
@@ -338,7 +336,7 @@ const LeaseContractForm = observer((props) => {
                             />
                           </Grid>
                           <Grid item xs={12}>
-                            <DateRangeField
+                            <RangeDateField
                               beginLabel={t('Entry date')}
                               beginName={`properties[${index}].entryDate`}
                               endLabel={t('Exit date')}
@@ -382,7 +380,7 @@ const LeaseContractForm = observer((props) => {
                   </>
                 )}
               />
-            </FormSection>
+            </Section>
             {!readOnly && (
               <SubmitButton
                 size="large"

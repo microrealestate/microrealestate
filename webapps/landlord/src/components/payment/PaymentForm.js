@@ -1,21 +1,19 @@
 import * as Yup from 'yup';
 
 import { Box, Button, Grid } from '@material-ui/core';
-import {
-  DateField,
-  FormNumberField,
-  FormSection,
-  FormTextField,
-  SelectField,
-  SubmitButton,
-} from '../Form';
 import { FieldArray, Form, Formik } from 'formik';
 import { Fragment, useCallback, useContext, useMemo } from 'react';
 
 import _ from 'lodash';
+import DateField from '../FormFields/DateField';
 import moment from 'moment';
+import NumberField from '../FormFields/NumberField';
+import Section from '../FormFields/Section';
+import SelectField from '../FormFields/SelectField';
 import { StoreContext } from '../../store';
-import { usePaymentTypes } from '../../utils/hooks';
+import SubmitButton from '../FormFields/SubmitButton';
+import TextField from '../FormFields/TextField';
+import usePaymentTypes from '../../hooks/usePaymentTypes';
 import useTranslation from 'next-translate/useTranslation';
 
 const validationSchema = Yup.object().shape({
@@ -106,14 +104,14 @@ const PaymentForm = ({ onSubmit }) => {
       {({ isSubmitting, values: { payments } }) => {
         return (
           <Form autoComplete="off">
-            <FormSection label={t('Settlements')}>
+            <Section label={t('Settlements')}>
               <FieldArray name="payments">
                 {({ form, ...arrayHelpers }) => {
                   return payments.map((payment, index) => (
                     <Fragment key={index}>
                       <Grid container spacing={2}>
                         <Grid item xs={6}>
-                          <FormNumberField
+                          <NumberField
                             label={t('Amount')}
                             name={`payments[${index}].amount`}
                           />
@@ -141,7 +139,7 @@ const PaymentForm = ({ onSubmit }) => {
                         </Grid>
                         {payments[index].type !== 'cash' && (
                           <Grid item xs={6}>
-                            <FormTextField
+                            <TextField
                               label={t('Reference')}
                               name={`payments[${index}].reference`}
                             />
@@ -182,7 +180,7 @@ const PaymentForm = ({ onSubmit }) => {
                   ));
                 }}
               </FieldArray>
-            </FormSection>
+            </Section>
             <SubmitButton label={!isSubmitting ? t('Save') : t('Saving')} />
           </Form>
         );

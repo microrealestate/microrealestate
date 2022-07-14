@@ -1,7 +1,7 @@
 import { useCallback, useContext } from 'react';
 
 import { Button } from '@material-ui/core';
-import { FormSection } from '../../Form';
+import Section from '../../FormFields/Section';
 import { StoreContext } from '../../../store';
 import TemplateList from './TemplateList';
 import useTranslation from 'next-translate/useTranslation';
@@ -16,12 +16,12 @@ export default function TemplateForm({ onSubmit }) {
 
   return (
     <>
-      <FormSection
+      <Section
         label={t('Template documents')}
         visible={!store.lease.selected.stepperMode}
       >
         <TemplateList />
-      </FormSection>
+      </Section>
       {store.lease?.selected.stepperMode ? (
         <Button
           variant="contained"

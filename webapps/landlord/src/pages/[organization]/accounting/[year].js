@@ -20,7 +20,7 @@ import { downloadDocument } from '../../../utils/fetch';
 import { EmptyIllustration } from '../../../components/Illustrations';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import moment from 'moment';
-import { NumberFormat } from '../../../utils/numberformat';
+import NumberFormat from '../../../components/NumberFormat';
 import { observer } from 'mobx-react-lite';
 import Page from '../../../components/Page';
 import PeriodPicker from '../../../components/PeriodPicker';

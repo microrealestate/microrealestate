@@ -1,20 +1,18 @@
 import * as Yup from 'yup';
 
-import {
-  AddressField,
-  ContactForm,
-  FormSection,
-  FormTextField,
-  RadioField,
-  RadioFieldGroup,
-  SubmitButton,
-} from '../../Form';
 import { Box, Button } from '@material-ui/core';
 import { FieldArray, Form, Formik } from 'formik';
 import { useContext, useMemo } from 'react';
 
+import AddressField from '../../FormFields/AddressField';
+import ContactField from '../../FormFields/ContactField';
 import { observer } from 'mobx-react-lite';
+import RadioField from '../../FormFields/RadioField';
+import RadioFieldGroup from '../../FormFields/RadioFieldGroup';
+import Section from '../../FormFields/Section';
 import { StoreContext } from '../../../store';
+import SubmitButton from '../../FormFields/SubmitButton';
+import TextField from '../../FormFields/TextField';
 import useTranslation from 'next-translate/useTranslation';
 
 const validationSchema = Yup.object().shape({
@@ -136,15 +134,11 @@ const TenantForm = observer(({ readOnly, onSubmit }) => {
       {({ values, isSubmitting }) => {
         return (
           <Form autoComplete="off">
-            <FormSection
+            <Section
               label={t('Tenant information')}
               visible={!store.tenant.selected.stepperMode}
             >
-              <FormTextField
-                label={t('Name')}
-                name="name"
-                disabled={readOnly}
-              />
+              <TextField label={t('Name')} name="name" disabled={readOnly} />
               <RadioFieldGroup
                 aria-label="organization type"
                 label={t('The tenant belongs to')}
@@ -165,45 +159,45 @@ const TenantForm = observer(({ readOnly, onSubmit }) => {
               </RadioFieldGroup>
               {values.isCompany === 'true' && (
                 <>
-                  <FormTextField
+                  <TextField
                     label={t('Legal representative')}
                     name="legalRepresentative"
                     disabled={readOnly}
                   />
-                  <FormTextField
+                  <TextField
                     label={t('Legal structure')}
                     name="legalStructure"
                     disabled={readOnly}
                   />
-                  <FormTextField
+                  <TextField
                     label={t('Employer Identification Number')}
                     name="ein"
                     disabled={readOnly}
                   />
-                  <FormTextField
+                  <TextField
                     label={t('Administrative jurisdiction')}
                     name="dos"
                     disabled={readOnly}
                   />
-                  <FormTextField
+                  <TextField
                     label={t('Capital')}
                     name="capital"
                     disabled={readOnly}
                   />
                 </>
               )}
-            </FormSection>
-            <FormSection label={t('Address')}>
+            </Section>
+            <Section label={t('Address')}>
               <AddressField disabled={readOnly} />
-            </FormSection>
-            <FormSection label={t('Contacts')}>
+            </Section>
+            <Section label={t('Contacts')}>
               <FieldArray
                 name="contacts"
                 render={(arrayHelpers) => (
                   <div>
                     {values.contacts.map((contact, index) => (
                       <Box key={index}>
-                        <ContactForm
+                        <ContactField
                           contactName={`contacts[${index}].contact`}
                           emailName={`contacts[${index}].email`}
                           phone1Name={`contacts[${index}].phone1`}
@@ -241,7 +235,7 @@ const TenantForm = observer(({ readOnly, onSubmit }) => {
                   </div>
                 )}
               />
-            </FormSection>
+            </Section>
             {!readOnly && (
               <SubmitButton
                 size="large"
