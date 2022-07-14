@@ -71,10 +71,7 @@ const MyApp = memo(function MyApp(props) {
           content="minimum-scale=1, initial-scale=1, width=device-width"
         />
         <link rel="shortcut icon" href={`${BASE_PATH}/favicon.svg`} />
-        <link
-          href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css"
-          rel="stylesheet"
-        ></link>
+
         <title>{APP_TITLE.join(' - ')}</title>
       </Head>
       <ThemeProvider theme={theme}>
