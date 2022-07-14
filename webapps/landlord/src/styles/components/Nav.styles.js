@@ -1,6 +1,6 @@
 import { drawerWidth } from '../styles.js';
-
 import { makeStyles } from '@material-ui/core/styles';
+
 const drawerOuterHeight = 330;
 const drawerInnerHeight = 300;
 

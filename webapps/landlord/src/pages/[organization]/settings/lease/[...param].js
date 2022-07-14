@@ -1,6 +1,7 @@
 import { getStoreInstance, StoreContext } from '../../../../store';
 import { useCallback, useContext } from 'react';
 
+import { ADMIN_ROLE } from '../../../../store/User';
 import BreadcrumbBar from '../../../../components/BreadcrumbBar';
 import DeleteIcon from '@material-ui/icons/Delete';
 import { isServer } from '../../../../utils';
@@ -170,4 +171,4 @@ Lease.getInitialProps = async (context) => {
   };
 };
 
-export default withAuthentication(Lease);
+export default withAuthentication(Lease, ADMIN_ROLE);

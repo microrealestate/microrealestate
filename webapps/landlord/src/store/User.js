@@ -1,4 +1,5 @@
 import * as jose from 'jose';
+
 import { action, computed, flow, makeObservable, observable } from 'mobx';
 import { apiFetcher, authApiFetcher, setAccessToken } from '../utils/fetch';
 
@@ -41,7 +42,7 @@ export default class User {
   }
 
   get isAdministrator() {
-    return this.role === 'administrator';
+    return this.role === ADMIN_ROLE;
   }
 
   setRole(role) {

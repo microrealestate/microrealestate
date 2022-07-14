@@ -3,6 +3,7 @@ import { Paper, Tab, Tabs } from '@material-ui/core';
 import { TabPanel, useTabChangeHelper } from '../../../components/Tabs';
 import { useCallback, useContext } from 'react';
 
+import { ADMIN_ROLE } from '../../../store/User';
 import BillingForm from '../../../components/organization/BillingForm';
 import getConfig from 'next/config';
 import { isServer } from '../../../utils';
@@ -159,4 +160,4 @@ Settings.getInitialProps = async (context) => {
   };
 };
 
-export default withAuthentication(Settings);
+export default withAuthentication(Settings, ADMIN_ROLE);
