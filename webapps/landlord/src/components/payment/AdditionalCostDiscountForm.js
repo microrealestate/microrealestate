@@ -1,15 +1,13 @@
 import * as Yup from 'yup';
 
 import { Form, Formik } from 'formik';
-import {
-  FormNumberField,
-  FormSection,
-  FormTextField,
-  SubmitButton,
-} from '../Form';
 import { useCallback, useContext, useMemo } from 'react';
 
+import NumberField from '../FormFields/NumberField';
+import Section from '../FormFields/Section';
 import { StoreContext } from '../../store';
+import SubmitButton from '../FormFields/SubmitButton';
+import TextField from '../FormFields/TextField';
 import useTranslation from 'next-translate/useTranslation';
 
 const validationSchema = Yup.object().shape({
@@ -75,40 +73,36 @@ const AdditionalCostDiscountForm = ({ onSubmit }) => {
       }) => {
         return (
           <Form autoComplete="off">
-            <FormSection
+            <Section
               label={t('Additional cost')}
               defaultExpanded={!!initialValues.extracharge}
             >
-              <FormNumberField
+              <NumberField
                 label={t('Amount')}
                 name="extracharge"
                 value={extracharge}
               />
-              <FormTextField
+              <TextField
                 label={t('Description')}
                 name="noteextracharge"
                 value={noteextracharge}
                 multiline
                 rows={3}
               />
-            </FormSection>
-            <FormSection
+            </Section>
+            <Section
               label={t('Discount')}
               defaultExpanded={!!initialValues.promo}
             >
-              <FormNumberField
-                label={t('Discount')}
-                name="promo"
-                value={promo}
-              />
-              <FormTextField
+              <NumberField label={t('Discount')} name="promo" value={promo} />
+              <TextField
                 label={t('Description')}
                 name="notepromo"
                 value={notepromo}
                 multiline
                 rows={3}
               />
-            </FormSection>
+            </Section>
             <SubmitButton label={!isSubmitting ? t('Save') : t('Saving')} />
           </Form>
         );

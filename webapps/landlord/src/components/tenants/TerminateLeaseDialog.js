@@ -9,18 +9,20 @@ import {
   Select,
   Typography,
 } from '@material-ui/core';
-import { DateField, FormNumberField, SubmitButton } from '../Form';
 import { Form, Formik } from 'formik';
 import React, { useContext, useState } from 'react';
 
 import Button from '@material-ui/core/Button';
+import DateField from '../FormFields/DateField';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import moment from 'moment';
+import NumberField from '../FormFields/NumberField';
 import { StoreContext } from '../../store';
+import SubmitButton from '../FormFields/SubmitButton';
 import { toJS } from 'mobx';
-import { useDialog } from '../../utils/hooks';
+import useDialog from '../../hooks/useDialog';
 import useTranslation from 'next-translate/useTranslation';
 
 const validationSchema = Yup.object().shape({
@@ -145,7 +147,7 @@ function TerminateLeaseDialog({ open, setOpen, tenantList }) {
                         : undefined
                     }
                   />
-                  <FormNumberField
+                  <NumberField
                     label={t('Amount of the deposit refund')}
                     name="guarantyPayback"
                   />

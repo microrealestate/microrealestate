@@ -2,7 +2,7 @@ import { Dialog } from '@material-ui/core';
 import dynamic from 'next/dynamic';
 import { grayColor } from '../../styles/styles';
 import { useCallback } from 'react';
-import { useDialog } from '../../utils/hooks';
+import useDialog from '../../hooks/useDialog';
 import { withStyles } from '@material-ui/core/styles';
 
 const RichTextEditor = dynamic(import('./RichTextEditor'), {

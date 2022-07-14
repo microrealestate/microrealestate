@@ -1,19 +1,17 @@
 import * as Yup from 'yup';
 
-import {
-  AddressField,
-  FormNumberField,
-  FormSection,
-  FormTextField,
-  SelectField,
-  SubmitButton,
-} from '../Form';
 import { Form, Formik } from 'formik';
 import { useContext, useMemo } from 'react';
 
+import AddressField from '../FormFields/AddressField';
 import { Grid } from '@material-ui/core';
+import NumberField from '../FormFields/NumberField';
 import { observer } from 'mobx-react-lite';
+import Section from '../FormFields/Section';
+import SelectField from '../FormFields/SelectField';
 import { StoreContext } from '../../store';
+import SubmitButton from '../FormFields/SubmitButton';
+import TextField from '../FormFields/TextField';
 import types from './types';
 import useTranslation from 'next-translate/useTranslation';
 
@@ -77,7 +75,7 @@ const PropertyForm = observer(({ onSubmit }) => {
       {({ values, isSubmitting }) => {
         return (
           <Form autoComplete="off">
-            <FormSection label={t('Property information')}>
+            <Section label={t('Property information')}>
               <Grid container spacing={1}>
                 <Grid item xs={12} md={4}>
                   <SelectField
@@ -87,10 +85,10 @@ const PropertyForm = observer(({ onSubmit }) => {
                   />
                 </Grid>
                 <Grid item xs={12} md={8}>
-                  <FormTextField label={t('Name')} name="name" />
+                  <TextField label={t('Name')} name="name" />
                 </Grid>
                 <Grid item xs={12}>
-                  <FormTextField label={t('Description')} name="description" />
+                  <TextField label={t('Description')} name="description" />
                 </Grid>
 
                 {[
@@ -103,24 +101,24 @@ const PropertyForm = observer(({ onSubmit }) => {
                 ].includes(values.type) && (
                   <>
                     <Grid item xs={12} md={4}>
-                      <FormNumberField label={t('Surface')} name="surface" />
+                      <NumberField label={t('Surface')} name="surface" />
                     </Grid>
                     <Grid item xs={12} md={4}>
-                      <FormTextField label={t('Phone')} name="phone" />
+                      <TextField label={t('Phone')} name="phone" />
                     </Grid>
                     <Grid item xs={12} md={4}>
-                      <FormTextField label={t('Digicode')} name="digicode" />
+                      <TextField label={t('Digicode')} name="digicode" />
                     </Grid>
                   </>
                 )}
               </Grid>
-            </FormSection>
-            <FormSection label={t('Address')}>
+            </Section>
+            <Section label={t('Address')}>
               <AddressField />
-            </FormSection>
-            <FormSection label={t('Rent')}>
-              <FormNumberField label={t('Rent without expenses')} name="rent" />
-            </FormSection>
+            </Section>
+            <Section label={t('Rent')}>
+              <NumberField label={t('Rent without expenses')} name="rent" />
+            </Section>
             <SubmitButton
               size="large"
               label={!isSubmitting ? t('Save') : t('Saving')}

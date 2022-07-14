@@ -6,7 +6,7 @@ import { EmptyIllustration } from '../../../../components/Illustrations';
 import FullScreenDialogButton from '../../../../components/FullScreenDialogButton';
 import { isServer } from '../../../../utils';
 import moment from 'moment';
-import { NumberFormat } from '../../../../utils/numberformat';
+import NumberFormat from '../../../../components/NumberFormat';
 import { observer } from 'mobx-react-lite';
 import Page from '../../../../components/Page';
 import { PageCard } from '../../../../components/Cards';

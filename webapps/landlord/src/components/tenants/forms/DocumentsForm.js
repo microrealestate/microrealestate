@@ -1,5 +1,5 @@
 import { Button } from '@material-ui/core';
-import { FormSection } from '../../Form';
+import Section from '../../FormFields/Section';
 import TenantDocumentList from '../TenantDocumentList';
 import { useCallback } from 'react';
 import useTranslation from 'next-translate/useTranslation';
@@ -13,9 +13,9 @@ export default function DocumentsForm({ onSubmit, readOnly }) {
 
   return (
     <>
-      <FormSection label={t('Documents')}>
+      <Section label={t('Documents')}>
         <TenantDocumentList disabled={readOnly} />
-      </FormSection>
+      </Section>
       <Button
         variant="contained"
         color="primary"

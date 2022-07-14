@@ -9,7 +9,7 @@ import StepLabel from '@material-ui/core/StepLabel';
 import Stepper from '@material-ui/core/Stepper';
 import { StoreContext } from '../../../store';
 import TemplateForm from './TemplateForm';
-import { useComponentMountedRef } from '../../../utils/hooks';
+import useComponentMountedRef from '../../../hooks/useComponentMountedRef';
 import useTranslation from 'next-translate/useTranslation';
 
 export default function LeaseStepper({ onSubmit }) {

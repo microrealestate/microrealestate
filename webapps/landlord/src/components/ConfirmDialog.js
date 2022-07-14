@@ -5,7 +5,7 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import { useCallback } from 'react';
-import { useDialog } from '../utils/hooks';
+import useDialog from '../hooks/useDialog';
 import useTranslation from 'next-translate/useTranslation';
 import WarningIcon from '@material-ui/icons/ReportProblemOutlined';
 

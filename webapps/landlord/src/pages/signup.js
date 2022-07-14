@@ -2,7 +2,6 @@ import * as Yup from 'yup';
 
 import { Box, Paper, Typography } from '@material-ui/core';
 import { Form, Formik } from 'formik';
-import { FormTextField, SubmitButton } from '../components/Form';
 import React, { useContext } from 'react';
 
 import ErrorPage from 'next/error';
@@ -12,6 +11,8 @@ import LocationCityIcon from '@material-ui/icons/LocationCity';
 import { observer } from 'mobx-react-lite';
 import Page from '../components/Page';
 import { StoreContext } from '../store';
+import SubmitButton from '../components/FormFields/SubmitButton';
+import TextField from '../components/FormFields/TextField';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 
@@ -102,10 +103,10 @@ const SignUp = observer(({ pageError }) => {
             {({ isSubmitting }) => {
               return (
                 <Form>
-                  <FormTextField label={t('First name')} name="firstName" />
-                  <FormTextField label={t('Last name')} name="lastName" />
-                  <FormTextField label={t('Email Address')} name="email" />
-                  <FormTextField
+                  <TextField label={t('First name')} name="firstName" />
+                  <TextField label={t('Last name')} name="lastName" />
+                  <TextField label={t('Email Address')} name="email" />
+                  <TextField
                     label={t('Password')}
                     name="password"
                     type="password"

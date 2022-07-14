@@ -17,7 +17,7 @@ import Loading from './Loading';
 import { MobileButton } from './MobileMenuButton';
 import Slide from '@material-ui/core/Slide';
 import Typography from '@material-ui/core/Typography';
-import { useComponentMountedRef } from '../utils/hooks';
+import useComponentMountedRef from '../hooks/useComponentMountedRef';
 import useTranslation from 'next-translate/useTranslation';
 
 const Transition = forwardRef(function Transition(props, ref) {

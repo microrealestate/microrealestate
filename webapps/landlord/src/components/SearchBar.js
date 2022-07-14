@@ -2,7 +2,7 @@ import { InputAdornment, TextField } from '@material-ui/core';
 import { useCallback, useState } from 'react';
 
 import SearchIcon from '@material-ui/icons/Search';
-import { useTimeout } from '../utils/hooks';
+import useTimeout from '../hooks/useTimeout';
 import useTranslation from 'next-translate/useTranslation';
 
 const SearchBar = ({ onSearch, defaultValue = '' }) => {

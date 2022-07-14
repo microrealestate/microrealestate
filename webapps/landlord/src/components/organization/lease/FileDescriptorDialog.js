@@ -2,20 +2,18 @@ import * as Yup from 'yup';
 
 import { Box, DialogContentText, DialogTitle } from '@material-ui/core';
 import { Form, Formik } from 'formik';
-import {
-  FormTextField,
-  RadioField,
-  RadioFieldGroup,
-  SubmitButton,
-} from '../../Form';
 import React, { useCallback, useMemo } from 'react';
 
 import Button from '@material-ui/core/Button';
-import { CheckboxField } from '../../Form';
+import CheckboxField from '../../FormFields/CheckboxField';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
-import { useDialog } from '../../../utils/hooks';
+import RadioField from '../../FormFields/RadioField';
+import RadioFieldGroup from '../../FormFields/RadioFieldGroup';
+import SubmitButton from '../../FormFields/SubmitButton';
+import TextField from '../../FormFields/TextField';
+import useDialog from '../../../hooks/useDialog';
 import useTranslation from 'next-translate/useTranslation';
 
 const validationSchema = Yup.object().shape({
@@ -88,11 +86,8 @@ function FileDescriptorDialog({ open, setOpen, onSave }) {
               <Form autoComplete="off">
                 <DialogContent>
                   <Box width="100%">
-                    <FormTextField label={t('Name')} name="name" />
-                    <FormTextField
-                      label={t('Description')}
-                      name="description"
-                    />
+                    <TextField label={t('Name')} name="name" />
+                    <TextField label={t('Description')} name="description" />
                   </Box>
                   <Box width="100%" my={2}>
                     <CheckboxField

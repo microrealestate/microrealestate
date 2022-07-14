@@ -15,7 +15,7 @@ import TemplateNode from './TemplateNode';
 import TextAlign from '@tiptap/extension-text-align';
 import { toJS } from 'mobx';
 import Underline from '@tiptap/extension-underline';
-import { useTimeout } from '../../utils/hooks';
+import useTimeout from '../../hooks/useTimeout';
 import useTranslation from 'next-translate/useTranslation';
 
 const SAVE_DELAY = 250;

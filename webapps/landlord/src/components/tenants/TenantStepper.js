@@ -13,7 +13,7 @@ import Stepper from '@material-ui/core/Stepper';
 import { StoreContext } from '../../store';
 import TenantForm from './forms/TenantForm';
 import { validate as TenantFormValidate } from '../../components/tenants/forms/TenantForm';
-import { useComponentMountedRef } from '../../utils/hooks';
+import useComponentMountedRef from '../../hooks/useComponentMountedRef';
 import useTranslation from 'next-translate/useTranslation';
 
 export default function TenantStepper({ onSubmit }) {

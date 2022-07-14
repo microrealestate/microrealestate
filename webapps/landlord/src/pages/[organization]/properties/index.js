@@ -17,7 +17,7 @@ import AddIcon from '@material-ui/icons/Add';
 import { EmptyIllustration } from '../../../components/Illustrations';
 import { isServer } from '../../../utils';
 import { MobileButton } from '../../../components/MobileMenuButton';
-import { NumberFormat } from '../../../utils/numberformat';
+import NumberFormat from '../../../components/NumberFormat';
 import { observer } from 'mobx-react-lite';
 import Page from '../../../components/Page';
 import PropertyAvatar from '../../../components/properties/PropertyAvatar';

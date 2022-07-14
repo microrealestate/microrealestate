@@ -22,7 +22,7 @@ import {
 
 import DownloadLink from '../DownloadLink';
 import moment from 'moment';
-import { NumberFormat } from '../../utils/numberformat';
+import NumberFormat from '../NumberFormat';
 import SearchFilterBar from '../SearchFilterBar';
 import { StoreContext } from '../../store';
 import Table from '@material-ui/core/Table';

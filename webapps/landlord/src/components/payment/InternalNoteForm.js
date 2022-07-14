@@ -1,10 +1,12 @@
 import * as Yup from 'yup';
 
 import { Form, Formik } from 'formik';
-import { FormSection, FormTextField, SubmitButton } from '../Form';
 import { useCallback, useContext, useMemo } from 'react';
 
+import Section from '../FormFields/Section';
 import { StoreContext } from '../../store';
+import SubmitButton from '../FormFields/SubmitButton';
+import TextField from '../FormFields/TextField';
 import useTranslation from 'next-translate/useTranslation';
 
 const validationSchema = Yup.object().shape({
@@ -41,18 +43,18 @@ const InternalNoteForm = ({ onSubmit }) => {
       {({ isSubmitting, values: { description } }) => {
         return (
           <Form autoComplete="off">
-            <FormSection
+            <Section
               label={t('Internal note')}
               defaultExpanded={!!initialValues.description}
             >
-              <FormTextField
+              <TextField
                 label={t('Note')}
                 name="description"
                 value={description}
                 multiline
                 rows={3}
               />
-            </FormSection>
+            </Section>
             <SubmitButton label={!isSubmitting ? t('Save') : t('Saving')} />
           </Form>
         );

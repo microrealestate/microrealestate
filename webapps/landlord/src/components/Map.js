@@ -4,7 +4,7 @@ import { memo, useEffect, useState } from 'react';
 import axios from 'axios';
 import Loading from './Loading';
 import { LocationIllustration } from './Illustrations';
-import { useComponentMountedRef } from '../utils/hooks';
+import useComponentMountedRef from '../hooks/useComponentMountedRef';
 import { useTheme } from '@material-ui/core';
 
 const nominatimBaseURL = 'https://nominatim.openstreetmap.org';
