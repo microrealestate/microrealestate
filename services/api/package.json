@@ -22,7 +22,7 @@
     "json2csv": "5.0.6",
     "jsonwebtoken": "8.5.1",
     "method-override": "3.0.0",
-    "moment": "2.29.3",
+    "moment": "2.29.4",
     "mongobackup": "0.3.5",
     "mongoose": "5.13.10",
     "mongojs": "3.1.0",
