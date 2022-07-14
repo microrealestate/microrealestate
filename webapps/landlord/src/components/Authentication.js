@@ -13,7 +13,7 @@ const {
   publicRuntimeConfig: { BASE_PATH },
 } = getConfig();
 
-export function withAuthentication(PageComponent) {
+export function withAuthentication(PageComponent, grantedRole) {
   function WithAuth(pageProps) {
     console.log('WithAuth functional component');
     const store = useContext(StoreContext);
@@ -34,7 +34,17 @@ export function withAuthentication(PageComponent) {
 
     return (
       <Observer>
-        {() => (store.user.signedIn ? <PageComponent {...pageProps} /> : null)}
+        {() => {
+          if (!store.user.signedIn) {
+            return null;
+          }
+
+          if (grantedRole && grantedRole !== store.user.role) {
+            return <ErrorPage statusCode={404} />;
+          }
+
+          return <PageComponent {...pageProps} />;
+        }}
       </Observer>
     );
   }

@@ -1,12 +1,10 @@
-import { Hidden, ListItemIcon, Typography } from '@material-ui/core';
 import {
-  memo,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
+  Hidden,
+  ListItemIcon,
+  Typography,
+  useMediaQuery,
+} from '@material-ui/core';
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 import AccountBalanceWalletIcon from '@material-ui/icons/AccountBalanceWallet';
 import DashboardIcon from '@material-ui/icons/Dashboard';
@@ -17,6 +15,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import MobileMenu from './MobileMenu';
 import MobileMenuButton from './MobileMenuButton';
 import moment from 'moment';
+import { observer } from 'mobx-react-lite';
 import PeopleAltIcon from '@material-ui/icons/PeopleAlt';
 import ReceiptIcon from '@material-ui/icons/Receipt';
 import SettingsIcon from '@material-ui/icons/Settings';
@@ -108,12 +107,24 @@ function MenuItem({ item, selected, open, onClick }) {
   );
 }
 
-const Nav = () => {
+function Nav() {
   const classes = useStyles();
+  const [menuItems, setMenuItems] = useState([]);
   const [selectedPathname, setSelectedPathname] = useState('');
   const [openDebounced, setOpenDebounced] = useState(false);
   const store = useContext(StoreContext);
   const router = useRouter();
+  const isMobile = useMediaQuery((theme) => theme.breakpoints.down('sm'));
+
+  useEffect(() => {
+    setMenuItems(
+      (isMobile ? MOBILE_MENU_ITEMS : MENU_ITEMS).filter((menuItem) =>
+        !store.user.isAdministrator && menuItem.key === 'settings'
+          ? false
+          : true
+      )
+    );
+  }, [isMobile, store.user.isAdministrator]);
 
   useEffect(() => {
     setSelectedPathname(router.pathname.replace('/[organization]', ''));
@@ -176,7 +187,7 @@ const Nav = () => {
           onMouseLeave={handleMouseLeave}
         >
           <List className={classes.list}>
-            {MENU_ITEMS.map((item) => {
+            {menuItems.map((item) => {
               return (
                 <MenuItem
                   key={item.key}
@@ -201,7 +212,7 @@ const Nav = () => {
           display="flex"
           justifyContent="space-around"
         >
-          {MOBILE_MENU_ITEMS.map((item) => {
+          {menuItems.map((item) => {
             return (
               <MobileMenuButton
                 key={item.key}
@@ -220,6 +231,6 @@ const Nav = () => {
       </Hidden>
     </>
   );
-};
+}
 
-export default memo(Nav);
+export default observer(Nav);

@@ -3,6 +3,7 @@ import { useCallback, useContext, useMemo } from 'react';
 
 import DescriptionIcon from '@material-ui/icons/Description';
 import FirstConnection from './FirstConnection';
+import { observer } from 'mobx-react-lite';
 import PeopleIcon from '@material-ui/icons/People';
 import ReceiptIcon from '@material-ui/icons/Receipt';
 import ShortcutButton from '../../components/ShortcutButton';
@@ -18,7 +19,7 @@ import useTranslation from 'next-translate/useTranslation';
 import VpnKeyIcon from '@material-ui/icons/VpnKey';
 import { WelcomeIllustration } from '../../components/Illustrations';
 
-export default function Shortcuts({ firstConnection = false }) {
+function Shortcuts({ firstConnection = false }) {
   const store = useContext(StoreContext);
   const router = useRouter();
   const { t } = useTranslation('common');
@@ -125,14 +126,16 @@ export default function Shortcuts({ firstConnection = false }) {
                         data-cy="shortcutAddTenant"
                       />
                     </Grid>
-                    <Grid item xs={12}>
-                      <ShortcutButton
-                        Icon={DescriptionIcon}
-                        label={t('Create a new contract')}
-                        onClick={handleCreateContract}
-                        data-cy="shortcutCreateContract"
-                      />
-                    </Grid>
+                    {store.user.isAdministrator && (
+                      <Grid item xs={12}>
+                        <ShortcutButton
+                          Icon={DescriptionIcon}
+                          label={t('Create a new contract')}
+                          onClick={handleCreateContract}
+                          data-cy="shortcutCreateContract"
+                        />
+                      </Grid>
+                    )}
                   </Grid>
                 </Box>
               </Grid>
@@ -151,3 +154,5 @@ export default function Shortcuts({ firstConnection = false }) {
     </>
   );
 }
+
+export default observer(Shortcuts);
