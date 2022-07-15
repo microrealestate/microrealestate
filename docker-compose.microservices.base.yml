@@ -24,6 +24,7 @@ services:
       - '$MONGO_PORT'
     volumes:
       - './data/mongodb:/data/db'
+      - './backup:/backup'
     networks:
       - net
   ###############################################################################
@@ -130,6 +131,8 @@ services:
   ###############################################################################
   api:
     image: mre/api:latest
+    volumes:
+      - ./backup:/usr/app/backup
     environment:
       - NODE_ENV
       - PORT=$API_PORT

@@ -9,7 +9,6 @@ RUN apt-get update -qq && \
 WORKDIR /usr/app
 COPY services/common services/common
 COPY services/api/src services/api/src
-COPY services/api/bkp/demodb services/api/bkp/demodb
 COPY services/api/scripts services/api/scripts
 COPY services/api/LICENSE services/api/.
 COPY services/api/package.json services/api/.

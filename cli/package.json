@@ -12,11 +12,11 @@
   },
   "bin": "src/index.js",
   "pkg": {
-    "assets": "node_modules/figlet/fonts/Standard.flf",
+    "assets": "../node_modules/figlet/fonts/Standard.flf",
     "targets": [
-      "node12-linux-x64",
-      "node12-macos-x64",
-      "node12-win-x64"
+      "node16-linux-x64",
+      "node16-macos-x64",
+      "node16-win-x64"
     ]
   },
   "author": "Camel Aissani",
@@ -29,6 +29,7 @@
     "dotenv-expand": "8.0.3",
     "figlet": "1.5.2",
     "inquirer": "8.2.4",
-    "minimist": "1.2.6"
+    "minimist": "1.2.6",
+    "moment": "2.29.4"
   }
 }

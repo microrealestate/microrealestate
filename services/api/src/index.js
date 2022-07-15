@@ -2,11 +2,11 @@ const logger = require('winston');
 const i18n = require('i18n');
 const path = require('path');
 const mongoosedb = require('@mre/common/models/db');
+const { restoreDB } = require('../scripts/dbbackup');
 
 const config = require('./config');
 const server = require('./server');
 const db = require('./models/db');
-const restoredb = require('../scripts/mongorestore');
 const migratedb = require('../scripts/migration');
 
 require('@mre/common/utils/httpinterceptors')();
@@ -25,7 +25,8 @@ i18n.configure({
 async function startService() {
   try {
     if (config.restoreDatabase) {
-      await restoredb();
+      logger.debug('restoring database from backup');
+      await restoreDB();
       logger.debug('database restored');
     }
 
