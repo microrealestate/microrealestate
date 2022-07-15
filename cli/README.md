@@ -19,7 +19,7 @@ yarn
 Run the `pkg` tool to create the mre executables
 
 ```shell
-pkg cli/package.json --output mre
+pkg cli/package.json --compress Brotli --output mre
 ```
 
 Rename the linux and windows executables
