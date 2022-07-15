@@ -1,5 +1,7 @@
+const chalk = require('chalk');
 const fs = require('fs');
 const minimist = require('minimist');
+const path = require('path');
 const {
   status,
   dev,
@@ -12,6 +14,9 @@ const {
   config,
   askForEnvironmentVariables,
   writeDotEnv,
+  restoreDB,
+  dumpDB,
+  askBackupFile,
 } = require('./commands');
 
 const argv = minimist(process.argv.slice(2));
@@ -26,7 +31,16 @@ const Main = async () => {
   displayHeader();
 
   if (
-    !['build', 'start', 'stop', 'dev', 'status', 'config'].includes(command)
+    ![
+      'build',
+      'start',
+      'stop',
+      'dev',
+      'status',
+      'config',
+      'restoredb',
+      'dumpdb',
+    ].includes(command)
   ) {
     return displayHelp();
   }
@@ -37,7 +51,6 @@ const Main = async () => {
     const envConfig = await askForEnvironmentVariables();
     writeDotEnv(envConfig);
   }
-  let runConfig = { runMode: 'prod' };
 
   switch (command) {
     case 'build':
@@ -57,9 +70,37 @@ const Main = async () => {
     case 'status':
       await status();
       break;
-    case 'config':
-      runConfig = await askRunMode();
+    case 'config': {
+      const { runConfig = 'prod' } = await askRunMode();
       await config(runConfig);
+      break;
+    }
+    case 'restoredb': {
+      const backupFiles = [];
+      try {
+        const files = fs.readdirSync(
+          path.resolve(process.execPath, '..', 'backup')
+        );
+        files
+          .filter((file) => file.endsWith('.dump'))
+          .forEach((file) => {
+            backupFiles.push(file);
+          });
+      } catch (error) {
+        console.error(chalk.red(error));
+      }
+
+      if (backupFiles.length === 0) {
+        console.error(chalk.red('No dump files found in the backup directory'));
+        return;
+      }
+
+      const { backupFile } = await askBackupFile(backupFiles);
+      await restoreDB(backupFile);
+      break;
+    }
+    case 'dumpdb':
+      await dumpDB();
       break;
     default:
       displayHelp();

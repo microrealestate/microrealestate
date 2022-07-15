@@ -4,7 +4,13 @@ const clear = require('clear');
 const chalk = require('chalk');
 const figlet = require('figlet');
 const inquirer = require('inquirer');
-const { generateRandomToken, runCompose, computeUrl } = require('./utils');
+const moment = require('moment');
+const {
+  generateRandomToken,
+  runCompose,
+  computeUrl,
+  loadEnv,
+} = require('./utils');
 
 const initDirectories = () => {
   const mongoDir = path.join('.', 'data', 'mongodb');
@@ -35,13 +41,12 @@ const build = async () => {
     await runCompose(
       ['build', '--no-cache', '--force-rm', '--quiet'],
       { runMode: 'prod' },
-      {},
-      'building containers...'
+      { waitLog: 'building containers...' }
     );
 
     console.log(chalk.green('build completed'));
   } catch (error) {
-    console.log(chalk.red(error));
+    console.error(chalk.red(error));
   }
 };
 
@@ -51,15 +56,14 @@ const start = async () => {
     await runCompose(
       ['up', '-d', '--force-recreate', '--remove-orphans'],
       { runMode: 'prod' },
-      {},
-      'starting the application...'
+      { waitLog: 'starting the application...' }
     );
 
     console.log(
       chalk.green(`Front-end ready and accessible on ${process.env.APP_URL}`)
     );
   } catch (error) {
-    console.log(chalk.red(error));
+    console.error(chalk.red(error));
   }
 };
 
@@ -68,11 +72,10 @@ const stop = async (runConfig = { runMode: 'prod' }) => {
     await runCompose(
       ['rm', '--stop', '--force'],
       { runMode: runConfig.runMode },
-      {},
-      'stopping current running application...'
+      { waitLog: 'stopping current running application...' }
     );
   } catch (error) {
-    console.log(chalk.red(error));
+    console.error(chalk.red(error));
   }
 };
 
@@ -89,7 +92,7 @@ const dev = async () => {
       }
     );
   } catch (error) {
-    console.log(chalk.red(error));
+    console.error(chalk.red(error));
   }
 };
 
@@ -105,7 +108,7 @@ const status = async () => {
       }
     );
   } catch (error) {
-    console.log(chalk.red(error));
+    console.error(chalk.red(error));
   }
 };
 
@@ -121,13 +124,75 @@ const config = async (runMode) => {
       }
     );
   } catch (error) {
-    console.log(chalk.red(error));
+    console.error(chalk.red(error));
+  }
+};
+
+const restoreDB = async (backupFile) => {
+  loadEnv();
+  try {
+    const connectionString = process.env.MONGO_URL || process.env.BASE_DB_URL;
+    const archiveFile = `/backup/${backupFile}`;
+
+    await runCompose(
+      [
+        'run',
+        'mongo',
+        'mongorestore',
+        '--uri',
+        connectionString,
+        '--drop',
+        '--gzip',
+        `--archive=${archiveFile}`,
+      ],
+      {},
+      {
+        logErrorsDuringExecution: true,
+        waitLog: 'restoring database...',
+      }
+    );
+  } catch (error) {
+    console.error(chalk.red(error));
+  }
+};
+
+const dumpDB = async () => {
+  loadEnv();
+  try {
+    const connectionString = process.env.MONGO_URL || process.env.BASE_DB_URL;
+    const dbUrl = new URL(connectionString);
+    const dbName = dbUrl.pathname.slice(1);
+    const timeStamp = moment().format('YYYYMMDD');
+    const archiveFile = `/backup/${dbName}-${timeStamp}.dump`;
+
+    await runCompose(
+      [
+        'run',
+        'mongo',
+        'mongodump',
+        '--uri',
+        connectionString,
+        '--gzip',
+        `--archive=${archiveFile}`,
+      ],
+      {
+        root: true,
+      },
+      {
+        logErrorsDuringExecution: true,
+        waitLog: 'dumping database...',
+      }
+    );
+  } catch (error) {
+    console.error(chalk.red(error));
   }
 };
 
 const displayHelp = () => {
   console.log(
-    chalk.white('Usage: mre [option...] {dev|build|status|start|stop|config}')
+    chalk.white(
+      'Usage: mre [option...] {dev|build|status|start|stop|config|restoredb|dumpdb}'
+    )
   );
 };
 
@@ -207,6 +272,21 @@ const askRunMode = () => {
   return inquirer.prompt(questions);
 };
 
+const askBackupFile = (backupFiles) => {
+  const questions = [
+    {
+      name: 'backupFile',
+      type: 'list',
+      message: 'Select a backup:',
+      choices: backupFiles.map((file) => ({
+        name: file,
+        value: file,
+      })),
+    },
+  ];
+  return inquirer.prompt(questions);
+};
+
 const writeDotEnv = (config) => {
   const cipherKey = generateRandomToken(32);
   const cipherIvKey = generateRandomToken(32);
@@ -268,5 +348,8 @@ module.exports = {
   displayHelp,
   askForEnvironmentVariables,
   askRunMode,
+  askBackupFile,
   writeDotEnv,
+  restoreDB,
+  dumpDB,
 };

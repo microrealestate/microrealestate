@@ -10,17 +10,15 @@ Install the `pkg` tool globaly to create executables which can run on linux, mac
 npm install -g pkg
 ```
 
-Install the npm package from the cli directory
+Install the packages
 
 ```shell
-cd cli
-npm i
+yarn
 ```
 
-Go back at the root of the repository and run the `pkg` tool to create the mre executables
+Run the `pkg` tool to create the mre executables
 
 ```shell
-cd ..
 pkg cli/package.json --output mre
 ```
 

@@ -28,10 +28,10 @@ const loadEnv = (wd, runMode) => {
   dotenvExpand.expand(env); // expand env variables which reference env variable
 };
 
-const runCommand = async (cmd, parameters = [], options = {}, waitLog = '') => {
+const runCommand = async (cmd, parameters = [], options = {}) => {
   let spinner;
-  if (waitLog) {
-    spinner = new Spinner(waitLog);
+  if (options.waitLog) {
+    spinner = new Spinner(options.waitLog);
     spinner.start();
   }
   return new Promise((resolve, reject) => {
@@ -40,13 +40,22 @@ const runCommand = async (cmd, parameters = [], options = {}, waitLog = '') => {
       const shellCommand = spawn(cmd, parameters, {});
 
       shellCommand.stdout.on('data', (data) => {
-        spinner && spinner.stop();
+        spinner?.stop();
         console.log(removeEndLineBreak(data.toString()));
-        spinner && spinner.start();
+        spinner?.start();
       });
       shellCommand.stderr.on('data', (data) => {
+        if (options.noErrorsOnStdErr) {
+          spinner?.stop();
+          console.log(removeEndLineBreak(data.toString()));
+          spinner?.start();
+          return;
+        }
+
         if (options.logErrorsDuringExecution) {
+          spinner?.stop();
           console.error(chalk.red(removeEndLineBreak(data.toString())));
+          spinner?.start();
         } else {
           errors.push(removeEndLineBreak(data.toString()));
         }
@@ -59,7 +68,7 @@ const runCommand = async (cmd, parameters = [], options = {}, waitLog = '') => {
         }
       });
       shellCommand.on('close', (exitCode) => {
-        spinner && spinner.stop();
+        spinner?.stop();
         if (exitCode !== 0 && errors.length) {
           errors.forEach((error) => console.error(chalk.red(error)));
         }
@@ -71,7 +80,7 @@ const runCommand = async (cmd, parameters = [], options = {}, waitLog = '') => {
         }
       });
     } catch (error) {
-      spinner && spinner.stop();
+      spinner?.stop();
       console.error(chalk.red(error));
     }
   });
@@ -80,8 +89,7 @@ const runCommand = async (cmd, parameters = [], options = {}, waitLog = '') => {
 const runCompose = async (
   composeCmd,
   composeOptions = { runMode: 'dev' },
-  commandOptions = { logErrorsDuringExecution: false },
-  waitLog = ''
+  commandOptions = { logErrorsDuringExecution: false }
 ) => {
   const prodComposeArgs = [
     '-f',
@@ -105,8 +113,7 @@ const runCompose = async (
       ...(composeOptions.runMode === 'prod' ? prodComposeArgs : devComposeArgs),
       ...composeCmd,
     ],
-    commandOptions,
-    waitLog
+    { ...commandOptions, noErrorsOnStdErr: true } // noErrorsOnStdErr see https://github.com/docker/compose/issues/6078
   );
 };
 
