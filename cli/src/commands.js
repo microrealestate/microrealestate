@@ -162,7 +162,7 @@ const dumpDB = async () => {
     const connectionString = process.env.MONGO_URL || process.env.BASE_DB_URL;
     const dbUrl = new URL(connectionString);
     const dbName = dbUrl.pathname.slice(1);
-    const timeStamp = moment().format('YYYYMMDD');
+    const timeStamp = moment().format('YYYYMMDDHHmm');
     const archiveFile = `/backup/${dbName}-${timeStamp}.dump`;
 
     await runCompose(

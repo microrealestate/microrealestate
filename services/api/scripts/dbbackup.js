@@ -35,7 +35,7 @@ async function restoreDB(timeStamp) {
 }
 
 async function dumpDB() {
-  const timeStamp = moment().format('YYYYMMDD');
+  const timeStamp = moment().format('YYYYMMDDHHmm');
   const bkpFile = path.join(bkpDirectory, `${dbName}-${timeStamp}.dump`);
   await new Promise((resolve, reject) => {
     try {
