@@ -1,6 +1,7 @@
 import { useField, useFormikContext } from 'formik';
 
 import DateField from './DateField';
+import { durationEndMoment } from '../../utils/contract';
 import { Grid } from '@material-ui/core';
 import moment from 'moment';
 import { useEffect } from 'react';
@@ -24,14 +25,26 @@ export default function RangeDateField({
 
   useEffect(() => {
     if (duration && beginField.value?.isValid()) {
-      const newEndDate = moment(beginField.value.startOf('day'))
-        .add(duration)
-        .subtract(1, 'second');
+      let newEndDate = durationEndMoment(
+        moment(beginField.value.startOf('day')),
+        duration
+      );
+      if (maxDate && newEndDate.isAfter(maxDate)) {
+        newEndDate = moment(maxDate);
+      }
       if (!newEndDate.isSame(endField.value)) {
         setFieldValue(endName, newEndDate, true);
       }
     }
-  }, [duration, beginField.value, endField.value, endName, setFieldValue]);
+  }, [
+    duration,
+    beginField.value,
+    endField.value,
+    endName,
+    setFieldValue,
+    maxDate,
+    endLabel,
+  ]);
 
   return (
     <Grid container spacing={2}>
