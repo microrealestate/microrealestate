@@ -6,9 +6,11 @@ import React, { useCallback, useContext } from 'react';
 
 import Button from '@material-ui/core/Button';
 import CheckboxField from '../FormFields/CheckboxField';
+import { contractEndMoment } from '../../utils/contract';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
+import moment from 'moment';
 import SelectField from '../FormFields/SelectField';
 import { StoreContext } from '../../store';
 import SubmitButton from '../FormFields/SubmitButton';
@@ -47,6 +49,7 @@ function NewTenantDialog({ open, setOpen, backPage, backPath }) {
       let tenant = {
         name: tenantPart.name,
         company: tenantPart.name,
+        beginDate: moment().startOf('day').format('DD/MM/YYYY'),
         stepperMode: true,
       };
       if (tenantPart.isCopyFrom) {
@@ -54,7 +57,6 @@ function NewTenantDialog({ open, setOpen, backPage, backPath }) {
           _id,
           reference,
           name,
-          manager,
           terminated,
           beginDate,
           endDate,
@@ -71,6 +73,14 @@ function NewTenantDialog({ open, setOpen, backPage, backPath }) {
           ...originalTenant,
           ...tenant,
         };
+
+        if (originalTenant.lease) {
+          const lease = store.lease.items.find(
+            ({ _id }) => _id === originalTenant.lease._id
+          );
+          const newEndDate = contractEndMoment(moment().startOf('day'), lease);
+          tenant.endDate = newEndDate.format('DD/MM/YYYY');
+        }
       }
 
       const { status, data } = await store.tenant.create(tenant);

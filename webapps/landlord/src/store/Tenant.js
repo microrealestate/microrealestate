@@ -52,7 +52,7 @@ export default class Tenant {
           if (!found && isCompany) {
             found =
               manager
-                .replace(regExp, '')
+                ?.replace(regExp, '')
                 .toLowerCase()
                 .indexOf(cleanedSearchText) != -1;
           }
