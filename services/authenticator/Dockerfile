@@ -1,6 +1,7 @@
-FROM node:16-slim
+FROM node:16-alpine
 
 WORKDIR /usr/app
+
 COPY services/common services/common
 COPY services/authenticator/src services/authenticator/src
 COPY services/authenticator/LICENSE services/authenticator/.
@@ -8,8 +9,14 @@ COPY services/authenticator/package.json services/authenticator/.
 COPY package.json .
 COPY yarn.lock .
 
-RUN yarn global add forever && \
-    yarn workspace authenticator install --production && \
+ENV NODE_ENV production
+
+RUN yarn global add pm2 && \
+    yarn workspace authenticator install --frozen-lockfile --production && \
     yarn cache clean
 
-CMD forever services/authenticator/src/index.js
+RUN chown -R node:node /usr/app
+
+USER node
+
+CMD ["pm2-runtime", "services/authenticator/src/index.js"]

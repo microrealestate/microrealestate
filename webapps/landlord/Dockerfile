@@ -1,6 +1,6 @@
-FROM node:16-stretch
+FROM node:16-alpine
 
-WORKDIR /usr/
+WORKDIR /usr/app
 
 COPY package.json .
 COPY yarn.lock .
@@ -20,8 +20,13 @@ ENV BASE_PATH $BASE_PATH
 
 ENV NEXT_TELEMETRY_DISABLED=1
 
-RUN yarn workspace landlord install && \
+RUN yarn workspace landlord install --frozen-lockfile && \
     yarn cache clean && \
     yarn workspace landlord run build
 
-ENTRYPOINT yarn workspace landlord start -p $PORT
+# TODO: check why using user node is failing
+# RUN chown -R node:node /usr/app
+
+# USER node
+
+CMD yarn workspace landlord start -p $PORT

@@ -1,4 +1,4 @@
-FROM node:16-slim
+FROM node:16-alpine
 
 WORKDIR /usr/app
 
@@ -20,6 +20,11 @@ ENV BASE_PATH $BASE_PATH
 
 ENV NEXT_TELEMETRY_DISABLED=1
 
-RUN yarn workspace landlord install
+RUN yarn workspace landlord install --frozen-lockfile
+
+# TODO: check why using user node is failing
+# RUN chown -R node:node /usr/app
+
+# USER node
 
 CMD yarn workspace landlord run dev -p $PORT

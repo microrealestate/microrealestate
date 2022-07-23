@@ -19,7 +19,7 @@
   "author": "Camel Aissani",
   "license": "MIT",
   "devDependencies": {
-    "nodemon": "2.0.3"
+    "nodemon": "2.0.19"
   },
   "dependencies": {
     "@mre/common": "*",
