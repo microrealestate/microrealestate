@@ -81,3 +81,4 @@ services:
       - /usr/app/webapps/landlord/public
       - /usr/app/node_modules
       - /usr/app/webapps/landlord/node_modules
+      - /usr/app/webapps/landlord/.next

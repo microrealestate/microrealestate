@@ -1,12 +1,9 @@
-FROM node:16-stretch
+FROM node:16-alpine
 
-RUN wget -qO - https://www.mongodb.org/static/pgp/server-3.6.asc | apt-key add -
-RUN echo "deb http://repo.mongodb.org/apt/debian stretch/mongodb-org/3.6 main" | tee /etc/apt/sources.list.d/mongodb-org-3.6.list
-RUN apt-get update -qq && \
-    apt-get upgrade -qqy && \
-    apt-get install -qqy mongodb-org-tools python3 make g++
+RUN apk add mongodb-tools
 
 WORKDIR /usr/app
+
 COPY services/common services/common
 COPY services/api/src services/api/src
 COPY services/api/scripts services/api/scripts
@@ -15,8 +12,14 @@ COPY services/api/package.json services/api/.
 COPY package.json .
 COPY yarn.lock .
 
-RUN yarn global add forever && \
-    yarn workspace api install --production && \
+ENV NODE_ENV production
+
+RUN yarn global add pm2 && \
+    yarn workspace api install --frozen-lockfile --production && \
     yarn cache clean
 
-CMD forever services/api/src/index.js
+RUN chown -R node:node /usr/app
+
+USER node
+
+CMD ["pm2-runtime", "services/api/src/index.js"]
