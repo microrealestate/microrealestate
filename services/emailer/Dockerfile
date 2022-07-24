@@ -1,6 +1,9 @@
 FROM node:16-alpine
 
+RUN apk --no-cache add --virtual .builds-deps build-base python3
+
 WORKDIR /usr/app
+
 COPY services/common services/common
 COPY services/emailer/src services/emailer/src
 COPY services/emailer/package.json services/emailer/.

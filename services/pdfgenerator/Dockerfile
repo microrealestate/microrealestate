@@ -4,7 +4,7 @@ ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
 
 ENV CHROMIUM_BIN "/usr/bin/chromium-browser"
 
-RUN apk add chromium
+RUN apk --no-cache add --virtual .builds-deps build-base python3 chromium
 
 WORKDIR /usr/app
 
