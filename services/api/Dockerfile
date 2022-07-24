@@ -1,6 +1,6 @@
 FROM node:16-alpine
 
-RUN apk add mongodb-tools
+RUN apk --no-cache add --virtual .builds-deps build-base python3 mongodb-tools
 
 WORKDIR /usr/app
 
