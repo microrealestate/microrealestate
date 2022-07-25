@@ -1,10 +1,9 @@
 FROM node:16-alpine
 
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
-
 ENV CHROMIUM_BIN "/usr/bin/chromium-browser"
 
-RUN apk --no-cache add --virtual .builds-deps build-base python3 chromium
+RUN apk --no-cache add build-base python3 chromium
 
 WORKDIR /usr/app
 

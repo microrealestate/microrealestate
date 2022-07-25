@@ -1,5 +1,7 @@
 FROM node:16-alpine
 
+RUN apk --no-cache add build-base python3
+
 WORKDIR /usr/app
 
 COPY package.json .
