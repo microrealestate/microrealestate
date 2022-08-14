@@ -2,13 +2,13 @@ import {
   Box,
   Button,
   Chip,
+  Hidden,
   List,
   ListItem,
   ListItemText,
   makeStyles,
   Paper,
   Typography,
-  useMediaQuery,
 } from '@material-ui/core';
 import { getStoreInstance, StoreContext } from '../../../store';
 import { useCallback, useContext, useMemo } from 'react';
@@ -191,7 +191,6 @@ const Properties = observer(() => {
   const store = useContext(StoreContext);
   const router = useRouter();
   const [NewPropertyDialog, setOpenNewPropertyDialog] = useNewPropertyDialog();
-  const isMobile = useMediaQuery((theme) => theme.breakpoints.down('sm'));
 
   const filters = useMemo(
     () => [
@@ -217,21 +216,24 @@ const Properties = observer(() => {
     <Page
       title={t('Properties')}
       ActionToolbar={
-        !isMobile ? (
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={onNewProperty}
-          >
-            {t('New property')}
-          </Button>
-        ) : (
-          <MobileButton
-            label={t('New property')}
-            Icon={AddIcon}
-            onClick={onNewProperty}
-          />
-        )
+        <>
+          <Hidden smDown>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={onNewProperty}
+            >
+              {t('New property')}
+            </Button>
+          </Hidden>
+          <Hidden mdUp>
+            <MobileButton
+              label={t('New property')}
+              Icon={AddIcon}
+              onClick={onNewProperty}
+            />
+          </Hidden>
+        </>
       }
       SearchBar={
         <SearchFilterBar

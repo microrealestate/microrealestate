@@ -1,11 +1,4 @@
-import {
-  Box,
-  Button,
-  Grid,
-  Paper,
-  Tooltip,
-  useMediaQuery,
-} from '@material-ui/core';
+import { Box, Button, Grid, Hidden, Paper, Tooltip } from '@material-ui/core';
 import { getStoreInstance, StoreContext } from '../../../store';
 import { useCallback, useContext, useMemo, useState } from 'react';
 
@@ -36,7 +29,6 @@ const Tenant = observer(() => {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const router = useRouter();
-  const isMobile = useMediaQuery((theme) => theme.breakpoints.down('sm'));
   const [ConfirmEditDialog, setOpenConfirmEditTenant] = useConfirmDialog();
   const [ConfirmDeleteDialog, setOpenConfirmDeleteTenant] = useConfirmDialog();
 
@@ -278,88 +270,91 @@ const Tenant = observer(() => {
     <Page
       title={store.tenant.selected.name}
       ActionToolbar={
-        !isMobile ? (
-          <Grid container spacing={2}>
-            <Grid item>
-              <Tooltip
-                title={
-                  store.tenant.selected.hasPayments
-                    ? t(
-                        'This tenant cannot be deleted because some rent settlements have been recorded'
-                      )
-                    : ''
-                }
-              >
-                <span>
+        <>
+          <Hidden smDown>
+            <Grid container spacing={2}>
+              <Grid item>
+                <Tooltip
+                  title={
+                    store.tenant.selected.hasPayments
+                      ? t(
+                          'This tenant cannot be deleted because some rent settlements have been recorded'
+                        )
+                      : ''
+                  }
+                >
+                  <span>
+                    <Button
+                      variant="contained"
+                      startIcon={<DeleteIcon />}
+                      disabled={store.tenant.selected.hasPayments}
+                      onClick={handleDeleteTenant}
+                    >
+                      {t('Delete')}
+                    </Button>
+                  </span>
+                </Tooltip>
+              </Grid>
+              {showTerminateLeaseButton && (
+                <Grid item>
                   <Button
                     variant="contained"
-                    startIcon={<DeleteIcon />}
-                    disabled={store.tenant.selected.hasPayments}
-                    onClick={handleDeleteTenant}
+                    startIcon={<StopIcon />}
+                    disabled={store.tenant.selected.terminated}
+                    onClick={handleTerminateLease}
                   >
-                    {t('Delete')}
+                    {t('Terminate')}
                   </Button>
-                </span>
-              </Tooltip>
+                </Grid>
+              )}
+              {showEditButton && (
+                <Grid item>
+                  <Button
+                    variant="contained"
+                    startIcon={<EditIcon />}
+                    disabled={
+                      !(!!store.tenant.selected.properties?.length && readOnly)
+                    }
+                    onClick={handleEditTenant}
+                  >
+                    {t('Edit')}
+                  </Button>
+                </Grid>
+              )}
             </Grid>
-            {showTerminateLeaseButton && (
-              <Grid item>
-                <Button
-                  variant="contained"
-                  startIcon={<StopIcon />}
-                  disabled={store.tenant.selected.terminated}
-                  onClick={handleTerminateLease}
-                >
-                  {t('Terminate')}
-                </Button>
-              </Grid>
-            )}
-            {showEditButton && (
-              <Grid item>
-                <Button
-                  variant="contained"
-                  startIcon={<EditIcon />}
-                  disabled={
-                    !(!!store.tenant.selected.properties?.length && readOnly)
-                  }
-                  onClick={handleEditTenant}
-                >
-                  {t('Edit')}
-                </Button>
-              </Grid>
-            )}
-          </Grid>
-        ) : (
-          <Grid container>
-            {!store.tenant.selected.hasPayments && (
-              <Grid item>
-                <MobileButton
-                  label={t('Delete')}
-                  Icon={DeleteIcon}
-                  onClick={handleDeleteTenant}
-                />
-              </Grid>
-            )}
-            {showTerminateLeaseButton && (
-              <Grid item>
-                <MobileButton
-                  label={t('Terminate')}
-                  Icon={StopIcon}
-                  onClick={handleTerminateLease}
-                />
-              </Grid>
-            )}
-            {showEditButton && (
-              <Grid item>
-                <MobileButton
-                  label={t('Edit')}
-                  Icon={EditIcon}
-                  onClick={handleEditTenant}
-                />
-              </Grid>
-            )}
-          </Grid>
-        )
+          </Hidden>
+          <Hidden mdUp>
+            <Grid container>
+              {!store.tenant.selected.hasPayments && (
+                <Grid item>
+                  <MobileButton
+                    label={t('Delete')}
+                    Icon={DeleteIcon}
+                    onClick={handleDeleteTenant}
+                  />
+                </Grid>
+              )}
+              {showTerminateLeaseButton && (
+                <Grid item>
+                  <MobileButton
+                    label={t('Terminate')}
+                    Icon={StopIcon}
+                    onClick={handleTerminateLease}
+                  />
+                </Grid>
+              )}
+              {showEditButton && (
+                <Grid item>
+                  <MobileButton
+                    label={t('Edit')}
+                    Icon={EditIcon}
+                    onClick={handleEditTenant}
+                  />
+                </Grid>
+              )}
+            </Grid>
+          </Hidden>
+        </>
       }
       NavBar={
         <BreadcrumbBar

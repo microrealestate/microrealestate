@@ -2,11 +2,11 @@ import {
   AppBar,
   Box,
   Container,
+  Hidden,
   IconButton,
   Toolbar,
   Tooltip,
   Typography,
-  useMediaQuery,
 } from '@material-ui/core';
 import { useCallback, useContext, useEffect, useState } from 'react';
 
@@ -41,94 +41,101 @@ function EnvironmentBar() {
 
 function MainToolbar({ maxWidth, loading, SearchBar, onSignOut }) {
   const { t } = useTranslation('common');
-  const isMobile = useMediaQuery((theme) => theme.breakpoints.down('sm'));
 
-  return !isMobile ? (
-    <Box ml={7}>
-      <Toolbar disableGutters>
-        <Container maxWidth={maxWidth}>
-          <Box display="flex" alignItems="center" width="100%">
-            <Typography variant="h5">{APP_NAME}</Typography>
-            <Box flexGrow={1} mx={10}>
-              {!loading && SearchBar}
-            </Box>
-            <Box display="flex">
-              <OrganizationSwitcher />
-              <Tooltip title={t('Sign out')} aria-label="sign out">
-                <IconButton
-                  aria-label="sign out"
-                  onClick={onSignOut}
-                  color="default"
-                  data-cy="signout"
-                >
-                  <PowerSettingsNewIcon />
-                </IconButton>
-              </Tooltip>
-            </Box>
-          </Box>
-        </Container>
-      </Toolbar>
-    </Box>
-  ) : (
-    <MobileMenu>
-      <Toolbar disableGutters>
-        <Box
-          display="flex"
-          justifyContent="space-between"
-          alignItems="center"
-          width="100%"
-        >
-          <OrganizationSwitcher />
-          <Box flexGrow={1}>{!loading && SearchBar}</Box>
-          <IconButton
-            aria-label="sign out"
-            onClick={onSignOut}
-            color="inherit"
-            data-cy="signout"
-          >
-            <PowerSettingsNewIcon />
-          </IconButton>
+  return (
+    <>
+      <Hidden smDown>
+        <Box ml={7}>
+          <Toolbar disableGutters>
+            <Container maxWidth={maxWidth}>
+              <Box display="flex" alignItems="center" width="100%">
+                <Typography variant="h5">{APP_NAME}</Typography>
+                <Box flexGrow={1} mx={10}>
+                  {!loading && SearchBar}
+                </Box>
+                <Box display="flex">
+                  <OrganizationSwitcher />
+                  <Tooltip title={t('Sign out')} aria-label="sign out">
+                    <IconButton
+                      aria-label="sign out"
+                      onClick={onSignOut}
+                      color="default"
+                      data-cy="signout"
+                    >
+                      <PowerSettingsNewIcon />
+                    </IconButton>
+                  </Tooltip>
+                </Box>
+              </Box>
+            </Container>
+          </Toolbar>
         </Box>
-      </Toolbar>
-    </MobileMenu>
+      </Hidden>
+      <Hidden mdUp>
+        <MobileMenu>
+          <Toolbar disableGutters>
+            <Box
+              display="flex"
+              justifyContent="space-between"
+              alignItems="center"
+              width="100%"
+            >
+              <OrganizationSwitcher />
+              <Box flexGrow={1}>{!loading && SearchBar}</Box>
+              <IconButton
+                aria-label="sign out"
+                onClick={onSignOut}
+                color="inherit"
+                data-cy="signout"
+              >
+                <PowerSettingsNewIcon />
+              </IconButton>
+            </Box>
+          </Toolbar>
+        </MobileMenu>
+      </Hidden>
+    </>
   );
 }
 
 function SubToolbar({ NavBar, ActionBar, maxWidth, loading }) {
-  const isMobile = useMediaQuery((theme) => theme.breakpoints.down('sm'));
-
   if (loading || (!NavBar && !ActionBar)) {
     return null;
   }
 
-  return !isMobile ? (
-    <Box ml={7}>
-      <Toolbar disableGutters>
+  return (
+    <>
+      <Hidden smDown>
+        <Box ml={7}>
+          <Toolbar disableGutters>
+            <Container maxWidth={maxWidth}>
+              {ActionBar ? (
+                <Box display="flex" justifyContent="space-between" width="100%">
+                  <Box>{!!NavBar && NavBar}</Box>
+                  <Box>{ActionBar}</Box>
+                </Box>
+              ) : (
+                !!NavBar && NavBar
+              )}
+            </Container>
+          </Toolbar>
+        </Box>
+      </Hidden>
+      <Hidden mdUp>
         <Container maxWidth={maxWidth}>
-          {ActionBar ? (
-            <Box display="flex" justifyContent="space-between" width="100%">
-              <Box>{!!NavBar && NavBar}</Box>
-              <Box>{ActionBar}</Box>
+          {NavBar ? (
+            <Box display="flex" justifyContent="space-between">
+              <Toolbar disableGutters>{NavBar}</Toolbar>
+              {!!ActionBar && <Toolbar disableGutters>{ActionBar}</Toolbar>}
             </Box>
           ) : (
-            !!NavBar && NavBar
+            <Box display="flex" justifyContent="end">
+              {!!ActionBar && <Toolbar disableGutters>{ActionBar}</Toolbar>}
+            </Box>
           )}
         </Container>
-      </Toolbar>
-    </Box>
-  ) : (
-    <Container maxWidth={maxWidth}>
-      {NavBar ? (
-        <Box display="flex" justifyContent="space-between">
-          <Toolbar disableGutters>{NavBar}</Toolbar>
-          {!!ActionBar && <Toolbar disableGutters>{ActionBar}</Toolbar>}
-        </Box>
-      ) : (
-        <Box display="flex" justifyContent="end">
-          {!!ActionBar && <Toolbar disableGutters>{ActionBar}</Toolbar>}
-        </Box>
-      )}
-    </Container>
+      </Hidden>
+    </>
   );
 }
 
@@ -196,43 +203,56 @@ function Toolbars({
   onSignOut,
 }) {
   const store = useContext(StoreContext);
-  const isMobile = useMediaQuery((theme) => theme.breakpoints.down('sm'));
 
   if (!store.user?.signedIn) {
     return null;
   }
 
-  return !isMobile ? (
-    <DesktopToolbars
-      title={title}
-      NavBar={NavBar}
-      SearchBar={SearchBar}
-      ActionBar={ActionBar}
-      loading={loading}
-      maxWidth={maxWidth}
-      onSignOut={onSignOut}
-    />
-  ) : (
-    <MobileToolbars
-      title={title}
-      NavBar={NavBar}
-      SearchBar={SearchBar}
-      ActionBar={ActionBar}
-      loading={loading}
-      maxWidth={maxWidth}
-      onSignOut={onSignOut}
-    />
+  return (
+    <>
+      <Hidden smDown>
+        <DesktopToolbars
+          title={title}
+          NavBar={NavBar}
+          SearchBar={SearchBar}
+          ActionBar={ActionBar}
+          loading={loading}
+          maxWidth={maxWidth}
+          onSignOut={onSignOut}
+        />
+      </Hidden>
+      <Hidden mdUp>
+        <MobileToolbars
+          title={title}
+          NavBar={NavBar}
+          SearchBar={SearchBar}
+          ActionBar={ActionBar}
+          loading={loading}
+          maxWidth={maxWidth}
+          onSignOut={onSignOut}
+        />
+      </Hidden>
+    </>
   );
 }
 function PageContent({ maxWidth, loading, children }) {
-  const isMobile = useMediaQuery((theme) => theme.breakpoints.down('sm'));
-
   return (
-    <Box ml={!isMobile ? 7 : 0}>
-      <Container maxWidth={maxWidth}>
-        {loading ? <Loading fullScreen /> : <Box my={2}>{children}</Box>}
-      </Container>
-    </Box>
+    <>
+      <Hidden smDown>
+        <Box ml={7}>
+          <Container maxWidth={maxWidth}>
+            {loading ? <Loading fullScreen /> : <Box my={2}>{children}</Box>}
+          </Container>
+        </Box>
+      </Hidden>
+      <Hidden mdUp>
+        <Box>
+          <Container maxWidth={maxWidth}>
+            {loading ? <Loading fullScreen /> : <Box my={2}>{children}</Box>}
+          </Container>
+        </Box>
+      </Hidden>
+    </>
   );
 }
 

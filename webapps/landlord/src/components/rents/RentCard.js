@@ -5,13 +5,13 @@ import {
   CardActions,
   CardContent,
   Divider,
+  Hidden,
   Step,
   StepConnector,
   StepLabel,
   Stepper,
   Tooltip,
   Typography,
-  useMediaQuery,
 } from '@material-ui/core';
 import { memo, useCallback, useMemo } from 'react';
 
@@ -232,7 +232,6 @@ const Steps = memo(function Steps({ rent }) {
 
 const RentCard = observer(({ rent, onEdit }) => {
   const { t } = useTranslation('common');
-  const isMobile = useMediaQuery((theme) => theme.breakpoints.down('sm'));
 
   const _onEdit = useCallback(() => onEdit(rent), [rent, onEdit]);
   const period = useMemo(() => moment(rent.term, 'YYYYMMDDHH'), [rent.term]);
@@ -255,7 +254,7 @@ const RentCard = observer(({ rent, onEdit }) => {
             tenant={rent.occupant}
             terms={[rent.term]}
           />
-          {!isMobile ? (
+          <Hidden smDown>
             <Button
               variant="contained"
               startIcon={<PaymentIcon />}
@@ -266,13 +265,14 @@ const RentCard = observer(({ rent, onEdit }) => {
                 {t('Settle the rent')}
               </Typography>
             </Button>
-          ) : (
+          </Hidden>
+          <Hidden mdUp>
             <MobileButton
               label={t('Settle the rent')}
               Icon={PaymentIcon}
               onClick={_onEdit}
             />
-          )}
+          </Hidden>
         </CardRow>
       </CardActions>
     </Card>

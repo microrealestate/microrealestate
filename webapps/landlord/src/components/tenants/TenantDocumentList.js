@@ -2,7 +2,7 @@ import {
   BlankDocumentIllustration,
   TermsDocumentIllustration,
 } from '../Illustrations';
-import { Box, Button, useMediaQuery } from '@material-ui/core';
+import { Box, Button, Hidden } from '@material-ui/core';
 import { useCallback, useContext, useMemo, useState } from 'react';
 
 import AddIcon from '@material-ui/icons/Add';
@@ -45,7 +45,6 @@ function DocumentItems({ onView, onEdit, onDelete, disabled }) {
 function TenantDocumentList({ disabled = false }) {
   const store = useContext(StoreContext);
   const { t } = useTranslation('common');
-  const isMobile = useMediaQuery((theme) => theme.breakpoints.down('sm'));
 
   const [ConfirmDialog, setDocumentToRemove, documentToRemove] =
     useConfirmDialog();
@@ -194,7 +193,7 @@ function TenantDocumentList({ disabled = false }) {
   return (
     <>
       <Box display="flex" mb={1}>
-        {!isMobile ? (
+        <Hidden smDown>
           <Button
             variant="contained"
             startIcon={<AddIcon />}
@@ -204,14 +203,15 @@ function TenantDocumentList({ disabled = false }) {
           >
             {t('Upload document')}
           </Button>
-        ) : (
+        </Hidden>
+        <Hidden mdUp>
           <MobileButton
             label={t('Upload document')}
             Icon={AddIcon}
             onClick={handleClickUpload}
             disabled={disabled}
           />
-        )}
+        </Hidden>
         <Box ml={1}>
           <FullScreenDialogMenu
             variant="contained"

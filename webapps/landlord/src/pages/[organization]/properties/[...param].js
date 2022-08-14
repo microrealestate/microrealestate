@@ -12,7 +12,6 @@ import {
   Tab,
   Tabs,
   Typography,
-  useMediaQuery,
 } from '@material-ui/core';
 import { CardRow, PageInfoCard } from '../../../components/Cards';
 import { getStoreInstance, StoreContext } from '../../../store';
@@ -112,7 +111,6 @@ const Property = observer(() => {
       param: [, backPage, backPath],
     },
   } = router;
-  const isMobile = useMediaQuery((theme) => theme.breakpoints.down('sm'));
 
   const onConfirmDeleteProperty = useCallback(() => {
     setOpenConfirmDeleteProperty(true);
@@ -219,21 +217,24 @@ const Property = observer(() => {
     <Page
       title={store.property.selected.name}
       ActionToolbar={
-        !isMobile ? (
-          <Button
-            variant="contained"
-            startIcon={<DeleteIcon />}
-            onClick={onConfirmDeleteProperty}
-          >
-            {t('Delete')}
-          </Button>
-        ) : (
-          <MobileButton
-            label={t('Delete')}
-            Icon={DeleteIcon}
-            onClick={onConfirmDeleteProperty}
-          />
-        )
+        <>
+          <Hidden smDown>
+            <Button
+              variant="contained"
+              startIcon={<DeleteIcon />}
+              onClick={onConfirmDeleteProperty}
+            >
+              {t('Delete')}
+            </Button>
+          </Hidden>
+          <Hidden mdUp>
+            <MobileButton
+              label={t('Delete')}
+              Icon={DeleteIcon}
+              onClick={onConfirmDeleteProperty}
+            />
+          </Hidden>
+        </>
       }
       NavBar={
         <BreadcrumbBar

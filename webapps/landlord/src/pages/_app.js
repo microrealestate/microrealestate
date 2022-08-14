@@ -9,8 +9,6 @@ import '../components/RichTextEditor/richtexteditor.css';
 
 import * as Yup from 'yup';
 
-import { memo, useEffect } from 'react';
-
 import App from 'next/app';
 import Application from '../components/Application';
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -21,9 +19,10 @@ import { InjectStoreContext } from '../store';
 import { MuiPickersUtilsProvider } from '@material-ui/pickers';
 import theme from '../styles/theme';
 import { ThemeProvider } from '@material-ui/core/styles';
+import { useEffect } from 'react';
 
 const {
-  publicRuntimeConfig: { BASE_PATH, APP_NAME, DEMO_MODE },
+  publicRuntimeConfig: { APP_NAME, DEMO_MODE },
 } = getConfig();
 
 const APP_TITLE = [APP_NAME];
@@ -51,7 +50,7 @@ Yup.addMethod(Yup.string, 'emails', function (message) {
   });
 });
 
-const MyApp = memo(function MyApp(props) {
+function MyApp(props) {
   console.log('MyApp functional component');
   const { Component, pageProps } = props;
 
@@ -66,12 +65,6 @@ const MyApp = memo(function MyApp(props) {
   return (
     <>
       <Head>
-        <meta
-          name="viewport"
-          content="minimum-scale=1, initial-scale=1, width=device-width"
-        />
-        <link rel="shortcut icon" href={`${BASE_PATH}/favicon.svg`} />
-
         <title>{APP_TITLE.join(' - ')}</title>
       </Head>
       <ThemeProvider theme={theme}>
@@ -87,7 +80,7 @@ const MyApp = memo(function MyApp(props) {
       </ThemeProvider>
     </>
   );
-});
+}
 
 MyApp.getInitialProps = async (appContext) => {
   console.log('MyApp.getInitialProps');
@@ -95,7 +88,7 @@ MyApp.getInitialProps = async (appContext) => {
   if (!appProps.pageProps.initialState) {
     appProps.pageProps.initialState = {};
   }
-  return appProps;
+  return { ...appProps };
 };
 
 export default MyApp;

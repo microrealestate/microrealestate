@@ -4,8 +4,8 @@ import {
   Card,
   CardActionArea,
   CardContent,
+  Hidden,
   Toolbar,
-  useMediaQuery,
   useTheme,
 } from '@material-ui/core';
 import { forwardRef, Fragment, useCallback, useState } from 'react';
@@ -49,26 +49,42 @@ const CardMenuItemContent = ({ illustration, label, description }) => {
 };
 
 const CardMenuItem = ({ value, illustration, label, description, onClick }) => {
-  const isMobile = useMediaQuery((theme) => theme.breakpoints.down('sm'));
-
   const onMenuClick = useCallback(() => {
     onClick(value);
   }, [value, onClick]);
 
   return (
-    <Box
-      width={!isMobile ? 300 : '100%'}
-      pr={!isMobile ? 2 : 0}
-      pb={2}
-      onClick={onMenuClick}
-      data-cy={`template-${label.replace(/\s/g, '')}`}
-    >
-      <CardMenuItemContent
-        illustration={illustration}
-        label={label}
-        description={description}
-      />
-    </Box>
+    <>
+      <Hidden smDown>
+        <Box
+          width={300}
+          pr={2}
+          pb={2}
+          onClick={onMenuClick}
+          data-cy={`template-${label.replace(/\s/g, '')}`}
+        >
+          <CardMenuItemContent
+            illustration={illustration}
+            label={label}
+            description={description}
+          />
+        </Box>
+      </Hidden>
+      <Hidden mdUp>
+        <Box
+          width="100%"
+          pb={2}
+          onClick={onMenuClick}
+          data-cy={`template-${label.replace(/\s/g, '')}`}
+        >
+          <CardMenuItemContent
+            illustration={illustration}
+            label={label}
+            description={description}
+          />
+        </Box>
+      </Hidden>
+    </>
   );
 };
 
@@ -83,7 +99,6 @@ const FullScreenDialogMenu = ({
   const { t } = useTranslation('common');
   const mountedRef = useComponentMountedRef();
   const theme = useTheme();
-  const isMobile = useMediaQuery((theme) => theme.breakpoints.down('sm'));
 
   const [runningAction, setRunningAction] = useState(false);
   const [open, setOpen] = useState(false);
@@ -110,7 +125,7 @@ const FullScreenDialogMenu = ({
 
   return (
     <>
-      {!isMobile ? (
+      <Hidden smDown>
         <Button
           {...props}
           startIcon={<Icon />}
@@ -119,7 +134,8 @@ const FullScreenDialogMenu = ({
         >
           {buttonLabel}
         </Button>
-      ) : (
+      </Hidden>
+      <Hidden mdUp>
         <MobileButton
           {...props}
           variant="text"
@@ -127,7 +143,7 @@ const FullScreenDialogMenu = ({
           label={buttonLabel}
           onClick={handleClickOpen}
         />
-      )}
+      </Hidden>
       <Dialog
         fullScreen
         open={open}

@@ -2,13 +2,13 @@ import {
   Box,
   Button,
   Chip,
+  Hidden,
   List,
   ListItem,
   ListItemText,
   makeStyles,
   Paper,
   Typography,
-  useMediaQuery,
 } from '@material-ui/core';
 import { getStoreInstance, StoreContext } from '../../../store';
 import React, { Fragment, memo, useCallback, useContext } from 'react';
@@ -201,7 +201,6 @@ const Tenants = observer(() => {
   const store = useContext(StoreContext);
   const router = useRouter();
   const [NewTenantDialog, setOpenNewTenantDialog] = useNewTenantDialog();
-  const isMobile = useMediaQuery((theme) => theme.breakpoints.down('sm'));
 
   const onSearch = useCallback(
     (status, searchText) => {
@@ -218,21 +217,24 @@ const Tenants = observer(() => {
     <Page
       title={t('Tenants')}
       ActionToolbar={
-        !isMobile ? (
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={onNewTenant}
-          >
-            {t('New tenant')}
-          </Button>
-        ) : (
-          <MobileButton
-            label={t('New tenant')}
-            Icon={AddIcon}
-            onClick={onNewTenant}
-          />
-        )
+        <>
+          <Hidden smDown>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={onNewTenant}
+            >
+              {t('New tenant')}
+            </Button>
+          </Hidden>
+          <Hidden mdUp>
+            <MobileButton
+              label={t('New tenant')}
+              Icon={AddIcon}
+              onClick={onNewTenant}
+            />
+          </Hidden>
+        </>
       }
       SearchBar={
         <SearchFilterBar
