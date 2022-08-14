@@ -1,7 +1,10 @@
-const nextTranslate = require('next-translate');
 const path = require('path');
+const nextTranslate = require('next-translate');
 
 module.exports = nextTranslate({
+  experimental: {
+    externalDir: true,
+  },
   webpack: (config /*{ buildId, dev, isServer, defaultLoaders, webpack }*/) => {
     config.resolve.alias['pdfjs-dist'] = path.join(
       __dirname,

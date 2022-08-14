@@ -1,7 +1,7 @@
 const logger = require('winston');
 const realmModel = require('../models/realm');
 const accountModel = require('../models/account');
-const crypto = require('@mre/common/utils/crypto');
+const crypto = require('@microrealestate/common/utils/crypto');
 
 const SECRET_PLACEHOLDER = '**********';
 

@@ -1,18 +1,20 @@
 import * as Yup from 'yup';
 
 import { Box, Button, Grid } from '@material-ui/core';
+import {
+  DateField,
+  NumberField,
+  Section,
+  SelectField,
+  SubmitButton,
+  TextField,
+} from '@microrealestate/commonui/components';
 import { FieldArray, Form, Formik } from 'formik';
 import { Fragment, useCallback, useContext, useMemo } from 'react';
 
 import _ from 'lodash';
-import DateField from '../FormFields/DateField';
 import moment from 'moment';
-import NumberField from '../FormFields/NumberField';
-import Section from '../FormFields/Section';
-import SelectField from '../FormFields/SelectField';
 import { StoreContext } from '../../store';
-import SubmitButton from '../FormFields/SubmitButton';
-import TextField from '../FormFields/TextField';
 import usePaymentTypes from '../../hooks/usePaymentTypes';
 import useTranslation from 'next-translate/useTranslation';
 

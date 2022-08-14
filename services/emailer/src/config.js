@@ -1,5 +1,5 @@
 const path = require('path');
-const baseConfig = require('@mre/common/config');
+const baseConfig = require('@microrealestate/common/config');
 
 const root_dir = path.join(__dirname, '..');
 

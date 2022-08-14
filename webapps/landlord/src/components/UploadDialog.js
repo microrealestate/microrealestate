@@ -1,21 +1,23 @@
 import * as Yup from 'yup';
 
 import { Box, DialogTitle, Grid } from '@material-ui/core';
+import {
+  CancelButton,
+  DateField,
+  SelectField,
+  SubmitButton,
+  UploadField,
+} from '@microrealestate/commonui/components';
 import { Form, Formik, useFormikContext } from 'formik';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 
-import CancelButton from './FormFields/CancelButton';
-import DateField from './FormFields/DateField';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import moment from 'moment';
-import SelectField from './FormFields/SelectField';
 import { StoreContext } from '../store';
-import SubmitButton from './FormFields/SubmitButton';
 import { toJS } from 'mobx';
 import { uploadDocument } from '../utils/fetch';
-import UploadField from './FormFields/UploadField';
 import useDialog from '../hooks/useDialog';
 import useTranslation from 'next-translate/useTranslation';
 

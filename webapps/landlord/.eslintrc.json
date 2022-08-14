@@ -1,13 +1,14 @@
 {
-  "extends": ["eslint:recommended", "next", "prettier"],
+  "extends": ["next"],
   "settings": {
     "next": {
       "rootDir": ["webapps/landlord"]
     }
   },
   "env": {
-    "jest": true,
-    "es2021": true,
     "browser": true
+  },
+  "rules": {
+    "import/no-named-as-default": "off"
   }
 }

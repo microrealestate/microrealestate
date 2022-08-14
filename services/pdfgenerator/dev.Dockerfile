@@ -12,10 +12,10 @@ COPY yarn.lock .
 COPY services/common services/common
 COPY services/pdfgenerator services/pdfgenerator
 
-RUN yarn workspace pdfgenerator install --frozen-lockfile
+RUN yarn workspace @microrealestate/pdfgenerator install --frozen-lockfile
 
 RUN chown -R node:node /usr/app
 
 USER node
 
-CMD ["yarn", "workspace", "pdfgenerator", "run", "dev"]
+CMD ["yarn", "workspace", "@microrealestate/pdfgenerator", "run", "dev"]

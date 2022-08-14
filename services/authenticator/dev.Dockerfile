@@ -9,10 +9,10 @@ COPY services/authenticator services/authenticator
 COPY package.json .
 COPY yarn.lock .
 
-RUN yarn workspace authenticator install --frozen-lockfile
+RUN yarn workspace @microrealestate/authenticator install --frozen-lockfile
 
 RUN chown -R node:node /usr/app
 
 USER node
 
-CMD ["yarn", "workspace", "authenticator", "run", "dev"]
+CMD ["yarn", "workspace", "@microrealestate/authenticator", "run", "dev"]

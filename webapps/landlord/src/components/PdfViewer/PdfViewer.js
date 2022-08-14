@@ -8,10 +8,11 @@ import {
 } from '@material-ui/core';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { Viewer, Worker } from '@react-pdf-viewer/core';
+
 import { apiFetcher } from '../../utils/fetch';
 import EditorButton from '../RichTextEditor/EditorButton';
 import { grayColor } from '../../styles/styles';
-import Loading from '../Loading';
+import { Loading } from '@microrealestate/commonui/components';
 import { printPlugin } from '@react-pdf-viewer/print';
 import { StoreContext } from '../../store';
 import useTranslation from 'next-translate/useTranslation';

@@ -19,16 +19,16 @@ export function withAuthentication(PageComponent, grantedRole) {
     const store = useContext(StoreContext);
 
     useEffect(() => {
-      if (pageProps.error?.statusCode === 403) {
+      if ([401, 403].includes(pageProps.error?.statusCode)) {
         window.location.assign(BASE_PATH); // will be redirected to /signin
       }
     }, [pageProps.error?.statusCode]);
 
-    if (pageProps.error) {
-      if (pageProps.error.statusCode === 403) {
-        return null;
-      }
+    if ([401, 403].includes(pageProps.error?.statusCode)) {
+      return null;
+    }
 
+    if (pageProps.error) {
       return <ErrorPage statusCode={pageProps.error.statusCode} />;
     }
 

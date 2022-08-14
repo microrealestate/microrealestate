@@ -12,7 +12,7 @@ const emailManager = require('./managers/emailmanager');
 const {
   needAccessToken,
   checkOrganization,
-} = require('@mre/common/utils/middlewares');
+} = require('@microrealestate/common/utils/middlewares');
 const router = express.Router();
 
 // protect the api access by checking the access token

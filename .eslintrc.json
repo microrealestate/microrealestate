@@ -1,10 +1,12 @@
 {
-  "extends": ["eslint:recommended", "prettier"],
-  "plugins": ["jest"],
+  "extends": ["eslint:recommended", "plugin:import/recommended", "prettier"],
+  "plugins": ["import", "prettier", "jest"],
   "env": {
     "jest": true,
-    "es2021": true,
-    "node": true
+    "es2021": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 2021
   },
   "rules": {
     "semi": "error",

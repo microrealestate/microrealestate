@@ -1,18 +1,20 @@
 import * as Yup from 'yup';
 
 import { Box, DialogContentText, DialogTitle } from '@material-ui/core';
+import {
+  CheckboxField,
+  RadioField,
+  RadioFieldGroup,
+  SubmitButton,
+  TextField,
+} from '@microrealestate/commonui/components';
 import { Form, Formik } from 'formik';
 import React, { useCallback, useMemo } from 'react';
 
 import Button from '@material-ui/core/Button';
-import CheckboxField from '../../FormFields/CheckboxField';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
-import RadioField from '../../FormFields/RadioField';
-import RadioFieldGroup from '../../FormFields/RadioFieldGroup';
-import SubmitButton from '../../FormFields/SubmitButton';
-import TextField from '../../FormFields/TextField';
 import useDialog from '../../../hooks/useDialog';
 import useTranslation from 'next-translate/useTranslation';
 

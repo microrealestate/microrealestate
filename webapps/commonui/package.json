@@ -1,0 +1,38 @@
+{
+  "name": "@microrealestate/commonui",
+  "version": "1.0.0",
+  "description": "Common modules required for the MicroRealEstate application'",
+  "author": "Camel Aissani",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "@material-ui/core": "4.12.4",
+    "@material-ui/icons": "4.11.3",
+    "@material-ui/pickers": "3.3.10",
+    "formik": "2.2.9",
+    "moment": "2.29.4",
+    "next-translate": "1.5.0",
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "format": "prettier --write '**/*.{js,jsx,ts,tsx,json,css}'",
+    "generateStrings": "node scripts/extractlocalizedstrings.js",
+    "storybook": "start-storybook -p 6006",
+    "build-storybook": "build-storybook"
+  },
+  "devDependencies": {
+    "@storybook/addon-actions": "6.5.9",
+    "@storybook/addon-essentials": "6.5.9",
+    "@storybook/addon-interactions": "6.5.9",
+    "@storybook/addon-links": "6.5.9",
+    "@storybook/builder-webpack5": "6.5.9",
+    "@storybook/cli": "6.5.9",
+    "@storybook/manager-webpack5": "6.5.9",
+    "@storybook/react": "6.5.9",
+    "@storybook/testing-library": "0.0.13",
+    "storybook-addon-material-ui": "0.9.0-alpha.24",
+    "eslint-plugin-react": "7.30.1"
+  }
+}

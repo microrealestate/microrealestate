@@ -1,5 +1,5 @@
 {
-  "name": "resetservice",
+  "name": "@microrealestate/resetservice",
   "version": "1.0.0",
   "description": "Service which allows to reset the MicroRealEstate databases",
   "main": "src/index.js",
@@ -14,7 +14,7 @@
   "author": "Camel Aissani",
   "license": "MIT",
   "dependencies": {
-    "@mre/common": "*",
+    "@microrealestate/common": "*",
     "express": "4.17.1",
     "express-winston": "2.6.0",
     "winston": "2.4.4"

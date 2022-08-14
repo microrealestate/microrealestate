@@ -17,7 +17,7 @@ import React, {
 
 import getConfig from 'next/config';
 import { getPeriod } from './RentPeriod';
-import Loading from '../Loading';
+import { Loading } from '@microrealestate/commonui/components';
 import moment from 'moment';
 import RentDetails from './RentDetails';
 import { StoreContext } from '../../store';

@@ -9,5 +9,6 @@
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": true
-  }
+  },
+  "eslint.workingDirectories": [".", "webapps/*", "services/*", "cli", "e2e"]
 }

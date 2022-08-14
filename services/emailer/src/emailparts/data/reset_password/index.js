@@ -1,4 +1,4 @@
-const Account = require('@mre/common/models/account');
+const Account = require('@microrealestate/common/models/account');
 
 module.exports = {
   get: async (email, params) => {

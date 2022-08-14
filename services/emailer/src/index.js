@@ -4,10 +4,10 @@ const bodyParser = require('body-parser');
 const expressWinston = require('express-winston');
 const logger = require('winston');
 const config = require('./config');
-const mongoosedb = require('@mre/common/models/db');
+const mongoosedb = require('@microrealestate/common/models/db');
 const apiRouter = require('./apirouter');
 
-require('@mre/common/utils/httpinterceptors')();
+require('@microrealestate/common/utils/httpinterceptors')();
 
 const startApplication = async (apiRouter) => {
   if (!fs.existsSync(config.TEMPORARY_DIRECTORY)) {

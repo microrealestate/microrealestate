@@ -19,7 +19,7 @@ COPY yarn.lock .
 ENV NODE_ENV production
 
 RUN yarn global add pm2 && \
-    yarn workspace pdfgenerator install --frozen-lockfile --production && \
+    yarn workspace @microrealestate/pdfgenerator install --frozen-lockfile --production && \
     yarn cache clean
 
 RUN chown -R node:node /usr/app

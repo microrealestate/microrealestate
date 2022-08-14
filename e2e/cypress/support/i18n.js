@@ -1,7 +1,7 @@
-import i18next from 'i18next';
+import i18next, { init } from 'i18next';
 
 (async () => {
-  await i18next.init({
+  await init({
     resources: {
       en: {
         translation: require('../../../webapps/landlord/locales/en/common.json'),

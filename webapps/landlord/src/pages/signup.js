@@ -3,6 +3,7 @@ import * as Yup from 'yup';
 import { Box, Paper, Typography } from '@material-ui/core';
 import { Form, Formik } from 'formik';
 import React, { useContext } from 'react';
+import { SubmitButton, TextField } from '@microrealestate/commonui/components';
 
 import ErrorPage from 'next/error';
 import getConfig from 'next/config';
@@ -11,8 +12,6 @@ import LocationCityIcon from '@material-ui/icons/LocationCity';
 import { observer } from 'mobx-react-lite';
 import Page from '../components/Page';
 import { StoreContext } from '../store';
-import SubmitButton from '../components/FormFields/SubmitButton';
-import TextField from '../components/FormFields/TextField';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 

@@ -1,20 +1,22 @@
 import * as Yup from 'yup';
 
 import { Box, DialogTitle } from '@material-ui/core';
+import {
+  CheckboxField,
+  SelectField,
+  SubmitButton,
+  TextField,
+} from '@microrealestate/commonui/components';
 import { Form, Formik } from 'formik';
 import React, { useCallback, useContext } from 'react';
 
 import Button from '@material-ui/core/Button';
-import CheckboxField from '../FormFields/CheckboxField';
-import { contractEndMoment } from '../../utils/contract';
+import { contractEndMoment } from '@microrealestate/commonui/utils/contract';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import moment from 'moment';
-import SelectField from '../FormFields/SelectField';
 import { StoreContext } from '../../store';
-import SubmitButton from '../FormFields/SubmitButton';
-import TextField from '../FormFields/TextField';
 import { toJS } from 'mobx';
 import useDialog from '../../hooks/useDialog';
 import { useRouter } from 'next/router';

@@ -2,15 +2,17 @@ import * as Yup from 'yup';
 
 import { Box, Grid, Typography } from '@material-ui/core';
 import { Form, Formik } from 'formik';
+import {
+  NumberField,
+  Section,
+  SelectField,
+  SubmitButton,
+  TextField,
+} from '@microrealestate/commonui/components';
 import { useContext, useMemo } from 'react';
 
-import NumberField from '../../FormFields/NumberField';
 import { observer } from 'mobx-react-lite';
-import Section from '../../FormFields/Section';
-import SelectField from '../../FormFields/SelectField';
 import { StoreContext } from '../../../store';
-import SubmitButton from '../../FormFields/SubmitButton';
-import TextField from '../../FormFields/TextField';
 import useTranslation from 'next-translate/useTranslation';
 
 const timeRanges = ['days', 'weeks', 'months', 'years'];

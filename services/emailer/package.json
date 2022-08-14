@@ -1,5 +1,5 @@
 {
-  "name": "emailer",
+  "name": "@microrealestate/emailer",
   "version": "1.0.0",
   "description": "Generates and sends emails",
   "main": "./src/index.js",
@@ -18,7 +18,7 @@
   "author": "Camel Aissani",
   "license": "MIT",
   "dependencies": {
-    "@mre/common": "*",
+    "@microrealestate/common": "*",
     "body-parser": "1.19.0",
     "ejs": "3.1.8",
     "express": "4.17.1",

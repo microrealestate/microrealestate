@@ -1,7 +1,7 @@
 const formData = require('form-data');
 const Mailgun = require('mailgun.js');
 const config = require('./config');
-const crypto = require('@mre/common/utils/crypto');
+const crypto = require('@microrealestate/common/utils/crypto');
 
 const sendEmail = (email, data) => {
   let mgConfig;

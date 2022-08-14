@@ -2,7 +2,6 @@
   "name": "microrealestate",
   "version": "1.0.0-alpha.1",
   "description": "The application which helps the landlords to manage their property rents.",
-  "main": "index.js",
   "private": true,
   "repository": {
     "type": "git",
@@ -29,8 +28,8 @@
     "webapps/*"
   ],
   "scripts": {
-    "e2e": "yarn workspace e2e run cypress:run",
-    "e2e:open": "yarn workspace e2e run cypress:open",
+    "e2e": "yarn workspace @microrealestate/e2e run cypress:run",
+    "e2e:open": "yarn workspace @microrealestate/e2e run cypress:open",
     "format": "yarn workspaces run format",
     "lint": "yarn workspaces run lint"
   },
@@ -44,20 +43,20 @@
   },
   "devDependencies": {
     "eslint": "8.18.0",
-    "eslint-config-next": "12.2.0",
+    "eslint-config-next": "12.2.3",
     "eslint-config-prettier": "8.5.0",
     "eslint-plugin-cypress": "2.12.1",
     "eslint-plugin-import": "2.26.0",
-    "eslint-plugin-jest": "26.5.3",
+    "eslint-plugin-jest": "26.6.0",
     "eslint-plugin-node": "11.1.0",
     "eslint-plugin-promise": "6.0.0",
     "eslint-plugin-standard": "5.0.0",
-    "prettier": "2.6.2"
+    "eslint-plugin-prettier": "4.2.1"
   },
   "dependencies": {
     "axios": "0.27.2",
     "husky": "7.0.4",
     "lint-staged": "12.3.4"
   },
-  "packageManager": "yarn@1.22.17"
+  "packageManager": "yarn@1.22.19"
 }

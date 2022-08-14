@@ -1,9 +1,9 @@
 const express = require('express');
-const mongoosedb = require('@mre/common/models/db');
+const mongoosedb = require('@microrealestate/common/models/db');
 const expressWinston = require('express-winston');
 const logger = require('winston');
 const config = require('./config');
-const redis = require('@mre/common/models/redis');
+const redis = require('@microrealestate/common/models/redis');
 
 process.on('SIGINT', () => {
   process.exit(0);
