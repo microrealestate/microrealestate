@@ -121,21 +121,23 @@ const RentPayment = observer(() => {
       title={store.rent.selected.occupant.name}
       ActionToolbar={
         <Hidden implementation="css" mdUp>
-          <FullScreenDialogButton
-            variant="contained"
-            buttonLabel={t('Rent schedule')}
-            Icon={HistoryIcon}
-            dialogTitle={t('Rent schedule')}
-            cancelButtonLabel={t('Close')}
-            showCancel
-          >
-            <RentHistory tenantId={store.rent.selected.occupant._id} />
-          </FullScreenDialogButton>
-          <SendRentEmailMenu
-            tenant={store.rent.selected.occupant}
-            terms={[store.rent.selected.term]}
-            period={store.rent.period}
-          />
+          <Box display="flex">
+            <FullScreenDialogButton
+              variant="contained"
+              buttonLabel={t('Rent schedule')}
+              Icon={HistoryIcon}
+              dialogTitle={t('Rent schedule')}
+              cancelButtonLabel={t('Close')}
+              showCancel
+            >
+              <RentHistory tenantId={store.rent.selected.occupant._id} />
+            </FullScreenDialogButton>
+            <SendRentEmailMenu
+              tenant={store.rent.selected.occupant}
+              terms={[store.rent.selected.term]}
+              period={store.rent.period}
+            />
+          </Box>
         </Hidden>
       }
       NavBar={
@@ -146,24 +148,14 @@ const RentPayment = observer(() => {
         />
       }
     >
-      <Grid container spacing={5}>
-        <Grid item xs={12} md={7} lg={8}>
-          <Hidden implementation="css" mdUp>
-            <Box pb={4}>
-              <BalanceBar
-                rent={store.rent.selected}
-                hideTooltip={true}
-                hideLeftToPay={false}
-              />
-            </Box>
-          </Hidden>
-
-          <Paper>
-            <PaymentTabs onSubmit={onSubmit} />
-          </Paper>
-        </Grid>
-        <Hidden implementation="css" smDown>
-          <Grid item xs={12} md={5} lg={4}>
+      <Hidden implementation="css" smDown>
+        <Grid container spacing={5}>
+          <Grid item md={7} lg={8}>
+            <Paper>
+              <PaymentTabs onSubmit={onSubmit} />
+            </Paper>
+          </Grid>
+          <Grid item md={5} lg={4}>
             <Box pb={4}>
               <PageInfoCard
                 Icon={ReceiptIcon}
@@ -285,8 +277,24 @@ const RentPayment = observer(() => {
               )}
             </PageInfoCard>
           </Grid>
-        </Hidden>
-      </Grid>
+        </Grid>
+      </Hidden>
+      <Hidden implementation="css" mdUp>
+        <Grid container spacing={5}>
+          <Grid item xs={12}>
+            <Box py={4}>
+              <BalanceBar
+                rent={store.rent.selected}
+                hideTooltip={true}
+                hideLeftToPay={false}
+              />
+            </Box>
+            <Paper>
+              <PaymentTabs onSubmit={onSubmit} />
+            </Paper>
+          </Grid>
+        </Grid>
+      </Hidden>
     </Page>
   );
 });

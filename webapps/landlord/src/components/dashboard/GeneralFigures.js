@@ -36,60 +36,76 @@ function GeneralFigures() {
   const { t } = useTranslation('common');
 
   return (
-    <Grid container spacing={5}>
+    <>
       <Hidden implementation="css" smDown>
-        <Grid item xs={12} md={4} lg={2}>
-          <DashboardCard
-            title={t('Tenant')}
-            onClick={() => {
-              router.push(`/${store.organization.selected.name}/tenants`);
-            }}
-          >
-            <FigureCardContent nav>
-              <Typography variant="h3">
-                {store.dashboard.data.overview?.tenantCount}
-              </Typography>
-            </FigureCardContent>
-          </DashboardCard>
-        </Grid>
-        <Grid item xs={12} md={4} lg={2}>
-          <DashboardCard
-            title={t('Property')}
-            onClick={() => {
-              router.push(`/${store.organization.selected.name}/properties`);
-            }}
-          >
-            <FigureCardContent nav>
-              <Typography variant="h3">
-                {store.dashboard.data.overview?.propertyCount}
-              </Typography>
-            </FigureCardContent>
-          </DashboardCard>
-        </Grid>
-        <Grid item xs={12} md={4} lg={2}>
-          <DashboardCard title={t('Occupancy rate')}>
-            <FigureCardContent>
-              <NumberFormat
-                value={store.dashboard.data.overview?.occupancyRate}
-                minimumFractionDigits={0}
-                style="percent"
-                variant="h3"
-              />
-            </FigureCardContent>
-          </DashboardCard>
+        <Grid container spacing={5}>
+          <Grid item xs={12} md={4} lg={2}>
+            <DashboardCard
+              title={t('Tenant')}
+              onClick={() => {
+                router.push(`/${store.organization.selected.name}/tenants`);
+              }}
+            >
+              <FigureCardContent nav>
+                <Typography variant="h3">
+                  {store.dashboard.data.overview?.tenantCount}
+                </Typography>
+              </FigureCardContent>
+            </DashboardCard>
+          </Grid>
+          <Grid item xs={12} md={4} lg={2}>
+            <DashboardCard
+              title={t('Property')}
+              onClick={() => {
+                router.push(`/${store.organization.selected.name}/properties`);
+              }}
+            >
+              <FigureCardContent nav>
+                <Typography variant="h3">
+                  {store.dashboard.data.overview?.propertyCount}
+                </Typography>
+              </FigureCardContent>
+            </DashboardCard>
+          </Grid>
+          <Grid item xs={12} md={4} lg={2}>
+            <DashboardCard title={t('Occupancy rate')}>
+              <FigureCardContent>
+                <NumberFormat
+                  value={store.dashboard.data.overview?.occupancyRate}
+                  minimumFractionDigits={0}
+                  style="percent"
+                  variant="h3"
+                />
+              </FigureCardContent>
+            </DashboardCard>
+          </Grid>
+          <Grid item xs={12} md={12} lg={6}>
+            <DashboardCard title={t('Revenues')}>
+              <FigureCardContent>
+                <NumberFormat
+                  value={store.dashboard.data.overview?.totalYearRevenues}
+                  variant="h3"
+                />
+              </FigureCardContent>
+            </DashboardCard>
+          </Grid>
         </Grid>
       </Hidden>
-      <Grid item xs={12} md={12} lg={6}>
-        <DashboardCard title={t('Revenues')}>
-          <FigureCardContent>
-            <NumberFormat
-              value={store.dashboard.data.overview?.totalYearRevenues}
-              variant="h3"
-            />
-          </FigureCardContent>
-        </DashboardCard>
-      </Grid>
-    </Grid>
+      <Hidden implementation="css" mdUp>
+        <Grid container spacing={5}>
+          <Grid item xs={12} md={12} lg={6}>
+            <DashboardCard title={t('Revenues')}>
+              <FigureCardContent>
+                <NumberFormat
+                  value={store.dashboard.data.overview?.totalYearRevenues}
+                  variant="h3"
+                />
+              </FigureCardContent>
+            </DashboardCard>
+          </Grid>
+        </Grid>
+      </Hidden>
+    </>
   );
 }
 
