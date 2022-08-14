@@ -429,7 +429,7 @@ templatesApi.delete('/:ids', (req, res) => {
       realmId: organizationId,
     });
 
-    if (result.ok !== 1) {
+    if (!result.acknowledged) {
       return res.sendStatus(404);
     }
 

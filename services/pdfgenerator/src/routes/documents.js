@@ -480,7 +480,7 @@ documentsApi.delete('/:ids', async (req, res) => {
     realmId: organizationId,
   });
 
-  if (result.ok !== 1) {
+  if (!result.acknowledged) {
     logger.warn(`documents ${req.params.ids} not found`);
     return res.sendStatus(404);
   }
