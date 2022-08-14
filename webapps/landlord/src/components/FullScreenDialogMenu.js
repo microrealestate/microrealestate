@@ -8,7 +8,7 @@ import {
   Toolbar,
   useTheme,
 } from '@material-ui/core';
-import { forwardRef, Fragment, useCallback, useState } from 'react';
+import { forwardRef, useCallback, useState } from 'react';
 
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
@@ -54,37 +54,19 @@ const CardMenuItem = ({ value, illustration, label, description, onClick }) => {
   }, [value, onClick]);
 
   return (
-    <>
-      <Hidden implementation="css" smDown>
-        <Box
-          width={300}
-          pr={2}
-          pb={2}
-          onClick={onMenuClick}
-          data-cy={`template-${label.replace(/\s/g, '')}`}
-        >
-          <CardMenuItemContent
-            illustration={illustration}
-            label={label}
-            description={description}
-          />
-        </Box>
-      </Hidden>
-      <Hidden implementation="css" mdUp>
-        <Box
-          width="100%"
-          pb={2}
-          onClick={onMenuClick}
-          data-cy={`template-${label.replace(/\s/g, '')}`}
-        >
-          <CardMenuItemContent
-            illustration={illustration}
-            label={label}
-            description={description}
-          />
-        </Box>
-      </Hidden>
-    </>
+    <Box
+      width={300}
+      pr={2}
+      pb={2}
+      onClick={onMenuClick}
+      data-cy={`template-${label.replace(/\s/g, '')}`}
+    >
+      <CardMenuItemContent
+        illustration={illustration}
+        label={label}
+        description={description}
+      />
+    </Box>
   );
 };
 
