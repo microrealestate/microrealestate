@@ -1,8 +1,8 @@
 import {
   Box,
+  Hidden,
   InputAdornment,
   TextField,
-  useMediaQuery,
   withStyles,
 } from '@material-ui/core';
 import { useCallback, useMemo, useState } from 'react';
@@ -36,7 +36,6 @@ const SearchFilterBar = ({
   const triggerSearch = useTimeout(() => {
     onSearch(filter, searchText);
   }, 250);
-  const isMobile = useMediaQuery((theme) => theme.breakpoints.down('sm'));
 
   // TODO: use useEffect to trigger the search
   // commented as now this cause infinite rendering loop
@@ -86,13 +85,24 @@ const SearchFilterBar = ({
         />
       </Box>
       <Box>
-        <ToggleMenu
-          startIcon={<FilterListIcon />}
-          options={filters}
-          value={selectedItem}
-          noLabel={isMobile}
-          onChange={onToggleChange}
-        />
+        <Hidden smDown>
+          <ToggleMenu
+            startIcon={<FilterListIcon />}
+            options={filters}
+            value={selectedItem}
+            noLabel={false}
+            onChange={onToggleChange}
+          />
+        </Hidden>
+        <Hidden mdUp>
+          <ToggleMenu
+            startIcon={<FilterListIcon />}
+            options={filters}
+            value={selectedItem}
+            noLabel={true}
+            onChange={onToggleChange}
+          />
+        </Hidden>
       </Box>
     </Box>
   );

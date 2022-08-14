@@ -1,4 +1,4 @@
-import { AppBar, Box, Grid, useMediaQuery } from '@material-ui/core';
+import { AppBar, Box, Grid, Hidden } from '@material-ui/core';
 import React, { memo, useCallback } from 'react';
 
 import Button from '@material-ui/core/Button';
@@ -26,7 +26,6 @@ const FullScreenDialogButton = ({
 }) => {
   const { t } = useTranslation('common');
   const [open, setOpen] = React.useState(false);
-  const isMobile = useMediaQuery((theme) => theme.breakpoints.down('sm'));
 
   const handleClickOpen = useCallback(() => {
     setOpen(true);
@@ -42,7 +41,7 @@ const FullScreenDialogButton = ({
 
   return (
     <>
-      {!isMobile ? (
+      <Hidden smDown>
         <Button
           {...props}
           size="small"
@@ -52,7 +51,8 @@ const FullScreenDialogButton = ({
         >
           {buttonLabel}
         </Button>
-      ) : (
+      </Hidden>
+      <Hidden mdUp>
         <MobileButton
           {...props}
           variant="text"
@@ -60,7 +60,8 @@ const FullScreenDialogButton = ({
           label={buttonLabel}
           onClick={handleClickOpen}
         />
-      )}
+      </Hidden>
+
       <Dialog
         fullScreen
         open={open}

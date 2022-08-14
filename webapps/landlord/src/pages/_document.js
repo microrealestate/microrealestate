@@ -1,37 +1,45 @@
 import Document, { Head, Html, Main, NextScript } from 'next/document';
 
+import getConfig from 'next/config';
 import React from 'react';
 import { ServerStyleSheets } from '@material-ui/core/styles';
 import theme from '../styles/theme';
 
-export default class MyDocument extends Document {
-  render() {
-    return (
-      <Html translate="no">
-        <Head>
-          {/* PWA primary color */}
-          <meta name="theme-color" content={theme.palette.primary.main} />
-          <link
-            rel="stylesheet"
-            href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"
-          />
-          <link
-            href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css"
-            rel="stylesheet"
-          ></link>
-        </Head>
-        <body
-          style={{
-            backgroundColor: theme.palette.backgroundColor,
-            overflowX: 'hidden',
-          }}
-        >
-          <Main />
-          <NextScript />
-        </body>
-      </Html>
-    );
-  }
+const {
+  publicRuntimeConfig: { BASE_PATH },
+} = getConfig();
+
+export default function MyDocument() {
+  return (
+    <Html translate="no">
+      <Head>
+        {/* PWA primary color */}
+        <meta name="theme-color" content={theme.palette.primary.main} />
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"
+        />
+        <link
+          href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css"
+          rel="stylesheet"
+        />
+        <meta
+          name="viewport"
+          content="minimum-scale=1, initial-scale=1, width=device-width"
+        />
+        <link rel="shortcut icon" href={`${BASE_PATH}/favicon.svg`} />
+      </Head>
+      <body
+        style={{
+          backgroundColor: theme.palette.backgroundColor,
+          overflowX: 'hidden',
+        }}
+      >
+        <Main />
+        <NextScript />
+      </body>
+    </Html>
+  );
 }
 
 // `getInitialProps` belongs to `_document` (instead of `_app`),
