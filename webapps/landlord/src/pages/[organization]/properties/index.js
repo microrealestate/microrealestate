@@ -217,7 +217,7 @@ const Properties = observer(() => {
       title={t('Properties')}
       ActionToolbar={
         <>
-          <Hidden smDown>
+          <Hidden implementation="css" smDown>
             <Button
               variant="contained"
               startIcon={<AddIcon />}
@@ -226,7 +226,7 @@ const Properties = observer(() => {
               {t('New property')}
             </Button>
           </Hidden>
-          <Hidden mdUp>
+          <Hidden implementation="css" mdUp>
             <MobileButton
               label={t('New property')}
               Icon={AddIcon}

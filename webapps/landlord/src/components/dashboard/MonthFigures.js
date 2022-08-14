@@ -25,7 +25,7 @@ function TenantListItem({ tenant, balance, onClick }) {
   return (
     <ListItem button onClick={onClick}>
       <Box display="flex" alignItems="center" width="100%">
-        <Hidden smDown>
+        <Hidden implementation="css" smDown>
           <Box mr={1}>
             <TenantAvatar tenant={tenant} />
           </Box>

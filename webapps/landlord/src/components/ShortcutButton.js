@@ -24,7 +24,7 @@ const ShortcutButton = ({ Icon, label, disabled, onClick }) => {
 
   return (
     <>
-      <Hidden smDown>
+      <Hidden implementation="css" smDown>
         <Button
           startIcon={<Icon style={{ fontSize: 28 }} />}
           size="large"
@@ -38,7 +38,7 @@ const ShortcutButton = ({ Icon, label, disabled, onClick }) => {
           </Box>
         </Button>
       </Hidden>
-      <Hidden mdUp>
+      <Hidden implementation="css" mdUp>
         <Button
           startIcon={<Icon fontSize="small" />}
           className={classes.root}

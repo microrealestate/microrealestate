@@ -41,7 +41,7 @@ const FullScreenDialogButton = ({
 
   return (
     <>
-      <Hidden smDown>
+      <Hidden implementation="css" smDown>
         <Button
           {...props}
           size="small"
@@ -52,7 +52,7 @@ const FullScreenDialogButton = ({
           {buttonLabel}
         </Button>
       </Hidden>
-      <Hidden mdUp>
+      <Hidden implementation="css" mdUp>
         <MobileButton
           {...props}
           variant="text"

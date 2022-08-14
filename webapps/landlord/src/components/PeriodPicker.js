@@ -29,7 +29,7 @@ function PeriodPicker({ value, period, format, onChange }) {
 
   return (
     <Box display="flex" alignItems="center">
-      <Hidden smDown>
+      <Hidden implementation="css" smDown>
         <IconButton
           onClick={_onPreviousPeriod}
           aria-label="previous period"
@@ -48,7 +48,7 @@ function PeriodPicker({ value, period, format, onChange }) {
           format={format}
         />
       </Box>
-      <Hidden smDown>
+      <Hidden implementation="css" smDown>
         <IconButton
           onClick={_onNextPeriod}
           aria-label="next period"

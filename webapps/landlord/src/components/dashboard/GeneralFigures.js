@@ -37,7 +37,7 @@ function GeneralFigures() {
 
   return (
     <Grid container spacing={5}>
-      <Hidden smDown>
+      <Hidden implementation="css" smDown>
         <Grid item xs={12} md={4} lg={2}>
           <DashboardCard
             title={t('Tenant')}

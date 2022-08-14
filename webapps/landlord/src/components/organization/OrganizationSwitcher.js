@@ -44,7 +44,7 @@ const OrganizationSwitcher = observer(() => {
 
   return store.organization?.items?.length > 0 ? (
     <>
-      <Hidden smDown>
+      <Hidden implementation="css" smDown>
         <ToggleMenu
           startIcon={<LocationCityIcon />}
           options={options}
@@ -53,7 +53,7 @@ const OrganizationSwitcher = observer(() => {
           onChange={onChange}
         />
       </Hidden>
-      <Hidden mdUp>
+      <Hidden implementation="css" mdUp>
         <ToggleMenu
           startIcon={<LocationCityIcon />}
           options={options}

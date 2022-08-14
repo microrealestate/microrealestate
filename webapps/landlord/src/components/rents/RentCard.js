@@ -254,7 +254,7 @@ const RentCard = observer(({ rent, onEdit }) => {
             tenant={rent.occupant}
             terms={[rent.term]}
           />
-          <Hidden smDown>
+          <Hidden implementation="css" smDown>
             <Button
               variant="contained"
               startIcon={<PaymentIcon />}
@@ -266,7 +266,7 @@ const RentCard = observer(({ rent, onEdit }) => {
               </Typography>
             </Button>
           </Hidden>
-          <Hidden mdUp>
+          <Hidden implementation="css" mdUp>
             <MobileButton
               label={t('Settle the rent')}
               Icon={PaymentIcon}

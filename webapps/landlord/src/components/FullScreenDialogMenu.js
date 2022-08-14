@@ -55,7 +55,7 @@ const CardMenuItem = ({ value, illustration, label, description, onClick }) => {
 
   return (
     <>
-      <Hidden smDown>
+      <Hidden implementation="css" smDown>
         <Box
           width={300}
           pr={2}
@@ -70,7 +70,7 @@ const CardMenuItem = ({ value, illustration, label, description, onClick }) => {
           />
         </Box>
       </Hidden>
-      <Hidden mdUp>
+      <Hidden implementation="css" mdUp>
         <Box
           width="100%"
           pb={2}
@@ -125,7 +125,7 @@ const FullScreenDialogMenu = ({
 
   return (
     <>
-      <Hidden smDown>
+      <Hidden implementation="css" smDown>
         <Button
           {...props}
           startIcon={<Icon />}
@@ -135,7 +135,7 @@ const FullScreenDialogMenu = ({
           {buttonLabel}
         </Button>
       </Hidden>
-      <Hidden mdUp>
+      <Hidden implementation="css" mdUp>
         <MobileButton
           {...props}
           variant="text"
