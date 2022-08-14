@@ -271,7 +271,7 @@ const Tenant = observer(() => {
       title={store.tenant.selected.name}
       ActionToolbar={
         <>
-          <Hidden smDown>
+          <Hidden implementation="css" smDown>
             <Grid container spacing={2}>
               <Grid item>
                 <Tooltip
@@ -323,7 +323,7 @@ const Tenant = observer(() => {
               )}
             </Grid>
           </Hidden>
-          <Hidden mdUp>
+          <Hidden implementation="css" mdUp>
             <Grid container>
               {!store.tenant.selected.hasPayments && (
                 <Grid item>

@@ -218,7 +218,7 @@ const Property = observer(() => {
       title={store.property.selected.name}
       ActionToolbar={
         <>
-          <Hidden smDown>
+          <Hidden implementation="css" smDown>
             <Button
               variant="contained"
               startIcon={<DeleteIcon />}
@@ -227,7 +227,7 @@ const Property = observer(() => {
               {t('Delete')}
             </Button>
           </Hidden>
-          <Hidden mdUp>
+          <Hidden implementation="css" mdUp>
             <MobileButton
               label={t('Delete')}
               Icon={DeleteIcon}
@@ -262,7 +262,7 @@ const Property = observer(() => {
             </Paper>
           )}
         </Grid>
-        <Hidden smDown>
+        <Hidden implementation="css" smDown>
           <Grid item xs={12} md={5} lg={4}>
             <Box pb={4}>
               <PageInfoCard Icon={VpnKeyIcon} title={t('Property')}>

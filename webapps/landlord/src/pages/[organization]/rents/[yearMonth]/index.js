@@ -61,10 +61,10 @@ function PeriodToolbar({ onChange }) {
 
   return (
     <>
-      <Hidden smDown>
+      <Hidden implementation="css" smDown>
         <DesktopToolbar rentPeriod={rentPeriod} onChange={onChange} />
       </Hidden>
-      <Hidden mdUp>
+      <Hidden implementation="css" mdUp>
         <MobileToolbar rentPeriod={rentPeriod} onChange={onChange} />
       </Hidden>
     </>
@@ -156,7 +156,7 @@ const Rents = observer(() => {
       }
     >
       {!store.rent.filters.searchText && (
-        <Hidden smDown>
+        <Hidden implementation="css" smDown>
           <Box pb={3}>
             <Grid container spacing={3}>
               <Grid item xs={4}>

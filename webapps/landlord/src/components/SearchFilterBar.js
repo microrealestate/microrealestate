@@ -85,7 +85,7 @@ const SearchFilterBar = ({
         />
       </Box>
       <Box>
-        <Hidden smDown>
+        <Hidden implementation="css" smDown>
           <ToggleMenu
             startIcon={<FilterListIcon />}
             options={filters}
@@ -94,7 +94,7 @@ const SearchFilterBar = ({
             onChange={onToggleChange}
           />
         </Hidden>
-        <Hidden mdUp>
+        <Hidden implementation="css" mdUp>
           <ToggleMenu
             startIcon={<FilterListIcon />}
             options={filters}

@@ -193,7 +193,7 @@ function TenantDocumentList({ disabled = false }) {
   return (
     <>
       <Box display="flex" mb={1}>
-        <Hidden smDown>
+        <Hidden implementation="css" smDown>
           <Button
             variant="contained"
             startIcon={<AddIcon />}
@@ -204,7 +204,7 @@ function TenantDocumentList({ disabled = false }) {
             {t('Upload document')}
           </Button>
         </Hidden>
-        <Hidden mdUp>
+        <Hidden implementation="css" mdUp>
           <MobileButton
             label={t('Upload document')}
             Icon={AddIcon}

@@ -174,7 +174,7 @@ function Nav() {
 
   return (
     <>
-      <Hidden smDown>
+      <Hidden implementation="css" smDown>
         <Drawer
           className={`${
             openDebounced ? classes.drawerOpen : classes.drawerClose
@@ -204,7 +204,7 @@ function Nav() {
           </List>
         </Drawer>
       </Hidden>
-      <Hidden mdUp>
+      <Hidden implementation="css" mdUp>
         <MobileMenu
           position="fixed"
           bottom={0}

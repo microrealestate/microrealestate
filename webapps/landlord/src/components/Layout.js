@@ -7,7 +7,7 @@ export default function Layout({ showNav, children }) {
   const Toast = useToast();
   return (
     <>
-      <Hidden mdUp>
+      <Hidden implementation="css" mdUp>
         <Box
           display="flex"
           flexDirection="column"
@@ -18,7 +18,7 @@ export default function Layout({ showNav, children }) {
           {showNav && <Nav />}
         </Box>
       </Hidden>
-      <Hidden smDown>
+      <Hidden implementation="css" smDown>
         {showNav && <Nav />}
         {children}
       </Hidden>

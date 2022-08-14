@@ -120,7 +120,7 @@ const RentPayment = observer(() => {
     <Page
       title={store.rent.selected.occupant.name}
       ActionToolbar={
-        <Hidden mdUp>
+        <Hidden implementation="css" mdUp>
           <FullScreenDialogButton
             variant="contained"
             buttonLabel={t('Rent schedule')}
@@ -148,7 +148,7 @@ const RentPayment = observer(() => {
     >
       <Grid container spacing={5}>
         <Grid item xs={12} md={7} lg={8}>
-          <Hidden mdUp>
+          <Hidden implementation="css" mdUp>
             <Box pb={4}>
               <BalanceBar
                 rent={store.rent.selected}
@@ -162,7 +162,7 @@ const RentPayment = observer(() => {
             <PaymentTabs onSubmit={onSubmit} />
           </Paper>
         </Grid>
-        <Hidden smDown>
+        <Hidden implementation="css" smDown>
           <Grid item xs={12} md={5} lg={4}>
             <Box pb={4}>
               <PageInfoCard

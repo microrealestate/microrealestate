@@ -44,7 +44,7 @@ function MainToolbar({ maxWidth, loading, SearchBar, onSignOut }) {
 
   return (
     <>
-      <Hidden smDown>
+      <Hidden implementation="css" smDown>
         <Box ml={7}>
           <Toolbar disableGutters>
             <Container maxWidth={maxWidth}>
@@ -53,7 +53,7 @@ function MainToolbar({ maxWidth, loading, SearchBar, onSignOut }) {
                 <Box flexGrow={1} mx={10}>
                   {!loading && SearchBar}
                 </Box>
-                <Box display="flex">
+                <Box display="flex" alignItems="center">
                   <OrganizationSwitcher />
                   <Tooltip title={t('Sign out')} aria-label="sign out">
                     <IconButton
@@ -71,7 +71,7 @@ function MainToolbar({ maxWidth, loading, SearchBar, onSignOut }) {
           </Toolbar>
         </Box>
       </Hidden>
-      <Hidden mdUp>
+      <Hidden implementation="css" mdUp>
         <MobileMenu>
           <Toolbar disableGutters>
             <Box
@@ -105,7 +105,7 @@ function SubToolbar({ NavBar, ActionBar, maxWidth, loading }) {
 
   return (
     <>
-      <Hidden smDown>
+      <Hidden implementation="css" smDown>
         <Box ml={7}>
           <Toolbar disableGutters>
             <Container maxWidth={maxWidth}>
@@ -121,7 +121,7 @@ function SubToolbar({ NavBar, ActionBar, maxWidth, loading }) {
           </Toolbar>
         </Box>
       </Hidden>
-      <Hidden mdUp>
+      <Hidden implementation="css" mdUp>
         <Container maxWidth={maxWidth}>
           {NavBar ? (
             <Box display="flex" justifyContent="space-between">
@@ -210,7 +210,7 @@ function Toolbars({
 
   return (
     <>
-      <Hidden smDown>
+      <Hidden implementation="css" smDown>
         <DesktopToolbars
           title={title}
           NavBar={NavBar}
@@ -221,7 +221,7 @@ function Toolbars({
           onSignOut={onSignOut}
         />
       </Hidden>
-      <Hidden mdUp>
+      <Hidden implementation="css" mdUp>
         <MobileToolbars
           title={title}
           NavBar={NavBar}
@@ -238,14 +238,14 @@ function Toolbars({
 function PageContent({ maxWidth, loading, children }) {
   return (
     <>
-      <Hidden smDown>
+      <Hidden implementation="css" smDown>
         <Box ml={7}>
           <Container maxWidth={maxWidth}>
             {loading ? <Loading fullScreen /> : <Box my={2}>{children}</Box>}
           </Container>
         </Box>
       </Hidden>
-      <Hidden mdUp>
+      <Hidden implementation="css" mdUp>
         <Box>
           <Container maxWidth={maxWidth}>
             {loading ? <Loading fullScreen /> : <Box my={2}>{children}</Box>}

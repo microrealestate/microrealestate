@@ -70,7 +70,7 @@ const Dashboard = observer(() => {
           <Box mb={10}>
             <MonthFigures />
           </Box>
-          <Hidden smDown>
+          <Hidden implementation="css" smDown>
             {!!store.dashboard.data.overview && <YearFigures />}
           </Hidden>
         </>

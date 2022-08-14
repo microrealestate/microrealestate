@@ -16,7 +16,7 @@ function BreadcrumbBar({ backPath, backPage, currentPage }) {
 
   return (
     <>
-      <Hidden smDown>
+      <Hidden implementation="css" smDown>
         <Breadcrumbs aria-label="breadcrumb" separator={<NavigateNextIcon />}>
           <Link underline="always" color="inherit" href={backPath}>
             {backPage}
@@ -26,7 +26,7 @@ function BreadcrumbBar({ backPath, backPage, currentPage }) {
           </Typography>
         </Breadcrumbs>
       </Hidden>
-      <Hidden mdUp>
+      <Hidden implementation="css" mdUp>
         <Box display="flex" alignItems="center" width="100%">
           <MobileButton
             // label={t('Back')}
