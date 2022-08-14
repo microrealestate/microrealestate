@@ -1,18 +1,20 @@
 import * as Yup from 'yup';
 
+import {
+  AddressField,
+  ContactField,
+  RadioField,
+  RadioFieldGroup,
+  Section,
+  SubmitButton,
+  TextField,
+} from '@microrealestate/commonui/components';
 import { Box, Button } from '@material-ui/core';
 import { FieldArray, Form, Formik } from 'formik';
 import { useContext, useMemo } from 'react';
 
-import AddressField from '../../FormFields/AddressField';
-import ContactField from '../../FormFields/ContactField';
 import { observer } from 'mobx-react-lite';
-import RadioField from '../../FormFields/RadioField';
-import RadioFieldGroup from '../../FormFields/RadioFieldGroup';
-import Section from '../../FormFields/Section';
 import { StoreContext } from '../../../store';
-import SubmitButton from '../../FormFields/SubmitButton';
-import TextField from '../../FormFields/TextField';
 import useTranslation from 'next-translate/useTranslation';
 
 const validationSchema = Yup.object().shape({

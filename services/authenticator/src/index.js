@@ -2,9 +2,9 @@ const express = require('express');
 const cookieParser = require('cookie-parser');
 const expressWinston = require('express-winston');
 const logger = require('winston');
-const mongoosedb = require('@mre/common/models/db');
+const mongoosedb = require('@microrealestate/common/models/db');
 const config = require('./config');
-const redis = require('@mre/common/models/redis');
+const redis = require('@microrealestate/common/models/redis');
 const apiRouter = require('./apirouter');
 
 process.on('SIGINT', () => {

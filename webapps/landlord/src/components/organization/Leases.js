@@ -5,7 +5,7 @@ import AddIcon from '@material-ui/icons/Add';
 import Link from '../Link';
 import { observer } from 'mobx-react-lite';
 import { RestrictButton } from '../RestrictedComponents';
-import Section from '../FormFields/Section';
+import { Section } from '@microrealestate/commonui/components';
 import { StoreContext } from '../../store';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';

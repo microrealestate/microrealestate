@@ -5,8 +5,8 @@ const axios = require('axios');
 const locale = require('locale');
 const logger = require('winston');
 const config = require('./config');
-const redis = require('@mre/common/models/redis');
-const AccountModel = require('@mre/common/models/account');
+const redis = require('@microrealestate/common/models/redis');
+const AccountModel = require('@microrealestate/common/models/account');
 
 const APP_URL = new URL(config.APP_URL);
 const refreshTokenCookieAttributes = {

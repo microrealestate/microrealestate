@@ -9,10 +9,10 @@ COPY yarn.lock .
 COPY services/common services/common
 COPY services/resetservice services/resetservice
 
-RUN yarn workspace resetservice install --frozen-lockfile
+RUN yarn workspace @microrealestate/resetservice install --frozen-lockfile
 
 RUN chown -R node:node /usr/app
 
 USER node
 
-CMD ["yarn", "workspace", "resetservice", "run", "dev"]
+CMD ["yarn", "workspace", "@microrealestate/resetservice", "run", "dev"]

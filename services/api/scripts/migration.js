@@ -1,8 +1,8 @@
 const logger = require('winston');
-const mongoosedb = require('@mre/common/models/db');
-const Template = require('@mre/common/models/template');
-const Document = require('@mre/common/models/document');
-const Tenant = require('@mre/common/models/tenant');
+const mongoosedb = require('@microrealestate/common/models/db');
+const Template = require('@microrealestate/common/models/template');
+const Document = require('@microrealestate/common/models/document');
+const Tenant = require('@microrealestate/common/models/tenant');
 
 async function withDB(job) {
   let failure = false;

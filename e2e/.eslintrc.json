@@ -1,8 +1,8 @@
 {
-  "plugins": ["cypress", "jest"],
+  "plugins": ["cypress"],
   "env": {
-    "cypress/globals": true,
-    "es2021": true
+    "node": true,
+    "cypress/globals": true
   },
   "rules": {
     "jest/no-identical-title": "warn"

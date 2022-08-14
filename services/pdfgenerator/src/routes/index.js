@@ -3,7 +3,7 @@ const config = require('../config');
 const {
   needAccessToken,
   checkOrganization,
-} = require('@mre/common/utils/middlewares');
+} = require('@microrealestate/common/utils/middlewares');
 const templates = require('./templates');
 const documents = require('./documents');
 

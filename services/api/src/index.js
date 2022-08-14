@@ -1,7 +1,7 @@
 const logger = require('winston');
 const i18n = require('i18n');
 const path = require('path');
-const mongoosedb = require('@mre/common/models/db');
+const mongoosedb = require('@microrealestate/common/models/db');
 const { restoreDB } = require('../scripts/dbbackup');
 
 const config = require('./config');
@@ -9,7 +9,7 @@ const server = require('./server');
 const db = require('./models/db');
 const migratedb = require('../scripts/migration');
 
-require('@mre/common/utils/httpinterceptors')();
+require('@microrealestate/common/utils/httpinterceptors')();
 
 process.on('SIGINT', () => {
   //TODO disconnect db (mongojs)

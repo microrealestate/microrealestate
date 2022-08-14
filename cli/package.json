@@ -1,5 +1,5 @@
 {
-  "name": "cli",
+  "name": "@microrealestate/cli",
   "version": "1.0.0",
   "description": "The MicroRealEstate CLI",
   "main": "src/index.js",

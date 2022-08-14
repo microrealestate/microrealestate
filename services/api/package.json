@@ -1,5 +1,5 @@
 {
-  "name": "api",
+  "name": "@microrealestate/api",
   "version": "1.0.0",
   "description": "",
   "main": "src/index.js",
@@ -14,7 +14,7 @@
   "author": "Camel Aissani",
   "license": "MIT",
   "dependencies": {
-    "@mre/common": "*",
+    "@microrealestate/common": "*",
     "cookie-parser": "1.4.5",
     "express": "4.17.1",
     "express-winston": "2.6.0",

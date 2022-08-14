@@ -1,7 +1,7 @@
 const logger = require('winston');
 const AWS = require('aws-sdk');
 const fs = require('fs-extra');
-const crypto = require('@mre/common/utils/crypto');
+const crypto = require('@microrealestate/common/utils/crypto');
 
 function _initS3(b2Config) {
   const credentials = new AWS.Credentials(

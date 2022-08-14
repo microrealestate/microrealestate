@@ -9,10 +9,10 @@ COPY services/api services/api
 COPY package.json .
 COPY yarn.lock .
 
-RUN yarn workspace api install --frozen-lockfile
+RUN yarn workspace @microrealestate/api install --frozen-lockfile
 
 RUN chown -R node:node /usr/app
 
 USER node
 
-CMD ["yarn", "workspace", "api", "run", "dev"]
+CMD ["yarn", "workspace", "@microrealestate/api", "run", "dev"]

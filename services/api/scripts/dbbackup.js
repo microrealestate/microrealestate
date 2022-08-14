@@ -1,7 +1,7 @@
 const path = require('path');
 const { URL } = require('url');
 const mongobackup = require('mongobackup');
-const config = require('@mre/common/config');
+const config = require('@microrealestate/common/config');
 const moment = require('moment');
 
 const connectionString = config.MONGO_URL;

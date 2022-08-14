@@ -2,6 +2,15 @@ import * as Yup from 'yup';
 
 import { Box, Button, Grid } from '@material-ui/core';
 import {
+  DateField,
+  NumberField,
+  RangeDateField,
+  Section,
+  SelectField,
+  SubmitButton,
+  TextField,
+} from '@microrealestate/commonui/components';
+import {
   FieldArray,
   Form,
   Formik,
@@ -17,17 +26,10 @@ import {
   useState,
 } from 'react';
 
-import DateField from '../../FormFields/DateField';
 import moment from 'moment';
 import { nanoid } from 'nanoid';
-import NumberField from '../../FormFields/NumberField';
 import { observer } from 'mobx-react-lite';
-import RangeDateField from '../../FormFields/RangeDateField';
-import Section from '../../FormFields/Section';
-import SelectField from '../../FormFields/SelectField';
 import { StoreContext } from '../../../store';
-import SubmitButton from '../../FormFields/SubmitButton';
-import TextField from '../../FormFields/TextField';
 import useTranslation from 'next-translate/useTranslation';
 
 const validationSchema = Yup.object().shape({

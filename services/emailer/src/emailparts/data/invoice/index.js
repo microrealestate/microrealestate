@@ -1,5 +1,5 @@
 const moment = require('moment');
-const Tenant = require('@mre/common/models/tenant');
+const Tenant = require('@microrealestate/common/models/tenant');
 
 module.exports = {
   get: async (tenantId, params) => {

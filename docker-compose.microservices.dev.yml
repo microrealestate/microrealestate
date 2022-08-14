@@ -76,7 +76,7 @@ services:
       context: .
       dockerfile: webapps/landlord/dev.Dockerfile
     volumes:
-      - ./services/common:/usr/app/services/common
+      - ./webapps/commonui:/usr/app/webapps/commonui
       - ./webapps/landlord:/usr/app/webapps/landlord
       - /usr/app/webapps/landlord/public
       - /usr/app/node_modules

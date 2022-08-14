@@ -1,12 +1,14 @@
 import * as Yup from 'yup';
 
 import { Form, Formik } from 'formik';
+import {
+  Section,
+  SubmitButton,
+  TextField,
+} from '@microrealestate/commonui/components';
 import { useCallback, useContext, useMemo } from 'react';
 
-import Section from '../FormFields/Section';
 import { StoreContext } from '../../store';
-import SubmitButton from '../FormFields/SubmitButton';
-import TextField from '../FormFields/TextField';
 import useTranslation from 'next-translate/useTranslation';
 
 const validationSchema = Yup.object().shape({

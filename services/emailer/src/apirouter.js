@@ -4,7 +4,7 @@ const logger = require('winston');
 const {
   needAccessToken,
   checkOrganization,
-} = require('@mre/common/utils/middlewares');
+} = require('@microrealestate/common/utils/middlewares');
 const emailer = require('./emailer');
 const config = require('./config');
 

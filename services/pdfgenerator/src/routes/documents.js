@@ -5,11 +5,11 @@ const fs = require('fs-extra');
 const moment = require('moment');
 
 const path = require('path');
-const Document = require('@mre/common/models/document');
-const Template = require('@mre/common/models/template');
-const Tenant = require('@mre/common/models/tenant');
-const Lease = require('@mre/common/models/lease');
-const Format = require('@mre/common/utils/format');
+const Document = require('@microrealestate/common/models/document');
+const Template = require('@microrealestate/common/models/template');
+const Tenant = require('@microrealestate/common/models/tenant');
+const Lease = require('@microrealestate/common/models/lease');
+const Format = require('@microrealestate/common/utils/format');
 const config = require('../config');
 const pdf = require('../pdf');
 const uploadMiddleware = require('../utils/uploadmiddelware');

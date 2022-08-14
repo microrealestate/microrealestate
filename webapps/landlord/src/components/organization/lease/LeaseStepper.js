@@ -1,8 +1,7 @@
+import LeaseForm, { validate as LeaseFormValidate } from './LeaseForm';
 import { useCallback, useContext, useState } from 'react';
 
 import { Box } from '@material-ui/core';
-import LeaseForm from './LeaseForm';
-import { validate as LeaseFormValidate } from './LeaseForm';
 import Step from '@material-ui/core/Step';
 import StepContent from '@material-ui/core/StepContent';
 import StepLabel from '@material-ui/core/StepLabel';

@@ -1,7 +1,7 @@
 const logger = require('winston');
 const moment = require('moment');
-const TenantModel = require('@mre/common/models/tenant');
-const PropertyModel = require('@mre/common/models/property');
+const TenantModel = require('@microrealestate/common/models/tenant');
+const PropertyModel = require('@microrealestate/common/models/property');
 
 function all(req, res) {
   const fetch = async () => {

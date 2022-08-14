@@ -1,4 +1,4 @@
-const Tenant = require('@mre/common/models/tenant');
+const Tenant = require('@microrealestate/common/models/tenant');
 const moment = require('moment');
 const { Parser } = require('json2csv');
 const i18n = require('i18n');

@@ -20,21 +20,23 @@ import {
 import { Form, Formik } from 'formik';
 import { memo, useCallback, useContext, useMemo, useState } from 'react';
 import { RestrictButton, RestrictIconButton } from '../RestrictedComponents';
+import {
+  Section,
+  SelectField,
+  SubmitButton,
+  TextField,
+} from '@microrealestate/commonui/components';
 
 import AddIcon from '@material-ui/icons/Add';
 import DeleteIcon from '@material-ui/icons/Delete';
 import { observer } from 'mobx-react-lite';
 import PersonIcon from '@material-ui/icons/Person';
-import Section from '../FormFields/Section';
-import SelectField from '../FormFields/SelectField';
 import { StoreContext } from '../../store';
-import SubmitButton from '../FormFields/SubmitButton';
 import SupervisorAccountIcon from '@material-ui/icons/SupervisorAccount';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
-import TextField from '../FormFields/TextField';
 import useConfirmDialog from '../ConfirmDialog';
 import useTranslation from 'next-translate/useTranslation';
 import WarningIcon from '@material-ui/icons/Warning';

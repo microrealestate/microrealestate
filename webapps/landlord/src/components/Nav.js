@@ -59,7 +59,7 @@ const MENU_ITEMS = [
   {
     key: 'accounting',
     labelId: 'Accounting',
-    pathname: `/accounting/[year]`,
+    pathname: '/accounting/[year]',
     Icon: AccountBalanceWalletIcon,
     dataCy: 'accountingNav',
   },

@@ -12,7 +12,7 @@ import { useCallback, useContext, useEffect, useState } from 'react';
 
 import { ElevationScroll } from './Scroll';
 import getConfig from 'next/config';
-import Loading from './Loading';
+import { Loading } from '@microrealestate/commonui/components';
 import MobileMenu from './MobileMenu';
 import { observer } from 'mobx-react-lite';
 import OrganizationSwitcher from './organization/OrganizationSwitcher';

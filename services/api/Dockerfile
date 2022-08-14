@@ -15,7 +15,7 @@ COPY yarn.lock .
 ENV NODE_ENV production
 
 RUN yarn global add pm2 && \
-    yarn workspace api install --frozen-lockfile --production && \
+    yarn workspace @microrealestate/api install --frozen-lockfile --production && \
     yarn cache clean
 
 RUN chown -R node:node /usr/app

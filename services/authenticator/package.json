@@ -1,5 +1,5 @@
 {
-  "name": "authenticator",
+  "name": "@microrealestate/authenticator",
   "version": "1.0.0",
   "description": "Authenticator service",
   "main": "./src/index.js",
@@ -22,7 +22,7 @@
     "nodemon": "2.0.19"
   },
   "dependencies": {
-    "@mre/common": "*",
+    "@microrealestate/common": "*",
     "bcrypt": "5.0.1",
     "cookie-parser": "1.4.5",
     "express": "4.17.1",

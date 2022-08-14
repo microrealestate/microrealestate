@@ -13,7 +13,7 @@ import { forwardRef, Fragment, useCallback, useState } from 'react';
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
 import { hexToRgb } from '../styles/styles';
-import Loading from './Loading';
+import { Loading } from '@microrealestate/commonui/components';
 import { MobileButton } from './MobileMenuButton';
 import Slide from '@material-ui/core/Slide';
 import Typography from '@material-ui/core/Typography';

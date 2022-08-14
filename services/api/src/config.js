@@ -1,4 +1,4 @@
-const baseConfig = require('@mre/common/config');
+const baseConfig = require('@microrealestate/common/config');
 
 const toBoolean = (value) => {
   if (value && typeof value !== 'boolean') {

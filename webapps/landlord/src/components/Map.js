@@ -2,7 +2,7 @@ import { Marker, Map as PigeonMap } from 'pigeon-maps';
 import { memo, useEffect, useState } from 'react';
 
 import axios from 'axios';
-import Loading from './Loading';
+import { Loading } from '@microrealestate/commonui/components';
 import { LocationIllustration } from './Illustrations';
 import useComponentMountedRef from '../hooks/useComponentMountedRef';
 import { useTheme } from '@material-ui/core';

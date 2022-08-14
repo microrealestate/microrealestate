@@ -1,7 +1,7 @@
 import { useCallback, useContext } from 'react';
 
 import { Button } from '@material-ui/core';
-import Section from '../../FormFields/Section';
+import { Section } from '@microrealestate/commonui/components';
 import { StoreContext } from '../../../store';
 import TemplateList from './TemplateList';
 import useTranslation from 'next-translate/useTranslation';

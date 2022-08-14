@@ -1,5 +1,5 @@
 import { Box, Hidden } from '@material-ui/core';
-import { useContext, useMemo, useState } from 'react';
+import { useContext, useEffect, useMemo, useState } from 'react';
 
 import GeneralFigures from '../../components/dashboard/GeneralFigures';
 import MonthFigures from '../../components/dashboard/MonthFigures';
@@ -8,7 +8,6 @@ import Page from '../../components/Page';
 import Shortcuts from '../../components/dashboard/Shortcuts';
 import { StoreContext } from '../../store';
 import useComponentMountedRef from '../../hooks/useComponentMountedRef';
-import { useEffect } from 'react';
 import Welcome from '../../components/Welcome';
 import { withAuthentication } from '../../components/Authentication';
 import YearFigures from '../../components/dashboard/YearFigures';

@@ -2,7 +2,7 @@ import { useCallback, useContext, useEffect, useState } from 'react';
 
 import { apiFetcher } from '../../utils/fetch';
 import Lightbox from 'react-awesome-lightbox';
-import Loading from '../Loading';
+import { Loading } from '@microrealestate/commonui/components';
 import { StoreContext } from '../../store';
 import useTranslation from 'next-translate/useTranslation';
 
