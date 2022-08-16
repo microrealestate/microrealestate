@@ -10,7 +10,9 @@ module.exports = {
     process.env.NODE_ENV === 'production' ||
     process.env.ALLOW_SENDING_EMAILS === 'true',
   APP_NAME: process.env.APP_NAME || 'Loca',
-  APP_URL: process.env.APP_URL || 'http://localhost:8080/app',
+  LANDLORD_APP_URL:
+    process.env.LANDLORD_APP_URL || 'http://localhost:8080/landlord',
+  TENANT_APP_URL: process.env.TENANT_APP_URL || 'http://localhost:8080/tenant',
   PORT: process.env.PORT || 8083,
   MAILGUN: {
     apiKey: process.env.MAILGUN_API_KEY || 'your_api_key',

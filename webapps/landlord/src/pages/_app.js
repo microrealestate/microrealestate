@@ -25,7 +25,7 @@ const {
   publicRuntimeConfig: { APP_NAME, DEMO_MODE },
 } = getConfig();
 
-const APP_TITLE = [APP_NAME];
+const APP_TITLE = [APP_NAME, 'Landlord'];
 if (process.env.NODE_ENV === 'development') {
   APP_TITLE.push('DEV');
 } else if (DEMO_MODE) {

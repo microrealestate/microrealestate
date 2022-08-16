@@ -1,0 +1,31 @@
+{
+  "name": "@microrealestate/tenant",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint --no-cache",
+    "format": "prettier --write '**/*.{js,jsx,ts,tsx,json,css}'",
+    "generateStrings": "node scripts/extractlocalizedstrings.js"
+  },
+  "dependencies": {
+    "@microrealestate/commonui": "*",
+    "axios": "0.27.2",
+    "formik": "2.2.9",
+    "jose": "4.8.3",
+    "lodash": "4.17.21",
+    "material-ui-formik-components": "0.7.3",
+    "moment": "2.29.4",
+    "next": "12.2.5",
+    "next-translate": "1.5.0",
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
+  },
+  "devDependencies": {
+    "eslint": "8.22.0",
+    "eslint-config-next": "12.2.5",
+    "fdir": "5.2.0"
+  }
+}
