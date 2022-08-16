@@ -1,5 +1,6 @@
 const crypto = require('crypto');
 const clui = require('clui');
+const fs = require('fs');
 const chalk = require('chalk');
 const { spawn } = require('child_process');
 const path = require('path');
@@ -14,6 +15,13 @@ const generateRandomToken = (size = 64) => {
 
 const removeEndLineBreak = (log) => {
   return log.replace(/\s$/g, '');
+};
+
+const parseEnv = (wd) => {
+  const dotEnvFilePath = path.resolve(wd || process.cwd(), '.env');
+  const env = dotenv.parse(fs.readFileSync(dotEnvFilePath));
+
+  return dotenvExpand.expand({ ignoreProcessEnv: true, parsed: env }).parsed;
 };
 
 const loadEnv = (wd, runMode) => {
@@ -117,18 +125,49 @@ const runCompose = async (
   );
 };
 
-const computeUrl = (baseUrl) => {
+const destructUrl = (baseUrl) => {
   const url = new URL(baseUrl);
+  const canonicalHostname = url.hostname.split('.');
+  let subDomain;
+  let domain = url.hostname;
+  if (canonicalHostname.length >= 3) {
+    subDomain = canonicalHostname.slice(0, -2).join('.');
+    domain = `${canonicalHostname.at(-2)}.${canonicalHostname.at(-1)}`;
+  }
+  let basePath;
+  if (url.pathname !== '/') {
+    basePath = url.pathname;
+  }
+
   return {
-    baseUrl: `${url.protocol}//${url.hostname}`,
-    basePath: url.pathname !== '/' ? url.pathname : '',
+    protocol: url.protocol,
+    subDomain,
+    domain,
     port: url.port,
+    basePath,
   };
+};
+
+const buildUrl = ({ protocol, subDomain, domain, port, basePath }) => {
+  let url = `${protocol}//`;
+  if (subDomain) {
+    url += `${subDomain}.`;
+  }
+  url += `${domain}`;
+  if (port) {
+    url += `:${port}`;
+  }
+  if (basePath) {
+    url += basePath;
+  }
+  return url;
 };
 
 module.exports = {
   generateRandomToken,
   loadEnv,
+  parseEnv,
   runCompose,
-  computeUrl,
+  destructUrl,
+  buildUrl,
 };

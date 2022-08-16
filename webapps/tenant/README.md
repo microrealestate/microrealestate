@@ -1,3 +1,3 @@
-# Landlord frontend
+# Tenant frontend
 
 New UI with React and NextJS

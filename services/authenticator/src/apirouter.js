@@ -8,12 +8,12 @@ const config = require('./config');
 const redis = require('@microrealestate/common/models/redis');
 const AccountModel = require('@microrealestate/common/models/account');
 
-const APP_URL = new URL(config.APP_URL);
+const DOMAIN_URL = new URL(config.DOMAIN_URL);
 const refreshTokenCookieAttributes = {
   httpOnly: true,
   sameSite: 'Strict',
-  secure: APP_URL.protocol === 'https:',
-  domain: APP_URL.hostname,
+  secure: DOMAIN_URL.protocol === 'https:',
+  domain: DOMAIN_URL.hostname,
 };
 
 const _generateTokens = async (dbAccount) => {

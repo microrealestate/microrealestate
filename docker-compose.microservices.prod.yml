@@ -93,12 +93,26 @@ services:
     # depends_on:
     #   - kibana
   ###############################################################################
-  # Frontend
+  # Landlord frontend
   ###############################################################################
-  frontend:
+  landlord-frontend:
     build:
       context: .
       dockerfile: webapps/landlord/Dockerfile
+    # logging:
+    #   driver: syslog
+    #   options:
+    #     syslog-address: 'udp://localhost:$LOGSTASH_UDP_PORT'
+    #     tag: '{{.Name}}/{{.ID}}'
+    # depends_on:
+    #   - kibana
+  ###############################################################################
+  # Tenant frontend
+  ###############################################################################
+  tenant-frontend:
+    build:
+      context: .
+      dockerfile: webapps/tenant/Dockerfile
     # logging:
     #   driver: syslog
     #   options:

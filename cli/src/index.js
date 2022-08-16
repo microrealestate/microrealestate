@@ -18,6 +18,7 @@ const {
   dumpDB,
   askBackupFile,
 } = require('./commands');
+const { parseEnv } = require('./utils');
 
 const argv = minimist(process.argv.slice(2));
 
@@ -45,12 +46,14 @@ const Main = async () => {
     return displayHelp();
   }
 
-  if (fs.existsSync('.env')) {
+  let envConfig = null;
+  if (fs.existsSync(path.resolve(process.cwd(), '.env'))) {
     console.log('Found .env file and rely on it to run\n');
-  } else {
-    const envConfig = await askForEnvironmentVariables();
-    writeDotEnv(envConfig);
+    envConfig = parseEnv();
   }
+
+  const promptsConfig = await askForEnvironmentVariables(envConfig);
+  writeDotEnv(promptsConfig, envConfig);
 
   switch (command) {
     case 'build':
@@ -71,8 +74,8 @@ const Main = async () => {
       await status();
       break;
     case 'config': {
-      const { runConfig = 'prod' } = await askRunMode();
-      await config(runConfig);
+      const { runMode = 'prod' } = await askRunMode();
+      await config(runMode);
       break;
     }
     case 'restoredb': {

@@ -1,63 +1,58 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "type": "node",
-            "request": "attach",
-            "name": "Docker: Attach to API",
-            "port": 9230,
-            "address": "localhost",
-            "localRoot": "${workspaceFolder}/",
-            "remoteRoot": "/usr/app/",
-            "protocol": "inspector",
-            "restart": true
-        },
-        {
-            "type": "node",
-            "request": "attach",
-            "name": "Docker: Attach to Authenticator",
-            "port": 9226,
-            "address": "localhost",
-            "localRoot": "${workspaceFolder}/",
-            "remoteRoot": "/usr/app/",
-            "protocol": "inspector",
-            "restart": true
-        },
-        {
-            "type": "node",
-            "request": "attach",
-            "name": "Docker: Attach to Emailer",
-            "port": 9228,
-            "address": "localhost",
-            "localRoot": "${workspaceFolder}/",
-            "remoteRoot": "/usr/app/",
-            "protocol": "inspector",
-            "restart": true
-        },
-        {
-            "type": "node",
-            "request": "attach",
-            "name": "Docker: Attach to PdfGenerator",
-            "port": 9227,
-            "address": "localhost",
-            "localRoot": "${workspaceFolder}/",
-            "remoteRoot": "/usr/app/",
-            "protocol": "inspector",
-            "restart": true
-        },
-        {
-            "type": "node",
-            "request": "attach",
-            "name": "Docker: Attach to ResetService",
-            "port": 9225,
-            "address": "localhost",
-            "localRoot": "${workspaceFolder}/",
-            "remoteRoot": "/usr/app/",
-            "protocol": "inspector",
-            "restart": true
-        }
-    ]
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "attach",
+      "name": "Docker: Attach to API",
+      "port": 9230,
+      "address": "localhost",
+      "localRoot": "${workspaceFolder}/",
+      "remoteRoot": "/usr/app/",
+      "restart": true
+    },
+    {
+      "type": "node",
+      "request": "attach",
+      "name": "Docker: Attach to Authenticator",
+      "port": 9226,
+      "address": "localhost",
+      "localRoot": "${workspaceFolder}/",
+      "remoteRoot": "/usr/app/",
+      "restart": true
+    },
+    {
+      "type": "node",
+      "request": "attach",
+      "name": "Docker: Attach to Emailer",
+      "port": 9228,
+      "address": "localhost",
+      "localRoot": "${workspaceFolder}/",
+      "remoteRoot": "/usr/app/",
+      "restart": true
+    },
+    {
+      "type": "node",
+      "request": "attach",
+      "name": "Docker: Attach to PdfGenerator",
+      "port": 9227,
+      "address": "localhost",
+      "localRoot": "${workspaceFolder}/",
+      "remoteRoot": "/usr/app/",
+      "restart": true
+    },
+    {
+      "type": "node",
+      "request": "attach",
+      "name": "Docker: Attach to ResetService",
+      "port": 9225,
+      "address": "localhost",
+      "localRoot": "${workspaceFolder}/",
+      "remoteRoot": "/usr/app/",
+      "restart": true
+    }
+  ]
 }

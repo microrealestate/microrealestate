@@ -8,7 +8,8 @@ const moment = require('moment');
 const {
   generateRandomToken,
   runCompose,
-  computeUrl,
+  buildUrl,
+  destructUrl,
   loadEnv,
 } = require('./utils');
 
@@ -196,7 +197,7 @@ const displayHelp = () => {
   );
 };
 
-const askForEnvironmentVariables = () => {
+const askForEnvironmentVariables = (envConfig) => {
   const questions = [
     {
       name: 'dbData',
@@ -239,9 +240,9 @@ const askForEnvironmentVariables = () => {
       when: (answers) => answers.mailgunConfig,
     },
     {
-      name: 'appUrl',
+      name: 'landlordAppUrl',
       type: 'input',
-      message: 'Enter the URL to use to access the front-end:',
+      message: 'Enter the URL to access the landlord front-end:',
       validate: (input) => {
         try {
           new URL(input);
@@ -250,10 +251,61 @@ const askForEnvironmentVariables = () => {
           return false;
         }
       },
-      default: 'http://localhost:8080/app',
+      default: 'http://localhost:8080/landlord',
+    },
+    {
+      name: 'tenantAppUrl',
+      type: 'input',
+      message:
+        'Enter the URL to access the tenant front-end (it should share the same domain and port as the landlord front-end URL):',
+      validate: (input, answers) => {
+        try {
+          const { domain: tenantDomain, port: tenantPort } = destructUrl(input);
+          const { domain: landlordDomain, port: landlordPort } = destructUrl(
+            answers.landlordAppUrl
+          );
+
+          return tenantDomain === landlordDomain && tenantPort === landlordPort;
+        } catch (error) {
+          return false;
+        }
+      },
+      default: (answers) => {
+        try {
+          const { protocol, subDomain, domain, port, basePath } = destructUrl(
+            answers.landlordAppUrl
+          );
+          if (basePath) {
+            return buildUrl({
+              protocol,
+              subDomain,
+              domain,
+              port,
+              basePath: '/tenant',
+            });
+          }
+          return buildUrl({
+            protocol,
+            subDomain: 'tenant',
+            domain,
+            port,
+          });
+        } catch (error) {
+          return 'http://localhost:8080/tenant';
+        }
+      },
     },
   ];
-  return inquirer.prompt(questions);
+  return inquirer.prompt(questions, {
+    dbData: envConfig?.DEMO_MODE === 'true' ? 'demo_data' : 'empty_data',
+    mailgunConfig: envConfig?.ALLOW_SENDING_EMAILS,
+    mailgunApiKey: envConfig?.MAILGUN_API_KEY,
+    mailgunDomain: envConfig?.MAILGUN_DOMAIN,
+    mailgunFromEmail: envConfig?.EMAIL_FROM,
+    mailgunReplyToEmail: envConfig?.EMAIL_REPLY_TO,
+    landlordAppUrl: envConfig?.APP_URL || envConfig?.LANDLORD_APP_URL,
+    tenantAppUrl: envConfig?.TENANT_APP_URL,
+  });
 };
 
 const askRunMode = () => {
@@ -287,26 +339,97 @@ const askBackupFile = (backupFiles) => {
   return inquirer.prompt(questions);
 };
 
-const writeDotEnv = (config) => {
-  const cipherKey = generateRandomToken(32);
-  const cipherIvKey = generateRandomToken(32);
-  const tokenDbPassword = generateRandomToken(64);
-  const accessTokenSecret = generateRandomToken(64);
-  const refreshTokenSecret = generateRandomToken(64);
-  const resetTokenSecret = generateRandomToken(64);
-  const { baseUrl, basePath, port } = computeUrl(config.appUrl);
-  const mailgunApiKey = config.mailgunApiKey || '';
-  const mailgunDomain = config.mailgunDomain || '';
-  const mailgunFromEmail = config.mailgunFromEmail || '';
-  const mailgunReplyToEmail = config.mailgunReplyToEmail || '';
-  const mailgunBccEmails = config.mailgunBccEmails || '';
-  const demoMode = config.dbData === 'demo_data';
-  const restoreDb = demoMode;
+const writeDotEnv = (promptsConfig, envConfig) => {
+  const cipherKey = envConfig?.CIPHER_KEY || generateRandomToken(32);
+  const cipherIvKey = envConfig?.CIPHER_IV_KEY || generateRandomToken(32);
+  const tokenDbPassword =
+    envConfig?.AUTHENTICATOR_TOKEN_DB_PASSWORD || generateRandomToken(64);
+  const accessTokenSecret =
+    envConfig?.AUTHENTICATOR_ACCESS_TOKEN_SECRET || generateRandomToken(64);
+  const refreshTokenSecret =
+    envConfig?.AUTHENTICATOR_REFRESH_TOKEN_SECRET || generateRandomToken(64);
+  const resetTokenSecret =
+    envConfig?.AUTHENTICATOR_RESET_TOKEN_SECRET || generateRandomToken(64);
+  const {
+    protocol,
+    domain,
+    port,
+    basePath: landlordBasePath,
+  } = destructUrl(promptsConfig.landlordAppUrl);
+  const { basePath: tenantBasePath } = destructUrl(promptsConfig.tenantAppUrl);
+  const sendEmails = !!promptsConfig.mailgunConfig;
+  const mailgunApiKey = promptsConfig.mailgunApiKey || '';
+  const mailgunDomain = promptsConfig.mailgunDomain || '';
+  const mailgunFromEmail = promptsConfig.mailgunFromEmail || '';
+  const mailgunReplyToEmail = promptsConfig.mailgunReplyToEmail || '';
+  const mailgunBccEmails = promptsConfig.mailgunBccEmails || '';
+  const demoMode = promptsConfig.dbData === 'demo_data';
+  const restoreDb = envConfig?.RESTORE_DB || demoMode;
   const dbName = demoMode ? 'demodb' : 'mre';
-  const sendEmails = !!config.mailgunConfig;
+  const dbUrl = envConfig?.BASE_DB_URL || `mongodb://mongo/${dbName}`;
+  const nginxPort = envConfig?.NGINX_PORT || port || '8000';
+  const domainUrl =
+    envConfig?.DOMAIN_URL ||
+    buildUrl({
+      ...destructUrl(promptsConfig.landlordAppUrl),
+      subDomain: null,
+      port: null,
+      basePath: null,
+    });
+  const apiUrl =
+    envConfig?.API_URL ||
+    buildUrl({ protocol, domain, port: '${NGINX_PORT}', basePath: '/api/v2' });
+  const landlordAppUrl =
+    envConfig?.LANDLORD_APP_URL ||
+    buildUrl({
+      ...destructUrl(promptsConfig.landlordAppUrl),
+      port: '${NGINX_PORT}',
+    });
+  const tenantAppUrl =
+    envConfig?.TENANT_APP_URL ||
+    buildUrl({
+      ...destructUrl(promptsConfig.tenantAppUrl),
+      port: '${NGINX_PORT}',
+    });
+
+  if (envConfig) {
+    // delete env variables already taken in account in prompts
+    delete envConfig.BASE_DB_URL;
+    delete envConfig.CIPHER_KEY;
+    delete envConfig.CIPHER_IV_KEY;
+    delete envConfig.AUTHENTICATOR_TOKEN_DB_PASSWORD;
+    delete envConfig.AUTHENTICATOR_ACCESS_TOKEN_SECRET;
+    delete envConfig.AUTHENTICATOR_REFRESH_TOKEN_SECRET;
+    delete envConfig.AUTHENTICATOR_RESET_TOKEN_SECRET;
+    delete envConfig.ALLOW_SENDING_EMAILS;
+    delete envConfig.MAILGUN_API_KEY;
+    delete envConfig.MAILGUN_DOMAIN;
+    delete envConfig.EMAIL_FROM;
+    delete envConfig.EMAIL_REPLY_TO;
+    delete envConfig.EMAIL_BCC;
+    delete envConfig.DEMO_MODE;
+    delete envConfig.RESTORE_DB;
+    delete envConfig.NGINX_PORT;
+    delete envConfig.BASE_PATH;
+    delete envConfig.APP_URL;
+    delete envConfig.API_URL;
+    delete envConfig.LANDLORD_BASE_PATH;
+    delete envConfig.LANDLORD_APP_URL;
+    delete envConfig.TENANT_BASE_PATH;
+    delete envConfig.TENANT_APP_URL;
+  }
+
+  const listCustomEnvVariables = envConfig ? Object.entries(envConfig) : [];
+  const others = listCustomEnvVariables.length
+    ? `## others
+${Object.entries(envConfig)
+  .map(([key, value]) => `${key}=${value}`)
+  .join('\n')}`
+    : '';
+
   const content = `
 ## mongo
-BASE_DB_URL=mongodb://mongo/${dbName}
+BASE_DB_URL=${dbUrl}
 CIPHER_KEY=${cipherKey}
 CIPHER_IV_KEY=${cipherIvKey}
 
@@ -329,12 +452,21 @@ DEMO_MODE=${demoMode}
 RESTORE_DB=${restoreDb}
 
 ## frontend
-${basePath ? `BASE_PATH=${basePath}` : ''}
-${port ? `NGINX_PORT=${port}` : ''}
-APP_URL=${baseUrl}:$\{NGINX_PORT}$\{BASE_PATH}
-API_URL=${baseUrl}:$\{NGINX_PORT}/api/v2
+NGINX_PORT=${nginxPort}
+DOMAIN_URL=${domainUrl}
+API_URL=${apiUrl}
+
+## landlord frontend
+LANDLORD_BASE_PATH=${landlordBasePath || ''}
+LANDLORD_APP_URL=${landlordAppUrl}
+
+## tenant frontend
+TENANT_BASE_PATH=${tenantBasePath || ''}
+TENANT_APP_URL=${tenantAppUrl}
+
+${others}
 `;
-  fs.writeFileSync('.env', content);
+  fs.writeFileSync(path.resolve(process.cwd(), '.env'), content);
 };
 
 module.exports = {

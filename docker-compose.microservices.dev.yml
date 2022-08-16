@@ -69,9 +69,9 @@ services:
     ports:
       - "$API_DEBUG_PORT:9230"
   ###############################################################################
-  # Frontend
+  # Landlord frontend
   ###############################################################################
-  frontend:
+  landlord-frontend:
     build:
       context: .
       dockerfile: webapps/landlord/dev.Dockerfile
@@ -82,3 +82,17 @@ services:
       - /usr/app/node_modules
       - /usr/app/webapps/landlord/node_modules
       - /usr/app/webapps/landlord/.next
+  ###############################################################################
+  # Tenant frontend
+  ###############################################################################
+  tenant-frontend:
+    build:
+      context: .
+      dockerfile: webapps/tenant/dev.Dockerfile
+    volumes:
+      - ./webapps/commonui:/usr/app/webapps/commonui
+      - ./webapps/tenant:/usr/app/webapps/tenant
+      - /usr/app/webapps/tenant/public
+      - /usr/app/node_modules
+      - /usr/app/webapps/tenant/node_modules
+      - /usr/app/webapps/tenant/.next
