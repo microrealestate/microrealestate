@@ -7,19 +7,12 @@ import moment from 'moment';
 // As of 2.8.0, changing the global locale doesn't affect existing instances.
 // https://momentjscom.readthedocs.io/en/latest/moment/06-i18n/01-changing-locale/
 function getMoment(current) {
-  if (!current) {
-    return moment();
-  }
-  const locale = moment().locale;
-  if (current.locale !== locale) {
-    current.locale(locale);
-  }
-  return current;
+  return moment(current);
 }
 export default class Rent {
   selected = {};
   filters = { searchText: '', status: '' };
-  _period;
+  _period = moment();
   items = [];
   countAll;
   countPaid;
@@ -41,6 +34,7 @@ export default class Rent {
       totalToPay: observable,
       totalPaid: observable,
       totalNotPaid: observable,
+      _period: observable,
       period: computed,
       periodAsString: computed,
       filteredItems: computed,
@@ -57,12 +51,10 @@ export default class Rent {
   }
 
   get period() {
-    this._period = getMoment(this._period);
-    return this._period;
+    return getMoment(this._period);
   }
 
   get periodAsString() {
-    this._period = getMoment(this._period);
     return this._period.format('YYYY.MM');
   }
 
@@ -138,7 +130,7 @@ export default class Rent {
   setFilters = ({ searchText = '', status = '' }) =>
     (this.filters = { searchText, status });
 
-  setPeriod = (period) => (this._period = period);
+  setPeriod = (period) => (this._period = getMoment(period));
 
   *fetchWithoutUpdatingStore(period = moment()) {
     try {
