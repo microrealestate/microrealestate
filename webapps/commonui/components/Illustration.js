@@ -10,14 +10,8 @@ export function Illustration({
   height = 200,
 }) {
   return (
-    <Box
-      display="flex"
-      flexDirection="column"
-      justifyContent="center"
-      height="100%"
-      width={width}
-    >
-      <Box height={height} width={width} position="relative">
+    <>
+      <Box position="relative" align="center" width={width} height={height}>
         <Image src={src} layout="fill" alt={alt} />
       </Box>
       {!!label && (
@@ -27,6 +21,6 @@ export function Illustration({
           </Typography>
         </Box>
       )}
-    </Box>
+    </>
   );
 }
