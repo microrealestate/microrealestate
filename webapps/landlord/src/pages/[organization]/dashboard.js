@@ -23,7 +23,6 @@ const fetchDashboardData = async (store) => {
 };
 
 const Dashboard = observer(() => {
-  console.log('Dashboard functional component');
   const store = useContext(StoreContext);
   const [ready, setReady] = useState(false);
   const mountedRef = useComponentMountedRef();

@@ -72,7 +72,6 @@ function PeriodToolbar({ onChange }) {
 }
 
 const Rents = observer(() => {
-  console.log('Rents functional component');
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const router = useRouter();
@@ -216,7 +215,6 @@ const Rents = observer(() => {
 });
 
 Rents.getInitialProps = async (context) => {
-  console.log('Rents.getInitialProps');
   const store = isServer() ? context.store : getStoreInstance();
 
   if (isServer()) {

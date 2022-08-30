@@ -19,7 +19,6 @@ const Index = (props) => {
 };
 
 Index.getInitialProps = async (context) => {
-  console.log('Index.getInitialProps');
   const store = isServer() ? context.store : getStoreInstance();
 
   let redirectPath = '/firstaccess';

@@ -81,7 +81,6 @@ const FirstAccess = observer(() => {
 });
 
 FirstAccess.getInitialProps = async (context) => {
-  console.log('FirstAccess.getInitialProps');
   const store = isServer() ? context.store : getStoreInstance();
 
   if (isServer()) {

@@ -50,7 +50,6 @@ export default class Store {
       return;
     }
 
-    console.log('hydrate store');
     const {
       user = {},
       organization = {

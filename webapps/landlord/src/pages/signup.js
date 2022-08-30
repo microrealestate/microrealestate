@@ -141,8 +141,6 @@ const SignUp = observer(({ pageError }) => {
 });
 
 SignUp.getInitialProps = async () => {
-  console.log('SignUp.getInitialProps');
-
   if (!SIGNUP) {
     return { pageError: { statusCode: 404 } };
   }

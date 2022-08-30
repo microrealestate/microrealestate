@@ -98,7 +98,6 @@ const OccupancyHistory = () => {
 
 const hashes = ['property'];
 const Property = observer(() => {
-  console.log('Property functional component');
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const router = useRouter();
@@ -306,7 +305,6 @@ const Property = observer(() => {
 });
 
 Property.getInitialProps = async (context) => {
-  console.log('Property.getInitialProps');
   const store = isServer() ? context.store : getStoreInstance();
   const propertyId = isServer()
     ? context.query.param[0]

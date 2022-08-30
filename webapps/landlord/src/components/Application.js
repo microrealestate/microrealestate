@@ -4,7 +4,6 @@ import { StoreContext } from '../store';
 import { useContext } from 'react';
 
 function Application({ children }) {
-  console.log('Application functional component');
   const store = useContext(StoreContext);
 
   const showNav = !!(

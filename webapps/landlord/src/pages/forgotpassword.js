@@ -22,7 +22,6 @@ const validationSchema = Yup.object().shape({
 });
 
 const ForgotPassword = observer(() => {
-  console.log('ForgotPassword functional component');
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const [emailSent, setEmailSent] = useState('');

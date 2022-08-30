@@ -265,7 +265,6 @@ function Page({
   maxWidth = 'lg',
   loading = false,
 }) {
-  console.log('Page functional component');
   const store = useContext(StoreContext);
   const [routeloading, setRouteLoading] = useState(false);
   const router = useRouter();
