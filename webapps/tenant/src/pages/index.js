@@ -1,9 +1,10 @@
+import { Container } from '@material-ui/core';
 import { UnderConstructionIllustration } from '../components/Illustrations';
 
 export default function Home() {
   return (
-    <div>
+    <Container>
       <UnderConstructionIllustration />
-    </div>
+    </Container>
   );
 }

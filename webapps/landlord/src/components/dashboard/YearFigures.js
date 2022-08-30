@@ -83,7 +83,7 @@ function YearFigures() {
         <Grid item xs={12}>
           <Paper>
             <Box py={2} px={3} width="100%" height={600}>
-              <ResponsiveContainer height={600}>
+              <ResponsiveContainer height={570}>
                 <BarChart
                   data={data}
                   layout="vertical"

@@ -5,7 +5,7 @@ const nextConfig = {
   experimental: {
     externalDir: true,
   },
-  reactStrictMode: true,
+  reactStrictMode: false, // true breaks the MaterialUI SSR
   swcMinify: false,
   serverRuntimeConfig: {
     APP_URL: process.env.APP_URL,
