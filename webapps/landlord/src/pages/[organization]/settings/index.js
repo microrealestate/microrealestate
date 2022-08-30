@@ -145,7 +145,6 @@ const Settings = observer(() => {
 });
 
 Settings.getInitialProps = async (context) => {
-  console.log('Settings.getInitialProps');
   const store = isServer() ? context.store : getStoreInstance();
 
   const { status } = await store.lease.fetch();

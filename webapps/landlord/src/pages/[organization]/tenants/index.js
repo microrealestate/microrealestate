@@ -255,7 +255,6 @@ const Tenants = observer(() => {
 });
 
 Tenants.getInitialProps = async (context) => {
-  console.log('Tenants.getInitialProps');
   const store = isServer() ? context.store : getStoreInstance();
 
   const { status } = await store.tenant.fetch();

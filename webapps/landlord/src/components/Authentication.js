@@ -15,7 +15,6 @@ const {
 
 export function withAuthentication(PageComponent, grantedRole) {
   function WithAuth(pageProps) {
-    console.log('WithAuth functional component');
     const store = useContext(StoreContext);
 
     useEffect(() => {
@@ -50,7 +49,6 @@ export function withAuthentication(PageComponent, grantedRole) {
   }
 
   WithAuth.getInitialProps = async (context) => {
-    console.log('WithAuth.getInitialProps');
     const store = getStoreInstance();
     context.store = store;
     if (isServer()) {

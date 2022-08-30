@@ -142,7 +142,6 @@ const Lease = observer(() => {
 });
 
 Lease.getInitialProps = async (context) => {
-  console.log('Lease.getInitialProps');
   const store = isServer() ? context.store : getStoreInstance();
   const {
     param: [leaseId],

@@ -25,7 +25,6 @@ import useTranslation from 'next-translate/useTranslation';
 import { withAuthentication } from '../../../components/Authentication';
 
 const Tenant = observer(() => {
-  console.log('Tenant functional component');
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const router = useRouter();
@@ -423,7 +422,6 @@ const Tenant = observer(() => {
 });
 
 Tenant.getInitialProps = async (context) => {
-  console.log('Tenant.getInitialProps');
   const store = isServer() ? context.store : getStoreInstance();
   const tenantId = isServer()
     ? context.query.param[0]

@@ -80,7 +80,6 @@ const PaymentTabs = ({ onSubmit }) => {
 };
 
 const RentPayment = observer(() => {
-  console.log('RentPayment functional component');
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const router = useRouter();
@@ -300,7 +299,6 @@ const RentPayment = observer(() => {
 });
 
 RentPayment.getInitialProps = async (context) => {
-  console.log('RentPayment.getInitialProps');
   const store = isServer() ? context.store : getStoreInstance();
   const {
     tenantId,

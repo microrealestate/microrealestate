@@ -51,7 +51,6 @@ Yup.addMethod(Yup.string, 'emails', function (message) {
 });
 
 function MyApp(props) {
-  console.log('MyApp functional component');
   const { Component, pageProps } = props;
 
   useEffect(() => {
@@ -83,7 +82,6 @@ function MyApp(props) {
 }
 
 MyApp.getInitialProps = async (appContext) => {
-  console.log('MyApp.getInitialProps');
   const appProps = await App.getInitialProps(appContext);
   if (!appProps.pageProps.initialState) {
     appProps.pageProps.initialState = {};

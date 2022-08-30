@@ -30,7 +30,6 @@ const validationSchema = Yup.object().shape({
 });
 
 function SignIn() {
-  console.log('Signin functional component');
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const [initialValues, setInitialValues] = useState(defaultValues);
