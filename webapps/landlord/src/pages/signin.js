@@ -81,9 +81,13 @@ function SignIn() {
             );
           }
           setOrganizationId(store.organization.selected._id);
-          router.push(`/${store.organization.selected.name}/dashboard`, null, {
-            locale: store.organization.selected.locale,
-          });
+          router.push(
+            `/${store.organization.selected.name}/dashboard`,
+            undefined,
+            {
+              locale: store.organization.selected.locale,
+            }
+          );
         } else {
           router.push('/firstaccess');
         }
