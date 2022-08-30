@@ -80,7 +80,7 @@ function MonthFigures() {
           </Box>
           <Paper>
             <Box pt={2} width="100%" height={296}>
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer height={296}>
                 <PieChart>
                   <Legend
                     verticalAlign="top"
