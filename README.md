@@ -1,6 +1,8 @@
+[![Donate](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub)](https://github.com/sponsors/camelaissani)
+
 # Microrealestate
 
-The application which helps the landlords to manage their property rents.
+The application that helps the landlords to manage their properties and rentals.
 
 ## Features
 
@@ -32,7 +34,7 @@ The main functionalities are:
 ### Prerequisite
 - [Docker and docker-compose installed](https://docs.docker.com/compose/install/)
 
-> The `mre` bash script is uses for building, running the application. If running on Windows use `mre.exe` on Mac `mre-macos`.
+> The `mre` executable is used for building and running the application. If running on Windows use `mre.exe` on Mac `mre-macos`.
 
 ### Clone the GitHub repository
 ```shell
@@ -69,18 +71,16 @@ Take your favorite internet navigator and go to this link: http://localhost:8080
 * Contribute on [Issues](https://github.com/microrealestate/microrealestate/issues)
 * [Run and debug the application](./documentation/DEVELOPER.md)
 
-## Donation
+## Donate
 
-Support me to work on this project and to enjoy one coffee or two :raised_hands:
-
+Support me to work on this project and to enjoy one coffee or two :raised_hands: 
 [![Donate](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub)](https://github.com/sponsors/camelaissani)
 
 ## Contact
 
 * LinkedIn: [www.linkedin.com/in/caissani](https://www.linkedin.com/in/caissani/)
-* twitter: [@camelaissani](https://twitter.com/camelaissani)
-* website: https://www.nuageprive.fr/
+* Twitter: [@camelaissani](https://twitter.com/camelaissani)
 
 ## License
 
-MIT License
+MIT
