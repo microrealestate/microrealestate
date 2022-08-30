@@ -87,7 +87,7 @@ const Rents = observer(() => {
       }
       router.push(
         `/${store.organization.selected.name}/rents/${store.rent.periodAsString}${queryString}`,
-        null,
+        undefined,
         { shallow: true }
       );
       store.rent.setFilters({ status, searchText });

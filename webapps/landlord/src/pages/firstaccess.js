@@ -54,7 +54,7 @@ const FirstAccess = observer(() => {
   };
 
   const onSubmitted = () => {
-    router.push(`/${store.organization.selected.name}/dashboard`, null, {
+    router.push(`/${store.organization.selected.name}/dashboard`, undefined, {
       locale: store.organization.selected.locale,
     });
   };

@@ -148,9 +148,13 @@ function Nav() {
           store.rent.periodAsString
         );
         pathname = pathname.replace('[year]', moment().year());
-        router.push(`/${store.organization.selected.name}${pathname}`, null, {
-          locale: store.organization.selected.locale,
-        });
+        router.push(
+          `/${store.organization.selected.name}${pathname}`,
+          undefined,
+          {
+            locale: store.organization.selected.locale,
+          }
+        );
       }
     },
     [
