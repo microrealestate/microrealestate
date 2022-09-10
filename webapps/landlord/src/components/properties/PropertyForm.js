@@ -43,6 +43,7 @@ const PropertyForm = observer(({ onSubmit }) => {
       type: store.property.selected?.type || '',
       name: store.property.selected?.name || '',
       description: store.property.selected?.description || '',
+      surface: store.property.selected?.surface || '',
       phone: store.property.selected?.phone || '',
       digicode: store.property.selected?.digicode || '',
       address: store.property.selected?.address || {
