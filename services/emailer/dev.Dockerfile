@@ -9,7 +9,8 @@ COPY services/emailer services/emailer
 COPY package.json .
 COPY yarn.lock .
 
-RUN yarn workspace @microrealestate/emailer install --frozen-lockfile
+RUN yarn config set network-timeout 600000 -g && \
+    yarn workspace @microrealestate/emailer install --frozen-lockfile
 
 RUN chown -R node:node /usr/app
 

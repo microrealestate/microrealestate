@@ -22,7 +22,8 @@ ENV BASE_PATH $BASE_PATH
 
 ENV NEXT_TELEMETRY_DISABLED=1
 
-RUN yarn workspace @microrealestate/landlord install --frozen-lockfile && \
+RUN yarn config set network-timeout 1000000 -g && \
+    yarn workspace @microrealestate/landlord install --frozen-lockfile && \
     yarn cache clean && \
     yarn workspace @microrealestate/landlord run build
 
