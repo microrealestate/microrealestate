@@ -14,7 +14,8 @@ COPY yarn.lock .
 
 ENV NODE_ENV production
 
-RUN yarn global add pm2 && \
+RUN yarn config set network-timeout 600000 -g && \
+    yarn global add pm2 && \
     yarn workspace @microrealestate/api install --frozen-lockfile --production && \
     yarn cache clean
 

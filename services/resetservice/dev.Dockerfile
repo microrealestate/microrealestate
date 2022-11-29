@@ -9,7 +9,8 @@ COPY yarn.lock .
 COPY services/common services/common
 COPY services/resetservice services/resetservice
 
-RUN yarn workspace @microrealestate/resetservice install --frozen-lockfile
+RUN yarn config set network-timeout 600000 -g && \
+    yarn workspace @microrealestate/resetservice install --frozen-lockfile
 
 RUN chown -R node:node /usr/app
 

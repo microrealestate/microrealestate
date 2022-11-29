@@ -9,7 +9,8 @@ COPY services/api services/api
 COPY package.json .
 COPY yarn.lock .
 
-RUN yarn workspace @microrealestate/api install --frozen-lockfile
+RUN yarn config set network-timeout 600000 -g && \
+    yarn workspace @microrealestate/api install --frozen-lockfile
 
 RUN chown -R node:node /usr/app
 

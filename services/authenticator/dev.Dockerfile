@@ -9,7 +9,8 @@ COPY services/authenticator services/authenticator
 COPY package.json .
 COPY yarn.lock .
 
-RUN yarn workspace @microrealestate/authenticator install --frozen-lockfile
+RUN yarn config set network-timeout 600000 -g && \
+    yarn workspace @microrealestate/authenticator install --frozen-lockfile
 
 RUN chown -R node:node /usr/app
 
