@@ -1,4 +1,4 @@
-FROM node:16-alpine
+FROM node:16.18-alpine
 
 RUN apk --no-cache add build-base python3
 
@@ -6,6 +6,8 @@ WORKDIR /usr/app
 
 COPY package.json .
 COPY yarn.lock .
+COPY .yarnrc.yml .
+COPY .yarn .yarn
 COPY .eslintrc.json .
 COPY webapps/commonui webapps/commonui
 COPY webapps/landlord/public webapps/landlord/public
@@ -22,9 +24,10 @@ ENV BASE_PATH $BASE_PATH
 
 ENV NEXT_TELEMETRY_DISABLED=1
 
-RUN yarn config set network-timeout 1000000 -g && \
-    yarn workspace @microrealestate/landlord install --frozen-lockfile && \
-    yarn cache clean && \
+RUN corepack enable && \
+    corepack prepare yarn@stable --activate
+
+RUN yarn workspaces focus @microrealestate/landlord && \
     yarn workspace @microrealestate/landlord run build
 
 # TODO: check why using user node is failing

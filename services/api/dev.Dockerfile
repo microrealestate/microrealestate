@@ -1,4 +1,4 @@
-FROM node:16-alpine
+FROM node:16.18-alpine
 
 RUN apk --no-cache add build-base python3 mongodb-tools
 
@@ -7,10 +7,14 @@ WORKDIR /usr/app
 COPY services/common services/common
 COPY services/api services/api
 COPY package.json .
+COPY .yarnrc.yml .
+COPY .yarn .yarn
 COPY yarn.lock .
 
-RUN yarn config set network-timeout 600000 -g && \
-    yarn workspace @microrealestate/api install --frozen-lockfile
+RUN corepack enable && \
+    corepack prepare yarn@stable --activate
+
+RUN yarn workspaces focus @microrealestate/api
 
 RUN chown -R node:node /usr/app
 

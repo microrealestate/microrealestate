@@ -17,7 +17,13 @@ coverage
 # Rest client vscode plugin
 *.rest
 
-.yarn
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
 
 backup/*
 !backup/demodb.dump

@@ -33,7 +33,7 @@
     "@storybook/manager-webpack5": "6.5.9",
     "@storybook/react": "6.5.9",
     "@storybook/testing-library": "0.0.13",
-    "storybook-addon-material-ui": "0.9.0-alpha.24",
-    "eslint-plugin-react": "7.30.1"
+    "eslint-plugin-react": "7.30.1",
+    "storybook-addon-material-ui": "0.9.0-alpha.24"
   }
 }

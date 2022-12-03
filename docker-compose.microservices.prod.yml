@@ -40,6 +40,7 @@ services:
   # Authenticator
   ###############################################################################
   authenticator:
+    restart: unless-stopped
     build:
       context: .
       dockerfile: services/authenticator/Dockerfile
@@ -54,6 +55,7 @@ services:
   # PDFGenerator
   ###############################################################################
   pdfgenerator:
+    restart: unless-stopped
     build:
       context: .
       dockerfile: services/pdfgenerator/Dockerfile
@@ -68,6 +70,7 @@ services:
   # Emailer
   ###############################################################################
   emailer:
+    restart: unless-stopped
     build:
       context: .
       dockerfile: services/emailer/Dockerfile
@@ -82,6 +85,7 @@ services:
   # api
   ###############################################################################
   api:
+    restart: unless-stopped
     build:
       context: .
       dockerfile: services/api/Dockerfile
@@ -96,6 +100,7 @@ services:
   # Landlord frontend
   ###############################################################################
   landlord-frontend:
+    restart: unless-stopped
     build:
       context: .
       dockerfile: webapps/landlord/Dockerfile
@@ -110,6 +115,7 @@ services:
   # Tenant frontend
   ###############################################################################
   tenant-frontend:
+    restart: unless-stopped
     build:
       context: .
       dockerfile: webapps/tenant/Dockerfile
