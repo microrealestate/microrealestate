@@ -1,4 +1,4 @@
-FROM node:16-alpine
+FROM node:16.18-alpine
 
 RUN apk --no-cache add build-base python3
 
@@ -9,17 +9,19 @@ COPY services/authenticator/src services/authenticator/src
 COPY services/authenticator/LICENSE services/authenticator/.
 COPY services/authenticator/package.json services/authenticator/.
 COPY package.json .
+COPY .yarnrc.yml .
+COPY .yarn .yarn
 COPY yarn.lock .
 
 ENV NODE_ENV production
 
-RUN yarn config set network-timeout 600000 -g && \
-    yarn global add pm2 && \
-    yarn workspace @microrealestate/authenticator install --frozen-lockfile --production && \
-    yarn cache clean
+RUN corepack enable && \
+    corepack prepare yarn@stable --activate
+
+RUN yarn workspaces focus --production @microrealestate/authenticator
 
 RUN chown -R node:node /usr/app
 
 USER node
 
-CMD ["pm2-runtime", "services/authenticator/src/index.js"]
+CMD ["node", "services/authenticator/src/index.js"]
