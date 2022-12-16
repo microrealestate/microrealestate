@@ -2733,7 +2733,7 @@ __metadata:
     "@material-ui/lab": 4.0.0-alpha.61
     "@material-ui/pickers": 3.3.10
     "@microrealestate/commonui": "*"
-    "@netlify/plugin-nextjs": 4.27.3
+    "@netlify/plugin-nextjs": 4.29.3
     "@react-pdf-viewer/core": 3.6.0
     "@react-pdf-viewer/default-layout": 3.6.0
     "@react-pdf-viewer/full-screen": 3.6.0
@@ -2840,7 +2840,7 @@ __metadata:
   resolution: "@microrealestate/tenant@workspace:webapps/tenant"
   dependencies:
     "@microrealestate/commonui": "*"
-    "@netlify/plugin-nextjs": 4.27.3
+    "@netlify/plugin-nextjs": 4.29.3
     axios: 0.27.2
     eslint: 8.22.0
     eslint-config-next: 12.2.5
@@ -3105,9 +3105,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@netlify/plugin-nextjs@npm:4.27.3":
-  version: 4.27.3
-  resolution: "@netlify/plugin-nextjs@npm:4.27.3"
+"@netlify/plugin-nextjs@npm:4.29.3":
+  version: 4.29.3
+  resolution: "@netlify/plugin-nextjs@npm:4.29.3"
   dependencies:
     "@netlify/esbuild": 0.14.39
     "@netlify/functions": ^1.3.0
@@ -3116,6 +3116,7 @@ __metadata:
     chalk: ^4.1.2
     destr: ^1.1.1
     execa: ^5.1.1
+    follow-redirects: ^1.15.2
     fs-extra: ^10.0.0
     globby: ^11.0.4
     merge-stream: ^2.0.0
@@ -3130,7 +3131,7 @@ __metadata:
     semver: ^7.3.5
     slash: ^3.0.0
     tiny-glob: ^0.2.9
-  checksum: 1af67f93f12c8d3b5f85cd6798313ef3e2c5dc2399b2fceaf814293366b4e99873291cdc6b4acca022f859dd8024b528c56a4a04cdf4d9ebc0a12b03eef1c4d8
+  checksum: 104df20526f391670243d9c618b152b5e3b582bdaa0221ce96197e9f3e55d3674baf38557dcda18f4ef93a0c975010d3cf6835e53956c3fd1c531160bb14a9e2
   languageName: node
   linkType: hard
 
@@ -12235,7 +12236,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"follow-redirects@npm:^1.14.9":
+"follow-redirects@npm:^1.14.9, follow-redirects@npm:^1.15.2":
   version: 1.15.2
   resolution: "follow-redirects@npm:1.15.2"
   peerDependenciesMeta:
