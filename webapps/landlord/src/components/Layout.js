@@ -1,5 +1,5 @@
-import { Box, Hidden } from '@material-ui/core';
-
+import { Box } from '@material-ui/core';
+import Hidden from './HiddenSSRCompatible';
 import Nav from './Nav';
 import useToast from '../hooks/useToast';
 
@@ -7,7 +7,7 @@ export default function Layout({ showNav, children }) {
   const Toast = useToast();
   return (
     <>
-      <Hidden implementation="css" mdUp>
+      <Hidden mdUp>
         <Box
           display="flex"
           flexDirection="column"
@@ -18,7 +18,7 @@ export default function Layout({ showNav, children }) {
           {showNav && <Nav />}
         </Box>
       </Hidden>
-      <Hidden implementation="css" smDown>
+      <Hidden smDown>
         {showNav && <Nav />}
         {children}
       </Hidden>

@@ -3,12 +3,12 @@ import {
   Card,
   CardActionArea,
   Divider,
-  Paper,
   Typography,
   Toolbar as UIToolbar,
 } from '@material-ui/core';
 import { Children, memo, useMemo } from 'react';
 
+import Hidden from './HiddenSSRCompatible';
 import IconTypography from './IconTypography';
 
 const _variantToBgColor = (variant) => {
@@ -18,9 +18,9 @@ const _variantToBgColor = (variant) => {
     case 'warning':
       return 'warning.main';
     case 'danger':
-      return 'error.main';
+      return 'error.light';
     default:
-      return 'info.main';
+      return 'info.light';
   }
 };
 
@@ -45,39 +45,59 @@ export const PageCard = memo(function PageCard({
 }) {
   const bgColor = useMemo(() => _variantToBgColor(variant), [variant]);
   return (
-    <Paper>
-      <Box
-        p={1}
-        bgcolor={bgColor}
-        color="primary.contrastText"
-        style={{
-          borderTopLeftRadius: 4,
-          borderTopRightRadius: 4,
-        }}
-      >
-        <Typography>{title}</Typography>
+    <Box
+      position="relative"
+      display="flex"
+      flexDirection="column"
+      justifyContent="space-between"
+      p={1}
+      bgcolor={bgColor}
+      color="primary.contrastText"
+      width="100%"
+      borderRadius="borderRadius"
+    >
+      <Box fontSize="caption.fontSize">{title}</Box>
+      <Hidden smDown>
         <Box
-          position="relative"
-          height={130}
           display="flex"
           alignItems="center"
           justifyContent="center"
+          fontSize="h3.fontSize"
         >
-          <Box
-            position="absolute"
-            left={0}
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
-            fontSize={40}
-          >
+          <Box display="flex" mr={1}>
             <Icon fontSize="inherit" />
           </Box>
-          {children}
+          <Box py={1}>{children}</Box>
         </Box>
-        {!!info && <Typography>{info}</Typography>}
-      </Box>
-    </Paper>
+      </Hidden>
+      <Hidden only={['xs', 'md', 'lg', 'xl']}>
+        <Box
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          fontSize="h5.fontSize"
+        >
+          <Box display="flex" mr={1}>
+            <Icon fontSize="inherit" />
+          </Box>
+          <Box py={1}>{children}</Box>
+        </Box>
+      </Hidden>
+      <Hidden only={['sm', 'md', 'lg', 'xl']}>
+        <Box
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          fontSize="subtitle1.fontSize"
+        >
+          <Box display="flex" mr={1}>
+            <Icon fontSize="inherit" />
+          </Box>
+          <Box py={1}>{children}</Box>
+        </Box>
+      </Hidden>
+      {!!info && <Box fontSize="caption.fontSize">{info}</Box>}
+    </Box>
   );
 });
 

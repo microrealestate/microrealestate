@@ -31,9 +31,11 @@ export function InputField({
 
   return (
     <FormControl margin="normal" fullWidth>
-      <InputLabel htmlFor={props.name} error={hasError} shrink>
-        {label}
-      </InputLabel>
+      {label ? (
+        <InputLabel htmlFor={props.name} error={hasError} shrink>
+          {label}
+        </InputLabel>
+      ) : null}
 
       <Input
         error={hasError}

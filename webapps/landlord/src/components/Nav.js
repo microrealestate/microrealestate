@@ -1,14 +1,10 @@
-import {
-  Hidden,
-  ListItemIcon,
-  Typography,
-  useMediaQuery,
-} from '@material-ui/core';
+import { ListItemIcon, Typography, useMediaQuery } from '@material-ui/core';
 import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 import AccountBalanceWalletIcon from '@material-ui/icons/AccountBalanceWallet';
 import DashboardIcon from '@material-ui/icons/Dashboard';
 import Drawer from '@material-ui/core/Drawer';
+import Hidden from './HiddenSSRCompatible';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
@@ -178,7 +174,7 @@ function Nav() {
 
   return (
     <>
-      <Hidden implementation="css" smDown>
+      <Hidden smDown>
         <Drawer
           className={`${
             openDebounced ? classes.drawerOpen : classes.drawerClose
@@ -208,7 +204,7 @@ function Nav() {
           </List>
         </Drawer>
       </Hidden>
-      <Hidden implementation="css" mdUp>
+      <Hidden mdUp>
         <MobileMenu
           position="fixed"
           bottom={0}

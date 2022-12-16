@@ -1,7 +1,8 @@
-import { Box, Breadcrumbs, Hidden, Typography } from '@material-ui/core';
+import { Box, Breadcrumbs, Typography } from '@material-ui/core';
 import { memo, useCallback } from 'react';
 
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
+import Hidden from './HiddenSSRCompatible';
 import Link from './Link';
 import { MobileButton } from './MobileMenuButton';
 import NavigateNextIcon from '@material-ui/icons/NavigateNext';
@@ -16,7 +17,7 @@ function BreadcrumbBar({ backPath, backPage, currentPage }) {
 
   return (
     <>
-      <Hidden implementation="css" smDown>
+      <Hidden smDown>
         <Breadcrumbs aria-label="breadcrumb" separator={<NavigateNextIcon />}>
           <Link underline="always" color="inherit" href={backPath}>
             {backPage}
@@ -26,7 +27,7 @@ function BreadcrumbBar({ backPath, backPage, currentPage }) {
           </Typography>
         </Breadcrumbs>
       </Hidden>
-      <Hidden implementation="css" mdUp>
+      <Hidden mdUp>
         <Box display="flex" alignItems="center" width="100%">
           <MobileButton
             // label={t('Back')}

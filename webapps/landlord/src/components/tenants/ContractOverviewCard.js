@@ -73,10 +73,9 @@ export default function ContractOverview() {
           {t('Deposit')}
         </Typography>
         <NumberFormat
-          color="textSecondary"
-          variant="h5"
+          color="text.secondary"
+          fontSize="h5.fontSize"
           value={store.tenant.selected.guaranty}
-          noWrap
         />
       </CardRow>
     </PageInfoCard>

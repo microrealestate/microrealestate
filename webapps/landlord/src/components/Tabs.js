@@ -9,20 +9,24 @@ export const useTabChangeHelper = (hashes) => {
   const [tabSelectedIndex, setTabSelectedIndex] = useState(0);
 
   useEffect(() => {
-    const hash = router.asPath.split('#')?.[1];
-    if (hash && hashes.includes(hash)) {
-      setTabSelectedIndex(hashes.indexOf(hash));
-    } else {
-      // TODO: this raised a cancel rendering route error
-      // Nextjs issue: https://github.com/vercel/next.js/issues/37362
-      router.push(`#${hashes[0]}`, undefined, { shallow: true });
+    if (hashes) {
+      const hash = router.asPath.split('#')?.[1];
+      if (hash && hashes.includes(hash)) {
+        setTabSelectedIndex(hashes.indexOf(hash));
+      } else {
+        // TODO: this raised a cancel rendering route error
+        // Nextjs issue: https://github.com/vercel/next.js/issues/37362
+        router.push(`#${hashes[0]}`, undefined, { shallow: true });
+      }
     }
     setTabsReady(true);
   }, [router, hashes]);
 
   const handleTabChange = useCallback(
     (event, newValue) => {
-      router.push(`#${hashes[newValue]}`, undefined, { shallow: true });
+      if (hashes) {
+        router.push(`#${hashes[newValue]}`, undefined, { shallow: true });
+      }
       setTabSelectedIndex(newValue);
     },
     [router, hashes]

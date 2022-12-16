@@ -141,10 +141,7 @@ function Shortcuts({ firstConnection = false }) {
               </Grid>
             </Grid>
           </Paper>
-          <NewPaymentDialog
-            backPage={t('Dashboard')}
-            backPath={router.asPath}
-          />
+          <NewPaymentDialog />
           <TerminateLeaseDialog tenantList={tenantsNotTerminated} />
         </>
       )}

@@ -64,6 +64,7 @@ function YearFigures() {
           },
         ],
       } = data;
+      store.rent.setFilters({});
       store.rent.setPeriod(moment(yearMonth, 'YYYY.MM', true));
       router.push(`/${store.organization.selected.name}/rents/${yearMonth}`);
     },

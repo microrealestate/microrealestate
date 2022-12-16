@@ -2,34 +2,39 @@ import {
   Box,
   Button,
   Checkbox,
-  Chip,
   CircularProgress,
+  ClickAwayListener,
+  Divider,
   Grid,
+  Grow,
+  IconButton,
+  Link,
+  MenuItem,
+  MenuList,
   Paper,
+  Popper,
   Toolbar,
   Tooltip,
   Typography,
-  useTheme,
 } from '@material-ui/core';
 import {
+  Fragment,
   memo,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
+import { getRentAmounts, RentAmount } from './RentDetails';
 
-import DownloadLink from '../DownloadLink';
+import { downloadDocument } from '../../utils/fetch';
+import EditIcon from '@material-ui/icons/Edit';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import Hidden from '../HiddenSSRCompatible';
 import moment from 'moment';
-import NumberFormat from '../NumberFormat';
-import SearchFilterBar from '../SearchFilterBar';
 import { StoreContext } from '../../store';
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
-import TableHead from '@material-ui/core/TableHead';
-import TableRow from '@material-ui/core/TableRow';
+import useNewPaymentDialog from '../payment/NewPaymentDialog';
 import useTranslation from 'next-translate/useTranslation';
 
 const TableToolbar = memo(function TableToolbar({
@@ -37,32 +42,38 @@ const TableToolbar = memo(function TableToolbar({
   onSend = () => {},
 }) {
   const { t } = useTranslation('common');
-  const [sendingEmail, setSendingEmail] = useState({
-    rentcall: '',
-    rentcall_reminder: '',
-    rentcall_last_reminder: '',
-    invoice: '',
-  });
+  const [sendingEmail, setSendingEmail] = useState(false);
+
+  const [open, setOpen] = useState(false);
+  const anchorRef = useRef(null);
+
+  const handleToggle = () => {
+    setOpen((prevOpen) => !prevOpen);
+  };
+
+  const handleClose = (event) => {
+    if (anchorRef.current && anchorRef.current.contains(event.target)) {
+      return;
+    }
+
+    setOpen(false);
+  };
+
+  function handleListKeyDown(event) {
+    if (event.key === 'Tab') {
+      event.preventDefault();
+      setOpen(false);
+    }
+  }
 
   const onClick = useCallback(
-    async (docName) => {
-      setSendingEmail({
-        rentcall: docName === 'rentcall' ? 'sending' : 'disabled',
-        rentcall_reminder:
-          docName === 'rentcall_reminder' ? 'sending' : 'disabled',
-        rentcall_last_reminder:
-          docName === 'rentcall_last_reminder' ? 'sending' : 'disabled',
-        invoice: docName === 'invoice' ? 'sending' : 'disabled',
-      });
+    (docName) => async (event) => {
+      setSendingEmail(true);
 
+      handleClose(event);
       await onSend(docName);
 
-      setSendingEmail({
-        rentcall: '',
-        rentcall_reminder: '',
-        rentcall_last_reminder: '',
-        invoice: '',
-      });
+      setSendingEmail(false);
     },
     [onSend]
   );
@@ -73,85 +84,68 @@ const TableToolbar = memo(function TableToolbar({
         {selected.length === 0 ? (
           <Grid item>
             <Typography variant="h6" component="div">
-              {t('Rents')}
+              {/* {t('Rents')} */}
             </Typography>
           </Grid>
         ) : (
           <>
             <Grid item xs={3}>
-              <Typography
+              <Box
                 color="inherit"
-                variant="subtitle1"
-                component="div"
-                noWrap
+                fontSize="caption.fontSize"
+                whiteSpace="nowrap"
               >
                 {t('{{count}} selected', { count: selected.length })}
-              </Typography>
+              </Box>
             </Grid>
-            <Grid item xs={9}>
-              <Grid
-                container
-                spacing={1}
-                alignItems="center"
-                justifyContent="flex-end"
+            <Grid item xs={9} style={{ textAlign: 'right' }}>
+              <Button
+                ref={anchorRef}
+                disabled={sendingEmail}
+                endIcon={
+                  sendingEmail ? (
+                    <CircularProgress color="inherit" size={20} />
+                  ) : (
+                    <ExpandMoreIcon color="inherit" />
+                  )
+                }
+                onClick={handleToggle}
               >
-                <Grid item>
-                  <Button
-                    variant="contained"
-                    disabled={sendingEmail.rentcall !== ''}
-                    endIcon={
-                      sendingEmail.rentcall === 'sending' ? (
-                        <CircularProgress color="inherit" size={20} />
-                      ) : null
-                    }
-                    onClick={() => onClick('rentcall')}
+                {t('Send an email')}
+              </Button>
+              <Popper open={open} anchorEl={anchorRef.current} transition>
+                {({ TransitionProps, placement }) => (
+                  <Grow
+                    {...TransitionProps}
+                    style={{
+                      transformOrigin:
+                        placement === 'bottom' ? 'center top' : 'center bottom',
+                    }}
                   >
-                    {t('Send first notice')}
-                  </Button>
-                </Grid>
-                <Grid item>
-                  <Button
-                    variant="contained"
-                    disabled={sendingEmail.rentcall_reminder !== ''}
-                    endIcon={
-                      sendingEmail.rentcall_reminder === 'sending' ? (
-                        <CircularProgress color="inherit" size={20} />
-                      ) : null
-                    }
-                    onClick={() => onClick('rentcall_reminder')}
-                  >
-                    {t('Send second notice')}
-                  </Button>
-                </Grid>
-                <Grid item>
-                  <Button
-                    variant="contained"
-                    disabled={sendingEmail.rentcall_last_reminder !== ''}
-                    endIcon={
-                      sendingEmail.rentcall_last_reminder === 'sending' ? (
-                        <CircularProgress color="inherit" size={20} />
-                      ) : null
-                    }
-                    onClick={() => onClick('rentcall_last_reminder')}
-                  >
-                    {t('Send last notice')}
-                  </Button>
-                </Grid>
-                <Grid item>
-                  <Button
-                    variant="contained"
-                    disabled={sendingEmail.invoice !== ''}
-                    endIcon={
-                      sendingEmail.invoice === 'sending' ? (
-                        <CircularProgress color="inherit" size={20} />
-                      ) : null
-                    }
-                    onClick={() => onClick('invoice')}
-                  >
-                    {t('Send invoice')}
-                  </Button>
-                </Grid>
-              </Grid>
+                    <Paper>
+                      <ClickAwayListener onClickAway={handleClose}>
+                        <MenuList
+                          autoFocusItem={open}
+                          onKeyDown={handleListKeyDown}
+                        >
+                          <MenuItem onClick={onClick('rentcall')}>
+                            {t('Send first notice')}
+                          </MenuItem>
+                          <MenuItem onClick={onClick('rentcall_reminder')}>
+                            {t('Send second notice')}
+                          </MenuItem>
+                          <MenuItem onClick={onClick('rentcall_last_reminder')}>
+                            {t('Send last notice')}
+                          </MenuItem>
+                          <MenuItem onClick={onClick('invoice')}>
+                            {t('Send invoice')}
+                          </MenuItem>
+                        </MenuList>
+                      </ClickAwayListener>
+                    </Paper>
+                  </Grow>
+                )}
+              </Popper>
             </Grid>
           </>
         )}
@@ -160,47 +154,262 @@ const TableToolbar = memo(function TableToolbar({
   );
 });
 
-const RentTable = () => {
+function Reminder({ rent, ...boxProps }) {
+  const { t } = useTranslation('common');
+
+  let label;
+  let sentDate;
+  let color = 'text.secondary';
+  let endpoint;
+  let documentName;
+
+  if (rent.emailStatus?.status?.rentcall) {
+    sentDate = moment(rent.emailStatus.last.rentcall.sentDate);
+    label = t('1st notice sent on {{date}}', {
+      date: sentDate.format('L LT'),
+    });
+    documentName = `${rent.occupant.name}-${t('first notice')}.pdf`;
+    endpoint = `/documents/rentcall/${rent.occupant._id}/${rent.term}`;
+  }
+
+  if (rent.emailStatus?.last?.rentcall_reminder) {
+    sentDate = moment(rent.emailStatus.last.rentcall_reminder.sentDate);
+    label = t('2nd notice sent on {{date}}', {
+      date: sentDate.format('L LT'),
+    });
+    documentName = `${rent.occupant.name}-${t('second notice')}.pdf`;
+    endpoint = `/documents/rentcall_reminder/${rent.occupant._id}/${rent.term}`;
+  }
+
+  if (rent.emailStatus?.last?.rentcall_last_reminder) {
+    sentDate = moment(rent.emailStatus.last.rentcall_last_reminder.sentDate);
+    label = t('Last notice sent on {{date}}', {
+      date: sentDate.format('L LT'),
+    });
+    color = 'warning.dark';
+    documentName = `${rent.occupant.name}-${t('last notice')}.pdf`;
+    endpoint = `/documents/rentcall_last_reminder/${rent.occupant._id}/${rent.term}`;
+  }
+
+  if (rent.emailStatus?.last?.invoice) {
+    sentDate = moment(rent.emailStatus.last.invoice.sentDate);
+    label = t('Invoice sent on {{date}}', { date: sentDate.format('L LT') });
+    color = 'success.dark';
+    documentName = `${rent.occupant.name}-${t('invoice')}.pdf`;
+    endpoint = `/documents/invoice/${rent.occupant._id}/${rent.term}`;
+  }
+
+  const visible = label && sentDate;
+
+  const handleDownloadClick = useCallback(() => {
+    downloadDocument({ endpoint, documentName });
+  }, [documentName, endpoint]);
+
+  return visible ? (
+    <Box
+      display="flex"
+      alignItems="center"
+      borderRadius="borderRadius"
+      fontSize="caption.fontSize"
+      color={color}
+      {...boxProps}
+    >
+      <Link href="#" color="inherit" onClick={handleDownloadClick}>
+        {label}
+      </Link>
+    </Box>
+  ) : null;
+}
+
+function RentRow({ rent, isSelected, onSelect, onEdit }) {
+  const { t } = useTranslation('common');
+  const rentAmounts = getRentAmounts(rent);
+
+  return (
+    <Box key={rent._id} position="relative">
+      <Box display="flex" alignItems="start" my={2}>
+        <Box>
+          {rent.occupant.hasContactEmails ? (
+            <Checkbox
+              color="default"
+              checked={isSelected}
+              onChange={onSelect(rent)}
+              inputProps={{
+                'aria-labelledby': rent.occupant.name,
+              }}
+              style={{ marginTop: -3 }}
+            />
+          ) : (
+            <Tooltip title={t('No emails available for this tenant')}>
+              <span>
+                <Checkbox
+                  onChange={onSelect(rent)}
+                  inputProps={{
+                    'aria-labelledby': rent.occupant.name,
+                  }}
+                  disabled
+                />
+              </span>
+            </Tooltip>
+          )}
+        </Box>
+
+        <Grid container>
+          <Grid item xs={12} sm={4}>
+            <Box
+              display="flex"
+              alignItems="center"
+              height="100%"
+              fontWeight="fontWeightBold"
+              whiteSpace="nowrap"
+            >
+              {rent.occupant.name}
+            </Box>
+          </Grid>
+          <Grid item xs={12} sm={8}>
+            <Grid container>
+              <Grid item xs={3}>
+                <RentAmount
+                  label={t('Rent')}
+                  amount={rentAmounts.rent}
+                  color="text.secondary"
+                />
+              </Grid>
+              <Grid item xs={3}>
+                <RentAmount
+                  label={t('Balance')}
+                  amount={rentAmounts.balance}
+                  color="text.secondary"
+                />
+              </Grid>
+              <Grid item xs={3}>
+                <RentAmount
+                  label={t('Rent due')}
+                  amount={rentAmounts.totalAmount}
+                  fontWeight={
+                    rentAmounts.totalAmount > 0 ? 'fontWeightBold' : ''
+                  }
+                  color={
+                    rentAmounts.totalAmount <= 0
+                      ? 'text.secondary'
+                      : 'warning.dark'
+                  }
+                />
+              </Grid>
+              <Grid item xs={3}>
+                <RentAmount
+                  label={t('Settlement')}
+                  amount={rent.payment}
+                  showZero={false}
+                  fontWeight={rentAmounts.payment > 0 ? 'fontWeightBold' : ''}
+                />
+              </Grid>
+            </Grid>
+          </Grid>
+        </Grid>
+        <Box ml={2}>
+          <IconButton aria-label="expand row" onClick={onEdit(rent)}>
+            <EditIcon />
+          </IconButton>
+        </Box>
+      </Box>
+      <Reminder rent={rent} position="absolute" left={40} bottom={0} pb={0.5} />
+      <Divider />
+    </Box>
+  );
+}
+
+function MobileRentRow({ rent, isSelected, onSelect, onEdit }) {
+  const { t } = useTranslation('common');
+  const rentAmounts = getRentAmounts(rent);
+
+  return (
+    <Box
+      key={rent._id}
+      display="flex"
+      flexDirection="column"
+      position="relative"
+      mt={1}
+    >
+      <Box display="flex" alignItems="center">
+        <Box>
+          {rent.occupant.hasContactEmails ? (
+            <Checkbox
+              checked={isSelected}
+              onChange={onSelect(rent)}
+              inputProps={{
+                'aria-labelledby': rent.occupant.name,
+              }}
+            />
+          ) : (
+            <Tooltip title={t('No emails available for this tenant')}>
+              <span>
+                <Checkbox
+                  inputProps={{
+                    'aria-labelledby': rent.occupant.name,
+                  }}
+                  disabled
+                />
+              </span>
+            </Tooltip>
+          )}
+        </Box>
+        <Box
+          display="flex"
+          alignItems="center"
+          flexGrow={1}
+          fontWeight="fontWeightBold"
+          whiteSpace="nowrap"
+        >
+          {rent.occupant.name}
+        </Box>
+      </Box>
+      <Box display="flex" alignItems="center" my={1}>
+        <Box width="50%">
+          <RentAmount
+            label={t('Rent due')}
+            amount={rentAmounts.totalAmount}
+            fontWeight={rentAmounts.totalAmount > 0 ? 'fontWeightBold' : ''}
+            color={
+              rentAmounts.totalAmount <= 0 ? 'text.secondary' : 'warning.dark'
+            }
+          />
+        </Box>
+        <Box width="50%">
+          <RentAmount
+            label={t('Settlement')}
+            amount={rent.payment}
+            showZero={false}
+            fontWeight={rentAmounts.payment > 0 ? 'fontWeightBold' : ''}
+          />
+        </Box>
+        <Box ml={1}>
+          <IconButton aria-label="expand row" onClick={onEdit(rent)}>
+            <EditIcon />
+          </IconButton>
+        </Box>
+      </Box>
+      <Box px={1}>
+        <Reminder rent={rent} />
+      </Box>
+      <Box mt={1}>
+        <Divider />
+      </Box>
+    </Box>
+  );
+}
+
+const RentTable = ({ rents }) => {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
-  const [filteredRents, setFilteredRents] = useState(store.rent.items);
   const [selected, setSelected] = useState([]);
-  const [filterSearchText, setFilterSearchText] = useState({
-    searchText: '',
-    filter: '',
-  });
-  const theme = useTheme();
-
-  useEffect(() => {
-    setFilteredRents(
-      store.rent.items
-        .filter(({ status }) => {
-          if (!filterSearchText.filter) {
-            return true;
-          }
-          if (status === filterSearchText.filter) {
-            return true;
-          }
-          return false;
-        })
-        .filter(({ occupant: { name } }) => {
-          if (filterSearchText.searchText) {
-            return (
-              name
-                .toLowerCase()
-                .indexOf(filterSearchText.searchText.toLowerCase()) !== -1
-            );
-          }
-          return true;
-        })
-    );
-  }, [store.rent?.items, filterSearchText]);
+  const [NewPaymentDialog, setOpenNewPaymentDialog] = useNewPaymentDialog();
 
   const onSelectAllClick = useCallback(
     (event) => {
       if (event.target.checked) {
         setSelected(
-          filteredRents.reduce((acc, rent) => {
+          rents.reduce((acc, rent) => {
             if (rent.occupant.hasContactEmails) {
               return [...acc, rent];
             }
@@ -211,16 +420,19 @@ const RentTable = () => {
       }
       setSelected([]);
     },
-    [filteredRents]
+    [rents]
   );
 
-  const onSelectClick = useCallback((event, rent) => {
-    if (event.target.checked) {
-      setSelected((selected) => [...selected, rent]);
-      return;
-    }
-    setSelected((selected) => selected.filter((r) => r._id !== rent._id));
-  }, []);
+  const onSelectClick = useCallback(
+    (rent) => (event) => {
+      if (event.target.checked) {
+        setSelected((selected) => [...selected, rent]);
+        return;
+      }
+      setSelected((selected) => selected.filter((r) => r._id !== rent._id));
+    },
+    []
+  );
 
   const onSend = useCallback(
     async (docName) => {
@@ -253,230 +465,86 @@ const RentTable = () => {
 
   const selectableRentNum = useMemo(
     () =>
-      filteredRents.reduce((acc, { _id, occupant: { hasContactEmails } }) => {
+      rents.reduce((acc, { _id, occupant: { hasContactEmails } }) => {
         if (hasContactEmails) {
           acc.push(_id);
         }
         return acc;
       }, []).length,
-    [filteredRents]
+    [rents]
   );
 
-  const filters = useMemo(
-    () => [
-      { id: '', label: t('All') },
-      { id: 'notpaid', label: t('Not paid') },
-      { id: 'partiallypaid', label: t('Partially paid') },
-      { id: 'paid', label: t('Paid') },
-    ],
-    [t]
+  const handleEdit = useCallback(
+    (rent) => () => {
+      setOpenNewPaymentDialog(rent);
+    },
+    [setOpenNewPaymentDialog]
   );
 
   return (
     <>
-      <Box pt={2} pb={1} width={600}>
-        <SearchFilterBar
-          filters={filters}
-          onSearch={useCallback(
-            (filter, searchText) => setFilterSearchText({ filter, searchText }),
-            []
-          )}
-        />
-      </Box>
-      <Paper variant="outlined" square>
+      <NewPaymentDialog />
+
+      <Paper>
         <TableToolbar selected={selected} onSend={onSend} />
-        <Table stickyHeader aria-label="rent table">
-          <TableHead>
-            <TableRow>
-              <TableCell padding="checkbox">
-                <Checkbox
-                  color="default"
-                  indeterminate={
-                    selected.length > 0 && selected.length < selectableRentNum
-                  }
-                  checked={
-                    filteredRents.length > 0 &&
-                    selected.length === selectableRentNum
-                  }
-                  onChange={onSelectAllClick}
-                  inputProps={{ 'aria-label': 'select all rents' }}
+        <Hidden smDown>
+          <Box>
+            <Checkbox
+              color="default"
+              indeterminate={
+                selected.length > 0 && selected.length < selectableRentNum
+              }
+              checked={
+                rents.length > 0 && selected.length === selectableRentNum
+              }
+              onChange={onSelectAllClick}
+              inputProps={{ 'aria-label': 'select all rents' }}
+            />
+          </Box>
+        </Hidden>
+        <Hidden mdUp>
+          <Box>
+            <Checkbox
+              color="default"
+              indeterminate={
+                selected.length > 0 && selected.length < selectableRentNum
+              }
+              checked={
+                rents.length > 0 && selected.length === selectableRentNum
+              }
+              onChange={onSelectAllClick}
+              inputProps={{ 'aria-label': 'select all rents' }}
+            />
+          </Box>
+        </Hidden>
+
+        <Divider />
+        {rents.map((rent) => {
+          const isItemSelected = selected.map((r) => r._id).includes(rent._id);
+          return (
+            <Fragment key={rent._id}>
+              <Hidden smDown>
+                <RentRow
+                  rent={rent}
+                  isSelected={isItemSelected}
+                  onSelect={onSelectClick}
+                  onEdit={handleEdit}
                 />
-              </TableCell>
-              <TableCell>
-                <Typography>{t('Tenant')}</Typography>
-              </TableCell>
-              <TableCell align="right">
-                <Typography>{t('Rent due')}</Typography>
-              </TableCell>
-              <TableCell align="center">
-                <Typography>{t('Status')}</Typography>
-              </TableCell>
-              <TableCell align="center">
-                <Typography>{t('First notice')}</Typography>
-              </TableCell>
-              <TableCell align="center">
-                <Typography>{t('Second notice')}</Typography>
-              </TableCell>
-              <TableCell align="center">
-                <Typography>{t('Last notice')}</Typography>
-              </TableCell>
-              <TableCell align="center">
-                <Typography>{t('Invoice')}</Typography>
-              </TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {filteredRents.map((rent) => {
-              const isItemSelected = selected
-                .map((r) => r._id)
-                .includes(rent._id);
-              const contactEmails = rent.occupant.contactEmails.join(', ');
-              return (
-                <TableRow
-                  key={rent._id}
-                  hover
-                  selected={isItemSelected}
-                  size="small"
-                >
-                  <TableCell padding="checkbox">
-                    {rent.occupant.hasContactEmails ? (
-                      <Checkbox
-                        color="default"
-                        checked={isItemSelected}
-                        onChange={(event) => onSelectClick(event, rent)}
-                        inputProps={{ 'aria-labelledby': rent.occupant.name }}
-                      />
-                    ) : (
-                      <Tooltip title={t('No emails available for this tenant')}>
-                        <span>
-                          <Checkbox
-                            onChange={(event) => onSelectClick(event, rent)}
-                            inputProps={{
-                              'aria-labelledby': rent.occupant.name,
-                            }}
-                            disabled
-                          />
-                        </span>
-                      </Tooltip>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <Typography noWrap>{rent.occupant.name}</Typography>
-                    <Typography variant="caption" noWrap>
-                      {contactEmails}
-                    </Typography>
-                  </TableCell>
-                  <TableCell align="right">
-                    <NumberFormat
-                      variant="body1"
-                      value={rent.totalToPay > 0 ? rent.totalToPay : 0}
-                    />
-                  </TableCell>
-                  <TableCell align="center">
-                    {['paid', 'partialypaid'].includes(rent.status) ? (
-                      <Chip
-                        label={
-                          rent.status === 'paid'
-                            ? t('Paid')
-                            : t('Partially paid')
-                        }
-                        color="primary"
-                        style={{
-                          backgroundColor:
-                            rent.status === 'paid'
-                              ? theme.palette.success.main
-                              : theme.palette.warning.main,
-                          width: 100,
-                        }}
-                        size="small"
-                      />
-                    ) : (
-                      <Chip
-                        label={t('Not paid')}
-                        color="primary"
-                        style={{
-                          backgroundColor: theme.palette.error.main,
-                          width: 100,
-                        }}
-                        size="small"
-                      />
-                    )}
-                  </TableCell>
-                  <TableCell align="center">
-                    {rent.emailStatus && rent.emailStatus.status.rentcall ? (
-                      <DownloadLink
-                        tooltipText={t('sent on {{datetime}}', {
-                          datetime: moment(
-                            rent.emailStatus.last.rentcall.sentDate
-                          ).format('LLLL'),
-                        })}
-                        url={`/documents/rentcall/${rent.occupant._id}/${rent.term}`}
-                        documentName={`${rent.occupant.name}-${t(
-                          'first notice'
-                        )}.pdf`}
-                        withIcon
-                      />
-                    ) : null}
-                  </TableCell>
-                  <TableCell align="center">
-                    {rent.emailStatus &&
-                    rent.emailStatus.status.rentcall_reminder ? (
-                      <DownloadLink
-                        tooltipText={t('sent on {{datetime}}', {
-                          datetime: moment(
-                            rent.emailStatus.last.rentcall_reminder.sentDate
-                          ).format('LLLL'),
-                        })}
-                        url={`/documents/rentcall_reminder/${rent.occupant._id}/${rent.term}`}
-                        documentName={`${rent.occupant.name}-${t(
-                          'second notice'
-                        )}.pdf`}
-                        withIcon
-                      />
-                    ) : null}
-                  </TableCell>
-                  <TableCell align="center">
-                    {rent.emailStatus &&
-                    rent.emailStatus.status.rentcall_last_reminder ? (
-                      <DownloadLink
-                        tooltipText={t('sent on {{datetime}}', {
-                          datetime: moment(
-                            rent.emailStatus.last.rentcall_last_reminder
-                              .sentDate
-                          ).format('LLLL'),
-                        })}
-                        url={`/documents/rentcall_last_reminder/${rent.occupant._id}/${rent.term}`}
-                        documentName={`${rent.occupant.name}-${t(
-                          'last notice'
-                        )}.pdf`}
-                        withIcon
-                      />
-                    ) : null}
-                  </TableCell>
-                  <TableCell align="center">
-                    {rent.emailStatus && rent.emailStatus.status.invoice ? (
-                      <DownloadLink
-                        tooltipText={t('sent on {{datetime}}', {
-                          datetime: moment(
-                            rent.emailStatus.last.invoice.sentDate
-                          ).format('LLLL'),
-                        })}
-                        url={`/documents/invoice/${rent.occupant._id}/${rent.term}`}
-                        documentName={`${rent.occupant.name}-${t(
-                          'invoice'
-                        )}.pdf`}
-                        withIcon
-                      />
-                    ) : null}
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
+              </Hidden>
+              <Hidden mdUp>
+                <MobileRentRow
+                  rent={rent}
+                  isSelected={isItemSelected}
+                  onSelect={onSelectClick}
+                  onEdit={handleEdit}
+                />
+              </Hidden>
+            </Fragment>
+          );
+        })}
       </Paper>
     </>
   );
 };
 
-export default RentTable;
+export default memo(RentTable);

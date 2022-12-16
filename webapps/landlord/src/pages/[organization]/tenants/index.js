@@ -2,7 +2,6 @@ import {
   Box,
   Button,
   Chip,
-  Hidden,
   List,
   ListItem,
   ListItemText,
@@ -17,6 +16,7 @@ import _ from 'lodash';
 import AddIcon from '@material-ui/icons/Add';
 import CompulsoryDocumentStatus from '../../../components/tenants/CompulsaryDocumentStatus';
 import { EmptyIllustration } from '../../../components/Illustrations';
+import Hidden from '../../../components/HiddenSSRCompatible';
 import { isServer } from '../../../utils';
 import { MobileButton } from '../../../components/MobileMenuButton';
 import moment from 'moment';
@@ -218,7 +218,7 @@ const Tenants = observer(() => {
       title={t('Tenants')}
       ActionToolbar={
         <>
-          <Hidden implementation="css" smDown>
+          <Hidden smDown>
             <Button
               variant="contained"
               startIcon={<AddIcon />}
@@ -227,7 +227,7 @@ const Tenants = observer(() => {
               {t('New tenant')}
             </Button>
           </Hidden>
-          <Hidden implementation="css" mdUp>
+          <Hidden mdUp>
             <MobileButton
               label={t('New tenant')}
               Icon={AddIcon}
@@ -264,7 +264,7 @@ Tenants.getInitialProps = async (context) => {
 
   return {
     initialState: {
-      store: toJS(store),
+      store: isServer() ? toJS(store) : store,
     },
   };
 };

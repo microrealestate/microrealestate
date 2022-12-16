@@ -30,7 +30,10 @@ const theme = createTheme({
       dark: warningColor[2],
       contrastText: whiteColor,
     },
-    backgroundColor: grayColor[10],
+    background: {
+      paper: whiteColor,
+      default: grayColor[10],
+    },
   },
   overrides: {
     MuiInputAdornment: {
@@ -75,7 +78,7 @@ const theme = createTheme({
     MuiTableRow: {
       root: {
         '&$selected, &$selected$hover': {
-          backgroundColor: 'rgba(' + hexToRgb(successColor[1]) + ', 0.08)',
+          backgroundColor: 'rgba(' + hexToRgb(primaryColor[0]) + ', 0.2)',
         },
       },
     },

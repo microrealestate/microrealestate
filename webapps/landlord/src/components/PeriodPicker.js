@@ -1,9 +1,10 @@
-import { Box, Hidden, IconButton } from '@material-ui/core';
+import { Box, IconButton } from '@material-ui/core';
 import { memo, useCallback, useState } from 'react';
 
 import ArrowLeftIcon from '@material-ui/icons/ArrowLeft';
 import ArrowRightIcon from '@material-ui/icons/ArrowRight';
 import { DatePicker } from '@material-ui/pickers';
+import Hidden from './HiddenSSRCompatible';
 import moment from 'moment';
 
 function PeriodPicker({ value, period, format, onChange }) {
@@ -29,7 +30,7 @@ function PeriodPicker({ value, period, format, onChange }) {
 
   return (
     <Box display="flex" alignItems="center">
-      <Hidden implementation="css" smDown>
+      <Hidden smDown>
         <IconButton
           onClick={_onPreviousPeriod}
           aria-label="previous period"
@@ -48,7 +49,7 @@ function PeriodPicker({ value, period, format, onChange }) {
           format={format}
         />
       </Box>
-      <Hidden implementation="css" smDown>
+      <Hidden smDown>
         <IconButton
           onClick={_onNextPeriod}
           aria-label="next period"

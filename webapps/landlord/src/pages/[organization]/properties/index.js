@@ -2,7 +2,6 @@ import {
   Box,
   Button,
   Chip,
-  Hidden,
   List,
   ListItem,
   ListItemText,
@@ -15,6 +14,7 @@ import { useCallback, useContext, useMemo } from 'react';
 
 import AddIcon from '@material-ui/icons/Add';
 import { EmptyIllustration } from '../../../components/Illustrations';
+import Hidden from '../../../components/HiddenSSRCompatible';
 import { isServer } from '../../../utils';
 import { MobileButton } from '../../../components/MobileMenuButton';
 import NumberFormat from '../../../components/NumberFormat';
@@ -158,7 +158,7 @@ const PropertyListItem = ({ property }) => {
               <Typography variant="caption" color="textSecondary">
                 {t('Rent without expenses')}
               </Typography>
-              <NumberFormat variant="h5" value={property.price} />
+              <NumberFormat fontSize="h5.fontSize" value={property.price} />
             </Box>
           </>
         }
@@ -217,7 +217,7 @@ const Properties = observer(() => {
       title={t('Properties')}
       ActionToolbar={
         <>
-          <Hidden implementation="css" smDown>
+          <Hidden smDown>
             <Button
               variant="contained"
               startIcon={<AddIcon />}
@@ -226,7 +226,7 @@ const Properties = observer(() => {
               {t('New property')}
             </Button>
           </Hidden>
-          <Hidden implementation="css" mdUp>
+          <Hidden mdUp>
             <MobileButton
               label={t('New property')}
               Icon={AddIcon}
@@ -259,7 +259,7 @@ Properties.getInitialProps = async (context) => {
 
   return {
     initialState: {
-      store: toJS(store),
+      store: isServer() ? toJS(store) : store,
     },
   };
 };

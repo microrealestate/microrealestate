@@ -1,21 +1,18 @@
-import { Box, Grid, Hidden, Typography } from '@material-ui/core';
+import { Box, Grid, Typography } from '@material-ui/core';
 import { getStoreInstance, StoreContext } from '../../../../store';
 import { useCallback, useContext, useMemo } from 'react';
 
 import { EmptyIllustration } from '../../../../components/Illustrations';
-import FullScreenDialogButton from '../../../../components/FullScreenDialogButton';
+import Hidden from '../../../../components/HiddenSSRCompatible';
 import { isServer } from '../../../../utils';
 import moment from 'moment';
 import NumberFormat from '../../../../components/NumberFormat';
-import { observer } from 'mobx-react-lite';
 import Page from '../../../../components/Page';
 import { PageCard } from '../../../../components/Cards';
 import PeriodPicker from '../../../../components/PeriodPicker';
 import ReceiptIcon from '@material-ui/icons/Receipt';
-import RentCard from '../../../../components/rents/RentCard';
 import RentTable from '../../../../components/rents/RentTable';
 import SearchFilterBar from '../../../../components/SearchFilterBar';
-import SendIcon from '@material-ui/icons/Send';
 import { toJS } from 'mobx';
 import TrendingDownIcon from '@material-ui/icons/TrendingDown';
 import TrendingUpIcon from '@material-ui/icons/TrendingUp';
@@ -61,17 +58,94 @@ function PeriodToolbar({ onChange }) {
 
   return (
     <>
-      <Hidden implementation="css" smDown>
+      <Hidden smDown>
         <DesktopToolbar rentPeriod={rentPeriod} onChange={onChange} />
       </Hidden>
-      <Hidden implementation="css" mdUp>
+      <Hidden mdUp>
         <MobileToolbar rentPeriod={rentPeriod} onChange={onChange} />
       </Hidden>
     </>
   );
 }
 
-const Rents = observer(() => {
+function CardSection() {
+  const { t } = useTranslation('common');
+  const store = useContext(StoreContext);
+
+  return (
+    <Box mb={2}>
+      <Hidden xsDown>
+        <Grid container spacing={3}>
+          <Grid item sm={4} md={2}>
+            <Box display="flex" height="100%">
+              <PageCard
+                variant="info"
+                Icon={ReceiptIcon}
+                title={t('Rents')}
+                info={store.rent.period.format('MMMM YYYY')}
+              >
+                {store.rent.countAll}
+              </PageCard>
+            </Box>
+          </Grid>
+          <Grid item sm={4} md={5}>
+            <PageCard
+              variant="success"
+              Icon={TrendingUpIcon}
+              title={t('Paid')}
+              info={t('{{count}} rents', {
+                count: store.rent.countPaid + store.rent.countPartiallyPaid,
+              })}
+            >
+              <NumberFormat value={store.rent.totalPaid} />
+            </PageCard>
+          </Grid>
+          <Grid item sm={4} md={5}>
+            <PageCard
+              variant="warning"
+              Icon={TrendingDownIcon}
+              title={t('Not paid')}
+              info={t('{{count}} rents', {
+                count: store.rent.countNotPaid,
+              })}
+            >
+              <NumberFormat value={store.rent.totalNotPaid} />
+            </PageCard>
+          </Grid>
+        </Grid>
+      </Hidden>
+      <Hidden smUp>
+        <Grid container spacing={3}>
+          <Grid item xs={6}>
+            <PageCard
+              variant="success"
+              Icon={TrendingUpIcon}
+              title={t('Paid')}
+              info={t('{{count}} rents', {
+                count: store.rent.countPaid + store.rent.countPartiallyPaid,
+              })}
+            >
+              <NumberFormat value={store.rent.totalPaid} />
+            </PageCard>
+          </Grid>
+          <Grid item xs={6}>
+            <PageCard
+              variant="warning"
+              Icon={TrendingDownIcon}
+              title={t('Not paid')}
+              info={t('{{count}} rents', {
+                count: store.rent.countNotPaid,
+              })}
+            >
+              <NumberFormat value={store.rent.totalNotPaid} />
+            </PageCard>
+          </Grid>
+        </Grid>
+      </Hidden>
+    </Box>
+  );
+}
+function Rents() {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const router = useRouter();
@@ -104,22 +178,6 @@ const Rents = observer(() => {
     [router, store.rent, store.organization.selected.name]
   );
 
-  const onEdit = useCallback(
-    async (rent) => {
-      store.rent.setSelected(rent);
-      await router.push(
-        `/${store.organization.selected.name}/payment/${rent.occupant._id}/${
-          store.rent.selected.term
-        }/${encodeURI(
-          t('Rents of {{date}}', {
-            date: store.rent.period.format('MMM YYYY'),
-          })
-        )}/${encodeURIComponent(router.asPath)}`
-      );
-    },
-    [t, router, store.rent, store.organization.selected.name]
-  );
-
   const filters = useMemo(
     () => [
       { id: '', label: t('All') },
@@ -133,18 +191,6 @@ const Rents = observer(() => {
   return (
     <Page
       title={t('Rents')}
-      ActionToolbar={
-        <FullScreenDialogButton
-          variant="contained"
-          buttonLabel={t('Send mass emails')}
-          Icon={SendIcon}
-          dialogTitle={t('Send mass emails')}
-          cancelButtonLabel={t('Close')}
-          showCancel
-        >
-          <RentTable />
-        </FullScreenDialogButton>
-      }
       NavBar={<PeriodToolbar onChange={onPeriodChange} />}
       SearchBar={
         <SearchFilterBar
@@ -154,65 +200,16 @@ const Rents = observer(() => {
         />
       }
     >
-      {!store.rent.filters.searchText && (
-        <Hidden implementation="css" smDown>
-          <Box pb={3}>
-            <Grid container spacing={3}>
-              <Grid item xs={4}>
-                <PageCard
-                  variant="info"
-                  Icon={ReceiptIcon}
-                  title={t('Rents')}
-                  info={t('Rents of {{period}}', {
-                    period: store.rent.period.format('MMMM YYYY'),
-                  })}
-                >
-                  <Typography variant="h3">{store.rent.countAll}</Typography>
-                </PageCard>
-              </Grid>
-              <Grid item xs={4}>
-                <PageCard
-                  variant="success"
-                  Icon={TrendingUpIcon}
-                  title={t('Paid')}
-                  info={t('{{count}} rents paid', {
-                    count: store.rent.countPaid + store.rent.countPartiallyPaid,
-                  })}
-                >
-                  <NumberFormat variant="h3" value={store.rent.totalPaid} />
-                </PageCard>
-              </Grid>
-              <Grid item xs={4}>
-                <PageCard
-                  variant="warning"
-                  Icon={TrendingDownIcon}
-                  title={t('Not paid')}
-                  info={t('{{count}} rents not paid', {
-                    count: store.rent.countNotPaid,
-                  })}
-                >
-                  <NumberFormat variant="h3" value={store.rent.totalNotPaid} />
-                </PageCard>
-              </Grid>
-            </Grid>
-          </Box>
-        </Hidden>
-      )}
+      <CardSection />
 
       {store.rent?.filteredItems.length ? (
-        <Grid container spacing={3}>
-          {store.rent.filteredItems.map((rent) => (
-            <Grid key={rent._id} item xs={12} md={6} lg={4}>
-              <RentCard rent={rent} onEdit={onEdit} />
-            </Grid>
-          ))}
-        </Grid>
+        <RentTable rents={store.rent?.filteredItems} />
       ) : (
         <EmptyIllustration label={t('No rents found')} />
       )}
     </Page>
   );
-});
+}
 
 Rents.getInitialProps = async (context) => {
   const store = isServer() ? context.store : getStoreInstance();
@@ -234,7 +231,7 @@ Rents.getInitialProps = async (context) => {
 
   return {
     initialState: {
-      store: toJS(store),
+      store: isServer() ? toJS(store) : store,
     },
   };
 };

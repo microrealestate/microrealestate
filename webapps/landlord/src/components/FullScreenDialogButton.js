@@ -1,8 +1,9 @@
-import { AppBar, Box, Grid, Hidden } from '@material-ui/core';
+import { AppBar, Box, Grid } from '@material-ui/core';
 import React, { memo, useCallback } from 'react';
 
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
+import Hidden from './HiddenSSRCompatible';
 import { MobileButton } from './MobileMenuButton';
 import Slide from '@material-ui/core/Slide';
 import Toolbar from '@material-ui/core/Toolbar';
@@ -41,7 +42,7 @@ const FullScreenDialogButton = ({
 
   return (
     <>
-      <Hidden implementation="css" smDown>
+      <Hidden smDown>
         <Button
           {...props}
           size="small"
@@ -52,7 +53,7 @@ const FullScreenDialogButton = ({
           {buttonLabel}
         </Button>
       </Hidden>
-      <Hidden implementation="css" mdUp>
+      <Hidden mdUp>
         <MobileButton
           {...props}
           variant="text"

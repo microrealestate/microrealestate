@@ -4,7 +4,6 @@ import {
   Card,
   CardActionArea,
   CardContent,
-  Hidden,
   Toolbar,
   useTheme,
 } from '@material-ui/core';
@@ -13,6 +12,7 @@ import { forwardRef, useCallback, useState } from 'react';
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
 import { hexToRgb } from '../styles/styles';
+import Hidden from './HiddenSSRCompatible';
 import { Loading } from '@microrealestate/commonui/components';
 import { MobileButton } from './MobileMenuButton';
 import Slide from '@material-ui/core/Slide';
@@ -107,7 +107,7 @@ const FullScreenDialogMenu = ({
 
   return (
     <>
-      <Hidden implementation="css" smDown>
+      <Hidden smDown>
         <Button
           {...props}
           startIcon={<Icon />}
@@ -117,7 +117,7 @@ const FullScreenDialogMenu = ({
           {buttonLabel}
         </Button>
       </Hidden>
-      <Hidden implementation="css" mdUp>
+      <Hidden mdUp>
         <MobileButton
           {...props}
           variant="text"

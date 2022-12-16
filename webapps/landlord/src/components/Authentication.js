@@ -1,7 +1,7 @@
 import { getStoreInstance, StoreContext } from '../store';
 import { isServer, redirect } from '../utils';
+import { memo, useContext, useEffect } from 'react';
 import { setAcceptLanguage, setOrganizationId } from '../utils/fetch';
-import { useContext, useEffect } from 'react';
 
 import ErrorPage from 'next/error';
 import getConfig from 'next/config';
@@ -14,6 +14,7 @@ const {
 } = getConfig();
 
 export function withAuthentication(PageComponent, grantedRole) {
+  const MemoizedPageComponent = memo(PageComponent);
   function WithAuth(pageProps) {
     const store = useContext(StoreContext);
 
@@ -42,7 +43,7 @@ export function withAuthentication(PageComponent, grantedRole) {
             return <ErrorPage statusCode={404} />;
           }
 
-          return <PageComponent {...pageProps} />;
+          return <MemoizedPageComponent {...pageProps} />;
         }}
       </Observer>
     );
@@ -104,7 +105,7 @@ export function withAuthentication(PageComponent, grantedRole) {
 
     const initialProps = PageComponent.getInitialProps
       ? await PageComponent.getInitialProps(context)
-      : { initialState: { store: toJS(store) } };
+      : { initialState: { store: isServer() ? toJS(store) : store } };
 
     if (isServer() && initialProps.error?.statusCode === 403) {
       console.log('current refresh token invalid redirecting to /signin');

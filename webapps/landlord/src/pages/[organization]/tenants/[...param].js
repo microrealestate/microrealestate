@@ -1,4 +1,4 @@
-import { Box, Button, Grid, Hidden, Paper, Tooltip } from '@material-ui/core';
+import { Box, Button, Grid, Paper, Tooltip } from '@material-ui/core';
 import { getStoreInstance, StoreContext } from '../../../store';
 import { useCallback, useContext, useMemo, useState } from 'react';
 
@@ -7,6 +7,7 @@ import CompulsoryDocumentStatus from '../../../components/tenants/CompulsaryDocu
 import ContractOverviewCard from '../../../components/tenants/ContractOverviewCard';
 import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
+import Hidden from '../../../components/HiddenSSRCompatible';
 import { isServer } from '../../../utils';
 import { MobileButton } from '../../../components/MobileMenuButton';
 import moment from 'moment';
@@ -270,7 +271,7 @@ const Tenant = observer(() => {
       title={store.tenant.selected.name}
       ActionToolbar={
         <>
-          <Hidden implementation="css" smDown>
+          <Hidden smDown>
             <Grid container spacing={2}>
               <Grid item>
                 <Tooltip
@@ -322,7 +323,7 @@ const Tenant = observer(() => {
               )}
             </Grid>
           </Hidden>
-          <Hidden implementation="css" mdUp>
+          <Hidden mdUp>
             <Grid container>
               {!store.tenant.selected.hasPayments && (
                 <Grid item>
@@ -445,7 +446,7 @@ Tenant.getInitialProps = async (context) => {
 
   const props = {
     initialState: {
-      store: toJS(store),
+      store: isServer() ? toJS(store) : store,
     },
   };
   return props;

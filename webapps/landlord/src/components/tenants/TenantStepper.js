@@ -1,18 +1,19 @@
+import BillingForm, {
+  validate as BillingFormValidate,
+} from './forms/BillingForm';
+import LeaseContractForm, {
+  validate as LeaseContractFormValidate,
+} from './forms/LeaseContractForm';
+import TenantForm, { validate as TenantFormValidate } from './forms/TenantForm';
 import { useCallback, useContext, useState } from 'react';
 
-import BillingForm from './forms/BillingForm';
-import { validate as BillingFormValidate } from '../../components/tenants/forms/BillingForm';
 import { Box } from '@material-ui/core';
 import DocumentsForm from './forms/DocumentsForm';
-import LeaseContractForm from './forms/LeaseContractForm';
-import { validate as LeaseContractFormValidate } from '../../components/tenants/forms/LeaseContractForm';
 import Step from '@material-ui/core/Step';
 import StepContent from '@material-ui/core/StepContent';
 import StepLabel from '@material-ui/core/StepLabel';
 import Stepper from '@material-ui/core/Stepper';
 import { StoreContext } from '../../store';
-import TenantForm from './forms/TenantForm';
-import { validate as TenantFormValidate } from '../../components/tenants/forms/TenantForm';
 import useComponentMountedRef from '../../hooks/useComponentMountedRef';
 import useTranslation from 'next-translate/useTranslation';
 

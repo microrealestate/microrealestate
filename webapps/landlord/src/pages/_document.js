@@ -20,7 +20,7 @@ export default function MyDocument() {
           href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"
         />
         <link
-          href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css"
+          href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.min.css"
           rel="stylesheet"
         />
         <meta
@@ -31,7 +31,7 @@ export default function MyDocument() {
       </Head>
       <body
         style={{
-          backgroundColor: theme.palette.backgroundColor,
+          backgroundColor: theme.palette.background,
           overflowX: 'hidden',
         }}
       >

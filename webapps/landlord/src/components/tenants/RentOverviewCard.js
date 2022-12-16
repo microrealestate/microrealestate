@@ -45,12 +45,11 @@ export default function RentOverview() {
     >
       <CardRow>
         <Typography color="textSecondary" noWrap>
-          {t('Base')}
+          {t('Rent')}
         </Typography>
         <NumberFormat
-          color="textSecondary"
+          color="text.secondary"
           value={store.tenant.selected.rental}
-          noWrap
         />
       </CardRow>
       <CardRow>
@@ -58,9 +57,8 @@ export default function RentOverview() {
           {t('Expenses')}
         </Typography>
         <NumberFormat
-          color="textSecondary"
+          color="text.secondary"
           value={store.tenant.selected.expenses}
-          noWrap
         />
       </CardRow>
       {store.tenant.selected.discount > 0 ? (
@@ -69,9 +67,8 @@ export default function RentOverview() {
             {t('Discount')}
           </Typography>
           <NumberFormat
-            color="textSecondary"
+            color="text.secondary"
             value={store.tenant.selected.discount * -1}
-            noWrap
           />
         </CardRow>
       ) : null}
@@ -85,9 +82,8 @@ export default function RentOverview() {
               {t('Pre-tax total')}
             </Typography>
             <NumberFormat
-              color="textSecondary"
+              color="text.secondary"
               value={store.tenant.selected.preTaxTotal}
-              noWrap
             />
           </CardRow>
           <CardRow>
@@ -95,9 +91,8 @@ export default function RentOverview() {
               {t('VAT')}
             </Typography>
             <NumberFormat
-              color="textSecondary"
+              color="text.secondary"
               value={store.tenant.selected.vat}
-              noWrap
             />
           </CardRow>
         </>
@@ -110,10 +105,9 @@ export default function RentOverview() {
           {t('Total')}
         </Typography>
         <NumberFormat
-          color="textSecondary"
-          variant="h5"
+          color="text.secondary"
+          fontSize="h5.fontSize"
           value={store.tenant.selected.total}
-          noWrap
         />
       </CardRow>
     </PageInfoCard>

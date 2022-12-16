@@ -1,7 +1,8 @@
-import { Box, Grid, Hidden, Typography } from '@material-ui/core';
+import { Box, Grid, Typography } from '@material-ui/core';
 
 import ArrowRightAltIcon from '@material-ui/icons/ArrowRightAlt';
 import { DashboardCard } from '../Cards';
+import Hidden from '../HiddenSSRCompatible';
 import NumberFormat from '../NumberFormat';
 import { observer } from 'mobx-react-lite';
 import { StoreContext } from '../../store';
@@ -37,7 +38,7 @@ function GeneralFigures() {
 
   return (
     <>
-      <Hidden implementation="css" smDown>
+      <Hidden smDown>
         <Grid container spacing={5}>
           <Grid item xs={12} md={4} lg={2}>
             <DashboardCard
@@ -72,9 +73,10 @@ function GeneralFigures() {
               <FigureCardContent>
                 <NumberFormat
                   value={store.dashboard.data.overview?.occupancyRate}
+                  showZero={false}
                   minimumFractionDigits={0}
                   style="percent"
-                  variant="h3"
+                  fontSize="h3.fontSize"
                 />
               </FigureCardContent>
             </DashboardCard>
@@ -84,21 +86,21 @@ function GeneralFigures() {
               <FigureCardContent>
                 <NumberFormat
                   value={store.dashboard.data.overview?.totalYearRevenues}
-                  variant="h3"
+                  fontSize="h3.fontSize"
                 />
               </FigureCardContent>
             </DashboardCard>
           </Grid>
         </Grid>
       </Hidden>
-      <Hidden implementation="css" mdUp>
+      <Hidden mdUp>
         <Grid container spacing={5}>
           <Grid item xs={12} md={12} lg={6}>
             <DashboardCard title={t('Revenues')}>
               <FigureCardContent>
                 <NumberFormat
                   value={store.dashboard.data.overview?.totalYearRevenues}
-                  variant="h3"
+                  fontSize="h3.fontSize"
                 />
               </FigureCardContent>
             </DashboardCard>

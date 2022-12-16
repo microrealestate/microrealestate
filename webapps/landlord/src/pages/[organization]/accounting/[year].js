@@ -52,7 +52,7 @@ const PeriodToolbar = () => {
   return (
     <Grid container alignItems="center" spacing={2}>
       <Grid item>
-        <Typography color="textSecondary" variant="h5" noWrap={true}>
+        <Typography color="textSecondary" variant="h5" noWrap>
           {t('Accounting')}
         </Typography>
       </Grid>
@@ -100,7 +100,7 @@ const TenantsTableWrapper = ({
         <Grid container alignItems="center" spacing={2}>
           <Grid item>
             <Box width={350}>
-              <Typography variant="h5" noWrap={true}>
+              <Typography variant="h5" noWrap>
                 {title}
               </Typography>
             </Box>
@@ -128,7 +128,7 @@ const PropertiesList = ({ properties }) => {
   return properties.map(({ _id, name, type }) => (
     <Box key={_id} display="flex" alignItems="center" mb={1}>
       <PropertyIcon type={type} />
-      <Typography noWrap={true}>{name}</Typography>
+      <Typography noWrap>{name}</Typography>
     </Box>
   ));
 };
@@ -141,13 +141,13 @@ const SettlementList = ({ month, tenantId, settlements }) => {
         const { date, amount, type } = settlement;
         return amount > 0 ? (
           <Box key={`${tenantId}_${month}_${index}`} alignItems="center" mb={1}>
-            <Typography variant="body2" noWrap={true}>
+            <Typography variant="body2" noWrap>
               {moment(date).format('L')}
             </Typography>
-            <Typography variant="body2" noWrap={true}>
+            <Typography variant="body2" noWrap>
               {t(type[0].toUpperCase() + type.slice(1))}
             </Typography>
-            <NumberFormat value={amount} variant="body2" withColor />
+            <NumberFormat value={amount} fontSize="body2.fontSize" withColor />
           </Box>
         ) : null;
       })
@@ -202,7 +202,7 @@ const IncomingTenants = ({ id, defaultExpanded, onCSVClick }) => {
               {store.accounting.data.incomingTenants.map((tenant) => (
                 <TableRow key={tenant._id} hover>
                   <StyledTableCell component="th" scope="row">
-                    <Typography noWrap={true}>{tenant.name}</Typography>
+                    <Typography noWrap>{tenant.name}</Typography>
                   </StyledTableCell>
                   <StyledTableCell align="left">
                     <PropertiesList properties={tenant.properties} />
@@ -214,9 +214,7 @@ const IncomingTenants = ({ id, defaultExpanded, onCSVClick }) => {
                     {moment(tenant.endDate).format('L')}
                   </StyledTableCell>
                   <StyledTableCell align="right">
-                    <NumberFormat
-                      value={tenant.guaranty !== 0 ? tenant.guaranty : null}
-                    />
+                    <NumberFormat value={tenant.guaranty} />
                   </StyledTableCell>
                 </TableRow>
               ))}
@@ -271,7 +269,7 @@ const OutgoingTenants = ({ id, onCSVClick }) => {
               {store.accounting.data.outgoingTenants.map((tenant) => (
                 <TableRow key={tenant._id} hover>
                   <StyledTableCell component="th" scope="row">
-                    <Typography noWrap={true}>{tenant.name}</Typography>
+                    <Typography noWrap>{tenant.name}</Typography>
                   </StyledTableCell>
                   <StyledTableCell align="left">
                     <PropertiesList properties={tenant.properties} />
@@ -285,29 +283,21 @@ const OutgoingTenants = ({ id, onCSVClick }) => {
                       : moment(tenant.endDate).format('L')}
                   </StyledTableCell>
                   <StyledTableCell align="right">
-                    <NumberFormat
-                      value={tenant.guaranty !== 0 ? tenant.guaranty : null}
-                    />
+                    <NumberFormat value={tenant.guaranty} />
                   </StyledTableCell>
                   <StyledTableCell align="right">
                     <NumberFormat
-                      value={
-                        tenant.guarantyPayback !== 0
-                          ? tenant.guarantyPayback
-                          : null
-                      }
+                      value={tenant.guarantyPayback}
+                      showZero={false}
                     />
                   </StyledTableCell>
                   <StyledTableCell align="right">
-                    <NumberFormat
-                      value={tenant.balance !== 0 ? tenant.balance : null}
-                    />
+                    <NumberFormat value={tenant.balance} showZero={false} />
                   </StyledTableCell>
                   <StyledTableCell align="right">
                     <NumberFormat
-                      value={
-                        tenant.finalBalance !== 0 ? tenant.finalBalance : null
-                      }
+                      value={tenant.finalBalance}
+                      showZero={false}
                       withColor
                     />
                   </StyledTableCell>
@@ -361,8 +351,8 @@ const Settlements = ({ id, onCSVClick }) => {
               {store.accounting.data.settlements.map((settlement) => (
                 <TableRow key={settlement.tenantId} hover>
                   <StyledTableCell component="th" scope="row">
-                    <Typography noWrap={true}>{settlement.tenant}</Typography>
-                    <Typography noWrap={true}>
+                    <Typography noWrap>{settlement.tenant}</Typography>
+                    <Typography noWrap>
                       {moment(settlement.beginDate).format('L')} -{' '}
                       {moment(settlement.endDate).format('L')}
                     </Typography>
@@ -447,7 +437,7 @@ const Accounting = observer(() => {
   );
 
   return (
-    <Page NavBar={<PeriodToolbar loading={loading} />}>
+    <Page loading={loading} NavBar={<PeriodToolbar />}>
       {store.accounting?.data?.incomingTenants?.length ||
       store.accounting?.data?.outgoingTenants?.length ||
       store.accounting?.data?.settlements?.length ? (
