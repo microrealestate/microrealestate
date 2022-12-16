@@ -2,7 +2,6 @@ import {
   Box,
   Button,
   Grid,
-  Hidden,
   List,
   ListItem,
   ListItemAvatar,
@@ -20,6 +19,7 @@ import { useCallback, useContext } from 'react';
 
 import BreadcrumbBar from '../../../components/BreadcrumbBar';
 import DeleteIcon from '@material-ui/icons/Delete';
+import Hidden from '../../../components/HiddenSSRCompatible';
 import HistoryIcon from '@material-ui/icons/History';
 import { isServer } from '../../../utils';
 import Map from '../../../components/Map';
@@ -46,9 +46,8 @@ const PropertyOverview = () => {
           {store.property.selected.name}
         </Typography>
         <NumberFormat
-          color="textSecondary"
+          color="text.secondary"
           value={store.property.selected.price}
-          noWrap
         />
       </CardRow>
       <Map address={store.property.selected.address} />
@@ -217,7 +216,7 @@ const Property = observer(() => {
       title={store.property.selected.name}
       ActionToolbar={
         <>
-          <Hidden implementation="css" smDown>
+          <Hidden smDown>
             <Button
               variant="contained"
               startIcon={<DeleteIcon />}
@@ -226,7 +225,7 @@ const Property = observer(() => {
               {t('Delete')}
             </Button>
           </Hidden>
-          <Hidden implementation="css" mdUp>
+          <Hidden mdUp>
             <MobileButton
               label={t('Delete')}
               Icon={DeleteIcon}
@@ -243,7 +242,7 @@ const Property = observer(() => {
         />
       }
     >
-      <Hidden implementation="css" smDown>
+      <Hidden smDown>
         <Grid container spacing={5}>
           <Grid item md={7} lg={8}>
             {tabsReady && (
@@ -274,7 +273,7 @@ const Property = observer(() => {
           </Grid>
         </Grid>
       </Hidden>
-      <Hidden implementation="css" mdUp>
+      <Hidden mdUp>
         <Grid container spacing={5}>
           <Grid item xs={12}>
             {tabsReady && (
@@ -322,7 +321,7 @@ Property.getInitialProps = async (context) => {
 
   const props = {
     initialState: {
-      store: toJS(store),
+      store: isServer() ? toJS(store) : store,
     },
   };
   return props;

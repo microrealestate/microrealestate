@@ -25,7 +25,7 @@ function TenantListItem({ tenant, balance, onClick }) {
   return (
     <ListItem button onClick={onClick}>
       <Box display="flex" alignItems="center" width="100%">
-        <Hidden implementation="css" smDown>
+        <Hidden smDown>
           <Box mr={1}>
             <TenantAvatar tenant={tenant} />
           </Box>
@@ -33,7 +33,7 @@ function TenantListItem({ tenant, balance, onClick }) {
         <Box flexGrow={1}>
           <Typography variant="body2">{tenant.name}</Typography>
         </Box>
-        <NumberFormat value={balance} withColor variant="h6" />
+        <NumberFormat value={balance} withColor fontSize="h6.fontSize" />
       </Box>
     </ListItem>
   );
@@ -45,24 +45,24 @@ function MonthFigures() {
   const store = useContext(StoreContext);
   const theme = useTheme();
   const formatNumber = useFormatNumber();
-
+  const yearMonth = moment().format('YYYY.MM');
   const data = useMemo(() => {
     const currentRevenues = store.dashboard.currentRevenues;
     return [
       {
         name: 'paid',
         value: currentRevenues.paid,
-        yearMonth: moment().format('YYYY.MM'),
+        yearMonth,
         status: 'paid',
       },
       {
         name: 'notPaid',
         value: currentRevenues.notPaid,
-        yearMonth: moment().format('YYYY.MM'),
+        yearMonth,
         status: 'notpaid',
       },
     ];
-  }, [store.dashboard.currentRevenues]);
+  }, [store.dashboard.currentRevenues, yearMonth]);
 
   return (
     <>
@@ -104,6 +104,7 @@ function MonthFigures() {
                       const {
                         payload: { yearMonth, status },
                       } = data;
+                      store.rent.setFilters({ status });
                       router.push(
                         `/${store.organization.selected.name}/rents/${yearMonth}?status=${status}`
                       );
@@ -136,12 +137,9 @@ function MonthFigures() {
                       balance={balance}
                       onClick={() => {
                         store.rent.setSelected(rent);
+                        store.rent.setFilters({ searchText: tenant.name });
                         router.push(
-                          `/${store.organization.selected.name}/payment/${
-                            tenant._id
-                          }/${rent.term}/${encodeURI(
-                            t('Dashboard')
-                          )}/${encodeURIComponent(router.asPath)}`
+                          `/${store.organization.selected.name}/rents/${yearMonth}?search=${tenant.name}`
                         );
                       }}
                     />

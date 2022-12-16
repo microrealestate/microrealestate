@@ -1,5 +1,6 @@
 import { action, computed, flow, makeObservable, observable } from 'mobx';
 
+import _ from 'lodash';
 import { apiFetcher } from '../utils/fetch';
 import moment from 'moment';
 
@@ -148,19 +149,44 @@ export default class Rent {
     try {
       const response = yield this.fetchWithoutUpdatingStore(this._period);
 
-      this.countAll = response.data.overview.countAll;
-      this.countPaid = response.data.overview.countPaid;
-      this.countPartiallyPaid = response.data.overview.countPartiallyPaid;
-      this.countNotPaid = response.data.overview.countNotPaid;
-      this.totalToPay = response.data.overview.totalToPay;
-      this.totalPaid = response.data.overview.totalPaid;
-      this.totalNotPaid = response.data.overview.totalNotPaid;
+      if (
+        !_.isEqual(
+          [
+            this.countAll,
+            this.countPaid,
+            this.countPartiallyPaid,
+            this.countNotPaid,
+            this.totalToPay,
+            this.totalPaid,
+            this.totalNotPaid,
+          ],
+          [
+            response.data.overview.countAll,
+            response.data.overview.countPaid,
+            response.data.overview.countPartiallyPaid,
+            response.data.overview.countNotPaid,
+            response.data.overview.totalToPay,
+            response.data.overview.totalPaid,
+            response.data.overview.totalNotPaid,
+          ]
+        )
+      ) {
+        this.countAll = response.data.overview.countAll;
+        this.countPaid = response.data.overview.countPaid;
+        this.countPartiallyPaid = response.data.overview.countPartiallyPaid;
+        this.countNotPaid = response.data.overview.countNotPaid;
+        this.totalToPay = response.data.overview.totalToPay;
+        this.totalPaid = response.data.overview.totalPaid;
+        this.totalNotPaid = response.data.overview.totalNotPaid;
+      }
 
-      this.items = response.data.rents;
-      if (this.selected._id) {
-        this.setSelected(
-          this.items.find((item) => item._id === this.selected._id) || {}
-        );
+      if (!_.isEqual(this.items, response.data.rents)) {
+        this.items = response.data.rents;
+        if (this.selected._id) {
+          this.setSelected(
+            this.items.find((item) => item._id === this.selected._id) || {}
+          );
+        }
       }
       return response;
     } catch (error) {

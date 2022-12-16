@@ -1,12 +1,12 @@
-import { Divider, Typography } from '@material-ui/core';
+import { Box, Divider, Typography } from '@material-ui/core';
 
 import { CardRow } from '../Cards';
+import Hidden from '../HiddenSSRCompatible';
 import NumberFormat from '../NumberFormat';
-import { useMemo } from 'react';
 import usePaymentTypes from '../../hooks/usePaymentTypes';
 import useTranslation from 'next-translate/useTranslation';
 
-function _rentDetails(rent) {
+export function getRentAmounts(rent) {
   const turnToNegative = (amount) => (amount !== 0 ? amount * -1 : 0);
 
   return {
@@ -29,44 +29,79 @@ function _rentDetails(rent) {
   };
 }
 
+export function RentAmount({ label, amount, color, ...props }) {
+  return (
+    <>
+      <Hidden xsDown>
+        <Box display="flex" flexDirection="column">
+          <Box align="right" fontSize="caption.fontSize" color="text.secondary">
+            {label}
+          </Box>
+          <NumberFormat
+            value={amount}
+            align="right"
+            fontSize="subtitle1.fontSize"
+            withColor={!color}
+            color={color}
+            {...props}
+          />
+        </Box>
+      </Hidden>
+      <Hidden smUp>
+        <Box display="flex" flexDirection="column" fontSize="caption.fontSize">
+          <Box align="right" color="text.secondary">
+            {label}
+          </Box>
+          <NumberFormat
+            value={amount}
+            align="right"
+            withColor={!color}
+            color={color}
+            {...props}
+          />
+        </Box>
+      </Hidden>
+    </>
+  );
+}
+
 export default function RentDetails({ rent }) {
   const { t } = useTranslation('common');
   const paymentTypes = usePaymentTypes();
 
-  const rentDetails = useMemo(() => _rentDetails(rent), [rent]);
+  const rentAmounts = getRentAmounts(rent);
 
   return (
     <>
       <CardRow>
         <Typography color="textSecondary" noWrap>
-          {rentDetails.balance === 0
+          {rentAmounts.balance === 0
             ? t('Previous balance')
-            : rentDetails.isDebitBalance
+            : rentAmounts.isDebitBalance
             ? t('Previous debit balance')
             : t('Previous credit balance')}
         </Typography>
         <NumberFormat
-          color="textSecondary"
-          value={rentDetails.balance}
-          noWrap
-          debitColor={rentDetails.isDebitBalance}
-          creditColor={!rentDetails.isDebitBalance}
+          color="text.secondary"
+          value={rentAmounts.balance}
+          debitColor={rentAmounts.isDebitBalance}
+          creditColor={!rentAmounts.isDebitBalance}
         />
       </CardRow>
       <CardRow>
         <Typography color="textSecondary" noWrap>
           {t('Rent')}
         </Typography>
-        <NumberFormat color="textSecondary" value={rentDetails.rent} noWrap />
+        <NumberFormat color="text.secondary" value={rentAmounts.rent} />
       </CardRow>
       <CardRow>
         <Typography color="textSecondary" noWrap>
           {t('Additional costs')}
         </Typography>
         <NumberFormat
-          color="textSecondary"
-          value={rentDetails.additionalCosts}
-          noWrap
+          color="text.secondary"
+          value={rentAmounts.additionalCosts}
+          showZero={false}
         />
       </CardRow>
       <CardRow pb={1.5}>
@@ -74,9 +109,9 @@ export default function RentDetails({ rent }) {
           {t('Discount')}
         </Typography>
         <NumberFormat
-          color="textSecondary"
-          value={rentDetails.discount}
-          noWrap
+          color="text.secondary"
+          value={rentAmounts.discount}
+          showZero={false}
         />
       </CardRow>
       <Divider />
@@ -84,51 +119,48 @@ export default function RentDetails({ rent }) {
         <Typography color="textSecondary" noWrap>
           {t('Total to pay')}
         </Typography>
-        <NumberFormat
-          color="textSecondary"
-          value={rentDetails.totalAmount}
-          noWrap
-        />
+        <NumberFormat color="text.secondary" value={rentAmounts.totalAmount} />
       </CardRow>
       <CardRow pb={1.5}>
         <>
           <Typography color="textSecondary" noWrap>
             {t('Settlements')}
           </Typography>
-          {rentDetails.payment > 0 && !!rentDetails.paymentReferences.length && (
-            <Typography variant="caption" color="textSecondary" noWrap>
-              {rentDetails.paymentReferences
-                .map(({ type, reference }) =>
-                  type === 'cash'
-                    ? paymentTypes.itemMap[type].label
-                    : `${paymentTypes.itemMap[type].label} ${reference}`
-                )
-                .join(', ')}
-            </Typography>
-          )}
+          {rentAmounts.payment > 0 &&
+            !!rentAmounts.paymentReferences.length && (
+              <Typography variant="caption" color="textSecondary" noWrap>
+                {rentAmounts.paymentReferences
+                  .map(({ type, reference }) =>
+                    type === 'cash'
+                      ? paymentTypes.itemMap[type].label
+                      : `${paymentTypes.itemMap[type].label} ${reference}`
+                  )
+                  .join(', ')}
+              </Typography>
+            )}
         </>
         <NumberFormat
-          color="textSecondary"
-          value={rentDetails.payment}
-          noWrap
+          color="text.secondary"
+          value={rentAmounts.payment}
+          showZero={false}
           withColor
         />
       </CardRow>
       <Divider />
       <CardRow pt={1.5}>
         <Typography color="textSecondary" noWrap>
-          {rentDetails.absNewBalance === 0
+          {rentAmounts.newBalance === 0
             ? t('Balance')
-            : rentDetails.isDebitNewBalance
+            : rentAmounts.isDebitNewBalance
             ? t('Debit balance')
             : t('Credit balance')}
         </Typography>
         <NumberFormat
-          color="textSecondary"
-          value={rentDetails.absNewBalance}
-          noWrap
-          debitColor={rentDetails.isDebitNewBalance}
-          creditColor={!rentDetails.isDebitNewBalance}
+          color="text.secondary"
+          value={rentAmounts.newBalance}
+          abs={true}
+          debitColor={rentAmounts.isDebitNewBalance}
+          creditColor={!rentAmounts.isDebitNewBalance}
         />
       </CardRow>
     </>

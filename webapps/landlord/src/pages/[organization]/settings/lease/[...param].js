@@ -165,7 +165,7 @@ Lease.getInitialProps = async (context) => {
 
   return {
     initialState: {
-      store: toJS(store),
+      store: isServer() ? toJS(store) : store,
     },
   };
 };

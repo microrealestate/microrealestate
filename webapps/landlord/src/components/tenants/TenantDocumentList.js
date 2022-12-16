@@ -2,13 +2,14 @@ import {
   BlankDocumentIllustration,
   TermsDocumentIllustration,
 } from '../Illustrations';
-import { Box, Button, Hidden } from '@material-ui/core';
+import { Box, Button } from '@material-ui/core';
 import { useCallback, useContext, useMemo, useState } from 'react';
 
 import AddIcon from '@material-ui/icons/Add';
 import DocumentList from '../DocumentList';
 import { downloadDocument } from '../../utils/fetch';
 import FullScreenDialogMenu from '../FullScreenDialogMenu';
+import Hidden from '../HiddenSSRCompatible';
 import ImageViewer from '../ImageViewer/ImageViewer';
 import { MobileButton } from '../MobileMenuButton';
 import { Observer } from 'mobx-react-lite';
@@ -193,7 +194,7 @@ function TenantDocumentList({ disabled = false }) {
   return (
     <>
       <Box display="flex" mb={1}>
-        <Hidden implementation="css" smDown>
+        <Hidden smDown>
           <Button
             variant="contained"
             startIcon={<AddIcon />}
@@ -204,7 +205,7 @@ function TenantDocumentList({ disabled = false }) {
             {t('Upload document')}
           </Button>
         </Hidden>
-        <Hidden implementation="css" mdUp>
+        <Hidden mdUp>
           <MobileButton
             label={t('Upload document')}
             Icon={AddIcon}

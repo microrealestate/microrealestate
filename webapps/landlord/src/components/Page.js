@@ -2,23 +2,22 @@ import {
   AppBar,
   Box,
   Container,
-  Hidden,
   IconButton,
   Toolbar,
   Tooltip,
   Typography,
 } from '@material-ui/core';
-import { useCallback, useContext, useEffect, useState } from 'react';
+import { useCallback, useContext } from 'react';
 
 import { ElevationScroll } from './Scroll';
 import getConfig from 'next/config';
+import Hidden from './HiddenSSRCompatible';
 import { Loading } from '@microrealestate/commonui/components';
 import MobileMenu from './MobileMenu';
 import { observer } from 'mobx-react-lite';
 import OrganizationSwitcher from './organization/OrganizationSwitcher';
 import PowerSettingsNewIcon from '@material-ui/icons/PowerSettingsNew';
 import { StoreContext } from '../store';
-import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 
 const {
@@ -44,7 +43,7 @@ function MainToolbar({ maxWidth, loading, SearchBar, onSignOut }) {
 
   return (
     <>
-      <Hidden implementation="css" smDown>
+      <Hidden smDown>
         <Box ml={7}>
           <Toolbar disableGutters>
             <Container maxWidth={maxWidth}>
@@ -71,7 +70,7 @@ function MainToolbar({ maxWidth, loading, SearchBar, onSignOut }) {
           </Toolbar>
         </Box>
       </Hidden>
-      <Hidden implementation="css" mdUp>
+      <Hidden mdUp>
         <MobileMenu>
           <Toolbar disableGutters>
             <Box
@@ -105,7 +104,7 @@ function SubToolbar({ NavBar, ActionBar, maxWidth, loading }) {
 
   return (
     <>
-      <Hidden implementation="css" smDown>
+      <Hidden smDown>
         <Box ml={7}>
           <Toolbar disableGutters>
             <Container maxWidth={maxWidth}>
@@ -121,7 +120,7 @@ function SubToolbar({ NavBar, ActionBar, maxWidth, loading }) {
           </Toolbar>
         </Box>
       </Hidden>
-      <Hidden implementation="css" mdUp>
+      <Hidden mdUp>
         <Container maxWidth={maxWidth}>
           {NavBar ? (
             <Box display="flex" justifyContent="space-between">
@@ -158,7 +157,7 @@ function MobileToolbars({
             onSignOut={onSignOut}
             loading={loading}
           />
-          <SubToolbar NavBar={NavBar} ActionBar={ActionBar} loading={loading} />
+          <SubToolbar NavBar={NavBar} ActionBar={ActionBar} />
         </AppBar>
       </ElevationScroll>
       <Toolbar />
@@ -210,7 +209,7 @@ function Toolbars({
 
   return (
     <>
-      <Hidden implementation="css" smDown>
+      <Hidden smDown>
         <DesktopToolbars
           title={title}
           NavBar={NavBar}
@@ -221,7 +220,7 @@ function Toolbars({
           onSignOut={onSignOut}
         />
       </Hidden>
-      <Hidden implementation="css" mdUp>
+      <Hidden mdUp>
         <MobileToolbars
           title={title}
           NavBar={NavBar}
@@ -235,20 +234,21 @@ function Toolbars({
     </>
   );
 }
-function PageContent({ maxWidth, loading, children }) {
+
+function PageContent({ maxWidth, children }) {
   return (
     <>
-      <Hidden implementation="css" smDown>
+      <Hidden smDown>
         <Box ml={7}>
           <Container maxWidth={maxWidth}>
-            {loading ? <Loading fullScreen /> : <Box my={2}>{children}</Box>}
+            <Box my={2}>{children}</Box>
           </Container>
         </Box>
       </Hidden>
-      <Hidden implementation="css" mdUp>
+      <Hidden mdUp>
         <Box>
           <Container maxWidth={maxWidth}>
-            {loading ? <Loading fullScreen /> : <Box my={2}>{children}</Box>}
+            <Box my={2}>{children}</Box>
           </Container>
         </Box>
       </Hidden>
@@ -266,29 +266,6 @@ function Page({
   loading = false,
 }) {
   const store = useContext(StoreContext);
-  const [routeloading, setRouteLoading] = useState(false);
-  const router = useRouter();
-
-  useEffect(() => {
-    const routeChangeStart = (url, { shallow }) => {
-      if (!shallow) {
-        setRouteLoading(true);
-      }
-    };
-    const routeChangeComplete = (url, { shallow }) => {
-      if (!shallow) {
-        setRouteLoading(false);
-      }
-    };
-
-    router.events.on('routeChangeStart', routeChangeStart);
-    router.events.on('routeChangeComplete', routeChangeComplete);
-
-    return () => {
-      router.events.off('routeChangeStart', routeChangeStart);
-      router.events.off('routeChangeComplete', routeChangeComplete);
-    };
-  }, [router]);
 
   const handleSignOut = useCallback(
     async (event) => {
@@ -306,13 +283,13 @@ function Page({
         NavBar={NavBar}
         SearchBar={SearchBar}
         ActionBar={ActionToolbar}
-        loading={loading || routeloading}
+        loading={loading}
         maxWidth={maxWidth}
         onSignOut={handleSignOut}
       />
 
-      <PageContent maxWidth={maxWidth} loading={loading || routeloading}>
-        {children}
+      <PageContent maxWidth={maxWidth}>
+        {loading ? <Loading fullScreen /> : children}
       </PageContent>
     </>
   );

@@ -1,68 +1,51 @@
 import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
   Box,
+  IconButton,
   List,
   ListItem,
   ListItemText,
-  Paper,
   Typography,
 } from '@material-ui/core';
-import React, {
-  memo,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 
-import getConfig from 'next/config';
+import EditIcon from '@material-ui/icons/Edit';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { getPeriod } from './RentPeriod';
 import { Loading } from '@microrealestate/commonui/components';
 import moment from 'moment';
 import RentDetails from './RentDetails';
 import { StoreContext } from '../../store';
+import useNewPaymentDialog from '../payment/NewPaymentDialog';
 import useTranslation from 'next-translate/useTranslation';
 
-const {
-  publicRuntimeConfig: { BASE_PATH },
-} = getConfig();
-
-const RentListItem = React.forwardRef(function RentListItem(
-  { rent, tenant /*, selected*/ },
-  ref
-) {
+function RentListItem({ rent, tenant, onClick }) {
   const { t } = useTranslation('common');
-  const store = useContext(StoreContext);
-  const backPath = `/${store.organization.selected.name}/rents/${moment(
-    rent.term,
-    'YYYYMMDDHH'
-  ).format('YYYY.MM')}`;
-  const backPage = t('Rents of {{date}}', {
-    date: moment(rent.term, 'YYYYMMDDHHMM').format('MMM YYYY'),
-  });
+
   return (
-    <Paper>
-      <ListItem
-        button
-        component="a"
-        ref={ref}
-        // selected={selected}
-        style={{
-          marginBottom: 20,
-        }}
-        href={`${BASE_PATH}/${store.organization.selected.locale}/${
-          store.organization.selected.name
-        }/payment/${tenant.occupant._id}/${rent.term}/${encodeURI(
-          backPage
-        )}/${encodeURIComponent(backPath)}`}
-      >
+    <Box
+      border={1}
+      borderRadius="borderRadius"
+      borderColor="grey.300"
+      marginBottom={2}
+    >
+      <ListItem>
         <ListItemText
           primary={
             <>
-              <Box>
-                <Typography variant="h5" component="div">
+              <Box
+                display="flex"
+                justifyContent="space-between"
+                alignItems="center"
+              >
+                <Box fontSize="h5.fontSize">
                   {getPeriod(t, rent.term, tenant.occupant.frequency)}
-                </Typography>
+                </Box>
+                <IconButton onClick={onClick}>
+                  <EditIcon fontSize="small" />
+                </IconButton>
               </Box>
               <Box mt={1} px={1}>
                 <RentDetails rent={rent} />
@@ -79,47 +62,96 @@ const RentListItem = React.forwardRef(function RentListItem(
           }
         />
       </ListItem>
-    </Paper>
+    </Box>
   );
-});
+}
 
-const RentHistory = ({ tenantId }) => {
+function YearRentList({ tenant, year, onClick }) {
+  const rents =
+    tenant.rents?.filter(({ term }) => String(term).slice(0, 4) === year) || [];
+
+  const handleClick = useCallback(
+    ({ occupant }, rent) =>
+      () => {
+        onClick({ _id: occupant._id, ...rent, occupant });
+      },
+    [onClick]
+  );
+
+  return (
+    <Box width="100%">
+      <List component="nav" disablePadding aria-labelledby="rent-history">
+        {rents?.map((rent) => {
+          return (
+            <RentListItem
+              key={rent.term}
+              rent={rent}
+              tenant={tenant}
+              onClick={handleClick(tenant, rent)}
+            />
+          );
+        })}
+      </List>
+    </Box>
+  );
+}
+
+export default function RentHistory({ tenantId }) {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const [loading, setLoading] = useState(true);
   const [tenant, setTenant] = useState();
-  const selectedRowRef = useRef();
-  const selectedTerm = useMemo(
-    () => moment().startOf('month').format('YYYYMMDDHH'),
-    []
+  const [rentYears, setRentYears] = useState([]);
+  const [expandedYear, setExpandedYear] = useState(
+    moment().startOf('month').format('YYYYMMDDHH').slice(0, 4)
   );
 
-  useEffect(() => {
-    const fetchTenantRents = async () => {
-      setLoading(true);
-      const response = await store.rent.fetchTenantRents(tenantId);
-      if (response.status !== 200) {
-        store.pushToastMessage({
-          message: t('Cannot get tenant information'),
-          severity: 'error',
-        });
-      } else {
-        setTenant(response.data);
-      }
-      setLoading(false);
-    };
+  const [NewPaymentDialog, setOpenNewPaymentDialog] = useNewPaymentDialog();
 
-    fetchTenantRents();
-  }, [t, tenantId, store.rent, store]);
-
-  useEffect(() => {
-    if (!loading) {
-      selectedRowRef.current?.scrollIntoView({ block: 'center' });
+  const fetchTenantRents = useCallback(async () => {
+    setLoading(true);
+    const response = await store.rent.fetchTenantRents(tenantId);
+    if (response.status !== 200) {
+      store.pushToastMessage({
+        message: t('Cannot get tenant information'),
+        severity: 'error',
+      });
+    } else {
+      const tenant = response.data;
+      setTenant(tenant);
+      setRentYears(
+        Array.from(
+          tenant.rents.reduce((acc, { term }) => {
+            acc.add(String(term).slice(0, 4));
+            return acc;
+          }, new Set())
+        )
+      );
     }
-  }, [tenant, loading]);
+    setLoading(false);
+  }, [store, t, tenantId]);
+
+  useEffect(() => {
+    fetchTenantRents();
+  }, [t, tenantId, store.rent, store, fetchTenantRents]);
+
+  const handleAccordionChange = (year) => (event, isExpanded) => {
+    setExpandedYear(isExpanded ? year : false);
+  };
+
+  const handleClick = useCallback(
+    (rent) => setOpenNewPaymentDialog(rent),
+
+    [setOpenNewPaymentDialog]
+  );
+
+  const handleClose = useCallback(() => {
+    fetchTenantRents();
+  }, [fetchTenantRents]);
 
   return (
     <>
+      <NewPaymentDialog onClose={handleClose} />
       {loading ? (
         <Loading fullScreen />
       ) : (
@@ -141,24 +173,30 @@ const RentHistory = ({ tenantId }) => {
             )}
           </Box>
 
-          <List component="nav" disablePadding aria-labelledby="rent-history">
-            {tenant?.rents?.map((rent) => {
-              const isSelected = String(rent.term) === selectedTerm;
-              return (
-                <RentListItem
-                  key={rent.term}
-                  ref={isSelected ? selectedRowRef : null}
-                  rent={rent}
-                  tenant={tenant}
-                  selected={isSelected}
-                />
-              );
-            })}
-          </List>
+          {rentYears.map((year) => {
+            return (
+              <Accordion
+                key={year}
+                expanded={expandedYear === year}
+                onChange={handleAccordionChange(year)}
+              >
+                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                  <Box>{year}</Box>
+                </AccordionSummary>
+                {expandedYear === year ? (
+                  <AccordionDetails>
+                    <YearRentList
+                      tenant={tenant}
+                      year={year}
+                      onClick={handleClick}
+                    />
+                  </AccordionDetails>
+                ) : null}
+              </Accordion>
+            );
+          })}
         </>
       )}
     </>
   );
-};
-
-export default memo(RentHistory);
+}

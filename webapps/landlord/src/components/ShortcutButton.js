@@ -1,11 +1,12 @@
 import {
   Box,
   Button,
-  Hidden,
   makeStyles,
   Typography,
   useTheme,
 } from '@material-ui/core';
+
+import Hidden from './HiddenSSRCompatible';
 
 const ShortcutButton = ({ Icon, label, disabled, onClick }) => {
   const theme = useTheme();
@@ -24,7 +25,7 @@ const ShortcutButton = ({ Icon, label, disabled, onClick }) => {
 
   return (
     <>
-      <Hidden implementation="css" smDown>
+      <Hidden smDown>
         <Button
           startIcon={<Icon style={{ fontSize: 28 }} />}
           size="large"
@@ -38,7 +39,7 @@ const ShortcutButton = ({ Icon, label, disabled, onClick }) => {
           </Box>
         </Button>
       </Hidden>
-      <Hidden implementation="css" mdUp>
+      <Hidden mdUp>
         <Button
           startIcon={<Icon fontSize="small" />}
           className={classes.root}

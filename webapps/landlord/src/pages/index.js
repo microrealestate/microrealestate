@@ -37,7 +37,7 @@ Index.getInitialProps = async (context) => {
   const props = {
     redirectPath,
     initialState: {
-      store: toJS(store),
+      store: isServer() ? toJS(store) : store,
     },
   };
   return props;

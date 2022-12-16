@@ -2,90 +2,115 @@ import {
   Box,
   DialogTitle,
   FormControl,
+  Grid,
   InputLabel,
   MenuItem,
   Select,
-  Typography,
 } from '@material-ui/core';
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import { getRentAmounts, RentAmount } from '../rents/RentDetails';
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
-import NumberFormat from '../NumberFormat';
+import { flushSync } from 'react-dom';
+import Hidden from '../HiddenSSRCompatible';
+import PaymentTabs from './PaymentTabs';
 import { StoreContext } from '../../store';
 import useComponentMountedRef from '../../hooks/useComponentMountedRef';
 import useDialog from '../../hooks/useDialog';
-import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 
-function NewPaymentDialog({ open, setOpen, backPage, backPath }) {
+function NewPaymentDialog({ open, setOpen, onClose }) {
   const { t } = useTranslation('common');
-  const router = useRouter();
   const store = useContext(StoreContext);
   const [loading, setLoading] = useState(true);
   const [rents, setRents] = useState([]);
   const [selectedRent, setSelectedRent] = useState({});
   const mountedRef = useComponentMountedRef();
+  const formRef = useRef();
 
   useEffect(() => {
     const fetchRents = async () => {
       const { status, data } = await store.rent.fetchWithoutUpdatingStore();
       if (mountedRef.current) {
-        setLoading(false);
         if (status !== 200) {
           store.pushToastMessage({
             message: t('Something went wrong'),
             severity: 'error',
           });
-          return setRents([]);
+          setRents([]);
+        } else {
+          setRents(data.rents);
         }
-        setRents(data.rents);
+        setLoading(false);
       }
     };
-    fetchRents();
-  }, [mountedRef, store, store.rent, t]);
+    if (open) {
+      setLoading(true);
+      if (!open?._id) {
+        fetchRents();
+      } else {
+        const rent = open;
+        setTimeout(() => {
+          if (mountedRef.current) {
+            flushSync(() => {
+              setSelectedRent(rent);
+            });
+            flushSync(() => {
+              setRents([rent]);
+            });
+            setLoading(false);
+          }
+        });
+      }
+    }
+  }, [mountedRef, open, store, t]);
 
-  const onRentChange = (event) => {
-    setSelectedRent(event.target.value);
+  const onRentChange = async (event) => {
+    const rent = event.target.value;
+    setSelectedRent(rent);
+    formRef.current?.setValues(rent);
   };
 
-  const handleClose = useCallback(() => {
-    setOpen(false);
-  }, [setOpen]);
+  const handleClose = useCallback(
+    (event, reason) => {
+      if (reason === 'backdropClick') {
+        return;
+      }
+      setOpen(false);
+    },
+    [setOpen]
+  );
 
   const onSubmit = useCallback(async () => {
+    await formRef.current.submit();
+    onClose?.(selectedRent);
     handleClose();
-    store.rent.setSelected(selectedRent);
-    await router.push(
-      `/${store.organization.selected.name}/payment/${
-        selectedRent.occupant._id
-      }/${selectedRent.term}/${encodeURI(backPage)}/${encodeURIComponent(
-        backPath
-      )}`
-    );
-  }, [
-    router,
-    handleClose,
-    selectedRent,
-    store.organization?.selected?.name,
-    store.rent,
-    backPage,
-    backPath,
-  ]);
+  }, [handleClose, onClose, selectedRent]);
 
   return (
     <Dialog
       maxWidth="sm"
       fullWidth
-      open={open}
+      open={!!open}
       onClose={handleClose}
       aria-labelledby="new-payment-dialog"
     >
-      <DialogTitle>{t('Select a rent to pay')}</DialogTitle>
-      <Box p={1}>
-        <DialogContent>
+      <DialogTitle>
+        {rents?.length > 1
+          ? t('Select a rent to pay')
+          : t('Enter a rent settlement')}
+      </DialogTitle>
+      <DialogContent>
+        <Box p={1}>
           <FormControl fullWidth>
             <InputLabel>{t('Rent')}</InputLabel>
             <Select value={selectedRent} onChange={onRentChange}>
@@ -99,39 +124,100 @@ function NewPaymentDialog({ open, setOpen, backPage, backPath }) {
                       n1.localeCompare(n2);
                     }
                   )
-                  .map((rent) => (
-                    <MenuItem key={rent._id} value={rent}>
-                      <Box
-                        display="flex"
-                        justifyContent="space-between"
-                        width="100%"
-                      >
-                        <Typography>{rent.occupant.name}</Typography>
-                        <NumberFormat
-                          value={rent.newBalance}
-                          variant="h6"
-                          withColor
-                        />
-                      </Box>
-                    </MenuItem>
-                  ))}
+                  .map((rent) => {
+                    const rentAmounts = getRentAmounts(rent);
+                    return (
+                      <MenuItem key={rent._id} value={rent}>
+                        <Hidden smDown>
+                          <Grid container>
+                            <Grid item sm={6}>
+                              <Box
+                                display="flex"
+                                alignItems="end"
+                                height="100%"
+                                fontSize="subtitle1.fontSize"
+                              >
+                                {rent.occupant.name}
+                              </Box>
+                            </Grid>
+                            <Grid item sm={3}>
+                              <RentAmount
+                                label={t('Rent due')}
+                                amount={rentAmounts.totalAmount}
+                                color={
+                                  rentAmounts.totalAmount <= 0
+                                    ? 'text.secondary'
+                                    : 'warning.dark'
+                                }
+                              />
+                            </Grid>
+                            <Grid item sm={3}>
+                              <RentAmount
+                                label={t('Settlement')}
+                                amount={
+                                  rentAmounts.payment !== 0
+                                    ? rentAmounts.payment
+                                    : null
+                                }
+                              />
+                            </Grid>
+                          </Grid>
+                        </Hidden>
+                        <Hidden mdUp>
+                          <Box
+                            display="flex"
+                            flexDirection="column"
+                            width="100%"
+                          >
+                            <Box fontSize="body2.fontSize" mb={1}>
+                              {rent.occupant.name}
+                            </Box>
+                            <Box display="flex" justifyContent="space-between">
+                              <RentAmount
+                                label={t('Rent due')}
+                                amount={rentAmounts.totalAmount}
+                                color={
+                                  rentAmounts.totalAmount <= 0
+                                    ? 'text.secondary'
+                                    : 'warning.dark'
+                                }
+                              />
+                              <RentAmount
+                                label={t('Settlement')}
+                                amount={
+                                  rentAmounts.payment !== 0
+                                    ? rentAmounts.payment
+                                    : null
+                                }
+                              />
+                            </Box>
+                          </Box>
+                        </Hidden>
+                      </MenuItem>
+                    );
+                  })}
             </Select>
           </FormControl>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose} color="primary">
-            {t('Cancel')}
-          </Button>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={onSubmit}
-            disabled={!!selectedRent.occupant === false}
-          >
-            {t('Enter')}
-          </Button>
-        </DialogActions>
-      </Box>
+          {selectedRent.term ? (
+            <Box mt={2}>
+              <PaymentTabs ref={formRef} rent={selectedRent} />
+            </Box>
+          ) : null}
+        </Box>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={handleClose} color="primary">
+          {t('Cancel')}
+        </Button>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={onSubmit}
+          disabled={!!selectedRent.occupant === false}
+        >
+          {t('Save')}
+        </Button>
+      </DialogActions>
     </Dialog>
   );
 }

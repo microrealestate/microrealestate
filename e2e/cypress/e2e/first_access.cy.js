@@ -79,7 +79,6 @@ describe('User access', () => {
       )}`
     );
     cy.contains(i18n.getFixedT('fr-FR')('Rents'));
-    cy.contains(i18n.getFixedT('fr-FR')('Send mass emails'));
 
     cy.navToPage('tenants');
     cy.checkUrl('/tenants');

@@ -1,7 +1,7 @@
 import { useCallback, useContext, useMemo } from 'react';
 
 import getConfig from 'next/config';
-import { Hidden } from '@material-ui/core';
+import Hidden from '../HiddenSSRCompatible';
 import LocationCityIcon from '@material-ui/icons/LocationCity';
 import { observer } from 'mobx-react-lite';
 import { StoreContext } from '../../store';
@@ -44,7 +44,7 @@ const OrganizationSwitcher = observer(() => {
 
   return store.organization?.items?.length > 0 ? (
     <>
-      <Hidden implementation="css" smDown>
+      <Hidden smDown>
         <ToggleMenu
           startIcon={<LocationCityIcon />}
           options={options}
@@ -53,7 +53,7 @@ const OrganizationSwitcher = observer(() => {
           onChange={onChange}
         />
       </Hidden>
-      <Hidden implementation="css" mdUp>
+      <Hidden mdUp>
         <ToggleMenu
           startIcon={<LocationCityIcon />}
           options={options}

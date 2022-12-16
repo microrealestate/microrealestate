@@ -1,7 +1,8 @@
-import { Box, Hidden } from '@material-ui/core';
 import { useContext, useEffect, useMemo, useState } from 'react';
 
+import { Box } from '@material-ui/core';
 import GeneralFigures from '../../components/dashboard/GeneralFigures';
+import Hidden from '../../components/HiddenSSRCompatible';
 import MonthFigures from '../../components/dashboard/MonthFigures';
 import { observer } from 'mobx-react-lite';
 import Page from '../../components/Page';
@@ -69,7 +70,7 @@ const Dashboard = observer(() => {
           <Box mb={10}>
             <MonthFigures />
           </Box>
-          <Hidden implementation="css" smDown>
+          <Hidden smDown>
             {!!store.dashboard.data.overview && <YearFigures />}
           </Hidden>
         </>

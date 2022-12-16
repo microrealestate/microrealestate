@@ -1,13 +1,8 @@
-import {
-  Box,
-  Hidden,
-  InputAdornment,
-  TextField,
-  withStyles,
-} from '@material-ui/core';
+import { Box, InputAdornment, TextField, withStyles } from '@material-ui/core';
 import { useCallback, useMemo, useState } from 'react';
 
 import FilterListIcon from '@material-ui/icons/FilterList';
+import Hidden from './HiddenSSRCompatible';
 import SearchIcon from '@material-ui/icons/Search';
 import ToggleMenu from './ToggleMenu';
 import useTimeout from '../hooks/useTimeout';
@@ -85,7 +80,7 @@ const SearchFilterBar = ({
         />
       </Box>
       <Box>
-        <Hidden implementation="css" smDown>
+        <Hidden smDown>
           <ToggleMenu
             startIcon={<FilterListIcon />}
             options={filters}
@@ -94,7 +89,7 @@ const SearchFilterBar = ({
             onChange={onToggleChange}
           />
         </Hidden>
-        <Hidden implementation="css" mdUp>
+        <Hidden mdUp>
           <ToggleMenu
             startIcon={<FilterListIcon />}
             options={filters}
