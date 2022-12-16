@@ -95,13 +95,11 @@ const OccupancyHistory = () => {
   );
 };
 
-const hashes = ['property'];
 const Property = observer(() => {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const router = useRouter();
-  const { handleTabChange, tabSelectedIndex, tabsReady } =
-    useTabChangeHelper(hashes);
+  const { handleTabChange, tabSelectedIndex } = useTabChangeHelper();
   const [ConfirmDialog, setOpenConfirmDeleteProperty] = useConfirmDialog();
 
   const {
@@ -245,21 +243,19 @@ const Property = observer(() => {
       <Hidden smDown>
         <Grid container spacing={5}>
           <Grid item md={7} lg={8}>
-            {tabsReady && (
-              <Paper>
-                <Tabs
-                  variant="scrollable"
-                  value={tabSelectedIndex}
-                  onChange={handleTabChange}
-                  aria-label="Property tabs"
-                >
-                  <Tab label={t('Property')} wrapped />
-                </Tabs>
-                <TabPanel value={tabSelectedIndex} index={0}>
-                  <PropertyForm onSubmit={onSubmit} />
-                </TabPanel>
-              </Paper>
-            )}
+            <Paper>
+              <Tabs
+                variant="scrollable"
+                value={tabSelectedIndex}
+                onChange={handleTabChange}
+                aria-label="Property tabs"
+              >
+                <Tab label={t('Property')} wrapped />
+              </Tabs>
+              <TabPanel value={tabSelectedIndex} index={0}>
+                <PropertyForm onSubmit={onSubmit} />
+              </TabPanel>
+            </Paper>
           </Grid>
           <Grid item md={5} lg={4}>
             <Box pb={4}>
@@ -276,21 +272,19 @@ const Property = observer(() => {
       <Hidden mdUp>
         <Grid container spacing={5}>
           <Grid item xs={12}>
-            {tabsReady && (
-              <Paper>
-                <Tabs
-                  variant="scrollable"
-                  value={tabSelectedIndex}
-                  onChange={handleTabChange}
-                  aria-label="Property tabs"
-                >
-                  <Tab label={t('Property')} wrapped />
-                </Tabs>
-                <TabPanel value={tabSelectedIndex} index={0}>
-                  <PropertyForm onSubmit={onSubmit} />
-                </TabPanel>
-              </Paper>
-            )}
+            <Paper>
+              <Tabs
+                variant="scrollable"
+                value={tabSelectedIndex}
+                onChange={handleTabChange}
+                aria-label="Property tabs"
+              >
+                <Tab label={t('Property')} wrapped />
+              </Tabs>
+              <TabPanel value={tabSelectedIndex} index={0}>
+                <PropertyForm onSubmit={onSubmit} />
+              </TabPanel>
+            </Paper>
           </Grid>
         </Grid>
       </Hidden>

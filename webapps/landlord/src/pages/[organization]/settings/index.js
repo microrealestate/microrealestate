@@ -22,13 +22,10 @@ const {
   publicRuntimeConfig: { BASE_PATH },
 } = getConfig();
 
-const hashes = ['landlord', 'billing', 'leases', 'access', 'third-parties'];
-
 const SettingTabs = observer(({ onSubmit }) => {
   const store = useContext(StoreContext);
   const { t } = useTranslation('common');
-  const { handleTabChange, tabSelectedIndex, tabsReady } =
-    useTabChangeHelper(hashes);
+  const { handleTabChange, tabSelectedIndex } = useTabChangeHelper();
 
   const onSubmitted = useCallback(
     ({ isOrgNameChanged, isLocaleChanged }) => {
@@ -42,37 +39,35 @@ const SettingTabs = observer(({ onSubmit }) => {
   );
 
   return (
-    tabsReady && (
-      <>
-        <Tabs
-          variant="scrollable"
-          value={tabSelectedIndex}
-          onChange={handleTabChange}
-          aria-label="Setting tabs"
-        >
-          <Tab label={t('Landlord')} wrapped />
-          <Tab label={t('Billing')} wrapped />
-          <Tab label={t('Contracts')} wrapped />
-          <Tab label={t('Collaborators')} wrapped />
-          <Tab label={t('Third-parties')} wrapped />
-        </Tabs>
-        <TabPanel value={tabSelectedIndex} index={0}>
-          <LandlordForm onSubmit={onSubmit} onSubmitted={onSubmitted} />
-        </TabPanel>
-        <TabPanel value={tabSelectedIndex} index={1}>
-          <BillingForm onSubmit={onSubmit} />
-        </TabPanel>
-        <TabPanel value={tabSelectedIndex} index={2}>
-          <Leases />
-        </TabPanel>
-        <TabPanel value={tabSelectedIndex} index={3}>
-          <Members onSubmit={onSubmit} />
-        </TabPanel>
-        <TabPanel value={tabSelectedIndex} index={4}>
-          <ThirdPartiesForm onSubmit={onSubmit} />
-        </TabPanel>
-      </>
-    )
+    <>
+      <Tabs
+        variant="scrollable"
+        value={tabSelectedIndex}
+        onChange={handleTabChange}
+        aria-label="Setting tabs"
+      >
+        <Tab label={t('Landlord')} wrapped />
+        <Tab label={t('Billing')} wrapped />
+        <Tab label={t('Contracts')} wrapped />
+        <Tab label={t('Collaborators')} wrapped />
+        <Tab label={t('Third-parties')} wrapped />
+      </Tabs>
+      <TabPanel value={tabSelectedIndex} index={0}>
+        <LandlordForm onSubmit={onSubmit} onSubmitted={onSubmitted} />
+      </TabPanel>
+      <TabPanel value={tabSelectedIndex} index={1}>
+        <BillingForm onSubmit={onSubmit} />
+      </TabPanel>
+      <TabPanel value={tabSelectedIndex} index={2}>
+        <Leases />
+      </TabPanel>
+      <TabPanel value={tabSelectedIndex} index={3}>
+        <Members onSubmit={onSubmit} />
+      </TabPanel>
+      <TabPanel value={tabSelectedIndex} index={4}>
+        <ThirdPartiesForm onSubmit={onSubmit} />
+      </TabPanel>
+    </>
   );
 });
 
