@@ -5,11 +5,11 @@ import React from 'react';
 import { useRouter } from 'next/router';
 
 const NextComposed = React.forwardRef(function NextComposed(props, ref) {
-  const { as, href, ...other } = props;
+  const { as, href, children, ...others } = props;
 
   return (
-    <NextLink href={href} as={as}>
-      <a ref={ref} {...other} />
+    <NextLink ref={ref} href={href} as={as} {...others}>
+      {children}
     </NextLink>
   );
 });

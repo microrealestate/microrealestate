@@ -14,19 +14,19 @@
     "@microrealestate/commonui": "*",
     "axios": "0.27.2",
     "formik": "2.2.9",
-    "jose": "4.8.3",
+    "jose": "4.11.1",
     "lodash": "4.17.21",
     "material-ui-formik-components": "0.7.3",
     "moment": "2.29.4",
-    "next": "12.2.5",
-    "next-translate": "1.5.0",
+    "next": "13.0.7",
+    "next-translate": "1.6.0",
     "react": "18.2.0",
     "react-dom": "18.2.0"
   },
   "devDependencies": {
     "@netlify/plugin-nextjs": "4.29.3",
     "eslint": "8.22.0",
-    "eslint-config-next": "12.2.5",
+    "eslint-config-next": "13.0.7",
     "fdir": "5.2.0"
   }
 }

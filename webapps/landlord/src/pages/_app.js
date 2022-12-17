@@ -12,11 +12,9 @@ import * as Yup from 'yup';
 import App from 'next/app';
 import Application from '../components/Application';
 import CssBaseline from '@material-ui/core/CssBaseline';
-import DateFnsUtils from '@date-io/moment';
 import getConfig from 'next/config';
 import Head from 'next/head';
 import { InjectStoreContext } from '../store';
-import { MuiPickersUtilsProvider } from '@material-ui/pickers';
 import theme from '../styles/theme';
 import { ThemeProvider } from '@material-ui/core/styles';
 import { useEffect } from 'react';
@@ -70,11 +68,9 @@ function MyApp(props) {
         {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
         <CssBaseline />
         <InjectStoreContext initialData={pageProps.initialState.store}>
-          <MuiPickersUtilsProvider utils={DateFnsUtils}>
-            <Application {...pageProps}>
-              <Component {...pageProps} />
-            </Application>
-          </MuiPickersUtilsProvider>
+          <Application {...pageProps}>
+            <Component {...pageProps} />
+          </Application>
         </InjectStoreContext>
       </ThemeProvider>
     </>
