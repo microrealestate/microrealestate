@@ -49,7 +49,7 @@
     "mobx-react-lite": "3.4.0",
     "moment": "2.29.4",
     "nanoid": "4.0.0",
-    "next": "12.3.1",
+    "next": "13.0.7",
     "next-translate": "1.6.0",
     "pdfjs-dist": "2.14.305",
     "pigeon-maps": "0.21.0",

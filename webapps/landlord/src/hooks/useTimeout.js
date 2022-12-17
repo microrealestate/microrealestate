@@ -9,13 +9,13 @@ export default function useTimeout(fn, delay) {
   const [isRunning, setIsRunning] = useState(false);
   const [isDone, setIsDone] = useState(false);
 
-  useEffect(() => {
-    fnRef.current = fn;
-  }, [fn, clear]);
-
   const clear = useCallback(() => {
     timerRef.current && clearTimeout(timerRef.current);
   }, []);
+
+  useEffect(() => {
+    fnRef.current = fn;
+  }, [fn, clear]);
 
   const start = useCallback(
     (...params) => {

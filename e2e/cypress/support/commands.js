@@ -196,8 +196,12 @@ Cypress.Commands.add(
         cy.get(`input[name="properties[${index}].expense.amount"]`)
           .clear()
           .type(expense.amount);
-        cy.get(`input[name="properties[${index}].entryDate"]`).type(entryDate);
-        cy.get(`input[name="properties[${index}].exitDate"]`).type(exitDate);
+        cy.get(`input[name="properties[${index}].entryDate"]`)
+          .clear()
+          .type(entryDate);
+        cy.get(`input[name="properties[${index}].exitDate"]`)
+          .clear()
+          .type(exitDate);
       });
     }
     cy.get('[data-cy=submit]').click();

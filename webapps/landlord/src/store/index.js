@@ -31,13 +31,16 @@ function InjectStoreContext({ children, initialData }) {
   const [store, setStore] = useState();
 
   useEffect(() => {
-    moment.locale(initialData?.organization?.selected?.locale ?? 'en');
     const newStore = getStoreInstance(initialData);
     setStore(newStore);
-    if (isClient() && process.env.NODE_ENV === 'development') {
-      window.__store = newStore;
-    }
   }, [initialData]);
+
+  useEffect(() => {
+    moment.locale(store?.organization?.selected?.locale ?? 'en');
+    if (isClient() && process.env.NODE_ENV === 'development') {
+      window.__store = store;
+    }
+  }, [store, store?.organization?.selected?.locale]);
 
   return store ? (
     <StoreContext.Provider value={store}>{children}</StoreContext.Provider>
