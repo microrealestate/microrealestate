@@ -3,15 +3,14 @@ import {
   AccordionDetails,
   AccordionSummary,
   Box,
+  Button,
   Grid,
-  IconButton,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  Tooltip,
   Typography,
 } from '@material-ui/core';
 import { useCallback, useContext, useEffect, useState } from 'react';
@@ -97,27 +96,28 @@ const TenantsTableWrapper = ({
         expandIcon={<ExpandMoreIcon />}
         aria-controls={title}
       >
-        <Grid container alignItems="center" spacing={2}>
-          <Grid item>
-            <Box width={350}>
-              <Typography variant="h5" noWrap>
-                {title}
-              </Typography>
-            </Box>
-          </Grid>
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          width="100%"
+        >
+          <Box>
+            <Typography variant="h5" noWrap>
+              {title}
+            </Typography>
+          </Box>
           {hasData && (
-            <Grid item>
-              <Tooltip
-                title={t('download as csv')}
-                aria-label={t('download as csv')}
-              >
-                <IconButton onClick={onClick}>
-                  <SaveAltIcon />
-                </IconButton>
-              </Tooltip>
-            </Grid>
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<SaveAltIcon />}
+              onClick={onClick}
+            >
+              {t('Download as csv file')}
+            </Button>
           )}
-        </Grid>
+        </Box>
       </AccordionSummary>
       <AccordionDetails>{children}</AccordionDetails>
     </Accordion>
@@ -126,9 +126,16 @@ const TenantsTableWrapper = ({
 
 const PropertiesList = ({ properties }) => {
   return properties.map(({ _id, name, type }) => (
-    <Box key={_id} display="flex" alignItems="center" mb={1}>
+    <Box
+      key={_id}
+      display="flex"
+      alignItems="center"
+      mb={1}
+      fontSize="caption.fontSize"
+      color="text.secondary"
+    >
       <PropertyIcon type={type} />
-      <Typography noWrap>{name}</Typography>
+      <Box whiteSpace="nowrap">{name}</Box>
     </Box>
   ));
 };
@@ -140,14 +147,18 @@ const SettlementList = ({ month, tenantId, settlements }) => {
     ? settlements.map((settlement, index) => {
         const { date, amount, type } = settlement;
         return amount > 0 ? (
-          <Box key={`${tenantId}_${month}_${index}`} alignItems="center" mb={1}>
-            <Typography variant="body2" noWrap>
-              {moment(date).format('L')}
-            </Typography>
-            <Typography variant="body2" noWrap>
+          <Box
+            key={`${tenantId}_${month}_${index}`}
+            alignItems="center"
+            mb={1}
+            fontSize="caption.fontSize"
+            color="text.secondary"
+          >
+            <Box whiteSpace="nowrap">{moment(date).format('L')}</Box>
+            <Box whiteSpace="nowrap">
               {t(type[0].toUpperCase() + type.slice(1))}
-            </Typography>
-            <NumberFormat value={amount} fontSize="body2.fontSize" withColor />
+            </Box>
+            <NumberFormat value={amount} withColor fontSize="body2.fontSize" />
           </Box>
         ) : null;
       })
@@ -202,19 +213,26 @@ const IncomingTenants = ({ id, defaultExpanded, onCSVClick }) => {
               {store.accounting.data.incomingTenants.map((tenant) => (
                 <TableRow key={tenant._id} hover>
                   <StyledTableCell component="th" scope="row">
-                    <Typography noWrap>{tenant.name}</Typography>
+                    <Box fontSize="body2.fontSize">{tenant.name}</Box>
                   </StyledTableCell>
                   <StyledTableCell align="left">
                     <PropertiesList properties={tenant.properties} />
                   </StyledTableCell>
                   <StyledTableCell align="center">
-                    {moment(tenant.beginDate).format('L')}
+                    <Box fontSize="caption.fontSize" color="text.secondary">
+                      {moment(tenant.beginDate).format('L')}
+                    </Box>
                   </StyledTableCell>
                   <StyledTableCell align="center">
-                    {moment(tenant.endDate).format('L')}
+                    <Box fontSize="caption.fontSize" color="text.secondary">
+                      {moment(tenant.endDate).format('L')}
+                    </Box>
                   </StyledTableCell>
                   <StyledTableCell align="right">
-                    <NumberFormat value={tenant.guaranty} />
+                    <NumberFormat
+                      value={tenant.guaranty}
+                      fontSize="body2.fontSize"
+                    />
                   </StyledTableCell>
                 </TableRow>
               ))}
@@ -269,35 +287,53 @@ const OutgoingTenants = ({ id, onCSVClick }) => {
               {store.accounting.data.outgoingTenants.map((tenant) => (
                 <TableRow key={tenant._id} hover>
                   <StyledTableCell component="th" scope="row">
-                    <Typography noWrap>{tenant.name}</Typography>
+                    <Box fontSize="body2.fontSize" whiteSpace="nowrap">
+                      {tenant.name}
+                    </Box>
                   </StyledTableCell>
                   <StyledTableCell align="left">
                     <PropertiesList properties={tenant.properties} />
                   </StyledTableCell>
                   <StyledTableCell align="center">
-                    {moment(tenant.beginDate).format('L')}
+                    <Box fontSize="caption.fontSize" color="text.secondary">
+                      {moment(tenant.beginDate).format('L')}
+                    </Box>
                   </StyledTableCell>
                   <StyledTableCell align="center">
-                    {tenant.terminationDate
-                      ? moment(tenant.terminationDate).format('L')
-                      : moment(tenant.endDate).format('L')}
+                    <Box fontSize="caption.fontSize" color="text.secondary">
+                      {tenant.terminationDate
+                        ? moment(tenant.terminationDate).format('L')
+                        : moment(tenant.endDate).format('L')}
+                    </Box>
                   </StyledTableCell>
                   <StyledTableCell align="right">
-                    <NumberFormat value={tenant.guaranty} />
+                    <NumberFormat
+                      value={tenant.guaranty}
+                      fontSize="caption.fontSize"
+                      color="text.secondary"
+                    />
                   </StyledTableCell>
                   <StyledTableCell align="right">
                     <NumberFormat
                       value={tenant.guarantyPayback}
                       showZero={false}
+                      fontSize="caption.fontSize"
+                      color="text.secondary"
                     />
                   </StyledTableCell>
                   <StyledTableCell align="right">
-                    <NumberFormat value={tenant.balance} showZero={false} />
+                    <NumberFormat
+                      value={tenant.balance}
+                      showZero={false}
+                      fontSize="caption.fontSize"
+                      color="text.secondary"
+                    />
                   </StyledTableCell>
                   <StyledTableCell align="right">
                     <NumberFormat
                       value={tenant.finalBalance}
                       showZero={false}
+                      fontSize="body2.fontSize"
                       withColor
                     />
                   </StyledTableCell>
@@ -314,7 +350,7 @@ const OutgoingTenants = ({ id, onCSVClick }) => {
 };
 
 const months = moment.localeData().months();
-const Settlements = ({ id, onCSVClick }) => {
+const Settlements = ({ id, onCSVClick, onDownloadYearInvoices }) => {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const hasData = !!store.accounting?.data?.settlements?.length;
@@ -351,11 +387,37 @@ const Settlements = ({ id, onCSVClick }) => {
               {store.accounting.data.settlements.map((settlement) => (
                 <TableRow key={settlement.tenantId} hover>
                   <StyledTableCell component="th" scope="row">
-                    <Typography noWrap>{settlement.tenant}</Typography>
-                    <Typography noWrap>
-                      {moment(settlement.beginDate).format('L')} -{' '}
-                      {moment(settlement.endDate).format('L')}
-                    </Typography>
+                    <Box mb={2}>
+                      <Box whiteSpace="nowrap" fontSize="body2.fontSize">
+                        {settlement.tenant}
+                      </Box>
+                      <Box
+                        whiteSpace="nowrap"
+                        fontSize="caption.fontSize"
+                        color="text.secondary"
+                      >
+                        {moment(settlement.beginDate).format('L')} -{' '}
+                        {moment(settlement.endDate).format('L')}
+                      </Box>
+                    </Box>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      startIcon={<SaveAltIcon />}
+                      onClick={onDownloadYearInvoices({
+                        _id: settlement.tenantId,
+                        name: settlement.tenant,
+                      })}
+                    >
+                      <Box
+                        whiteSpace="nowrap"
+                        fontSize="caption.fontSize"
+                        lineHeight="normal"
+                        letterSpacing={0}
+                      >
+                        {t('Download invoices')}
+                      </Box>
+                    </Button>
                   </StyledTableCell>
                   {months.map((m, index) => {
                     return (
@@ -436,6 +498,16 @@ const Accounting = observer(() => {
     [t, router.query.year]
   );
 
+  const getYearInvoices = useCallback(
+    (tenant) => () => {
+      downloadDocument({
+        endpoint: `/documents/invoice/${tenant._id}/${router.query.year}`,
+        documentName: `${tenant.name}-${router.query.year}-${t('invoice')}.pdf`,
+      });
+    },
+    [router.query.year, t]
+  );
+
   return (
     <Page loading={loading} NavBar={<PeriodToolbar />}>
       {store.accounting?.data?.incomingTenants?.length ||
@@ -451,7 +523,11 @@ const Accounting = observer(() => {
             id="outgoing-tenants"
             onCSVClick={getOutgoingTenantsAsCsv}
           />
-          <Settlements id="settlements" onCSVClick={getSettlementsAsCsv} />
+          <Settlements
+            id="settlements"
+            onCSVClick={getSettlementsAsCsv}
+            onDownloadYearInvoices={getYearInvoices}
+          />
         </>
       ) : (
         <EmptyIllustration label={t('No data found')} />

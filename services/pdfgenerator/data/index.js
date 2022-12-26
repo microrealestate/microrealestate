@@ -32,7 +32,7 @@ async function getRentsData(params) {
   let rents = [];
   if (dbTenant.rents.length) {
     rents = dbTenant.rents
-      .filter((rent) => rent.term === Number(term))
+      .filter((rent) => String(rent.term).startsWith(term))
       .map((rent) => ({
         ...rent,
         period: rent.term,
@@ -89,13 +89,25 @@ async function getRentsData(params) {
   }
 
   return {
-    today: moment().format('DD/MM/YYYY'),
     fileName: `${dbTenant.name}-${term}`,
     tenant,
     landlord,
   };
 }
 
+function avoidWeekend(aMoment) {
+  const day = aMoment.isoWeekday();
+  if (day === 6) {
+    // if saturday shift the due date to friday
+    aMoment.subtract(1, 'days');
+  } else if (day === 7) {
+    // if sunday shift the due date to friday
+    aMoment.subtract(2, 'days');
+  }
+  return aMoment;
+}
+
 module.exports = {
+  avoidWeekend,
   getRentsData,
 };
