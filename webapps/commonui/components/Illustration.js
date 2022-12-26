@@ -1,5 +1,4 @@
-import { Box, Typography } from '@material-ui/core';
-
+import { Box } from '@material-ui/core';
 import Image from 'next/image';
 
 export function Illustration({
@@ -10,17 +9,20 @@ export function Illustration({
   height = 200,
 }) {
   return (
-    <>
-      <Box position="relative" align="center" width={width} height={height}>
+    <Box
+      display="flex"
+      flexDirection="column"
+      justifyContent="center"
+      alignItems="center"
+      width={width}
+      height={height}
+      color="text.secondary"
+      fontSize="caption.fontSize"
+    >
+      <Box position="relative" width={width} height={height}>
         <Image src={src} layout="fill" alt={alt} />
       </Box>
-      {!!label && (
-        <Box pt={1} color="text.disabled">
-          <Typography align="center" variant="caption" component="p">
-            {label}
-          </Typography>
-        </Box>
-      )}
-    </>
+      {!!label && <Box pt={2}>{label}</Box>}
+    </Box>
   );
 }
