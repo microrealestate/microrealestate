@@ -32,9 +32,11 @@ import { downloadDocument } from '../../utils/fetch';
 import EditIcon from '@material-ui/icons/Edit';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import Hidden from '../HiddenSSRCompatible';
+import HistoryIcon from '@material-ui/icons/History';
 import moment from 'moment';
 import { StoreContext } from '../../store';
 import useNewPaymentDialog from '../payment/NewPaymentDialog';
+import useRentHistoryDialog from './RentHistoryDialog';
 import useTranslation from 'next-translate/useTranslation';
 
 const TableToolbar = memo(function TableToolbar({
@@ -221,13 +223,13 @@ function Reminder({ rent, ...boxProps }) {
   ) : null;
 }
 
-function RentRow({ rent, isSelected, onSelect, onEdit }) {
+function RentRow({ rent, isSelected, onSelect, onEdit, onHistory }) {
   const { t } = useTranslation('common');
   const rentAmounts = getRentAmounts(rent);
 
   return (
     <Box key={rent._id} position="relative">
-      <Box display="flex" alignItems="start" my={2}>
+      <Box display="flex" alignItems="center" my={2}>
         <Box>
           {rent.occupant.hasContactEmails ? (
             <Checkbox
@@ -307,9 +309,14 @@ function RentRow({ rent, isSelected, onSelect, onEdit }) {
             </Grid>
           </Grid>
         </Grid>
-        <Box ml={2}>
-          <IconButton aria-label="expand row" onClick={onEdit(rent)}>
+        <Box ml={2} mr={0.5}>
+          <IconButton size="small" onClick={onEdit(rent)}>
             <EditIcon />
+          </IconButton>
+        </Box>
+        <Box mr={1}>
+          <IconButton size="small" onClick={onHistory(rent)}>
+            <HistoryIcon />
           </IconButton>
         </Box>
       </Box>
@@ -319,7 +326,7 @@ function RentRow({ rent, isSelected, onSelect, onEdit }) {
   );
 }
 
-function MobileRentRow({ rent, isSelected, onSelect, onEdit }) {
+function MobileRentRow({ rent, isSelected, onSelect, onEdit, onHistory }) {
   const { t } = useTranslation('common');
   const rentAmounts = getRentAmounts(rent);
 
@@ -383,9 +390,14 @@ function MobileRentRow({ rent, isSelected, onSelect, onEdit }) {
             fontWeight={rentAmounts.payment > 0 ? 'fontWeightBold' : ''}
           />
         </Box>
-        <Box ml={1}>
-          <IconButton aria-label="expand row" onClick={onEdit(rent)}>
+        <Box ml={4}>
+          <IconButton onClick={onEdit(rent)}>
             <EditIcon />
+          </IconButton>
+        </Box>
+        <Box>
+          <IconButton onClick={onHistory(rent)}>
+            <HistoryIcon />
           </IconButton>
         </Box>
       </Box>
@@ -404,6 +416,7 @@ const RentTable = ({ rents }) => {
   const store = useContext(StoreContext);
   const [selected, setSelected] = useState([]);
   const [NewPaymentDialog, setOpenNewPaymentDialog] = useNewPaymentDialog();
+  const [RentHistoryDialog, setOpenRentHistoryDialog] = useRentHistoryDialog();
 
   const onSelectAllClick = useCallback(
     (event) => {
@@ -481,9 +494,17 @@ const RentTable = ({ rents }) => {
     [setOpenNewPaymentDialog]
   );
 
+  const handleHistory = useCallback(
+    (rent) => () => {
+      setOpenRentHistoryDialog(rent.occupant);
+    },
+    [setOpenRentHistoryDialog]
+  );
+
   return (
     <>
       <NewPaymentDialog />
+      <RentHistoryDialog />
 
       <Paper>
         <TableToolbar selected={selected} onSend={onSend} />
@@ -529,6 +550,7 @@ const RentTable = ({ rents }) => {
                   isSelected={isItemSelected}
                   onSelect={onSelectClick}
                   onEdit={handleEdit}
+                  onHistory={handleHistory}
                 />
               </Hidden>
               <Hidden mdUp>
@@ -537,6 +559,7 @@ const RentTable = ({ rents }) => {
                   isSelected={isItemSelected}
                   onSelect={onSelectClick}
                   onEdit={handleEdit}
+                  onHistory={handleHistory}
                 />
               </Hidden>
             </Fragment>

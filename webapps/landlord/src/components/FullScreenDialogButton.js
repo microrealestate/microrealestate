@@ -5,14 +5,10 @@ import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
 import Hidden from './HiddenSSRCompatible';
 import { MobileButton } from './MobileMenuButton';
-import Slide from '@material-ui/core/Slide';
 import Toolbar from '@material-ui/core/Toolbar';
+import TransitionSlideUp from './TransitionSlideUp';
 import Typography from '@material-ui/core/Typography';
 import useTranslation from 'next-translate/useTranslation';
-
-const Transition = React.forwardRef(function Transition(props, ref) {
-  return <Slide direction="up" ref={ref} {...props} />;
-});
 
 const FullScreenDialogButton = ({
   dialogTitle,
@@ -67,7 +63,7 @@ const FullScreenDialogButton = ({
         fullScreen
         open={open}
         onClose={handleClose}
-        TransitionComponent={Transition}
+        TransitionComponent={TransitionSlideUp}
         keepMounted
       >
         <AppBar position="sticky">

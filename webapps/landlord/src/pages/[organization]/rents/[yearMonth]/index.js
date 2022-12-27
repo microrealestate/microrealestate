@@ -7,6 +7,7 @@ import Hidden from '../../../../components/HiddenSSRCompatible';
 import { isServer } from '../../../../utils';
 import moment from 'moment';
 import NumberFormat from '../../../../components/NumberFormat';
+import { observer } from 'mobx-react-lite';
 import Page from '../../../../components/Page';
 import { PageCard } from '../../../../components/Cards';
 import PeriodPicker from '../../../../components/PeriodPicker';
@@ -236,4 +237,4 @@ Rents.getInitialProps = async (context) => {
   };
 };
 
-export default withAuthentication(Rents);
+export default withAuthentication(observer(Rents));
