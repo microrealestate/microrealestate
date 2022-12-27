@@ -7,7 +7,7 @@ import {
   Toolbar,
   useTheme,
 } from '@material-ui/core';
-import { forwardRef, useCallback, useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
@@ -15,14 +15,10 @@ import { hexToRgb } from '../styles/styles';
 import Hidden from './HiddenSSRCompatible';
 import { Loading } from '@microrealestate/commonui/components';
 import { MobileButton } from './MobileMenuButton';
-import Slide from '@material-ui/core/Slide';
+import TransitionSlideUp from './TransitionSlideUp';
 import Typography from '@material-ui/core/Typography';
 import useComponentMountedRef from '../hooks/useComponentMountedRef';
 import useTranslation from 'next-translate/useTranslation';
-
-const Transition = forwardRef(function Transition(props, ref) {
-  return <Slide direction="up" ref={ref} {...props} />;
-});
 
 const CardMenuItemContent = ({ illustration, label, description }) => {
   return (
@@ -130,7 +126,7 @@ const FullScreenDialogMenu = ({
         fullScreen
         open={open}
         onClose={handleClose}
-        TransitionComponent={Transition}
+        TransitionComponent={TransitionSlideUp}
       >
         <AppBar position="sticky">
           <Toolbar>

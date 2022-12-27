@@ -2,11 +2,15 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
+  AppBar,
   Box,
+  Button,
+  Dialog,
   IconButton,
   List,
   ListItem,
   ListItemText,
+  Toolbar,
   Typography,
 } from '@material-ui/core';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
@@ -18,6 +22,8 @@ import { Loading } from '@microrealestate/commonui/components';
 import moment from 'moment';
 import RentDetails from './RentDetails';
 import { StoreContext } from '../../store';
+import TransitionSlideUp from '../TransitionSlideUp';
+import useDialog from '../../hooks/useDialog';
 import useNewPaymentDialog from '../payment/NewPaymentDialog';
 import useTranslation from 'next-translate/useTranslation';
 
@@ -96,7 +102,7 @@ function YearRentList({ tenant, year, onClick }) {
   );
 }
 
-export default function RentHistory({ tenantId }) {
+function RentHistory({ tenantId }) {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const [loading, setLoading] = useState(true);
@@ -108,28 +114,31 @@ export default function RentHistory({ tenantId }) {
 
   const [NewPaymentDialog, setOpenNewPaymentDialog] = useNewPaymentDialog();
 
-  const fetchTenantRents = useCallback(async () => {
-    setLoading(true);
-    const response = await store.rent.fetchTenantRents(tenantId);
-    if (response.status !== 200) {
-      store.pushToastMessage({
-        message: t('Cannot get tenant information'),
-        severity: 'error',
-      });
-    } else {
-      const tenant = response.data;
-      setTenant(tenant);
-      setRentYears(
-        Array.from(
-          tenant.rents.reduce((acc, { term }) => {
-            acc.add(String(term).slice(0, 4));
-            return acc;
-          }, new Set())
-        )
-      );
-    }
-    setLoading(false);
-  }, [store, t, tenantId]);
+  const fetchTenantRents = useCallback(
+    async (showLoadingAnimation = true) => {
+      showLoadingAnimation && setLoading(true);
+      const response = await store.rent.fetchTenantRents(tenantId);
+      if (response.status !== 200) {
+        store.pushToastMessage({
+          message: t('Cannot get tenant information'),
+          severity: 'error',
+        });
+      } else {
+        const tenant = response.data;
+        setTenant(tenant);
+        setRentYears(
+          Array.from(
+            tenant.rents.reduce((acc, { term }) => {
+              acc.add(String(term).slice(0, 4));
+              return acc;
+            }, new Set())
+          )
+        );
+      }
+      showLoadingAnimation && setLoading(false);
+    },
+    [store, t, tenantId]
+  );
 
   useEffect(() => {
     fetchTenantRents();
@@ -146,7 +155,7 @@ export default function RentHistory({ tenantId }) {
   );
 
   const handleClose = useCallback(() => {
-    fetchTenantRents();
+    fetchTenantRents(false);
   }, [fetchTenantRents]);
 
   return (
@@ -199,4 +208,46 @@ export default function RentHistory({ tenantId }) {
       )}
     </>
   );
+}
+
+function RentHistoryDialog({ open, setOpen }) {
+  const { t } = useTranslation('common');
+  const [showContent, setShowContent] = useState(false);
+
+  const handleTransitionCompleted = useCallback(() => setShowContent(true), []);
+  const handleClose = useCallback(() => setOpen(false), [setOpen]);
+
+  return (
+    <Dialog
+      fullScreen
+      open={open}
+      onClose={handleClose}
+      TransitionComponent={TransitionSlideUp}
+      TransitionProps={{ onEntered: handleTransitionCompleted }}
+      keepMounted
+    >
+      <AppBar position="sticky">
+        <Toolbar>
+          <Box width="100%" display="flex" alignItems="center">
+            <Box flexGrow={1}>
+              <Typography variant="h6">{t('Rent schedule')}</Typography>
+            </Box>
+            <Box>
+              <Button color="inherit" onClick={handleClose}>
+                {t('Close')}
+              </Button>
+            </Box>
+          </Box>
+        </Toolbar>
+      </AppBar>
+
+      <Box py={2} px={3}>
+        {showContent && open ? <RentHistory tenantId={open._id} /> : null}
+      </Box>
+    </Dialog>
+  );
+}
+
+export default function useRentHistoryDialog() {
+  return useDialog(RentHistoryDialog);
 }
