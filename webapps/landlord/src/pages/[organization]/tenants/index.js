@@ -2,15 +2,14 @@ import {
   Box,
   Button,
   Chip,
-  List,
-  ListItem,
-  ListItemText,
+  Divider,
+  Grid,
+  Link,
   makeStyles,
-  Paper,
   Typography,
 } from '@material-ui/core';
 import { getStoreInstance, StoreContext } from '../../../store';
-import React, { Fragment, memo, useCallback, useContext } from 'react';
+import React, { useCallback, useContext } from 'react';
 
 import _ from 'lodash';
 import AddIcon from '@material-ui/icons/Add';
@@ -24,7 +23,6 @@ import { observer } from 'mobx-react-lite';
 import Page from '../../../components/Page';
 import PropertyIcon from '../../../components/properties/PropertyIcon';
 import SearchFilterBar from '../../../components/SearchFilterBar';
-import TenantAvatar from '../../../components/tenants/TenantAvatar';
 import { toJS } from 'mobx';
 import useNewTenantDialog from '../../../components/tenants/NewTenantDialog';
 import { useRouter } from 'next/router';
@@ -50,36 +48,51 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const Properties = memo(function Properties({ tenant }) {
-  return (
-    <Box display="flex" height="100%" alignItems="center" flexWrap="wrap">
-      {tenant.properties?.map(({ property }) => {
-        return (
-          <Box
-            key={property._id}
-            display="flex"
-            alignItems="center"
-            color="text.secondary"
-            mr={1}
-          >
-            <PropertyIcon type={property.type} color="inherit" />
-            <Typography variant="caption" color="inherit">
-              {property.name}
-            </Typography>
-          </Box>
-        );
-      })}
-    </Box>
-  );
-});
+function Properties({ tenant }) {
+  const { t } = useTranslation('common');
 
-const TenantListItem = memo(function TenantListItem({ tenant }) {
+  return (
+    <>
+      <Box fontSize="caption.fontSize" color="text.secondary">
+        {t('Rented premises')}
+      </Box>
+      <Box display="flex" flexWrap="wrap" alignContent="start" height={78}>
+        {tenant.properties?.map(({ property }) => {
+          return (
+            <Box
+              key={property._id}
+              display="flex"
+              alignItems="center"
+              mr={1.2}
+              height={26}
+            >
+              <Box
+                display="flex"
+                fontSize="body1.fontSize"
+                color="text.secondary"
+              >
+                <PropertyIcon
+                  type={property.type}
+                  color="inherit"
+                  fontSize="inherit"
+                />
+              </Box>
+              <Box color="inherit">{property.name}</Box>
+            </Box>
+          );
+        })}
+      </Box>
+    </>
+  );
+}
+
+function TenantItem({ tenant }) {
   const router = useRouter();
   const store = useContext(StoreContext);
   const { t } = useTranslation('common');
   const classes = useStyles();
 
-  const onEdit = useCallback(async () => {
+  const handleClick = useCallback(async () => {
     store.tenant.setSelected(tenant);
     await router.push(
       `/${store.organization.selected.name}/tenants/${tenant._id}/${encodeURI(
@@ -89,114 +102,104 @@ const TenantListItem = memo(function TenantListItem({ tenant }) {
   }, [t, router, tenant, store.organization.selected.name, store.tenant]);
 
   return (
-    <ListItem
-      button
-      style={{
-        marginBottom: 20,
-      }}
-      onClick={onEdit}
-    >
-      <ListItemText
-        primary={
-          <>
-            <Box display="flex" justifyContent="space-between">
-              <Box display="flex" alignItems="center" mr={1}>
-                <TenantAvatar
-                  tenant={tenant}
-                  className={
-                    !!tenant.beginDate && !tenant.terminated
-                      ? classes.avatarInProgress
-                      : classes.avatarTerminated
-                  }
-                />
-                <Typography variant="h5">{tenant.name}</Typography>
-              </Box>
-              {!!tenant.beginDate && (
-                <Chip
-                  size="small"
-                  label={
-                    <Typography variant="caption">
-                      {tenant.terminated ? t('Terminated') : t('In progress')}
-                    </Typography>
-                  }
-                  className={
-                    !tenant.terminated
-                      ? classes.chipInProgress
-                      : classes.chipTerminated
-                  }
-                />
-              )}
-            </Box>
-
-            <Box mt={1}>
-              {tenant.isCompany && (
-                <Typography
-                  variant="caption"
-                  color="textSecondary"
-                  component="div"
-                >
-                  {_.startCase(_.capitalize(tenant.manager))}
+    <Link color="inherit" underline="none" href="#" onClick={handleClick}>
+      <Box
+        display="flex"
+        flexDirection="column"
+        bgcolor="background.paper"
+        border={1}
+        borderColor="grey.300"
+        borderRadius="borderRadius"
+        alignItems="stretch"
+        height="100%"
+      >
+        <Box display="flex" justifyContent="space-between" m={2}>
+          <Box fontSize="h6.fontSize">{tenant.name}</Box>
+          {!!tenant.beginDate && (
+            <Chip
+              size="small"
+              label={
+                <Typography variant="caption">
+                  {tenant.terminated ? t('Terminated') : t('In progress')}
                 </Typography>
-              )}
-            </Box>
-            <Box mt={1}>
-              <Typography
-                variant="caption"
-                color="textSecondary"
-                component="div"
-              >
-                {tenant.beginDate
-                  ? t(
-                      'Contract {{contract}} - from {{startDate}} to {{endDate}}',
-                      {
-                        contract: tenant.lease?.name || t('custom'),
-                        startDate: moment(
-                          tenant.beginDate,
-                          'DD/MM/YYYY'
-                        ).format('L'),
-                        endDate: moment(
-                          tenant.terminationDate || tenant.endDate,
-                          'DD/MM/YYYY'
-                        ).format('L'),
-                      }
-                    )
-                  : t('No associated contract')}
-              </Typography>
-            </Box>
-            <Box mt={1}>
-              <Properties tenant={tenant} />
-            </Box>
+              }
+              className={
+                !tenant.terminated
+                  ? classes.chipInProgress
+                  : classes.chipTerminated
+              }
+            />
+          )}
+        </Box>
+        <Divider />
+        <Box mt={1.5} mx={2}>
+          {tenant.isCompany ? (
+            <>
+              <Box fontSize="caption.fontSize" color="text.secondary">
+                {t('Legal representative')}
+              </Box>
+              <Box>{_.startCase(_.capitalize(tenant.manager))}</Box>
+            </>
+          ) : null}
+        </Box>
 
-            <CompulsoryDocumentStatus tenant={tenant} mt={2} />
-          </>
-        }
-      />
-    </ListItem>
+        <Box mt={2.5} mx={2}>
+          <Box fontSize="caption.fontSize" color="text.secondary">
+            {t('Contract')}
+          </Box>
+          <Box>
+            {tenant.beginDate
+              ? tenant.lease?.name || t('custom')
+              : t('No associated contract')}
+          </Box>
+          <Box>
+            {tenant.beginDate
+              ? t('From {{startDate}} to {{endDate}}', {
+                  startDate: moment(tenant.beginDate, 'DD/MM/YYYY').format('L'),
+                  endDate: moment(
+                    tenant.terminationDate || tenant.endDate,
+                    'DD/MM/YYYY'
+                  ).format('L'),
+                })
+              : t('No associated contract')}
+          </Box>
+        </Box>
+        <Box mt={2.5} mx={2}>
+          <Properties tenant={tenant} />
+        </Box>
+
+        <CompulsoryDocumentStatus
+          tenant={tenant}
+          variant="compact"
+          mt={1}
+          mb={2}
+          mx={2}
+        />
+      </Box>
+    </Link>
+  );
+}
+
+const TenantGrid = observer(function TenantGrid() {
+  const { t } = useTranslation('common');
+  const store = useContext(StoreContext);
+
+  return store.tenant.filteredItems?.length ? (
+    <Grid container spacing={3}>
+      {store.tenant.filteredItems.map((tenant) => {
+        return (
+          <Grid key={tenant._id} item xs={12} md={6} lg={4}>
+            <TenantItem tenant={tenant} />
+          </Grid>
+        );
+      })}
+    </Grid>
+  ) : (
+    <EmptyIllustration label={t('No tenants found')} />
   );
 });
 
-const TenantList = memo(
-  observer(function TenantList() {
-    const { t } = useTranslation('common');
-    const store = useContext(StoreContext);
-
-    return store.tenant.filteredItems?.length ? (
-      <List component="nav" disablePadding aria-labelledby="tenant-list">
-        {store.tenant.filteredItems.map((tenant) => {
-          return (
-            <Paper key={tenant._id}>
-              <TenantListItem tenant={tenant} />
-            </Paper>
-          );
-        })}
-      </List>
-    ) : (
-      <EmptyIllustration label={t('No tenants found')} />
-    );
-  })
-);
-
-const Tenants = observer(() => {
+function Tenants() {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const router = useRouter();
@@ -248,11 +251,11 @@ const Tenants = observer(() => {
         />
       }
     >
-      <TenantList />
+      <TenantGrid />
       <NewTenantDialog backPage={t('Tenants')} backPath={router.asPath} />
     </Page>
   );
-});
+}
 
 Tenants.getInitialProps = async (context) => {
   const store = isServer() ? context.store : getStoreInstance();
@@ -269,4 +272,4 @@ Tenants.getInitialProps = async (context) => {
   };
 };
 
-export default withAuthentication(Tenants);
+export default withAuthentication(observer(Tenants));
