@@ -90,8 +90,11 @@ function NewPaymentDialog({ open, setOpen, onClose }) {
     [setOpen]
   );
 
-  const onSubmit = useCallback(async () => {
-    await formRef.current.submit();
+  const handleSave = useCallback(() => {
+    formRef.current.submit();
+  }, []);
+
+  const handleSubmit = useCallback(() => {
     onClose?.(selectedRent);
     handleClose();
   }, [handleClose, onClose, selectedRent]);
@@ -200,7 +203,11 @@ function NewPaymentDialog({ open, setOpen, onClose }) {
           </FormControl>
           {selectedRent.term ? (
             <Box mt={2}>
-              <PaymentTabs ref={formRef} rent={selectedRent} />
+              <PaymentTabs
+                ref={formRef}
+                rent={selectedRent}
+                onSubmit={handleSubmit}
+              />
             </Box>
           ) : null}
         </Box>
@@ -212,7 +219,7 @@ function NewPaymentDialog({ open, setOpen, onClose }) {
         <Button
           variant="contained"
           color="primary"
-          onClick={onSubmit}
+          onClick={handleSave}
           disabled={!!selectedRent.occupant === false}
         >
           {t('Save')}

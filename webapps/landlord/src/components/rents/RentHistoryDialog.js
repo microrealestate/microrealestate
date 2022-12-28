@@ -220,7 +220,7 @@ function RentHistoryDialog({ open, setOpen }) {
   return (
     <Dialog
       fullScreen
-      open={open}
+      open={!!open}
       onClose={handleClose}
       TransitionComponent={TransitionSlideUp}
       TransitionProps={{ onEntered: handleTransitionCompleted }}
