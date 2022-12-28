@@ -6,7 +6,11 @@ import useTranslation from 'next-translate/useTranslation';
 
 const now = moment();
 
-function CompulsoryDocumentStatus({ tenant, ...boxProps }) {
+export default function CompulsoryDocumentStatus({
+  tenant,
+  variant = 'full',
+  ...boxProps
+}) {
   const { t } = useTranslation('common');
 
   const missingDocuments = useMemo(() => {
@@ -20,25 +24,33 @@ function CompulsoryDocumentStatus({ tenant, ...boxProps }) {
     );
   }, [tenant.filesToUpload, tenant.terminated]);
 
-  return (
-    !!missingDocuments?.length && (
+  if (!missingDocuments?.length || missingDocuments.length === 0) {
+    return null;
+  }
+
+  if (variant === 'compact') {
+    return (
       <Box {...boxProps}>
-        <Alert
-          title={
-            missingDocuments.length > 1
-              ? t('The following compulsary documents are missing')
-              : t('The following compulsary document is missing')
-          }
-        >
-          <ul>
-            {missingDocuments.map(({ _id, name }) => {
-              return <li key={_id}>{name}</li>;
-            })}
-          </ul>
-        </Alert>
+        <Alert title={t('Some compulsary documents are missing')} />
       </Box>
-    )
+    );
+  }
+
+  return (
+    <Box {...boxProps}>
+      <Alert
+        title={
+          missingDocuments.length > 1
+            ? t('The following compulsary documents are missing')
+            : t('The following compulsary document is missing')
+        }
+      >
+        <ul>
+          {missingDocuments.map(({ _id, name }) => {
+            return <li key={_id}>{name}</li>;
+          })}
+        </ul>
+      </Alert>
+    </Box>
   );
 }
-
-export default CompulsoryDocumentStatus;
