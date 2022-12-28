@@ -12,6 +12,7 @@ import {
   DateField,
   NumberField,
   SelectField,
+  SubmitButton,
   TextField,
 } from '@microrealestate/commonui/components';
 import { FieldArray, Form, Formik } from 'formik';
@@ -43,8 +44,8 @@ const validationSchema = Yup.object().shape({
         type: Yup.mixed()
           .oneOf(['cash', 'transfer', 'levy', 'cheque'])
           .required(),
-        reference: Yup.mixed().when('type', {
-          is: (val) => val !== 'cash',
+        reference: Yup.mixed().when(['type', 'amount'], {
+          is: (type, amount) => type !== 'cash' && amount > 0,
           then: Yup.string().required(),
         }),
       })
@@ -219,8 +220,9 @@ function initialFormValues(rent) {
   };
 }
 
-function PaymentTabs({ rent }, ref) {
+function PaymentTabs({ rent, onSubmit }, ref) {
   const formRef = useRef();
+  const submitButtonRef = useRef();
   const store = useContext(StoreContext);
   const { t } = useTranslation('common');
   const initialValues = initialFormValues(rent);
@@ -250,11 +252,12 @@ function PaymentTabs({ rent }, ref) {
     ref,
     () => ({
       isDirty() {
-        console.log(formRef?.current?.values);
         return formRef?.current?.dirty;
       },
       async submit() {
-        await formRef?.current?.submitForm();
+        // Hack to workaround a formik issue when calling submitForm imperatively: form errors are not shown.
+        // Imperativly clicking on the button makes the form behaving properly.
+        submitButtonRef?.current?.click();
       },
       setValues(rent) {
         formRef?.current?.setValues(initialFormValues(rent));
@@ -263,7 +266,7 @@ function PaymentTabs({ rent }, ref) {
     []
   );
 
-  const onSubmit = useCallback(
+  const handleSubmit = useCallback(
     async (values) => {
       const clonedValues = _.cloneDeep(values);
       clonedValues.payments = clonedValues.payments
@@ -286,6 +289,7 @@ function PaymentTabs({ rent }, ref) {
 
       try {
         await store.rent.pay(String(rent.term), payment);
+        onSubmit?.();
       } catch (error) {
         console.error(error);
         store.pushToastMessage({
@@ -294,7 +298,7 @@ function PaymentTabs({ rent }, ref) {
         });
       }
     },
-    [rent._id, rent.month, rent.term, rent.year, store, t]
+    [onSubmit, rent._id, rent.month, rent.term, rent.year, store, t]
   );
 
   return (
@@ -303,7 +307,7 @@ function PaymentTabs({ rent }, ref) {
         innerRef={formRef}
         initialValues={initialValues}
         validationSchema={validationSchema}
-        onSubmit={onSubmit}
+        onSubmit={handleSubmit}
       >
         {({
           values: {
@@ -340,7 +344,7 @@ function PaymentTabs({ rent }, ref) {
                     <ExpandMoreIcon />
                   </IconButton>
                 </Box>
-                <Collapse in={expandedNote} timeout="auto" unmountOnExit>
+                <Collapse in={expandedNote}>
                   <NotePartForm description={description} />
                 </Collapse>
               </Box>
@@ -366,7 +370,7 @@ function PaymentTabs({ rent }, ref) {
                     <ExpandMoreIcon />
                   </IconButton>
                 </Box>
-                <Collapse in={expandedDiscount} timeout="auto" unmountOnExit>
+                <Collapse in={expandedDiscount}>
                   <DiscountPartForm promo={promo} notepromo={notepromo} />
                 </Collapse>
               </Box>
@@ -391,17 +395,21 @@ function PaymentTabs({ rent }, ref) {
                     <ExpandMoreIcon />
                   </IconButton>
                 </Box>
-                <Collapse
-                  in={expandedAdditionalCost}
-                  timeout="auto"
-                  unmountOnExit
-                >
+                <Collapse in={expandedAdditionalCost}>
                   <AdditionalCostPartForm
                     extracharge={extracharge}
                     noteextracharge={noteextracharge}
                   />
                 </Collapse>
               </Box>
+              {/* 
+                Hack to workaround a formik issue when calling submitForm imperatively: form errors are not shown.
+                Imperativly clicking on the button makes the form behaving properly. 
+              */}
+              <SubmitButton
+                ref={submitButtonRef}
+                style={{ visibility: 'hidden' }}
+              />
             </Form>
           );
         }}

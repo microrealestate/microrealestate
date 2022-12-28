@@ -1,11 +1,16 @@
 import { Button, CircularProgress } from '@material-ui/core';
 
+import { forwardRef } from 'react';
 import { useFormikContext } from 'formik';
 
-export function SubmitButton({ label, disabled, ...props }) {
+export const SubmitButton = forwardRef(function SubmitButton(
+  { label, disabled, ...props },
+  ref
+) {
   const { isSubmitting } = useFormikContext();
   return (
     <Button
+      ref={ref}
       type="submit"
       variant="contained"
       color="primary"
@@ -19,4 +24,4 @@ export function SubmitButton({ label, disabled, ...props }) {
       {label}
     </Button>
   );
-}
+});
