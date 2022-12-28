@@ -1,5 +1,4 @@
 const moment = require('moment');
-const config = require('../config');
 
 function toRentData(inputRent, inputOccupant, emailStatus) {
   const rent = JSON.parse(JSON.stringify(inputRent));
@@ -237,127 +236,127 @@ function toRentData(inputRent, inputOccupant, emailStatus) {
   return rentToReturn;
 }
 
-function toPrintData(realm, doc, fromMonth, month, year, occupants) {
-  let months = Array.from(Array(13).keys()).slice(1);
-  if (month) {
-    month = month > 12 ? 12 : month;
-    months = [Number(month)];
-  }
-  if (fromMonth) {
-    fromMonth = fromMonth > 12 ? 12 : fromMonth;
-    months = Array.from(Array(13).keys()).slice(fromMonth); // [fromMonth,..,12]
-  }
+// function toPrintData(realm, doc, fromMonth, month, year, occupants) {
+//   let months = Array.from(Array(13).keys()).slice(1);
+//   if (month) {
+//     month = month > 12 ? 12 : month;
+//     months = [Number(month)];
+//   }
+//   if (fromMonth) {
+//     fromMonth = fromMonth > 12 ? 12 : fromMonth;
+//     months = Array.from(Array(13).keys()).slice(fromMonth); // [fromMonth,..,12]
+//   }
 
-  const terms = months.map((month) =>
-    Number(
-      moment(`01/${month}/${year} 00:00`, 'DD/MM/YYYY HH:mm').format(
-        'YYYYMMDDHH'
-      )
-    )
-  );
-  const momentToday = moment();
+//   const terms = months.map((month) =>
+//     Number(
+//       moment(`01/${month}/${year} 00:00`, 'DD/MM/YYYY HH:mm').format(
+//         'YYYYMMDDHH'
+//       )
+//     )
+//   );
+//   const momentToday = moment();
 
-  const data = {
-    today: momentToday.format('LL'),
-    year: momentToday.format('YYYY'),
-    months: Array.from(Array(13).keys()).slice(1), // [1,2..,12]
-    occupants: occupants.map((occupant) => {
-      const data = toOccupantData(occupant);
-      data.rents = occupant.rents
-        .filter((rent) => terms.indexOf(rent.term) !== -1)
-        .map((rent) => {
-          const momentTerm = moment(rent.term, 'YYYYMMDDHH');
-          const dueDate = moment(momentTerm).add(10, 'days');
-          const dueDay = dueDate.isoWeekday();
-          let today = momentToday;
+//   const data = {
+//     today: momentToday.format('LL'),
+//     year: momentToday.format('YYYY'),
+//     months: Array.from(Array(13).keys()).slice(1), // [1,2..,12]
+//     occupants: occupants.map((occupant) => {
+//       const data = toOccupantData(occupant);
+//       data.rents = occupant.rents
+//         .filter((rent) => terms.indexOf(rent.term) !== -1)
+//         .map((rent) => {
+//           const momentTerm = moment(rent.term, 'YYYYMMDDHH');
+//           const dueDate = moment(momentTerm).add(10, 'days');
+//           const dueDay = dueDate.isoWeekday();
+//           let today = momentToday;
 
-          if (dueDay === 6) {
-            dueDate.subtract(1, 'days');
-          } else if (dueDay === 7) {
-            dueDate.add(1, 'days');
-          }
+//           if (dueDay === 6) {
+//             dueDate.subtract(1, 'days');
+//           } else if (dueDay === 7) {
+//             dueDate.add(1, 'days');
+//           }
 
-          if (dueDate.isSameOrBefore(momentToday)) {
-            today = moment(momentTerm);
-            const day = today.isoWeekday();
-            if (day === 6) {
-              today.subtract(1, 'days');
-            } else if (day === 7) {
-              today.add(1, 'days');
-            }
-          }
+//           if (dueDate.isSameOrBefore(momentToday)) {
+//             today = moment(momentTerm);
+//             const day = today.isoWeekday();
+//             if (day === 6) {
+//               today.subtract(1, 'days');
+//             } else if (day === 7) {
+//               today.add(1, 'days');
+//             }
+//           }
 
-          rent.today = today.format('LL');
-          rent.dueDate = dueDate.format('LL');
-          (rent.callDate = moment(`20/${rent.month}/${year}`, 'DD/MM/YYYY')
-            .subtract(1, 'months')
-            .format('LL')),
-            (rent.invoiceDate = moment(
-              `20/${rent.month}/${year}`,
-              'DD/MM/YYYY'
-            ).format('LL')),
-            (rent.period = moment(
-              `01/${rent.month}/${year}`,
-              'DD/MM/YYYY'
-            ).format('MMMM YYYY')),
-            (rent.billingReference = `${momentTerm.format('MM_YY_')}${
-              occupant.reference
-            }`),
-            (rent.total.payment = rent.total.payment || 0);
-          rent.total.subTotal =
-            rent.total.preTaxAmount +
-            rent.total.debts +
-            rent.total.charges -
-            rent.total.discount;
-          rent.total.newBalance = rent.total.grandTotal - rent.total.payment;
-          return rent;
-        });
-      return data;
-    }),
-    config,
-    document: doc,
-    realm: {
-      companyInfo: {
-        name: '?',
-        legalStructure: '?',
-        capital: '?',
-        ein: '?',
-        dos: '?',
-        vatNumber: '?',
-        legalRepresentative: '?',
-      },
-      addresses: [
-        {
-          street1: '?',
-          street2: '?',
-          zipCode: '?',
-          city: '?',
-          state: '?',
-          country: '?',
-        },
-      ],
-      bankInfo: {
-        name: '?',
-        iban: '?',
-      },
-      contacts: [
-        {
-          name: '?',
-          email: '?',
-          phone1: '?',
-          phone2: '?',
-        },
-      ],
-      ...realm,
-    },
-  };
+//           rent.today = today.format('LL');
+//           rent.dueDate = dueDate.format('LL');
+//           (rent.callDate = moment(`20/${rent.month}/${year}`, 'DD/MM/YYYY')
+//             .subtract(1, 'months')
+//             .format('LL')),
+//             (rent.invoiceDate = moment(
+//               `20/${rent.month}/${year}`,
+//               'DD/MM/YYYY'
+//             ).format('LL')),
+//             (rent.period = moment(
+//               `01/${rent.month}/${year}`,
+//               'DD/MM/YYYY'
+//             ).format('MMMM YYYY')),
+//             (rent.billingReference = `${momentTerm.format('MM_YY_')}${
+//               occupant.reference
+//             }`),
+//             (rent.total.payment = rent.total.payment || 0);
+//           rent.total.subTotal =
+//             rent.total.preTaxAmount +
+//             rent.total.debts +
+//             rent.total.charges -
+//             rent.total.discount;
+//           rent.total.newBalance = rent.total.grandTotal - rent.total.payment;
+//           return rent;
+//         });
+//       return data;
+//     }),
+//     config,
+//     document: doc,
+//     realm: {
+//       companyInfo: {
+//         name: '?',
+//         legalStructure: '?',
+//         capital: '?',
+//         ein: '?',
+//         dos: '?',
+//         vatNumber: '?',
+//         legalRepresentative: '?',
+//       },
+//       addresses: [
+//         {
+//           street1: '?',
+//           street2: '?',
+//           zipCode: '?',
+//           city: '?',
+//           state: '?',
+//           country: '?',
+//         },
+//       ],
+//       bankInfo: {
+//         name: '?',
+//         iban: '?',
+//       },
+//       contacts: [
+//         {
+//           name: '?',
+//           email: '?',
+//           phone1: '?',
+//           phone2: '?',
+//         },
+//       ],
+//       ...realm,
+//     },
+//   };
 
-  if (months) {
-    data.months = months;
-  }
+//   if (months) {
+//     data.months = months;
+//   }
 
-  return data;
-}
+//   return data;
+// }
 
 function toOccupantData(inputOccupant) {
   const occupant = JSON.parse(JSON.stringify(inputOccupant));
@@ -422,14 +421,14 @@ function toOccupantData(inputOccupant) {
   if (occupant.properties) {
     occupant.office = {
       surface: 0,
-      m2Price: 0,
-      m2Expense: 0,
+      // m2Price: 0,
+      // m2Expense: 0,
       price: 0,
-      expense: 0,
+      // expense: 0,
     };
     occupant.parking = {
       price: 0,
-      expense: 0,
+      // expense: 0,
     };
     occupant.properties.forEach((item) => {
       if (item.propertyId?._id) {
@@ -439,15 +438,15 @@ function toOccupantData(inputOccupant) {
       if (item.property) {
         if (item.property.type === 'parking') {
           occupant.parking.price += item.property.price;
-          if (item.property.expense) {
-            occupant.parking.expense += item.property.expense;
-          }
+          // if (item.property.expense) {
+          //   occupant.parking.expense += item.property.expense;
+          // }
         } else {
           occupant.office.surface += item.property.surface;
           occupant.office.price += item.property.price;
-          if (item.property.expense) {
-            occupant.office.expense += item.property.expense;
-          }
+          // if (item.property.expense) {
+          //   occupant.office.expense += item.property.expense;
+          // }
         }
       }
       occupant.rental += item.rent || 0;
@@ -469,11 +468,11 @@ function toOccupantData(inputOccupant) {
       occupant.vat = occupant.preTaxTotal * occupant.vatRatio;
       occupant.total = occupant.preTaxTotal + occupant.vat;
     }
-    if (occupant.office) {
-      occupant.office.m2Price = occupant.office.price / occupant.office.surface;
-      occupant.office.m2Expense =
-        occupant.office.expense / occupant.office.surface;
-    }
+    // if (occupant.office) {
+    //   occupant.office.m2Price = occupant.office.price / occupant.office.surface;
+    //   occupant.office.m2Expense =
+    //     occupant.office.expense / occupant.office.surface;
+    // }
   }
 
   occupant.hasPayments = occupant.rents
@@ -488,122 +487,122 @@ function toOccupantData(inputOccupant) {
   return occupant;
 }
 
-function toAccountingData(year, inputOccupants) {
-  const beginOfYear = moment(year, 'YYYY').startOf('year');
-  const endOfYear = moment(beginOfYear).endOf('year');
-  const termsOfYear = Array.from(Array(13).keys())
-    .slice(1)
-    .map((month) => {
-      //         2017000000           +         120000          + 100
-      //       = 2017120100  // YYYYMMDDHH
-      return Number(year) * 1000000 + Number(month) * 10000 + 100;
-    });
+// function toAccountingData(year, inputOccupants) {
+//   const beginOfYear = moment(year, 'YYYY').startOf('year');
+//   const endOfYear = moment(beginOfYear).endOf('year');
+//   const termsOfYear = Array.from(Array(13).keys())
+//     .slice(1)
+//     .map((month) => {
+//       //         2017000000           +         120000          + 100
+//       //       = 2017120100  // YYYYMMDDHH
+//       return Number(year) * 1000000 + Number(month) * 10000 + 100;
+//     });
 
-  const occupants = JSON.parse(JSON.stringify(inputOccupants)).filter(
-    (occupant) => {
-      const beginMoment = moment(occupant.beginDate);
-      const endMoment = moment(occupant.terminationDate || occupant.endDate);
-      return (
-        beginMoment.isBetween(beginOfYear, endOfYear, 'day', '[]') ||
-        endMoment.isBetween(beginOfYear, endOfYear, 'day', '[]') ||
-        (beginMoment.isSameOrBefore(beginOfYear) &&
-          endMoment.isSameOrAfter(endOfYear))
-      );
-    }
-  );
+//   const occupants = JSON.parse(JSON.stringify(inputOccupants)).filter(
+//     (occupant) => {
+//       const beginMoment = moment(occupant.beginDate);
+//       const endMoment = moment(occupant.terminationDate || occupant.endDate);
+//       return (
+//         beginMoment.isBetween(beginOfYear, endOfYear, 'day', '[]') ||
+//         endMoment.isBetween(beginOfYear, endOfYear, 'day', '[]') ||
+//         (beginMoment.isSameOrBefore(beginOfYear) &&
+//           endMoment.isSameOrAfter(endOfYear))
+//       );
+//     }
+//   );
 
-  return {
-    payments: {
-      occupants: occupants.map((occupant) => {
-        return {
-          year,
-          occupantId: occupant._id,
-          name: occupant.name,
-          reference: occupant.reference,
-          properties: occupant.properties.map((p) => {
-            return { name: p.property.name, type: p.property.type };
-          }),
-          beginDate: moment(occupant.beginDate).format('DD/MM/YYYY'),
-          endDate: moment(occupant.terminationDate || occupant.endDate).format(
-            'DD/MM/YYYY'
-          ),
-          deposit: occupant.guaranty,
-          rents: termsOfYear.map((term) => {
-            let currentRent = occupant.rents.find((rent) => rent.term === term);
-            if (currentRent) {
-              currentRent = toRentData(currentRent);
-              currentRent.occupantId = occupant._id;
-            }
-            return currentRent || { inactive: true };
-          }),
-        };
-      }),
-    },
-    entriesExists: {
-      entries: {
-        occupants: occupants
-          .filter((occupant) => {
-            const beginMoment = moment(occupant.beginDate);
-            return beginMoment.isBetween(beginOfYear, endOfYear, 'day', '[]');
-          })
-          .map((occupant) => {
-            return {
-              name: occupant.name,
-              reference: occupant.reference,
-              properties: occupant.properties.map((p) => {
-                return { name: p.property.name, type: p.property.type };
-              }),
-              beginDate: moment(occupant.beginDate).format('DD/MM/YYYY'),
-              deposit: occupant.guaranty,
-            };
-          }),
-      },
-      exits: {
-        occupants: occupants
-          .filter((occupant) => {
-            const endMoment = moment(
-              occupant.terminationDate || occupant.endDate
-            );
-            return endMoment.isBetween(beginOfYear, endOfYear, 'day', '[]');
-          })
-          .map((occupant) => {
-            const totalAmount = occupant.rents
-              .filter((rent) => {
-                return (
-                  rent.term >= Number(beginOfYear.format('YYYYMMDDHH')) &&
-                  rent.term <= Number(endOfYear.format('YYYYMMDDHH'))
-                );
-              })
-              .reduce((acc, rent) => {
-                // TO FIX: acc not used ????
-                let balance = rent.total.grandTotal - rent.total.payment;
-                return balance !== 0 ? balance * -1 : balance;
-              }, 0);
+//   return {
+//     payments: {
+//       occupants: occupants.map((occupant) => {
+//         return {
+//           year,
+//           occupantId: occupant._id,
+//           name: occupant.name,
+//           reference: occupant.reference,
+//           properties: occupant.properties.map((p) => {
+//             return { name: p.property.name, type: p.property.type };
+//           }),
+//           beginDate: moment(occupant.beginDate).format('DD/MM/YYYY'),
+//           endDate: moment(occupant.terminationDate || occupant.endDate).format(
+//             'DD/MM/YYYY'
+//           ),
+//           deposit: occupant.guaranty,
+//           rents: termsOfYear.map((term) => {
+//             let currentRent = occupant.rents.find((rent) => rent.term === term);
+//             if (currentRent) {
+//               currentRent = toRentData(currentRent);
+//               currentRent.occupantId = occupant._id;
+//             }
+//             return currentRent || { inactive: true };
+//           }),
+//         };
+//       }),
+//     },
+//     entriesExists: {
+//       entries: {
+//         occupants: occupants
+//           .filter((occupant) => {
+//             const beginMoment = moment(occupant.beginDate);
+//             return beginMoment.isBetween(beginOfYear, endOfYear, 'day', '[]');
+//           })
+//           .map((occupant) => {
+//             return {
+//               name: occupant.name,
+//               reference: occupant.reference,
+//               properties: occupant.properties.map((p) => {
+//                 return { name: p.property.name, type: p.property.type };
+//               }),
+//               beginDate: moment(occupant.beginDate).format('DD/MM/YYYY'),
+//               deposit: occupant.guaranty,
+//             };
+//           }),
+//       },
+//       exits: {
+//         occupants: occupants
+//           .filter((occupant) => {
+//             const endMoment = moment(
+//               occupant.terminationDate || occupant.endDate
+//             );
+//             return endMoment.isBetween(beginOfYear, endOfYear, 'day', '[]');
+//           })
+//           .map((occupant) => {
+//             const totalAmount = occupant.rents
+//               .filter((rent) => {
+//                 return (
+//                   rent.term >= Number(beginOfYear.format('YYYYMMDDHH')) &&
+//                   rent.term <= Number(endOfYear.format('YYYYMMDDHH'))
+//                 );
+//               })
+//               .reduce((acc, rent) => {
+//                 // TO FIX: acc not used ????
+//                 let balance = rent.total.grandTotal - rent.total.payment;
+//                 return balance !== 0 ? balance * -1 : balance;
+//               }, 0);
 
-            return {
-              name: occupant.name,
-              reference: occupant.reference,
-              properties: occupant.properties.map((p) => {
-                return { name: p.property.name, type: p.property.type };
-              }),
-              leaseBroken:
-                occupant.terminationDate &&
-                occupant.terminationDate !== occupant.endDate,
-              endDate: moment(
-                occupant.terminationDate || occupant.endDate
-              ).format('DD/MM/YYYY'),
-              deposit: occupant.guaranty,
-              depositRefund: occupant.guarantyPayback,
-              totalAmount: totalAmount,
-              toPay:
-                Number(occupant.guarantyPayback ? 0 : occupant.guaranty) +
-                Number(totalAmount),
-            };
-          }),
-      },
-    },
-  };
-}
+//             return {
+//               name: occupant.name,
+//               reference: occupant.reference,
+//               properties: occupant.properties.map((p) => {
+//                 return { name: p.property.name, type: p.property.type };
+//               }),
+//               leaseBroken:
+//                 occupant.terminationDate &&
+//                 occupant.terminationDate !== occupant.endDate,
+//               endDate: moment(
+//                 occupant.terminationDate || occupant.endDate
+//               ).format('DD/MM/YYYY'),
+//               deposit: occupant.guaranty,
+//               depositRefund: occupant.guarantyPayback,
+//               totalAmount: totalAmount,
+//               toPay:
+//                 Number(occupant.guarantyPayback ? 0 : occupant.guaranty) +
+//                 Number(totalAmount),
+//             };
+//           }),
+//       },
+//     },
+//   };
+// }
 
 function toProperty(inputProperty, inputOccupant, inputOccupants) {
   const currentDate = moment();
@@ -627,15 +626,15 @@ function toProperty(inputProperty, inputOccupant, inputOccupants) {
     status: 'vacant',
 
     // TODO moved in Occupant.properties model
-    expense: inputProperty.expense || 0,
-    priceWithExpenses:
-      Math.round((inputProperty.price + inputProperty.expense) * 100) / 100,
-    m2Expense: inputProperty.surface
-      ? Math.round((inputProperty.expense / inputProperty.surface) * 100) / 100
-      : null,
-    m2Price: inputProperty.surface
-      ? Math.round((inputProperty.price / inputProperty.surface) * 100) / 100
-      : null,
+    // expense: inputProperty.expense || 0,
+    // priceWithExpenses:
+    //   Math.round((inputProperty.price + inputProperty.expense) * 100) / 100,
+    // m2Expense: inputProperty.surface
+    //   ? Math.round((inputProperty.expense / inputProperty.surface) * 100) / 100
+    //   : null,
+    // m2Price: inputProperty.surface
+    //   ? Math.round((inputProperty.price / inputProperty.surface) * 100) / 100
+    //   : null,
 
     // TODO to remove, replaced by address
     location: inputProperty.location,
@@ -681,6 +680,6 @@ module.exports = {
   toOccupantData,
   toProperty,
   toRentData,
-  toPrintData,
-  toAccountingData,
+  // toPrintData,
+  // toAccountingData,
 };

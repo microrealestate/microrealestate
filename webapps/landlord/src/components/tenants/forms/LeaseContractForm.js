@@ -262,13 +262,11 @@ function LeaseContractForm({ readOnly, onSubmit }) {
           if (previousProperty) {
             previousProperty._id = property?._id;
             previousProperty.rent = property?.price || '';
-            previousProperty.expense =
-              property?.expense > 0
-                ? {
-                    title: t('General expense'),
-                    amount: property.expense,
-                  }
-                : { ...emptyExpense() };
+            previousProperty.expense = {
+              title: t('General expenses'),
+              // TODO: find another way to have expenses configurable
+              amount: Math.round(property.price * 100 * 0.1) / 100,
+            };
           }
           handleChange(evt);
         };
