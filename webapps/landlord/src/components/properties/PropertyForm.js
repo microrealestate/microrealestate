@@ -120,7 +120,10 @@ const PropertyForm = observer(({ onSubmit }) => {
               <AddressField />
             </Section>
             <Section label={t('Rent')}>
-              <NumberField label={t('Rent without expenses')} name="rent" />
+              <NumberField
+                label={t('Rent excluding tax and expenses')}
+                name="rent"
+              />
             </Section>
             <SubmitButton
               size="large"

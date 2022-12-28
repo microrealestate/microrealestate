@@ -128,7 +128,7 @@ function NewPropertyDialog({ open, setOpen, backPage, backPath }) {
                     </Grid>
                     <Grid item xs={12}>
                       <NumberField
-                        label={t('Rent without expenses')}
+                        label={t('Rent excluding tax and expenses')}
                         name="rent"
                       />
                     </Grid>

@@ -156,7 +156,7 @@ const PropertyListItem = ({ property }) => {
               alignItems="center"
             >
               <Typography variant="caption" color="textSecondary">
-                {t('Rent without expenses')}
+                {t('Rent excluding tax and expenses')}
               </Typography>
               <NumberFormat fontSize="h5.fontSize" value={property.price} />
             </Box>
