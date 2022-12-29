@@ -73,7 +73,7 @@ function GeneralFigures() {
               <FigureCardContent>
                 <NumberFormat
                   value={store.dashboard.data.overview?.occupancyRate}
-                  showZero={false}
+                  showZero={true}
                   minimumFractionDigits={0}
                   style="percent"
                   fontSize="h3.fontSize"
