@@ -21,7 +21,7 @@ function all(req, res) {
           ? moment(tenant.terminationDate)
           : moment(tenant.endDate);
 
-        if (terminationMoment.isAfter(now, 'day')) {
+        if (terminationMoment.isSameOrAfter(now, 'day')) {
           acc.push(tenant);
         }
 
@@ -37,7 +37,14 @@ function all(req, res) {
       // compute occupancyRate
       let occupancyRate;
       if (propertyCount > 0) {
-        occupancyRate = tenantCount / propertyCount;
+        const countPropertyRented = activeTenants.reduce(
+          (acc, { properties = [] }) => {
+            properties.forEach(({ propertyId }) => acc.add(propertyId));
+            return acc;
+          },
+          new Set()
+        ).size;
+        occupancyRate = countPropertyRented / propertyCount;
       }
 
       // sum all rent payments of the current year

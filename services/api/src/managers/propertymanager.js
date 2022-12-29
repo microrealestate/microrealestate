@@ -1,77 +1,28 @@
-const moment = require('moment');
+const logger = require('winston');
 const FD = require('./frontdata');
 const propertyModel = require('../models/property');
-const occupantModel = require('../models/occupant');
+const Tenant = require('@microrealestate/common/models/tenant');
 
-function _toPropertiesData(realm, inputProperties, callback) {
-  occupantModel.findFilter(
-    realm,
-    {
-      properties: {
-        $elemMatch: {
-          propertyId: {
-            $in: inputProperties.map((property) => property._id.toString()),
-          },
-        },
-      },
+async function _toPropertiesData(realm, inputProperties) {
+  const allTenants = await Tenant.find({
+    realmId: realm._id,
+    'properties.propertyId': {
+      $in: inputProperties.map(({ _id }) => _id),
     },
-    (errors, occupants) => {
-      if (errors) {
-        callback(errors);
-        return;
-      }
-      callback(
-        null,
-        inputProperties.map((property) => {
-          return FD.toProperty(
-            property,
-            occupants.reduce(
-              (acc, occupant) => {
-                const occupant_property =
-                  occupant.properties &&
-                  occupant.properties.find(
-                    (currentProperty) =>
-                      currentProperty.propertyId === property._id.toString()
-                  );
-                if (occupant_property) {
-                  if (!acc.occupant) {
-                    acc.occupant = occupant;
-                  } else {
-                    const acc_property = acc.occupant.properties.find(
-                      (currentProperty) =>
-                        currentProperty.propertyId === property._id.toString()
-                    );
-                    const beginDate = moment(
-                      occupant_property.entryDate
-                    ).startOf('day');
-                    const lastBeginDate = moment(
-                      acc_property.entryDate
-                    ).startOf('day');
-                    if (beginDate.isAfter(lastBeginDate)) {
-                      acc.occupant = occupant;
-                    }
-                  }
-                }
-                return acc;
-              },
-              { occupant: null }
-            ).occupant,
-            occupants
-              .filter(({ properties = [] }) =>
-                properties
-                  .map(({ propertyId }) => propertyId)
-                  .includes(property._id)
-              )
-              .sort((occ1, occ2) => {
-                const m1 = moment(occ1.beginDate);
-                const m2 = moment(occ2.beginDate);
-                return m1.isBefore(m2) ? 1 : -1;
-              })
-          );
-        })
-      );
-    }
-  );
+  });
+
+  return inputProperties.map((property) => {
+    const tenants = allTenants
+      .filter(({ properties }) =>
+        properties.map(({ propertyId }) => propertyId).includes(property._id)
+      )
+      .sort((t1, t2) => {
+        const t1EndDate = t1.terminationDate || t1.endDate;
+        const t2EndDate = t2.terminationDate || t2.endDate;
+        return t2EndDate - t1EndDate;
+      });
+    return FD.toProperty(property, tenants?.[0], tenants);
+  });
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -81,16 +32,17 @@ function add(req, res) {
   const realm = req.realm;
   const property = propertyModel.schema.filter(req.body);
 
-  propertyModel.add(realm, property, (errors, dbProperty) => {
+  propertyModel.add(realm, property, async (errors, dbProperty) => {
     if (errors) {
       return res.status(500).json({ errors: errors });
     }
-    _toPropertiesData(realm, [dbProperty], (errors, properties) => {
-      if (errors && errors.length > 0) {
-        return res.status(500).json({ errors: errors });
-      }
-      res.json(properties[0]);
-    });
+    try {
+      const properties = await _toPropertiesData(realm, [dbProperty]);
+      return res.json(properties[0]);
+    } catch (error) {
+      logger.error(error);
+      return res.status(500).json({ errors: ['cannot add the property'] });
+    }
   });
 }
 
@@ -98,16 +50,18 @@ function update(req, res) {
   const realm = req.realm;
   const property = propertyModel.schema.filter(req.body);
 
-  propertyModel.update(realm, property, (errors) => {
+  propertyModel.update(realm, property, async (errors) => {
     if (errors) {
       return res.status(500).json({ errors: errors });
     }
-    _toPropertiesData(realm, [property], (errors, properties) => {
-      if (errors && errors.length > 0) {
-        return res.status(500).json({ errors: errors });
-      }
-      res.json(properties[0]);
-    });
+
+    try {
+      const properties = await _toPropertiesData(realm, [property]);
+      return res.json(properties[0]);
+    } catch (error) {
+      logger.error(error);
+      return res.status(500).json({ errors: ['cannot update the property'] });
+    }
   });
 }
 
@@ -126,21 +80,20 @@ function remove(req, res) {
 function all(req, res) {
   const realm = req.realm;
 
-  propertyModel.findAll(realm, (errors, properties) => {
+  propertyModel.findAll(realm, async (errors, dbProperties) => {
     if (errors && errors.length > 0) {
       return res.status(500).json({
         errors: errors,
       });
     }
 
-    _toPropertiesData(realm, properties, (errors, properties) => {
-      if (errors && errors.length > 0) {
-        return res.status(500).json({
-          errors: errors,
-        });
-      }
-      res.json(properties);
-    });
+    try {
+      const properties = await _toPropertiesData(realm, dbProperties);
+      return res.json(properties);
+    } catch (error) {
+      logger.error(error);
+      return res.status(500).json({ errors: ['cannot fetch the properties'] });
+    }
   });
 }
 
@@ -148,46 +101,41 @@ function one(req, res) {
   const realm = req.realm;
   const tenantId = req.params.id;
 
-  propertyModel.findOne(realm, tenantId, (errors, dbProperty) => {
+  propertyModel.findOne(realm, tenantId, async (errors, dbProperty) => {
     if (errors && errors.length > 0) {
       return res.status(500).json({
         errors: errors,
       });
     }
 
-    _toPropertiesData(realm, dbProperty, (errors, property) => {
-      if (errors && errors.length > 0) {
-        return res.status(500).json({
-          errors: errors,
-        });
-      }
-      res.json(property);
-    });
+    try {
+      const properties = await _toPropertiesData(realm, [dbProperty]);
+      return res.json(properties[0]);
+    } catch (error) {
+      logger.error(error);
+      return res.status(500).json({ errors: ['cannot fetch the properties'] });
+    }
   });
 }
 
 function overview(req, res) {
   const realm = req.realm;
-  let result = {
-    countAll: 0,
-    countFree: 0,
-    countBusy: 0,
-  };
 
-  propertyModel.findAll(realm, (errors, properties) => {
+  propertyModel.findAll(realm, async (errors, dbProperties) => {
     if (errors && errors.length > 0) {
       return res.status(500).json({
         errors: errors,
       });
     }
 
-    _toPropertiesData(realm, properties, (errors, properties) => {
-      if (errors && errors.length > 0) {
-        return res.status(500).json({
-          errors: errors,
-        });
-      }
-      result.countAll = properties.length;
+    try {
+      const properties = await _toPropertiesData(realm, dbProperties);
+      let result = {
+        countAll: properties.length,
+        countFree: 0,
+        countBusy: 0,
+      };
+
       properties.reduce((acc, property) => {
         if (property.available) {
           acc.countFree++;
@@ -196,8 +144,12 @@ function overview(req, res) {
         }
         return acc;
       }, result);
-      res.json(result);
-    });
+
+      return res.json(result);
+    } catch (error) {
+      logger.error(error);
+      return res.status(500).json({ errors: ['cannot fetch the properties'] });
+    }
   });
 }
 
