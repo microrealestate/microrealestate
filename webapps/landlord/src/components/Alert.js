@@ -1,5 +1,5 @@
 import { AlertTitle, Alert as MuiAlert } from '@material-ui/lab';
-import { withStyles } from '@material-ui/core';
+import { Box, withStyles } from '@material-ui/core';
 
 const AlertWithContent = withStyles({
   root: {
@@ -21,7 +21,7 @@ const InlineAlert = withStyles((theme) => ({
   },
 }))(MuiAlert);
 
-function Alert({ title, children, ...props }) {
+function RawAlert({ title, children, ...props }) {
   return children ? (
     <AlertWithContent severity="warning" {...props}>
       <AlertTitle>{title}</AlertTitle>
@@ -31,6 +31,27 @@ function Alert({ title, children, ...props }) {
     <InlineAlert severity="warning" {...props}>
       {title}
     </InlineAlert>
+  );
+}
+
+function Alert({ title, severity, elevation, children, ...props }) {
+  return elevation ? (
+    <Box {...props}>
+      <RawAlert title={title} severity={severity} elevation={elevation}>
+        {children}
+      </RawAlert>
+    </Box>
+  ) : (
+    <Box
+      border={1}
+      borderColor="grey.300"
+      borderRadius="borderRadius"
+      {...props}
+    >
+      <RawAlert title={title} severity={severity}>
+        {children}
+      </RawAlert>
+    </Box>
   );
 }
 

@@ -114,6 +114,21 @@ async function _fetchTenants(realmId, tenantId) {
     },
   ]);
 
+  // TODO: compute the missing doc property in mongodb
+  const now = moment();
+  tenants.forEach((tenant) =>
+    tenant.filesToUpload?.forEach((fileToUpload) => {
+      const { required, requiredOnceContractTerminated, documents } =
+        fileToUpload;
+      fileToUpload.missing =
+        (required || (requiredOnceContractTerminated && tenant.terminated)) &&
+        (!documents.length ||
+          !documents.some(({ expiryDate }) =>
+            expiryDate ? moment(expiryDate).isSameOrAfter(now) : true
+          ));
+    })
+  );
+
   return tenants;
 }
 

@@ -1,15 +1,23 @@
-import { Paper, Tab, Tabs } from '@material-ui/core';
+import { Box, Paper, Tab, Tabs } from '@material-ui/core';
 import { TabPanel, useTabChangeHelper } from '../Tabs';
 
 import BillingForm from './forms/BillingForm';
 import DocumentsForm from './forms/DocumentsForm';
 import LeaseContractForm from './forms/LeaseContractForm';
+import { observer } from 'mobx-react-lite';
+import ReportProblemOutlinedIcon from '@material-ui/icons/ReportProblemOutlined';
+import { StoreContext } from '../../store';
 import TenantForm from './forms/TenantForm';
+import { useContext } from 'react';
 import useTranslation from 'next-translate/useTranslation';
 
-export default function TenantTabs({ onSubmit /*, setError*/, readOnly }) {
+function TenantTabs({ onSubmit /*, setError*/, readOnly }) {
   const { t } = useTranslation('common');
+  const store = useContext(StoreContext);
   const { handleTabChange, tabSelectedIndex } = useTabChangeHelper();
+
+  const hasMissingCompulsaryDocuments =
+    store.tenant.selected.filesToUpload.some(({ missing }) => missing);
 
   return (
     <Paper>
@@ -22,7 +30,26 @@ export default function TenantTabs({ onSubmit /*, setError*/, readOnly }) {
         <Tab label={t('Tenant')} wrapped />
         <Tab label={t('Lease')} wrapped />
         <Tab label={t('Billing')} wrapped />
-        <Tab label={t('Documents')} wrapped />
+        <Tab
+          label={
+            <Box display="flex" justifyContent="center" alignItems="center">
+              {hasMissingCompulsaryDocuments ? (
+                <Box
+                  display="flex"
+                  justifyContent="center"
+                  alignItems="center"
+                  color="warning.dark"
+                  mr={0.8}
+                >
+                  <ReportProblemOutlinedIcon color="inherit" fontSize="small" />
+                </Box>
+              ) : null}
+              <Box color="text.primary" fontSize="caption.fontSize">
+                {t('Documents')}
+              </Box>
+            </Box>
+          }
+        />
       </Tabs>
       <TabPanel value={tabSelectedIndex} index={0}>
         <TenantForm onSubmit={onSubmit} readOnly={readOnly} />
@@ -39,3 +66,5 @@ export default function TenantTabs({ onSubmit /*, setError*/, readOnly }) {
     </Paper>
   );
 }
+
+export default observer(TenantTabs);
