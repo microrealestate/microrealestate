@@ -370,8 +370,12 @@ const Tenant = observer(() => {
         </Paper>
       ) : (
         <>
-          <CompulsoryDocumentStatus tenant={store.tenant.selected} mb={4} />
-
+          <CompulsoryDocumentStatus
+            tenant={store.tenant.selected}
+            variant="compact"
+            elevation={1}
+            mb={3}
+          />
           <Grid container spacing={5}>
             <Grid item xs={12} md={7} lg={8}>
               <TenantTabs onSubmit={onSubmit} readOnly={readOnly} />
