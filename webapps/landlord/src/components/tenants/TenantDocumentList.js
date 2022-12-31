@@ -6,6 +6,7 @@ import { Box, Button } from '@material-ui/core';
 import { useCallback, useContext, useMemo, useState } from 'react';
 
 import AddIcon from '@material-ui/icons/Add';
+import Alert from '../Alert';
 import DocumentList from '../DocumentList';
 import { downloadDocument } from '../../utils/fetch';
 import FullScreenDialogMenu from '../FullScreenDialogMenu';
@@ -193,13 +194,23 @@ function TenantDocumentList({ disabled = false }) {
 
   return (
     <>
+      {!store.organization.canUploadDocumentsInCloud ? (
+        <Box mb={1}>
+          <Alert
+            severity="warning"
+            title={t(
+              'Unable to upload documents without configuring the cloud storage service in Settings page'
+            )}
+          />
+        </Box>
+      ) : null}
       <Box display="flex" mb={1}>
         <Hidden smDown>
           <Button
             variant="contained"
             startIcon={<AddIcon />}
             onClick={handleClickUpload}
-            disabled={disabled}
+            disabled={!store.organization.canUploadDocumentsInCloud || disabled}
             data-cy="addTenantFile"
           >
             {t('Upload document')}
@@ -210,7 +221,7 @@ function TenantDocumentList({ disabled = false }) {
             label={t('Upload document')}
             Icon={AddIcon}
             onClick={handleClickUpload}
-            disabled={disabled}
+            disabled={!store.organization.canUploadDocumentsInCloud || disabled}
           />
         </Hidden>
         <Box ml={1}>

@@ -15,7 +15,6 @@ import {
   Popper,
   Toolbar,
   Tooltip,
-  Typography,
 } from '@material-ui/core';
 import {
   Fragment,
@@ -28,22 +27,26 @@ import {
 } from 'react';
 import { getRentAmounts, RentAmount } from './RentDetails';
 
+import Alert from '../Alert';
 import { downloadDocument } from '../../utils/fetch';
 import EditIcon from '@material-ui/icons/Edit';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import Hidden from '../HiddenSSRCompatible';
 import HistoryIcon from '@material-ui/icons/History';
 import moment from 'moment';
+import { observer } from 'mobx-react-lite';
+import SendIcon from '@material-ui/icons/Send';
 import { StoreContext } from '../../store';
 import useNewPaymentDialog from '../payment/NewPaymentDialog';
 import useRentHistoryDialog from './RentHistoryDialog';
 import useTranslation from 'next-translate/useTranslation';
 
-const TableToolbar = memo(function TableToolbar({
+const TableToolbar = observer(function TableToolbar({
   selected = [],
   onSend = () => {},
 }) {
   const { t } = useTranslation('common');
+  const store = useContext(StoreContext);
   const [sendingEmail, setSendingEmail] = useState(false);
 
   const [open, setOpen] = useState(false);
@@ -82,38 +85,48 @@ const TableToolbar = memo(function TableToolbar({
 
   return (
     <Toolbar>
-      <Grid container spacing={1} alignItems="center">
-        {selected.length === 0 ? (
-          <Grid item>
-            <Typography variant="h6" component="div">
-              {/* {t('Rents')} */}
-            </Typography>
-          </Grid>
-        ) : (
-          <>
-            <Grid item xs={3}>
-              <Box
-                color="inherit"
-                fontSize="caption.fontSize"
-                whiteSpace="nowrap"
-              >
-                {t('{{count}} selected', { count: selected.length })}
-              </Box>
-            </Grid>
-            <Grid item xs={9} style={{ textAlign: 'right' }}>
+      {selected.length > 0 ? (
+        <Box display="flex" flexDirection="column" width="100%">
+          {!store.organization.canSendEmails ? (
+            <Box mt={1}>
+              <Alert
+                severity="warning"
+                title={t(
+                  'Unable to send documents without configuring the mail service in Settings page'
+                )}
+              />
+            </Box>
+          ) : null}
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+            mt={!store.organization.canSendEmails ? 1 : 0}
+          >
+            <Box
+              color="inherit"
+              fontSize="caption.fontSize"
+              whiteSpace="nowrap"
+            >
+              {t('{{count}} selected', { count: selected.length })}
+            </Box>
+
+            <Box>
               <Button
+                variant="contained"
                 ref={anchorRef}
-                disabled={sendingEmail}
+                disabled={!store.organization.canSendEmails || sendingEmail}
+                startIcon={<SendIcon />}
                 endIcon={
                   sendingEmail ? (
-                    <CircularProgress color="inherit" size={20} />
+                    <CircularProgress size={20} />
                   ) : (
-                    <ExpandMoreIcon color="inherit" />
+                    <ExpandMoreIcon />
                   )
                 }
                 onClick={handleToggle}
               >
-                {t('Send an email')}
+                {t('Send a document to the tenant')}
               </Button>
               <Popper open={open} anchorEl={anchorRef.current} transition>
                 {({ TransitionProps, placement }) => (
@@ -131,16 +144,16 @@ const TableToolbar = memo(function TableToolbar({
                           onKeyDown={handleListKeyDown}
                         >
                           <MenuItem onClick={onClick('rentcall')}>
-                            {t('Send first notice')}
+                            {t('First payment notice')}
                           </MenuItem>
                           <MenuItem onClick={onClick('rentcall_reminder')}>
-                            {t('Send second notice')}
+                            {t('Second payment notice')}
                           </MenuItem>
                           <MenuItem onClick={onClick('rentcall_last_reminder')}>
-                            {t('Send last notice')}
+                            {t('Eviction notice')}
                           </MenuItem>
                           <MenuItem onClick={onClick('invoice')}>
-                            {t('Send invoice')}
+                            {t('Invoice')}
                           </MenuItem>
                         </MenuList>
                       </ClickAwayListener>
@@ -148,10 +161,10 @@ const TableToolbar = memo(function TableToolbar({
                   </Grow>
                 )}
               </Popper>
-            </Grid>
-          </>
-        )}
-      </Grid>
+            </Box>
+          </Box>
+        </Box>
+      ) : null}
     </Toolbar>
   );
 });

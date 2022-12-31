@@ -52,22 +52,26 @@ module.exports = {
         .json({ error: 'organization name already exists' });
     }
 
-    if (newRealm.thirdParties?.mailgun?.apiKey) {
-      newRealm.thirdParties.mailgun.apiKey = crypto.encrypt(
-        newRealm.thirdParties.mailgun.apiKey
-      );
+    if (newRealm.thirdParties?.mailgun) {
+      if (newRealm.thirdParties.mailgun.apiKey) {
+        newRealm.thirdParties.mailgun.apiKey = crypto.encrypt(
+          newRealm.thirdParties.mailgun.apiKey
+        );
+      }
     }
 
-    if (newRealm.thirdParties?.b2?.applicationKey) {
-      newRealm.thirdParties.b2.applicationKey = crypto.encrypt(
-        newRealm.thirdParties.b2.applicationKey
-      );
-    }
+    if (newRealm.thirdParties?.b2) {
+      if (newRealm.thirdParties.b2.applicationKey) {
+        newRealm.thirdParties.b2.applicationKey = crypto.encrypt(
+          newRealm.thirdParties.b2.applicationKey
+        );
+      }
 
-    if (newRealm.thirdParties?.b2?.keyId) {
-      newRealm.thirdParties.b2.keyId = crypto.encrypt(
-        newRealm.thirdParties.b2.keyId
-      );
+      if (newRealm.thirdParties.b2.keyId) {
+        newRealm.thirdParties.b2.keyId = crypto.encrypt(
+          newRealm.thirdParties.b2.keyId
+        );
+      }
     }
 
     realmModel.add(newRealm, (errors, realm) => {
@@ -80,10 +84,11 @@ module.exports = {
     });
   },
   async update(req, res) {
-    const mailgunApiKeyUpdated = req.body.thirdParties?.mailgun?.apiKeyUpdated;
-    const b2KeyIdUpdated = req.body.thirdParties?.b2?.keyIdUpdated;
+    const mailgunApiKeyUpdated =
+      !!req.body.thirdParties?.mailgun?.apiKeyUpdated;
+    const b2KeyIdUpdated = !!req.body.thirdParties?.b2?.keyIdUpdated;
     const b2ApplicationKeyUpdated =
-      req.body.thirdParties?.b2?.applicationKeyUpdated;
+      !!req.body.thirdParties?.b2?.applicationKeyUpdated;
     const updatedRealm = realmModel.schema.filter(req.body);
 
     delete req.body.thirdParties?.mailgun?.apiKeyUpdated;
@@ -125,30 +130,34 @@ module.exports = {
         .json({ error: 'organization name already exists' });
     }
 
-    if (mailgunApiKeyUpdated) {
-      updatedRealm.thirdParties.mailgun.apiKey = crypto.encrypt(
-        updatedRealm.thirdParties.mailgun.apiKey
-      );
-    } else if (req.realm.thirdParties?.mailgun?.apiKey) {
-      updatedRealm.thirdParties.mailgun.apiKey =
-        req.realm.thirdParties.mailgun.apiKey;
+    if (updatedRealm.thirdParties?.mailgun) {
+      if (mailgunApiKeyUpdated) {
+        updatedRealm.thirdParties.mailgun.apiKey = crypto.encrypt(
+          updatedRealm.thirdParties.mailgun.apiKey
+        );
+      } else if (req.realm.thirdParties?.mailgun?.apiKey) {
+        updatedRealm.thirdParties.mailgun.apiKey =
+          req.realm.thirdParties.mailgun.apiKey;
+      }
     }
 
-    if (b2KeyIdUpdated) {
-      updatedRealm.thirdParties.b2.keyId = crypto.encrypt(
-        updatedRealm.thirdParties.b2.keyId
-      );
-    } else if (req.realm.thirdParties?.b2?.keyId) {
-      updatedRealm.thirdParties.b2.keyId = req.realm.thirdParties.b2.keyId;
-    }
+    if (updatedRealm.thirdParties?.b2) {
+      if (b2KeyIdUpdated) {
+        updatedRealm.thirdParties.b2.keyId = crypto.encrypt(
+          updatedRealm.thirdParties.b2.keyId
+        );
+      } else if (req.realm.thirdParties?.b2?.keyId) {
+        updatedRealm.thirdParties.b2.keyId = req.realm.thirdParties.b2.keyId;
+      }
 
-    if (b2ApplicationKeyUpdated) {
-      updatedRealm.thirdParties.b2.applicationKey = crypto.encrypt(
-        updatedRealm.thirdParties.b2.applicationKey
-      );
-    } else if (req.realm.thirdParties?.b2?.applicationKey) {
-      updatedRealm.thirdParties.b2.applicationKey =
-        req.realm.thirdParties.b2.applicationKey;
+      if (b2ApplicationKeyUpdated) {
+        updatedRealm.thirdParties.b2.applicationKey = crypto.encrypt(
+          updatedRealm.thirdParties.b2.applicationKey
+        );
+      } else if (req.realm.thirdParties?.b2?.applicationKey) {
+        updatedRealm.thirdParties.b2.applicationKey =
+          req.realm.thirdParties.b2.applicationKey;
+      }
     }
 
     const usernameMap = {};
