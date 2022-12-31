@@ -1,4 +1,4 @@
-import { action, flow, makeObservable, observable } from 'mobx';
+import { action, computed, flow, makeObservable, observable } from 'mobx';
 
 import { apiFetcher } from '../utils/fetch';
 
@@ -12,6 +12,8 @@ export default class Organization {
       items: observable,
       setSelected: action,
       setItems: action,
+      canSendEmails: computed,
+      canUploadDocumentsInCloud: computed,
       fetch: flow,
       create: flow,
       update: flow,
@@ -28,6 +30,14 @@ export default class Organization {
   setItems = (organizations = []) => {
     this.items = organizations;
   };
+
+  get canSendEmails() {
+    return !!this.selected?.thirdParties?.mailgun;
+  }
+
+  get canUploadDocumentsInCloud() {
+    return !!this.selected?.thirdParties?.b2;
+  }
 
   *fetch() {
     try {
