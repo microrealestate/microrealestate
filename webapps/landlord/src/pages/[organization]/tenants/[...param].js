@@ -8,6 +8,7 @@ import ContractOverviewCard from '../../../components/tenants/ContractOverviewCa
 import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
 import Hidden from '../../../components/HiddenSSRCompatible';
+import HistoryIcon from '@material-ui/icons/History';
 import { isServer } from '../../../utils';
 import { MobileButton } from '../../../components/MobileMenuButton';
 import moment from 'moment';
@@ -19,6 +20,7 @@ import TenantStepper from '../../../components/tenants/TenantStepper';
 import TenantTabs from '../../../components/tenants/TenantTabs';
 import { toJS } from 'mobx';
 import useConfirmDialog from '../../../components/ConfirmDialog';
+import useRentHistoryDialog from '../../../components/rents/RentHistoryDialog';
 import useRichTextEditorDialog from '../../../components/RichTextEditor/RichTextEditorDialog';
 import { useRouter } from 'next/router';
 import useTerminateLeaseDialog from '../../../components/tenants/TerminateLeaseDialog';
@@ -29,6 +31,7 @@ const Tenant = observer(() => {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const router = useRouter();
+  const [RentHistoryDialog, setOpenRentHistoryDialog] = useRentHistoryDialog();
   const [ConfirmEditDialog, setOpenConfirmEditTenant] = useConfirmDialog();
   const [ConfirmDeleteDialog, setOpenConfirmDeleteTenant] = useConfirmDialog();
 
@@ -261,6 +264,11 @@ const Tenant = observer(() => {
     [setOpenTerminateLeaseDialog]
   );
 
+  const handleRentHistory = useCallback(
+    () => setOpenRentHistoryDialog(store.tenant.selected),
+    [setOpenRentHistoryDialog, store.tenant.selected]
+  );
+
   const handleEditTenant = useCallback(
     () => setOpenConfirmEditTenant(true),
     [setOpenConfirmEditTenant]
@@ -311,6 +319,17 @@ const Tenant = observer(() => {
                 <Grid item>
                   <Button
                     variant="contained"
+                    startIcon={<HistoryIcon />}
+                    onClick={handleRentHistory}
+                  >
+                    {t('Schedule')}
+                  </Button>
+                </Grid>
+              )}
+              {showEditButton && (
+                <Grid item>
+                  <Button
+                    variant="contained"
                     startIcon={<EditIcon />}
                     disabled={
                       !(!!store.tenant.selected.properties?.length && readOnly)
@@ -342,6 +361,14 @@ const Tenant = observer(() => {
                     onClick={handleTerminateLease}
                   />
                 </Grid>
+              )}
+              {showEditButton && (
+                <MobileButton
+                  variant="text"
+                  Icon={HistoryIcon}
+                  label={t('Schedule')}
+                  onClick={handleRentHistory}
+                />
               )}
               {showEditButton && (
                 <Grid item>
@@ -417,6 +444,7 @@ const Tenant = observer(() => {
           />
         </>
       )}
+      <RentHistoryDialog />
       <ConfirmDeleteDialog
         title={t('Are you sure to definitely remove this tenant?')}
         subTitle={store.tenant.selected.name}

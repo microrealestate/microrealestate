@@ -20,9 +20,11 @@ function BreadcrumbBar({ backPath, backPage, currentPage }) {
       <Hidden smDown>
         <Breadcrumbs aria-label="breadcrumb" separator={<NavigateNextIcon />}>
           <Link underline="always" color="inherit" href={backPath}>
-            {backPage}
+            <Typography variant="caption" noWrap>
+              {backPage}
+            </Typography>
           </Link>
-          <Typography variant="h6" noWrap>
+          <Typography variant="body1" noWrap>
             {currentPage}
           </Typography>
         </Breadcrumbs>
