@@ -14,7 +14,7 @@
     "@microrealestate/commonui": "*",
     "axios": "0.27.2",
     "formik": "2.2.9",
-    "jose": "4.11.1",
+    "jose": "4.11.2",
     "lodash": "4.17.21",
     "material-ui-formik-components": "0.7.3",
     "moment": "2.29.4",
