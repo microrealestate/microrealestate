@@ -40,7 +40,7 @@
     "currency-codes": "2.1.0",
     "currency-symbol-map": "5.1.0",
     "formik": "2.2.9",
-    "jose": "4.8.3",
+    "jose": "4.11.2",
     "js-file-download": "0.4.12",
     "jsesc": "3.0.2",
     "lodash": "4.17.21",
