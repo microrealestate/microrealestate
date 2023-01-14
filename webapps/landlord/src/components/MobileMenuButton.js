@@ -5,9 +5,9 @@ import {
   useTheme,
   withStyles,
 } from '@material-ui/core';
+import { forwardRef, useCallback } from 'react';
 
 import { hexToRgb } from '../styles/styles';
-import { useCallback } from 'react';
 import useTranslation from 'next-translate/useTranslation';
 
 const StyledButton = withStyles(() => ({
@@ -55,13 +55,16 @@ function MobileMenuButton({ labelId, Icon, selected, item, onClick }) {
 
 export default MobileMenuButton;
 
-export function MobileButton({ label, Icon, onClick, ...props }) {
+export const MobileButton = forwardRef(function MobileButton(
+  { label, Icon, onClick, ...props },
+  ref
+) {
   const handleClick = useCallback(() => {
     onClick();
   }, [onClick]);
 
   return (
-    <StyledButton {...props} size="small" onClick={handleClick}>
+    <StyledButton ref={ref} {...props} size="small" onClick={handleClick}>
       <Box display="flex" flexDirection="column">
         <Box>
           <Icon fontSize="small" />
@@ -70,4 +73,4 @@ export function MobileButton({ label, Icon, onClick, ...props }) {
       </Box>
     </StyledButton>
   );
-}
+});

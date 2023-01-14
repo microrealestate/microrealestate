@@ -1,4 +1,4 @@
-import { Box, Breadcrumbs, Typography } from '@material-ui/core';
+import { Breadcrumbs, Typography } from '@material-ui/core';
 import { memo, useCallback } from 'react';
 
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
@@ -7,9 +7,11 @@ import Link from './Link';
 import { MobileButton } from './MobileMenuButton';
 import NavigateNextIcon from '@material-ui/icons/NavigateNext';
 import { useRouter } from 'next/router';
+import useTranslation from 'next-translate/useTranslation';
 
 function BreadcrumbBar({ backPath, backPage, currentPage }) {
   const router = useRouter();
+  const { t } = useTranslation('common');
 
   const handleClick = useCallback(() => {
     router.push(backPath);
@@ -30,13 +32,11 @@ function BreadcrumbBar({ backPath, backPage, currentPage }) {
         </Breadcrumbs>
       </Hidden>
       <Hidden mdUp>
-        <Box display="flex" alignItems="center" width="100%">
-          <MobileButton
-            // label={t('Back')}
-            Icon={ArrowBackIcon}
-            onClick={handleClick}
-          />
-        </Box>
+        <MobileButton
+          Icon={ArrowBackIcon}
+          label={t('Back')}
+          onClick={handleClick}
+        />
       </Hidden>
     </>
   );

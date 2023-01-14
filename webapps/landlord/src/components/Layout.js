@@ -14,7 +14,7 @@ export default function Layout({ showNav, children }) {
           flexWrap="nowrap"
           overflow="hidden"
         >
-          <Box mb={10}>{children}</Box>
+          {children}
           {showNav && <Nav />}
         </Box>
       </Hidden>

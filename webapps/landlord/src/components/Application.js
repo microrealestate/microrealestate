@@ -44,7 +44,7 @@ function Application({ children }) {
       utils={DateFnsUtils}
       locale={store?.organization?.selected?.locale ?? 'en'}
     >
-      <Layout showNav={showNav}>{!routeloading && children}</Layout>;
+      <Layout showNav={showNav}>{!routeloading && children}</Layout>
     </MuiPickersUtilsProvider>
   );
 }

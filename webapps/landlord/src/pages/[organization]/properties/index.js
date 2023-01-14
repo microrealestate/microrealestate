@@ -1,6 +1,7 @@
 import {
   Box,
   Button,
+  ButtonGroup,
   Chip,
   List,
   ListItem,
@@ -216,24 +217,24 @@ const Properties = observer(() => {
     <Page
       title={t('Properties')}
       ActionToolbar={
-        <>
+        <Box display="flex" justifyContent="end">
           <Hidden smDown>
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={onNewProperty}
-            >
-              {t('New property')}
-            </Button>
+            <ButtonGroup variant="contained">
+              <Button startIcon={<AddIcon />} onClick={onNewProperty}>
+                {t('Add a property')}
+              </Button>
+            </ButtonGroup>
           </Hidden>
           <Hidden mdUp>
-            <MobileButton
-              label={t('New property')}
-              Icon={AddIcon}
-              onClick={onNewProperty}
-            />
+            <ButtonGroup variant="text">
+              <MobileButton
+                label={t('Add a property')}
+                Icon={AddIcon}
+                onClick={onNewProperty}
+              />
+            </ButtonGroup>
           </Hidden>
-        </>
+        </Box>
       }
       SearchBar={
         <SearchFilterBar
