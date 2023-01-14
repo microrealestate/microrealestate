@@ -32,7 +32,7 @@ function Navbar({ onChange, ...props }) {
   return (
     <Box display="flex" alignItems="center" {...props}>
       <Hidden smDown>
-        <Box color="text.secondary" fontSize="h5.fontSize" noWrap>
+        <Box color="text.secondary" fontSize="h5.fontSize">
           {t('Rents')}
         </Box>
       </Hidden>
