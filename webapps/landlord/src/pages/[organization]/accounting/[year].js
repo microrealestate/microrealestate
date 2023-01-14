@@ -509,7 +509,7 @@ const Accounting = observer(() => {
   );
 
   return (
-    <Page loading={loading} NavBar={<PeriodToolbar />}>
+    <Page loading={loading} ActionToolbar={<PeriodToolbar />}>
       {store.accounting?.data?.incomingTenants?.length ||
       store.accounting?.data?.outgoingTenants?.length ||
       store.accounting?.data?.settlements?.length ? (

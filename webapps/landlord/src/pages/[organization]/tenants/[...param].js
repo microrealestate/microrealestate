@@ -1,4 +1,11 @@
-import { Box, Button, Grid, Paper, Tooltip } from '@material-ui/core';
+import {
+  Box,
+  Button,
+  ButtonGroup,
+  Grid,
+  Paper,
+  Tooltip,
+} from '@material-ui/core';
 import { getStoreInstance, StoreContext } from '../../../store';
 import { useCallback, useContext, useMemo, useState } from 'react';
 
@@ -278,10 +285,15 @@ const Tenant = observer(() => {
     <Page
       title={store.tenant.selected.name}
       ActionToolbar={
-        <>
+        <Box display="flex" alignItems="center" justifyContent="space-between">
+          <BreadcrumbBar
+            backPath={backPath}
+            backPage={backPage}
+            currentPage={store.tenant.selected.name}
+          />
           <Hidden smDown>
-            <Grid container spacing={2}>
-              <Grid item>
+            <ButtonGroup variant="contained">
+              <Box>
                 <Tooltip
                   title={
                     store.tenant.selected.hasPayments
@@ -293,7 +305,6 @@ const Tenant = observer(() => {
                 >
                   <span>
                     <Button
-                      variant="contained"
                       startIcon={<DeleteIcon />}
                       disabled={store.tenant.selected.hasPayments}
                       onClick={handleDeleteTenant}
@@ -302,93 +313,72 @@ const Tenant = observer(() => {
                     </Button>
                   </span>
                 </Tooltip>
-              </Grid>
+              </Box>
               {showTerminateLeaseButton && (
-                <Grid item>
-                  <Button
-                    variant="contained"
-                    startIcon={<StopIcon />}
-                    disabled={store.tenant.selected.terminated}
-                    onClick={handleTerminateLease}
-                  >
-                    {t('Terminate')}
-                  </Button>
-                </Grid>
+                <Button
+                  startIcon={<StopIcon />}
+                  disabled={store.tenant.selected.terminated}
+                  onClick={handleTerminateLease}
+                >
+                  {t('Terminate')}
+                </Button>
               )}
               {showEditButton && (
-                <Grid item>
-                  <Button
-                    variant="contained"
-                    startIcon={<HistoryIcon />}
-                    onClick={handleRentHistory}
-                  >
-                    {t('Schedule')}
-                  </Button>
-                </Grid>
+                <Button
+                  startIcon={<EditIcon />}
+                  disabled={
+                    !(!!store.tenant.selected.properties?.length && readOnly)
+                  }
+                  onClick={handleEditTenant}
+                >
+                  {t('Edit')}
+                </Button>
               )}
+            </ButtonGroup>
+            <ButtonGroup variant="contained">
               {showEditButton && (
-                <Grid item>
-                  <Button
-                    variant="contained"
-                    startIcon={<EditIcon />}
-                    disabled={
-                      !(!!store.tenant.selected.properties?.length && readOnly)
-                    }
-                    onClick={handleEditTenant}
-                  >
-                    {t('Edit')}
-                  </Button>
-                </Grid>
+                <Button startIcon={<HistoryIcon />} onClick={handleRentHistory}>
+                  {t('Schedule')}
+                </Button>
               )}
-            </Grid>
+            </ButtonGroup>
           </Hidden>
+
           <Hidden mdUp>
-            <Grid container>
-              {!store.tenant.selected.hasPayments && (
-                <Grid item>
-                  <MobileButton
-                    label={t('Delete')}
-                    Icon={DeleteIcon}
-                    onClick={handleDeleteTenant}
-                  />
-                </Grid>
-              )}
+            <ButtonGroup variant="text">
+              <MobileButton
+                label={t('Delete')}
+                Icon={DeleteIcon}
+                disabled={store.tenant.selected.hasPayments}
+                onClick={handleDeleteTenant}
+              />
+
               {showTerminateLeaseButton && (
-                <Grid item>
-                  <MobileButton
-                    label={t('Terminate')}
-                    Icon={StopIcon}
-                    onClick={handleTerminateLease}
-                  />
-                </Grid>
+                <MobileButton
+                  label={t('Terminate')}
+                  Icon={StopIcon}
+                  onClick={handleTerminateLease}
+                />
               )}
               {showEditButton && (
                 <MobileButton
-                  variant="text"
+                  label={t('Edit')}
+                  Icon={EditIcon}
+                  onClick={handleEditTenant}
+                />
+              )}
+            </ButtonGroup>
+            {showEditButton && (
+              <ButtonGroup variant="text">
+                <MobileButton
                   Icon={HistoryIcon}
                   label={t('Schedule')}
                   onClick={handleRentHistory}
                 />
-              )}
-              {showEditButton && (
-                <Grid item>
-                  <MobileButton
-                    label={t('Edit')}
-                    Icon={EditIcon}
-                    onClick={handleEditTenant}
-                  />
-                </Grid>
-              )}
-            </Grid>
+              </ButtonGroup>
+            )}
           </Hidden>
-        </>
-      }
-      NavBar={
-        <BreadcrumbBar
-          backPath={backPath}
-          backPage={backPage}
-          currentPage={store.tenant.selected.name}
-        />
+        </Box>
       }
     >
       {store.tenant.selected.stepperMode ? (

@@ -1,6 +1,7 @@
 import {
   Box,
   Button,
+  ButtonGroup,
   Grid,
   List,
   ListItem,
@@ -213,31 +214,32 @@ const Property = observer(() => {
     <Page
       title={store.property.selected.name}
       ActionToolbar={
-        <>
+        <Box display="flex" justifyContent="space-between">
+          <BreadcrumbBar
+            backPath={backPath}
+            backPage={backPage}
+            currentPage={store.property.selected.name}
+          />
           <Hidden smDown>
-            <Button
-              variant="contained"
-              startIcon={<DeleteIcon />}
-              onClick={onConfirmDeleteProperty}
-            >
-              {t('Delete')}
-            </Button>
+            <ButtonGroup variant="contained">
+              <Button
+                startIcon={<DeleteIcon />}
+                onClick={onConfirmDeleteProperty}
+              >
+                {t('Delete')}
+              </Button>
+            </ButtonGroup>
           </Hidden>
           <Hidden mdUp>
-            <MobileButton
-              label={t('Delete')}
-              Icon={DeleteIcon}
-              onClick={onConfirmDeleteProperty}
-            />
+            <ButtonGroup variant="text">
+              <MobileButton
+                label={t('Delete')}
+                Icon={DeleteIcon}
+                onClick={onConfirmDeleteProperty}
+              />
+            </ButtonGroup>
           </Hidden>
-        </>
-      }
-      NavBar={
-        <BreadcrumbBar
-          backPath={backPath}
-          backPage={backPage}
-          currentPage={store.property.selected.name}
-        />
+        </Box>
       }
     >
       <Hidden smDown>

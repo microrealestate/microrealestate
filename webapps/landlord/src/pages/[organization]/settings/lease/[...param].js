@@ -1,15 +1,17 @@
+import { Box, Paper } from '@material-ui/core';
 import { getStoreInstance, StoreContext } from '../../../../store';
 import { useCallback, useContext } from 'react';
 
 import { ADMIN_ROLE } from '../../../../store/User';
 import BreadcrumbBar from '../../../../components/BreadcrumbBar';
 import DeleteIcon from '@material-ui/icons/Delete';
+import Hidden from '../../../../components/HiddenSSRCompatible';
 import { isServer } from '../../../../utils';
 import LeaseStepper from '../../../../components/organization/lease/LeaseStepper';
 import LeaseTabs from '../../../../components/organization/lease/LeaseTabs';
+import { MobileButton } from '../../../../components/MobileMenuButton';
 import { observer } from 'mobx-react-lite';
 import Page from '../../../../components/Page';
-import { Paper } from '@material-ui/core';
 import { RestrictButton } from '../../../../components/RestrictedComponents';
 import router from 'next/router';
 import { toJS } from 'mobx';
@@ -105,22 +107,32 @@ const Lease = observer(() => {
     <Page
       title={store.lease.selected?.name || t('New contract')}
       ActionToolbar={
-        <RestrictButton
-          variant="contained"
-          startIcon={<DeleteIcon />}
-          onClick={() => setRemoveLease(true)}
-          disabled={store.lease.selected?.usedByTenants}
-          disabledTooltipTitle={t('Contract currently used')}
-        >
-          {t('Delete')}
-        </RestrictButton>
-      }
-      NavBar={
-        <BreadcrumbBar
-          backPath={backPath}
-          backPage={backPage}
-          currentPage={store.lease.selected?.name || t('New contract')}
-        />
+        <Box display="flex" justifyContent="space-between">
+          <BreadcrumbBar
+            backPath={backPath}
+            backPage={backPage}
+            currentPage={store.lease.selected?.name || t('New contract')}
+          />
+          <Hidden smDown>
+            <RestrictButton
+              variant="contained"
+              startIcon={<DeleteIcon />}
+              onClick={() => setRemoveLease(true)}
+              disabled={store.lease.selected?.usedByTenants}
+              disabledTooltipTitle={t('Contract currently used')}
+            >
+              {t('Delete')}
+            </RestrictButton>
+          </Hidden>
+          <Hidden mdUp>
+            <MobileButton
+              label={t('Delete')}
+              Icon={DeleteIcon}
+              disabled={store.lease.selected?.usedByTenants}
+              onClick={() => setRemoveLease(true)}
+            />
+          </Hidden>
+        </Box>
       }
     >
       {store.lease.selected?.stepperMode ? (

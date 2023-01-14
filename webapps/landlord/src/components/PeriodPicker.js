@@ -4,7 +4,6 @@ import { memo, useCallback, useState } from 'react';
 import ArrowLeftIcon from '@material-ui/icons/ArrowLeft';
 import ArrowRightIcon from '@material-ui/icons/ArrowRight';
 import { DatePicker } from '@material-ui/pickers';
-import Hidden from './HiddenSSRCompatible';
 import moment from 'moment';
 
 function PeriodPicker({ value, period, format, onChange }) {
@@ -30,34 +29,22 @@ function PeriodPicker({ value, period, format, onChange }) {
 
   return (
     <Box display="flex" alignItems="center">
-      <Hidden smDown>
-        <IconButton
-          onClick={_onPreviousPeriod}
-          aria-label="previous period"
-          size="small"
-        >
-          <ArrowLeftIcon />
-        </IconButton>
-      </Hidden>
+      <IconButton onClick={_onPreviousPeriod} aria-label="previous period">
+        <ArrowLeftIcon />
+      </IconButton>
       <Box width={100}>
         <DatePicker
           autoOk
           views={[period]}
           value={selectedPeriod}
           onChange={_onPeriodChange}
-          size="small"
           format={format}
+          allowKeyboardControl={false}
         />
       </Box>
-      <Hidden smDown>
-        <IconButton
-          onClick={_onNextPeriod}
-          aria-label="next period"
-          size="small"
-        >
-          <ArrowRightIcon />
-        </IconButton>
-      </Hidden>
+      <IconButton onClick={_onNextPeriod} aria-label="next period">
+        <ArrowRightIcon />
+      </IconButton>
     </Box>
   );
 }

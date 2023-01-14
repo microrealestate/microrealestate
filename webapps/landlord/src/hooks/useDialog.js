@@ -4,7 +4,9 @@ export default function useDialog(DialogComponent) {
   const [open, setOpen] = useState(false);
 
   const Dialog = (props) => {
-    return <DialogComponent {...props} open={open} setOpen={setOpen} />;
+    return open ? (
+      <DialogComponent {...props} open={open} setOpen={setOpen} />
+    ) : null;
   };
 
   return [Dialog, setOpen, open];

@@ -1,175 +1,53 @@
 import {
   Box,
-  Button,
   Checkbox,
-  CircularProgress,
-  ClickAwayListener,
   Divider,
   Grid,
-  Grow,
   IconButton,
   Link,
-  MenuItem,
-  MenuList,
   Paper,
-  Popper,
-  Toolbar,
   Tooltip,
 } from '@material-ui/core';
-import {
-  Fragment,
-  memo,
-  useCallback,
-  useContext,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { Fragment, memo, useCallback, useContext, useMemo } from 'react';
 import { getRentAmounts, RentAmount } from './RentDetails';
 
-import Alert from '../Alert';
 import { downloadDocument } from '../../utils/fetch';
 import EditIcon from '@material-ui/icons/Edit';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import Hidden from '../HiddenSSRCompatible';
 import HistoryIcon from '@material-ui/icons/History';
 import moment from 'moment';
-import { observer } from 'mobx-react-lite';
-import SendIcon from '@material-ui/icons/Send';
+import PeriodPicker from '../PeriodPicker';
+import { RentOverview } from './RentOverview';
 import { StoreContext } from '../../store';
 import useNewPaymentDialog from '../payment/NewPaymentDialog';
 import useRentHistoryDialog from './RentHistoryDialog';
+import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 
-const TableToolbar = observer(function TableToolbar({
-  selected = [],
-  onSend = () => {},
-}) {
+function Navbar({ onChange, ...props }) {
   const { t } = useTranslation('common');
-  const store = useContext(StoreContext);
-  const [sendingEmail, setSendingEmail] = useState(false);
-
-  const [open, setOpen] = useState(false);
-  const anchorRef = useRef(null);
-
-  const handleToggle = () => {
-    setOpen((prevOpen) => !prevOpen);
-  };
-
-  const handleClose = (event) => {
-    if (anchorRef.current && anchorRef.current.contains(event.target)) {
-      return;
-    }
-
-    setOpen(false);
-  };
-
-  function handleListKeyDown(event) {
-    if (event.key === 'Tab') {
-      event.preventDefault();
-      setOpen(false);
-    }
-  }
-
-  const onClick = useCallback(
-    (docName) => async (event) => {
-      setSendingEmail(true);
-
-      handleClose(event);
-      await onSend(docName);
-
-      setSendingEmail(false);
-    },
-    [onSend]
-  );
+  const router = useRouter();
+  const rentPeriod = moment(router.query.yearMonth, 'YYYY.MM');
 
   return (
-    <Toolbar>
-      {selected.length > 0 ? (
-        <Box display="flex" flexDirection="column" width="100%">
-          {!store.organization.canSendEmails ? (
-            <Box mt={1}>
-              <Alert
-                severity="warning"
-                title={t(
-                  'Unable to send documents without configuring the mail service in Settings page'
-                )}
-              />
-            </Box>
-          ) : null}
-          <Box
-            display="flex"
-            justifyContent="space-between"
-            alignItems="center"
-            mt={!store.organization.canSendEmails ? 1 : 0}
-          >
-            <Box
-              color="inherit"
-              fontSize="caption.fontSize"
-              whiteSpace="nowrap"
-            >
-              {t('{{count}} selected', { count: selected.length })}
-            </Box>
-
-            <Box>
-              <Button
-                variant="contained"
-                ref={anchorRef}
-                disabled={!store.organization.canSendEmails || sendingEmail}
-                startIcon={<SendIcon />}
-                endIcon={
-                  sendingEmail ? (
-                    <CircularProgress size={20} />
-                  ) : (
-                    <ExpandMoreIcon />
-                  )
-                }
-                onClick={handleToggle}
-              >
-                {t('Send a document to the tenant')}
-              </Button>
-              <Popper open={open} anchorEl={anchorRef.current} transition>
-                {({ TransitionProps, placement }) => (
-                  <Grow
-                    {...TransitionProps}
-                    style={{
-                      transformOrigin:
-                        placement === 'bottom' ? 'center top' : 'center bottom',
-                    }}
-                  >
-                    <Paper>
-                      <ClickAwayListener onClickAway={handleClose}>
-                        <MenuList
-                          autoFocusItem={open}
-                          onKeyDown={handleListKeyDown}
-                        >
-                          <MenuItem onClick={onClick('rentcall')}>
-                            {t('First payment notice')}
-                          </MenuItem>
-                          <MenuItem onClick={onClick('rentcall_reminder')}>
-                            {t('Second payment notice')}
-                          </MenuItem>
-                          <MenuItem onClick={onClick('rentcall_last_reminder')}>
-                            {t('Eviction notice')}
-                          </MenuItem>
-                          <MenuItem onClick={onClick('invoice')}>
-                            {t('Invoice')}
-                          </MenuItem>
-                        </MenuList>
-                      </ClickAwayListener>
-                    </Paper>
-                  </Grow>
-                )}
-              </Popper>
-            </Box>
-          </Box>
+    <Box display="flex" alignItems="center" {...props}>
+      <Hidden smDown>
+        <Box color="text.secondary" fontSize="h5.fontSize" noWrap>
+          {t('Rents')}
         </Box>
-      ) : null}
-    </Toolbar>
-  );
-});
+      </Hidden>
 
-function Reminder({ rent, ...boxProps }) {
+      <PeriodPicker
+        format="MMM YYYY"
+        period="month"
+        value={rentPeriod}
+        onChange={onChange}
+      />
+    </Box>
+  );
+}
+
+const Reminder = memo(function Reminder({ rent, ...boxProps }) {
   const { t } = useTranslation('common');
 
   let label;
@@ -234,10 +112,17 @@ function Reminder({ rent, ...boxProps }) {
       </Link>
     </Box>
   ) : null;
-}
+});
 
-function RentRow({ rent, isSelected, onSelect, onEdit, onHistory }) {
+const RentRow = memo(function RentRow({
+  rent,
+  isSelected,
+  onSelect,
+  onEdit,
+  onHistory,
+}) {
   const { t } = useTranslation('common');
+  const store = useContext(StoreContext);
   const rentAmounts = getRentAmounts(rent);
 
   return (
@@ -248,6 +133,7 @@ function RentRow({ rent, isSelected, onSelect, onEdit, onHistory }) {
             <Checkbox
               color="default"
               checked={isSelected}
+              disabled={!store.organization.canSendEmails}
               onChange={onSelect(rent)}
               inputProps={{
                 'aria-labelledby': rent.occupant.name,
@@ -337,10 +223,17 @@ function RentRow({ rent, isSelected, onSelect, onEdit, onHistory }) {
       <Divider />
     </Box>
   );
-}
+});
 
-function MobileRentRow({ rent, isSelected, onSelect, onEdit, onHistory }) {
+const MobileRentRow = memo(function MobileRentRow({
+  rent,
+  isSelected,
+  onSelect,
+  onEdit,
+  onHistory,
+}) {
   const { t } = useTranslation('common');
+  const store = useContext(StoreContext);
   const rentAmounts = getRentAmounts(rent);
 
   return (
@@ -356,6 +249,7 @@ function MobileRentRow({ rent, isSelected, onSelect, onEdit, onHistory }) {
           {rent.occupant.hasContactEmails ? (
             <Checkbox
               checked={isSelected}
+              disabled={!store.organization.canSendEmails}
               onChange={onSelect(rent)}
               inputProps={{
                 'aria-labelledby': rent.occupant.name,
@@ -422,82 +316,54 @@ function MobileRentRow({ rent, isSelected, onSelect, onEdit, onHistory }) {
       </Box>
     </Box>
   );
-}
+});
 
-const RentTable = ({ rents }) => {
-  const { t } = useTranslation('common');
+function RentTable({ selected, setSelected, onPeriodChange }) {
   const store = useContext(StoreContext);
-  const [selected, setSelected] = useState([]);
   const [NewPaymentDialog, setOpenNewPaymentDialog] = useNewPaymentDialog();
   const [RentHistoryDialog, setOpenRentHistoryDialog] = useRentHistoryDialog();
 
   const onSelectAllClick = useCallback(
     (event) => {
+      let rentSelected = [];
       if (event.target.checked) {
-        setSelected(
-          rents.reduce((acc, rent) => {
-            if (rent.occupant.hasContactEmails) {
-              return [...acc, rent];
-            }
-            return acc;
-          }, [])
-        );
-        return;
+        rentSelected = store.rent.filteredItems.reduce((acc, rent) => {
+          if (rent.occupant.hasContactEmails) {
+            return [...acc, rent];
+          }
+          return acc;
+        }, []);
       }
-      setSelected([]);
+      setSelected?.(rentSelected);
     },
-    [rents]
+    [setSelected, store.rent.filteredItems]
   );
 
   const onSelectClick = useCallback(
     (rent) => (event) => {
+      let rentSelected = [];
       if (event.target.checked) {
-        setSelected((selected) => [...selected, rent]);
-        return;
+        rentSelected = [...selected, rent];
+      } else {
+        rentSelected = selected.filter((r) => r._id !== rent._id);
       }
-      setSelected((selected) => selected.filter((r) => r._id !== rent._id));
+      setSelected?.(rentSelected);
     },
-    []
-  );
-
-  const onSend = useCallback(
-    async (docName) => {
-      const sendStatus = await store.rent.sendEmail({
-        document: docName,
-        tenantIds: selected.map((r) => r._id),
-        terms: selected.map((r) => r.term),
-      });
-      if (sendStatus !== 200) {
-        // TODO check error code to show a more detail error message
-        return store.pushToastMessage({
-          message: t('Email service cannot send emails'),
-          severity: 'error',
-        });
-      }
-
-      const response = await store.rent.fetch();
-      if (response.status !== 200) {
-        // TODO check error code to show a more detail error message
-        return store.pushToastMessage({
-          message: t('Cannot fetch rents from server'),
-          severity: 'error',
-        });
-      }
-
-      setSelected([]);
-    },
-    [store, selected, t]
+    [selected, setSelected]
   );
 
   const selectableRentNum = useMemo(
     () =>
-      rents.reduce((acc, { _id, occupant: { hasContactEmails } }) => {
-        if (hasContactEmails) {
-          acc.push(_id);
-        }
-        return acc;
-      }, []).length,
-    [rents]
+      store.rent.filteredItems.reduce(
+        (acc, { _id, occupant: { hasContactEmails } }) => {
+          if (hasContactEmails) {
+            acc.push(_id);
+          }
+          return acc;
+        },
+        []
+      ).length,
+    [store.rent.filteredItems]
   );
 
   const handleEdit = useCallback(
@@ -520,40 +386,30 @@ const RentTable = ({ rents }) => {
       <RentHistoryDialog />
 
       <Paper>
-        <TableToolbar selected={selected} onSend={onSend} />
+        <Navbar onChange={onPeriodChange} px={1} pt={1} />
         <Hidden smDown>
-          <Box>
-            <Checkbox
-              color="default"
-              indeterminate={
-                selected.length > 0 && selected.length < selectableRentNum
-              }
-              checked={
-                rents.length > 0 && selected.length === selectableRentNum
-              }
-              onChange={onSelectAllClick}
-              inputProps={{ 'aria-label': 'select all rents' }}
-            />
-          </Box>
+          <RentOverview width="100%" p={1} />
         </Hidden>
-        <Hidden mdUp>
-          <Box>
-            <Checkbox
-              color="default"
-              indeterminate={
-                selected.length > 0 && selected.length < selectableRentNum
-              }
-              checked={
-                rents.length > 0 && selected.length === selectableRentNum
-              }
-              onChange={onSelectAllClick}
-              inputProps={{ 'aria-label': 'select all rents' }}
-            />
-          </Box>
-        </Hidden>
+        <Box display="flex" alignItems="center">
+          <Checkbox
+            color="default"
+            indeterminate={
+              selected.length > 0 && selected.length < selectableRentNum
+            }
+            checked={
+              store.rent.filteredItems.length > 0 &&
+              selected.length === selectableRentNum
+            }
+            disabled={!store.organization.canSendEmails}
+            onChange={onSelectAllClick}
+            inputProps={{
+              'aria-label': 'select all store.rent.filteredItems',
+            }}
+          />
+        </Box>
 
         <Divider />
-        {rents.map((rent) => {
+        {store.rent.filteredItems.map((rent) => {
           const isItemSelected = selected.map((r) => r._id).includes(rent._id);
           return (
             <Fragment key={rent._id}>
@@ -581,6 +437,6 @@ const RentTable = ({ rents }) => {
       </Paper>
     </>
   );
-};
+}
 
-export default memo(RentTable);
+export default RentTable;

@@ -1,157 +1,50 @@
-import { Box, Grid, Typography } from '@material-ui/core';
+import {
+  Box,
+  Button,
+  ButtonGroup,
+  CircularProgress,
+  ClickAwayListener,
+  Grow,
+  MenuItem,
+  MenuList,
+  Paper,
+  Popper,
+} from '@material-ui/core';
 import { getStoreInstance, StoreContext } from '../../../../store';
-import { useCallback, useContext, useMemo } from 'react';
+import { useCallback, useContext, useMemo, useRef, useState } from 'react';
 
+import Alert from '../../../../components/Alert';
 import { EmptyIllustration } from '../../../../components/Illustrations';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import Hidden from '../../../../components/HiddenSSRCompatible';
 import { isServer } from '../../../../utils';
+import { MobileButton } from '../../../../components/MobileMenuButton';
 import moment from 'moment';
-import NumberFormat from '../../../../components/NumberFormat';
-import { observer } from 'mobx-react-lite';
 import Page from '../../../../components/Page';
-import { PageCard } from '../../../../components/Cards';
-import PeriodPicker from '../../../../components/PeriodPicker';
-import ReceiptIcon from '@material-ui/icons/Receipt';
 import RentTable from '../../../../components/rents/RentTable';
 import SearchFilterBar from '../../../../components/SearchFilterBar';
+import SendIcon from '@material-ui/icons/Send';
 import { toJS } from 'mobx';
-import TrendingDownIcon from '@material-ui/icons/TrendingDown';
-import TrendingUpIcon from '@material-ui/icons/TrendingUp';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 import { withAuthentication } from '../../../../components/Authentication';
 
-function MobileToolbar({ rentPeriod, onChange }) {
-  return (
-    <PeriodPicker
-      format="MMM YYYY"
-      period="month"
-      value={rentPeriod}
-      onChange={onChange}
-    />
-  );
-}
-
-function DesktopToolbar({ rentPeriod, onChange }) {
+function SearchBar() {
   const { t } = useTranslation('common');
-  return (
-    <Grid container alignItems="center" spacing={2} wrap="nowrap">
-      <Grid item>
-        <Typography color="textSecondary" variant="h5" noWrap>
-          {t('Rents')}
-        </Typography>
-      </Grid>
-      <Grid item>
-        <PeriodPicker
-          format="MMM YYYY"
-          period="month"
-          value={rentPeriod}
-          onChange={onChange}
-        />
-      </Grid>
-    </Grid>
-  );
-}
-
-function PeriodToolbar({ onChange }) {
   const router = useRouter();
-  const rentPeriod = moment(router.query.yearMonth, 'YYYY.MM');
-
-  return (
-    <>
-      <Hidden smDown>
-        <DesktopToolbar rentPeriod={rentPeriod} onChange={onChange} />
-      </Hidden>
-      <Hidden mdUp>
-        <MobileToolbar rentPeriod={rentPeriod} onChange={onChange} />
-      </Hidden>
-    </>
-  );
-}
-
-function CardSection() {
-  const { t } = useTranslation('common');
   const store = useContext(StoreContext);
 
-  return (
-    <Box mb={2}>
-      <Hidden xsDown>
-        <Grid container spacing={3}>
-          <Grid item sm={4} md={2}>
-            <Box display="flex" height="100%">
-              <PageCard
-                variant="info"
-                Icon={ReceiptIcon}
-                title={t('Rents')}
-                info={store.rent.period.format('MMMM YYYY')}
-              >
-                {store.rent.countAll}
-              </PageCard>
-            </Box>
-          </Grid>
-          <Grid item sm={4} md={5}>
-            <PageCard
-              variant="success"
-              Icon={TrendingUpIcon}
-              title={t('Paid')}
-              info={t('{{count}} rents', {
-                count: store.rent.countPaid + store.rent.countPartiallyPaid,
-              })}
-            >
-              <NumberFormat value={store.rent.totalPaid} />
-            </PageCard>
-          </Grid>
-          <Grid item sm={4} md={5}>
-            <PageCard
-              variant="warning"
-              Icon={TrendingDownIcon}
-              title={t('Not paid')}
-              info={t('{{count}} rents', {
-                count: store.rent.countNotPaid,
-              })}
-            >
-              <NumberFormat value={store.rent.totalNotPaid} />
-            </PageCard>
-          </Grid>
-        </Grid>
-      </Hidden>
-      <Hidden smUp>
-        <Grid container spacing={3}>
-          <Grid item xs={6}>
-            <PageCard
-              variant="success"
-              Icon={TrendingUpIcon}
-              title={t('Paid')}
-              info={t('{{count}} rents', {
-                count: store.rent.countPaid + store.rent.countPartiallyPaid,
-              })}
-            >
-              <NumberFormat value={store.rent.totalPaid} />
-            </PageCard>
-          </Grid>
-          <Grid item xs={6}>
-            <PageCard
-              variant="warning"
-              Icon={TrendingDownIcon}
-              title={t('Not paid')}
-              info={t('{{count}} rents', {
-                count: store.rent.countNotPaid,
-              })}
-            >
-              <NumberFormat value={store.rent.totalNotPaid} />
-            </PageCard>
-          </Grid>
-        </Grid>
-      </Hidden>
-    </Box>
+  const filters = useMemo(
+    () => [
+      { id: '', label: t('All') },
+      { id: 'notpaid', label: t('Not paid') },
+      { id: 'partiallypaid', label: t('Partially paid') },
+      { id: 'paid', label: t('Paid') },
+    ],
+    [t]
   );
-}
-function Rents() {
-  const { t } = useTranslation('common');
-  const store = useContext(StoreContext);
-  const router = useRouter();
 
-  const onSearch = useCallback(
+  const handleSearch = useCallback(
     (status, searchText) => {
       let queryString = '';
       if (searchText || status) {
@@ -169,7 +62,280 @@ function Rents() {
     [router, store.rent, store.organization.selected.name]
   );
 
-  const onPeriodChange = useCallback(
+  return (
+    <SearchFilterBar
+      filters={filters}
+      defaultValue={store.rent.filters}
+      onSearch={handleSearch}
+    />
+  );
+}
+
+function ActionToolbar({ selected, setSelected }) {
+  const { t } = useTranslation('common');
+  const store = useContext(StoreContext);
+  // const [sendingEvictionNotice, setSendingEvictionNotice] = useState(false);
+  const [sendingPaymentNotice, setSendingPaymentNotice] = useState(false);
+  const [sendingInvoice, setSendingInvoice] = useState(false);
+  // const [ConfirmDialog, setShowConfirmDlg, showConfirmDlg] = useConfirmDialog();
+
+  const [open, setOpen] = useState(false);
+  const anchorRef = useRef(null);
+
+  const handleToggle = useCallback(() => {
+    setOpen((prevOpen) => !prevOpen);
+  }, []);
+
+  const handleClose = useCallback((event) => {
+    if (anchorRef.current && anchorRef.current.contains(event.target)) {
+      return;
+    }
+    setOpen(false);
+  }, []);
+
+  const handleListKeyDown = useCallback((event) => {
+    if (event.key === 'Tab') {
+      event.preventDefault();
+      setOpen(false);
+    }
+  }, []);
+
+  // const handleShowConfirmDlg = useCallback(
+  //   () => setShowConfirmDlg(true),
+  //   [setShowConfirmDlg]
+  // );
+
+  // const handleConfirm = useCallback(async () => {
+  //   setSendingEvictionNotice(true);
+
+  //   const sendStatus = await store.rent.sendEmail({
+  //     document: 'eviction',
+  //     tenantIds: [selected[0]._id],
+  //     terms: [selected[0].term],
+  //   });
+
+  //   if (sendStatus !== 200) {
+  //     // TODO check error code to show a more detail error message
+  //     return store.pushToastMessage({
+  //       message: t('Email service cannot send emails'),
+  //       severity: 'error',
+  //     });
+  //   }
+
+  //   const response = await store.rent.fetch();
+  //   if (response.status !== 200) {
+  //     // TODO check error code to show a more detail error message
+  //     return store.pushToastMessage({
+  //       message: t('Cannot fetch rents from server'),
+  //       severity: 'error',
+  //     });
+  //   }
+
+  //   setSelected([]);
+
+  //   setSendingEvictionNotice(false);
+  // }, [selected, setSelected, store, t]);
+
+  const handleClickInvoicePaymentNotice = useCallback(
+    (docName) => async (event) => {
+      docName === 'invoice'
+        ? setSendingInvoice(true)
+        : setSendingPaymentNotice(true);
+
+      handleClose(event);
+      const sendStatus = await store.rent.sendEmail({
+        document: docName,
+        tenantIds: selected.map((r) => r._id),
+        terms: selected.map((r) => r.term),
+      });
+      if (sendStatus !== 200) {
+        // TODO check error code to show a more detail error message
+        return store.pushToastMessage({
+          message: t('Email service cannot send emails'),
+          severity: 'error',
+        });
+      }
+
+      const response = await store.rent.fetch();
+      if (response.status !== 200) {
+        // TODO check error code to show a more detail error message
+        return store.pushToastMessage({
+          message: t('Cannot fetch rents from server'),
+          severity: 'error',
+        });
+      }
+
+      setSelected([]);
+
+      docName === 'invoice'
+        ? setSendingInvoice(false)
+        : setSendingPaymentNotice(false);
+    },
+    [handleClose, selected, setSelected, store, t]
+  );
+
+  return (
+    <>
+      <Box display="flex" flexDirection="column" position="relative">
+        <Hidden smDown>
+          {selected?.length > 0 ? (
+            <Box
+              color="inherit"
+              fontSize="caption.fontSize"
+              whiteSpace="nowrap"
+              position="absolute"
+              bottom={-20}
+              right={0}
+            >
+              {t('{{count}} tenants selected', { count: selected.length })}
+            </Box>
+          ) : null}
+        </Hidden>
+        <Box display="flex" justifyContent="end" alignItems="center">
+          {/* <Button
+            variant="contained"
+            color="secondary"
+            ref={anchorRef}
+            disabled={
+              !store.organization.canSendEmails ||
+              !selected?.length ||
+              selected.length > 1 ||
+              sendingEvictionNotice
+            }
+            startIcon={<SendIcon />}
+            endIcon={
+              sendingEvictionNotice ? <CircularProgress size={20} /> : null
+            }
+            onClick={handleShowConfirmDlg}
+          >
+            {t('Send an eviction notice')}
+          </Button> */}
+
+          <Box display="flex">
+            <Hidden smDown>
+              <ButtonGroup variant="contained">
+                <Button
+                  disabled={
+                    !store.organization.canSendEmails ||
+                    !selected?.length ||
+                    sendingInvoice
+                  }
+                  startIcon={<SendIcon />}
+                  endIcon={
+                    sendingInvoice ? <CircularProgress size={20} /> : null
+                  }
+                  onClick={handleClickInvoicePaymentNotice('invoice')}
+                >
+                  {t('Send an invoice')}
+                </Button>
+                <Button
+                  ref={anchorRef}
+                  disabled={
+                    !store.organization.canSendEmails ||
+                    !selected?.length ||
+                    sendingPaymentNotice
+                  }
+                  startIcon={<SendIcon />}
+                  endIcon={
+                    sendingPaymentNotice ? (
+                      <CircularProgress size={20} />
+                    ) : (
+                      <ExpandMoreIcon />
+                    )
+                  }
+                  onClick={handleToggle}
+                >
+                  {t('Send a payment notice')}
+                </Button>
+              </ButtonGroup>
+            </Hidden>
+            <Hidden mdUp>
+              <ButtonGroup variant="text">
+                <MobileButton
+                  label={t('Send an invoice')}
+                  Icon={SendIcon}
+                  disabled={
+                    !store.organization.canSendEmails ||
+                    !selected?.length ||
+                    sendingInvoice
+                  }
+                  onClick={handleClickInvoicePaymentNotice('invoice')}
+                />
+                <MobileButton
+                  ref={anchorRef}
+                  label={t('Send a payment notice')}
+                  Icon={SendIcon}
+                  disabled={
+                    !store.organization.canSendEmails ||
+                    !selected?.length ||
+                    sendingPaymentNotice
+                  }
+                  endIcon={<ExpandMoreIcon />}
+                  onClick={handleToggle}
+                />
+              </ButtonGroup>
+            </Hidden>
+            <Popper open={open} anchorEl={anchorRef.current} transition>
+              {({ TransitionProps, placement }) => (
+                <Grow
+                  {...TransitionProps}
+                  style={{
+                    transformOrigin:
+                      placement === 'bottom' ? 'center top' : 'center bottom',
+                  }}
+                >
+                  <Paper>
+                    <ClickAwayListener onClickAway={handleClose}>
+                      <MenuList
+                        autoFocusItem={open}
+                        onKeyDown={handleListKeyDown}
+                      >
+                        <MenuItem
+                          onClick={handleClickInvoicePaymentNotice('rentcall')}
+                        >
+                          {t('First payment notice')}
+                        </MenuItem>
+                        <MenuItem
+                          onClick={handleClickInvoicePaymentNotice(
+                            'rentcall_reminder'
+                          )}
+                        >
+                          {t('Second payment notice')}
+                        </MenuItem>
+                        <MenuItem
+                          onClick={handleClickInvoicePaymentNotice(
+                            'rentcall_last_reminder'
+                          )}
+                        >
+                          {t('Last payment notice')}
+                        </MenuItem>
+                      </MenuList>
+                    </ClickAwayListener>
+                  </Paper>
+                </Grow>
+              )}
+            </Popper>
+          </Box>
+        </Box>
+      </Box>
+      {/* {showConfirmDlg ? (
+        <ConfirmDialog
+          title={t('Are you sure to send an eviction notice to this tenant?')}
+          subTitle={selected?.[0].occupant.name}
+          onConfirm={handleConfirm}
+        />
+      ) : null} */}
+    </>
+  );
+}
+
+function Rents() {
+  const { t } = useTranslation('common');
+  const router = useRouter();
+  const store = useContext(StoreContext);
+  const [rentSelected, setRentSelected] = useState([]);
+
+  const handlePeriodChange = useCallback(
     async (period) => {
       store.rent.setPeriod(period);
       await router.push(
@@ -179,32 +345,33 @@ function Rents() {
     [router, store.rent, store.organization.selected.name]
   );
 
-  const filters = useMemo(
-    () => [
-      { id: '', label: t('All') },
-      { id: 'notpaid', label: t('Not paid') },
-      { id: 'partiallypaid', label: t('Partially paid') },
-      { id: 'paid', label: t('Paid') },
-    ],
-    [t]
-  );
-
   return (
     <Page
       title={t('Rents')}
-      NavBar={<PeriodToolbar onChange={onPeriodChange} />}
-      SearchBar={
-        <SearchFilterBar
-          filters={filters}
-          defaultValue={store.rent.filters}
-          onSearch={onSearch}
-        />
+      SearchBar={<SearchBar />}
+      ActionToolbar={
+        <ActionToolbar selected={rentSelected} setSelected={setRentSelected} />
       }
     >
-      <CardSection />
-
       {store.rent?.filteredItems.length ? (
-        <RentTable rents={store.rent?.filteredItems} />
+        <>
+          {!store.organization.canSendEmails ? (
+            <Box mb={1}>
+              <Alert
+                elevation={1}
+                severity="warning"
+                title={t(
+                  'Unable to send documents by email without configuring the mail service in Settings page'
+                )}
+              />
+            </Box>
+          ) : null}
+          <RentTable
+            selected={rentSelected}
+            setSelected={setRentSelected}
+            onPeriodChange={handlePeriodChange}
+          />
+        </>
       ) : (
         <EmptyIllustration label={t('No rents found')} />
       )}
@@ -237,4 +404,4 @@ Rents.getInitialProps = async (context) => {
   };
 };
 
-export default withAuthentication(observer(Rents));
+export default withAuthentication(Rents);

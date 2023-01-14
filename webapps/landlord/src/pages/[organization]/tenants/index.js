@@ -1,6 +1,7 @@
 import {
   Box,
   Button,
+  ButtonGroup,
   Chip,
   Divider,
   Grid,
@@ -220,24 +221,24 @@ function Tenants() {
     <Page
       title={t('Tenants')}
       ActionToolbar={
-        <>
+        <Box display="flex" justifyContent="end">
           <Hidden smDown>
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={onNewTenant}
-            >
-              {t('New tenant')}
-            </Button>
+            <ButtonGroup variant="contained">
+              <Button startIcon={<AddIcon />} onClick={onNewTenant}>
+                {t('Add a tenant')}
+              </Button>
+            </ButtonGroup>
           </Hidden>
           <Hidden mdUp>
-            <MobileButton
-              label={t('New tenant')}
-              Icon={AddIcon}
-              onClick={onNewTenant}
-            />
+            <ButtonGroup variant="text">
+              <MobileButton
+                label={t('Add a tenant')}
+                Icon={AddIcon}
+                onClick={onNewTenant}
+              />
+            </ButtonGroup>
           </Hidden>
-        </>
+        </Box>
       }
       SearchBar={
         <SearchFilterBar
