@@ -43,7 +43,15 @@ const RealmSchema = mongoose.Schema({
     vatNumber: String,
   },
   thirdParties: {
+    gmail: {
+      selected: Boolean,
+      email: String,
+      appPassword: String,
+      fromEmail: String,
+      replyToEmail: String,
+    },
     mailgun: {
+      selected: Boolean,
       apiKey: String,
       domain: String,
       fromEmail: String,

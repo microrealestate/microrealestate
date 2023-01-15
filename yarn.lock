@@ -2715,6 +2715,7 @@ __metadata:
     mailgun.js: 4.2.1
     moment: 2.29.4
     mongodb: 3.5.6
+    nodemailer: 6.9.0
     nodemon: 2.0.19
     winston: 2.4.4
   languageName: unknown
@@ -17455,6 +17456,13 @@ __metadata:
   version: 1.15.0
   resolution: "node-stream-zip@npm:1.15.0"
   checksum: 0b73ffbb09490e479c8f47038d7cba803e6242618fbc1b71c26782009d388742ed6fb5ce6e9d31f528b410249e7eb1c6e7534e9d3792a0cafd99813ac5a35107
+  languageName: node
+  linkType: hard
+
+"nodemailer@npm:6.9.0":
+  version: 6.9.0
+  resolution: "nodemailer@npm:6.9.0"
+  checksum: 152d38de71582436d8c6067dfa6a3ddae738437b6f9be9211bd22cf92b2f92786dbef4a4d2ca0282e76b18f0274a7fb6ec5a7acc22f57bdd05559a6ec379dd5c
   languageName: node
   linkType: hard
 

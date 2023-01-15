@@ -1,6 +1,7 @@
 ![Docker](https://github.com/microrealestate/emailer/workflows/Docker/badge.svg)
 
 # emailer
+
 Generates and sends emails.
 This service is part of the MicroRealEstate application more [here](https://github.com/microrealestate/microrealestate/blob/master/README.md).
 
@@ -9,6 +10,7 @@ This service is part of the MicroRealEstate application more [here](https://gith
 ## Send emails
 
 Request
+
 ```
 POST /emailer
 headers = {
@@ -22,6 +24,7 @@ body = {
 ```
 
 Response
+
 ```
 [{
     templateName,
@@ -32,13 +35,14 @@ Response
         message   // error message
     },
     email,        // recipient email
-    status        // Mailgun status
+    status        // Gmail/Mailgun status
 }}
 ```
 
 ## Get email status
 
 Request
+
 ```
 GET /emailer/status/:startTerm/:endTerm?    // startTerm   parameters (ex. { term: 2018030100 })
                                             // endTerm     extra parameters (ex. { term: 2018030100 })
@@ -48,6 +52,7 @@ headers = {
 ```
 
 Response
+
 ```
 [{
     templateName,

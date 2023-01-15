@@ -14,7 +14,7 @@ class RealmModel extends Model {
       contacts: Array, // [{ name, email, phone1, phone2 }]
       isCompany: Boolean,
       companyInfo: Object, // { name, legalStructure, capital, ein, dos, vatNumber, legalRepresentative }
-      thirdParties: Object, // { mailgun: { apiKey, domain, fromEmail, replyToEmail }, b2: { keyId, applicationKey, endpoint, bucket } },
+      thirdParties: Object, // { gmail: { selected, email, appPassword, fromEmail, replyToEmail }, mailgun: { selected, apiKey, domain, fromEmail, replyToEmail }, b2: { keyId, applicationKey, endpoint, bucket } },
       locale: String,
       currency: String,
     });

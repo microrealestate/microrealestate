@@ -29,6 +29,9 @@ module.exports = {
     escapedConfig.RESET_TOKEN_SECRET = '****';
     escapedConfig.CIPHER_KEY = '****';
     escapedConfig.CIPHER_IV_KEY = '****';
+    if (escapedConfig.GMAIL?.appPassword) {
+      escapedConfig.GMAIL.appPassword = '****';
+    }
     if (escapedConfig.MAILGUN?.apiKey) {
       escapedConfig.MAILGUN.apiKey = '****';
     }

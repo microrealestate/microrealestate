@@ -22,6 +22,9 @@ const _isNameAlreadyTaken = (realm, realms = []) => {
 };
 
 const _escapeSecrets = (realm) => {
+  if (realm.thirdParties?.gmail?.appPassword) {
+    realm.thirdParties.gmail.appPassword = SECRET_PLACEHOLDER;
+  }
   if (realm.thirdParties?.mailgun?.apiKey) {
     realm.thirdParties.mailgun.apiKey = SECRET_PLACEHOLDER;
   }
@@ -38,6 +41,7 @@ module.exports = {
   add(req, res) {
     const newRealm = realmModel.schema.filter(req.body);
 
+    delete req.body.thirdParties?.gmail?.appPasswordUpdated;
     delete req.body.thirdParties?.mailgun?.apiKeyUpdated;
     delete req.body.thirdParties?.b2?.keyIdUpdated;
     delete req.body.thirdParties?.b2?.applicationKeyUpdated;
@@ -52,26 +56,28 @@ module.exports = {
         .json({ error: 'organization name already exists' });
     }
 
-    if (newRealm.thirdParties?.mailgun) {
-      if (newRealm.thirdParties.mailgun.apiKey) {
-        newRealm.thirdParties.mailgun.apiKey = crypto.encrypt(
-          newRealm.thirdParties.mailgun.apiKey
-        );
-      }
+    if (newRealm.thirdParties?.gmail?.appPassword) {
+      newRealm.thirdParties.gmail.appPassword = crypto.encrypt(
+        newRealm.thirdParties.gmail.appPassword
+      );
     }
 
-    if (newRealm.thirdParties?.b2) {
-      if (newRealm.thirdParties.b2.applicationKey) {
-        newRealm.thirdParties.b2.applicationKey = crypto.encrypt(
-          newRealm.thirdParties.b2.applicationKey
-        );
-      }
+    if (newRealm.thirdParties?.mailgun?.apiKey) {
+      newRealm.thirdParties.mailgun.apiKey = crypto.encrypt(
+        newRealm.thirdParties.mailgun.apiKey
+      );
+    }
 
-      if (newRealm.thirdParties.b2.keyId) {
-        newRealm.thirdParties.b2.keyId = crypto.encrypt(
-          newRealm.thirdParties.b2.keyId
-        );
-      }
+    if (newRealm.thirdParties?.b2?.applicationKey) {
+      newRealm.thirdParties.b2.applicationKey = crypto.encrypt(
+        newRealm.thirdParties.b2.applicationKey
+      );
+    }
+
+    if (newRealm.thirdParties?.b2?.keyId) {
+      newRealm.thirdParties.b2.keyId = crypto.encrypt(
+        newRealm.thirdParties.b2.keyId
+      );
     }
 
     realmModel.add(newRealm, (errors, realm) => {
@@ -84,6 +90,8 @@ module.exports = {
     });
   },
   async update(req, res) {
+    const gmailAppPasswordUpdated =
+      !!req.body.thirdParties?.gmail?.appPasswordUpdated;
     const mailgunApiKeyUpdated =
       !!req.body.thirdParties?.mailgun?.apiKeyUpdated;
     const b2KeyIdUpdated = !!req.body.thirdParties?.b2?.keyIdUpdated;
@@ -91,6 +99,7 @@ module.exports = {
       !!req.body.thirdParties?.b2?.applicationKeyUpdated;
     const updatedRealm = realmModel.schema.filter(req.body);
 
+    delete req.body.thirdParties?.gmail?.appPasswordUpdated;
     delete req.body.thirdParties?.mailgun?.apiKeyUpdated;
     delete req.body.thirdParties?.b2?.keyIdUpdated;
     delete req.body.thirdParties?.b2?.applicationKeyUpdated;
@@ -128,6 +137,17 @@ module.exports = {
       return res
         .status(409)
         .json({ error: 'organization name already exists' });
+    }
+
+    if (updatedRealm.thirdParties?.gmail) {
+      if (gmailAppPasswordUpdated) {
+        updatedRealm.thirdParties.gmail.appPassword = crypto.encrypt(
+          updatedRealm.thirdParties.gmail.appPassword
+        );
+      } else if (req.realm.thirdParties?.gmail?.appPassword) {
+        updatedRealm.thirdParties.gmail.appPassword =
+          req.realm.thirdParties.gmailappPassword;
+      }
     }
 
     if (updatedRealm.thirdParties?.mailgun) {
