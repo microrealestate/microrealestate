@@ -32,7 +32,10 @@ export default class Organization {
   };
 
   get canSendEmails() {
-    return !!this.selected?.thirdParties?.mailgun;
+    return (
+      !!this.selected?.thirdParties?.gmail?.selected ||
+      this.selected?.thirdParties?.mailgun?.selected
+    );
   }
 
   get canUploadDocumentsInCloud() {

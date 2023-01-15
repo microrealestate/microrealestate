@@ -117,7 +117,7 @@ function ActionToolbar({ selected, setSelected }) {
   //   if (sendStatus !== 200) {
   //     // TODO check error code to show a more detail error message
   //     return store.pushToastMessage({
-  //       message: t('Email service cannot send emails'),
+  //       message: t('Email delivery service cannot send emails'),
   //       severity: 'error',
   //     });
   //   }
@@ -151,7 +151,7 @@ function ActionToolbar({ selected, setSelected }) {
       if (sendStatus !== 200) {
         // TODO check error code to show a more detail error message
         return store.pushToastMessage({
-          message: t('Email service cannot send emails'),
+          message: t('Email delivery service cannot send emails'),
           severity: 'error',
         });
       }

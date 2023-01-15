@@ -25,7 +25,7 @@ const SendRentEmailMenu = ({ period, tenant, terms, ...props }) => {
       if (sendStatus !== 200) {
         // TODO check error code to show a more detailed error message
         return store.pushToastMessage({
-          message: t('Email service cannot send emails'),
+          message: t('Email delivery service cannot send emails'),
           severity: 'error',
         });
       }

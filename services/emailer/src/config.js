@@ -14,6 +14,10 @@ module.exports = {
     process.env.LANDLORD_APP_URL || 'http://localhost:8080/landlord',
   TENANT_APP_URL: process.env.TENANT_APP_URL || 'http://localhost:8080/tenant',
   PORT: process.env.PORT || 8083,
+  GMAIL: {
+    email: process.env.GMAIL_EMAIL || 'example@gmail.com',
+    appPassword: process.env.GMAIL_APP_PASSWORD || 'wwww xxxx yyyy zzzz',
+  },
   MAILGUN: {
     apiKey: process.env.MAILGUN_API_KEY || 'your_api_key',
     domain: process.env.MAILGUN_DOMAIN || 'mg.example.com',

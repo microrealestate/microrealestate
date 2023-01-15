@@ -6,12 +6,21 @@ module.exports = {
       throw new Error('tenant has not any contact emails');
     }
 
-    if (!data.landlord.thirdParties || !data.landlord.thirdParties.mailgun) {
-      throw new Error('landlord has not set the mailgun configuration');
+    let emailDeliveryServiceConfig;
+    if (data.landlord.thirdParties?.gmail?.selected) {
+      emailDeliveryServiceConfig = data.landlord.thirdParties.gmail;
     }
 
-    const fromEmail = data.landlord.thirdParties.mailgun.fromEmail;
-    const replyToEmail = data.landlord.thirdParties.mailgun.replyToEmail;
+    if (data.landlord.thirdParties?.mailgun?.selected) {
+      emailDeliveryServiceConfig = data.landlord.thirdParties.mailgun;
+    }
+
+    if (!emailDeliveryServiceConfig) {
+      throw new Error('landlord has not configured an email delivery service');
+    }
+
+    const fromEmail = emailDeliveryServiceConfig.fromEmail;
+    const replyToEmail = emailDeliveryServiceConfig.replyToEmail;
 
     const recipientsList = data.tenant.contacts
       .filter((contact) => contact.email)
@@ -22,7 +31,7 @@ module.exports = {
         let recipients = {
           from: fromEmail,
           to: email.toLowerCase(),
-          'h:Reply-To': replyToEmail,
+          replyTo: replyToEmail,
         };
         if (config.PRODUCTIVE && data.landlord.members.length) {
           recipients = {
