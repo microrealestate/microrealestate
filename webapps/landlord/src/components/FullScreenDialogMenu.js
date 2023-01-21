@@ -11,6 +11,7 @@ import { useCallback, useState } from 'react';
 
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
+import DialogDefaultBackground from './DialogDefaultBackground';
 import { hexToRgb } from '../styles/styles';
 import Hidden from './HiddenSSRCompatible';
 import { Loading } from '@microrealestate/commonui/components';
@@ -126,6 +127,7 @@ const FullScreenDialogMenu = ({
         fullScreen
         open={open}
         onClose={handleClose}
+        PaperComponent={DialogDefaultBackground}
         TransitionComponent={TransitionSlideUp}
       >
         <AppBar position="sticky">

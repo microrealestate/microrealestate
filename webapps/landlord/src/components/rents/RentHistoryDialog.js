@@ -15,6 +15,7 @@ import {
 } from '@material-ui/core';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 
+import DialogDefaultBackground from '../DialogDefaultBackground';
 import EditIcon from '@material-ui/icons/Edit';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { getPeriod } from './RentPeriod';
@@ -224,6 +225,7 @@ function RentHistoryDialog({ open, setOpen }) {
       onClose={handleClose}
       TransitionComponent={TransitionSlideUp}
       TransitionProps={{ onEntered: handleTransitionCompleted }}
+      PaperComponent={DialogDefaultBackground}
       keepMounted
     >
       <AppBar position="sticky">
