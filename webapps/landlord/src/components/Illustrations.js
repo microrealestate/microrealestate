@@ -38,25 +38,6 @@ export const TermsDocumentIllustration = () => (
   <Illustration src={`${BASE_PATH}/undraw_Terms_re_6ak4.svg`} alt="" />
 );
 
-export const AlertIllustration = () => (
-  //TODO: fill the alt attribute
-  <Illustration src={`${BASE_PATH}/undraw_notify_re_65on.svg`} alt="" />
-);
-
-export const PendingIllustration = () => (
-  //TODO: fill the alt attribute
-  <Illustration src={`${BASE_PATH}/caution.svg`} alt="" />
-);
-
-export const Pending2Illustration = () => (
-  //TODO: fill the alt attribute
-  <Illustration src={`${BASE_PATH}/caution.svg`} alt="" />
-);
-
-export const ReceiptIllustration = () => (
-  <Illustration src={`${BASE_PATH}/bill.svg`} alt="Invoice" />
-);
-
 export const WelcomeIllustration = ({ height = '100%' }) => (
   <Illustration
     src={`${BASE_PATH}/undraw_apartment_rent_o0ut.svg`}
