@@ -219,8 +219,8 @@ function PageContent({ maxWidth, hasSubBar, children }) {
         </Box>
       </Hidden>
       <Hidden mdUp>
-        <Box mt={hasSubBar ? 18.5 : 12} mb={7}>
-          <Container maxWidth={maxWidth}>{children}</Container>
+        <Box mt={hasSubBar ? 18.5 : 12} mb={7} mx={0.8}>
+          {children}
         </Box>
       </Hidden>
     </>
