@@ -14,6 +14,7 @@ import React, { useCallback, useContext } from 'react';
 
 import _ from 'lodash';
 import AddIcon from '@material-ui/icons/Add';
+import BoxWithHover from '../../../components/BoxWithHover';
 import CompulsoryDocumentStatus from '../../../components/tenants/CompulsaryDocumentStatus';
 import { EmptyIllustration } from '../../../components/Illustrations';
 import Hidden from '../../../components/HiddenSSRCompatible';
@@ -31,12 +32,6 @@ import useTranslation from 'next-translate/useTranslation';
 import { withAuthentication } from '../../../components/Authentication';
 
 const useStyles = makeStyles((theme) => ({
-  avatarInProgress: {
-    backgroundColor: theme.palette.success.dark,
-  },
-  avatarTerminated: {
-    backgroundColor: theme.palette.text.disabled,
-  },
   chipInProgress: {
     color: theme.palette.info.contrastText,
     backgroundColor: theme.palette.success.dark,
@@ -104,15 +99,14 @@ function TenantItem({ tenant }) {
 
   return (
     <Link color="inherit" underline="none" href="#" onClick={handleClick}>
-      <Box
+      <BoxWithHover
         display="flex"
         flexDirection="column"
         bgcolor="background.paper"
-        border={1}
-        borderColor="grey.300"
         borderRadius="borderRadius"
         alignItems="stretch"
         height="100%"
+        boxShadow={1}
       >
         <Box display="flex" justifyContent="space-between" m={2}>
           <Box fontSize="h6.fontSize">{tenant.name}</Box>
@@ -176,7 +170,7 @@ function TenantItem({ tenant }) {
           mb={2}
           mx={2}
         />
-      </Box>
+      </BoxWithHover>
     </Link>
   );
 }

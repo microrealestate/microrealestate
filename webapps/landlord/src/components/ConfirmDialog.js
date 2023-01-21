@@ -16,12 +16,13 @@ function ConfirmDialog({
   open,
   setOpen,
   onConfirm,
+  justOkButton = false,
 }) {
   const { t } = useTranslation('common');
   const handleClose = useCallback(() => setOpen(false), [setOpen]);
   const handleConfirm = useCallback(() => {
     setOpen(false);
-    onConfirm(open);
+    onConfirm?.(open);
   }, [setOpen, onConfirm, open]);
 
   return (
@@ -54,17 +55,25 @@ function ConfirmDialog({
           )}
         </DialogContent>
         <DialogActions>
-          <Button size="small" variant="contained" onClick={handleClose}>
-            {t('No')}
-          </Button>
-          <Button
-            size="small"
-            variant="contained"
-            onClick={handleConfirm}
-            color="primary"
-          >
-            {t('Yes')}
-          </Button>
+          {justOkButton ? (
+            <Button size="small" variant="contained" onClick={handleClose}>
+              {t('Ok')}
+            </Button>
+          ) : (
+            <>
+              <Button size="small" variant="contained" onClick={handleClose}>
+                {t('No')}
+              </Button>
+              <Button
+                size="small"
+                variant="contained"
+                onClick={handleConfirm}
+                color="primary"
+              >
+                {t('Yes')}
+              </Button>
+            </>
+          )}
         </DialogActions>
       </Box>
     </Dialog>
