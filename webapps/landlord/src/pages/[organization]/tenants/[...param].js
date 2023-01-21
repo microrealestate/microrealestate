@@ -1,11 +1,4 @@
-import {
-  Box,
-  Button,
-  ButtonGroup,
-  Grid,
-  Paper,
-  Tooltip,
-} from '@material-ui/core';
+import { Box, Button, ButtonGroup, Grid, Paper } from '@material-ui/core';
 import { getStoreInstance, StoreContext } from '../../../store';
 import { useCallback, useContext, useMemo, useState } from 'react';
 
@@ -184,10 +177,8 @@ const Tenant = observer(() => {
   const showEditButton = useMemo(
     () =>
       !store.tenant.selected.stepperMode &&
-      store.tenant.selected.properties?.length > 0 &&
-      readOnly,
+      store.tenant.selected.properties?.length > 0,
     [
-      readOnly,
       store.tenant.selected.properties?.length,
       store.tenant.selected.stepperMode,
     ]
@@ -293,27 +284,9 @@ const Tenant = observer(() => {
           />
           <Hidden smDown>
             <ButtonGroup variant="contained">
-              <Box>
-                <Tooltip
-                  title={
-                    store.tenant.selected.hasPayments
-                      ? t(
-                          'This tenant cannot be deleted because some rent settlements have been recorded'
-                        )
-                      : ''
-                  }
-                >
-                  <span>
-                    <Button
-                      startIcon={<DeleteIcon />}
-                      disabled={store.tenant.selected.hasPayments}
-                      onClick={handleDeleteTenant}
-                    >
-                      {t('Delete')}
-                    </Button>
-                  </span>
-                </Tooltip>
-              </Box>
+              <Button startIcon={<DeleteIcon />} onClick={handleDeleteTenant}>
+                {t('Delete')}
+              </Button>
               {showTerminateLeaseButton && (
                 <Button
                   startIcon={<StopIcon />}
@@ -436,9 +409,28 @@ const Tenant = observer(() => {
       )}
       <RentHistoryDialog />
       <ConfirmDeleteDialog
-        title={t('Are you sure to definitely remove this tenant?')}
-        subTitle={store.tenant.selected.name}
-        onConfirm={onDeleteTenant}
+        title={
+          store.tenant.selected.hasPayments
+            ? t('This contract cannot be deleted')
+            : t('Deletion of the tenant contract?')
+        }
+        subTitle={
+          store.tenant.selected.hasPayments
+            ? t(
+                "Deleting {{tenant}}'s contract is not allowed because some rent settlements have been recorded",
+                {
+                  tenant: store.tenant.selected.name,
+                }
+              )
+            : t(
+                "Do you confirm the permanent deletion of {{tenant}}'s contract?",
+                {
+                  tenant: store.tenant.selected.name,
+                }
+              )
+        }
+        justOkButton={store.tenant.selected.hasPayments}
+        onConfirm={!store.tenant.selected.hasPayments ? onDeleteTenant : null}
       />
     </Page>
   );

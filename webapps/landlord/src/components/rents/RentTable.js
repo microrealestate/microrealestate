@@ -11,8 +11,10 @@ import {
 import { Fragment, memo, useCallback, useContext, useMemo } from 'react';
 import { getRentAmounts, RentAmount } from './RentDetails';
 
+import BoxWithHover from '../../components/BoxWithHover';
 import { downloadDocument } from '../../utils/fetch';
 import EditIcon from '@material-ui/icons/Edit';
+import { EmptyIllustration } from '../Illustrations';
 import Hidden from '../HiddenSSRCompatible';
 import HistoryIcon from '@material-ui/icons/History';
 import moment from 'moment';
@@ -32,13 +34,13 @@ function Navbar({ onChange, ...props }) {
   return (
     <Box display="flex" alignItems="center" {...props}>
       <Hidden smDown>
-        <Box color="text.secondary" fontSize="h5.fontSize">
+        <Box color="text.secondary" fontSize="h5.fontSize" mr={1}>
           {t('Rents')}
         </Box>
       </Hidden>
 
       <PeriodPicker
-        format="MMM YYYY"
+        format="MMMM YYYY"
         period="month"
         value={rentPeriod}
         onChange={onChange}
@@ -127,7 +129,7 @@ const RentRow = memo(function RentRow({
 
   return (
     <Box key={rent._id} position="relative">
-      <Box display="flex" alignItems="center" my={2}>
+      <Box display="flex" alignItems="center" py={2}>
         <Box>
           {rent.occupant.hasContactEmails ? (
             <Checkbox
@@ -242,7 +244,7 @@ const MobileRentRow = memo(function MobileRentRow({
       display="flex"
       flexDirection="column"
       position="relative"
-      mt={1}
+      pt={1}
     >
       <Box display="flex" alignItems="center">
         <Box>
@@ -320,6 +322,7 @@ const MobileRentRow = memo(function MobileRentRow({
 
 function RentTable({ selected, setSelected, onPeriodChange }) {
   const store = useContext(StoreContext);
+  const { t } = useTranslation('common');
   const [NewPaymentDialog, setOpenNewPaymentDialog] = useNewPaymentDialog();
   const [RentHistoryDialog, setOpenRentHistoryDialog] = useRentHistoryDialog();
 
@@ -386,54 +389,64 @@ function RentTable({ selected, setSelected, onPeriodChange }) {
       <RentHistoryDialog />
 
       <Paper>
-        <Navbar onChange={onPeriodChange} px={1} pt={1} />
-        <Hidden smDown>
-          <RentOverview width="100%" p={1} />
-        </Hidden>
-        <Box display="flex" alignItems="center">
-          <Checkbox
-            color="default"
-            indeterminate={
-              selected.length > 0 && selected.length < selectableRentNum
-            }
-            checked={
-              store.rent.filteredItems.length > 0 &&
-              selected.length === selectableRentNum
-            }
-            disabled={!store.organization.canSendEmails}
-            onChange={onSelectAllClick}
-            inputProps={{
-              'aria-label': 'select all store.rent.filteredItems',
-            }}
-          />
-        </Box>
-
-        <Divider />
-        {store.rent.filteredItems.map((rent) => {
-          const isItemSelected = selected.map((r) => r._id).includes(rent._id);
-          return (
-            <Fragment key={rent._id}>
+        <Box px={2} pt={1} pb={3}>
+          <Navbar onChange={onPeriodChange} pb={4} />
+          {store.rent?.filteredItems.length ? (
+            <>
               <Hidden smDown>
-                <RentRow
-                  rent={rent}
-                  isSelected={isItemSelected}
-                  onSelect={onSelectClick}
-                  onEdit={handleEdit}
-                  onHistory={handleHistory}
-                />
+                <RentOverview width="100%" pb={4} />
               </Hidden>
-              <Hidden mdUp>
-                <MobileRentRow
-                  rent={rent}
-                  isSelected={isItemSelected}
-                  onSelect={onSelectClick}
-                  onEdit={handleEdit}
-                  onHistory={handleHistory}
+              <Box display="flex" alignItems="center">
+                <Checkbox
+                  color="default"
+                  indeterminate={
+                    selected.length > 0 && selected.length < selectableRentNum
+                  }
+                  checked={
+                    store.rent.filteredItems.length > 0 &&
+                    selected.length === selectableRentNum
+                  }
+                  disabled={!store.organization.canSendEmails}
+                  onChange={onSelectAllClick}
+                  inputProps={{
+                    'aria-label': 'select all store.rent.filteredItems',
+                  }}
                 />
-              </Hidden>
-            </Fragment>
-          );
-        })}
+              </Box>
+
+              <Divider />
+              {store.rent.filteredItems.map((rent) => {
+                const isItemSelected = selected
+                  .map((r) => r._id)
+                  .includes(rent._id);
+                return (
+                  <BoxWithHover key={rent._id}>
+                    <Hidden smDown>
+                      <RentRow
+                        rent={rent}
+                        isSelected={isItemSelected}
+                        onSelect={onSelectClick}
+                        onEdit={handleEdit}
+                        onHistory={handleHistory}
+                      />
+                    </Hidden>
+                    <Hidden mdUp>
+                      <MobileRentRow
+                        rent={rent}
+                        isSelected={isItemSelected}
+                        onSelect={onSelectClick}
+                        onEdit={handleEdit}
+                        onHistory={handleHistory}
+                      />
+                    </Hidden>
+                  </BoxWithHover>
+                );
+              })}
+            </>
+          ) : (
+            <EmptyIllustration label={t('No rents found')} />
+          )}
+        </Box>
       </Paper>
     </>
   );

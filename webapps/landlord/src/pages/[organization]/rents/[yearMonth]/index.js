@@ -14,7 +14,6 @@ import { getStoreInstance, StoreContext } from '../../../../store';
 import { useCallback, useContext, useMemo, useRef, useState } from 'react';
 
 import Alert from '../../../../components/Alert';
-import { EmptyIllustration } from '../../../../components/Illustrations';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import Hidden from '../../../../components/HiddenSSRCompatible';
 import { isServer } from '../../../../utils';
@@ -353,28 +352,22 @@ function Rents() {
         <ActionToolbar selected={rentSelected} setSelected={setRentSelected} />
       }
     >
-      {store.rent?.filteredItems.length ? (
-        <>
-          {!store.organization.canSendEmails ? (
-            <Box mb={1}>
-              <Alert
-                elevation={1}
-                severity="warning"
-                title={t(
-                  'Unable to send documents by email without configuring the mail service in Settings page'
-                )}
-              />
-            </Box>
-          ) : null}
-          <RentTable
-            selected={rentSelected}
-            setSelected={setRentSelected}
-            onPeriodChange={handlePeriodChange}
+      {!store.organization.canSendEmails ? (
+        <Box mb={1}>
+          <Alert
+            elevation={1}
+            severity="warning"
+            title={t(
+              'Unable to send documents by email without configuring the mail service in Settings page'
+            )}
           />
-        </>
-      ) : (
-        <EmptyIllustration label={t('No rents found')} />
-      )}
+        </Box>
+      ) : null}
+      <RentTable
+        selected={rentSelected}
+        setSelected={setRentSelected}
+        onPeriodChange={handlePeriodChange}
+      />
     </Page>
   );
 }
