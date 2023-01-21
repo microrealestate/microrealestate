@@ -16,7 +16,7 @@ const StyledButton = withStyles(() => ({
   },
 }))(Button);
 
-const StyleMenuButton = withStyles((theme) => ({
+const StyledMenuButton = withStyles((theme) => ({
   root: {
     color: 'rgba(' + hexToRgb(theme.palette.info.contrastText) + ', 0.8)',
     fontSize: 9,
@@ -41,14 +41,14 @@ function MobileMenuButton({ labelId, Icon, selected, item, onClick }) {
         selected ? theme.palette.primary.main : 'transparent'
       }`}
     >
-      <StyleMenuButton onClick={handleClick}>
+      <StyledMenuButton onClick={handleClick}>
         <Box display="flex" flexDirection="column">
           <Box>
             <Icon fontSize="small" />
           </Box>
           <Typography variant="inherit">{t(labelId)}</Typography>
         </Box>
-      </StyleMenuButton>
+      </StyledMenuButton>
     </Box>
   );
 }
