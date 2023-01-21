@@ -8,10 +8,10 @@ const StyledBox = withStyles((theme) => ({
   },
 }))(Box);
 
-export default function BoxWithHover({ children, ...props }) {
+export default function BoxWithHover({ withCursor, children, ...props }) {
   return (
-    <Box {...props}>
-      <StyledBox>{children}</StyledBox>
-    </Box>
+    <StyledBox style={withCursor ? { cursor: 'pointer' } : null}>
+      <Box {...props}>{children}</Box>
+    </StyledBox>
   );
 }

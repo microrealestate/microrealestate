@@ -3,7 +3,6 @@ import { Box, Divider, Typography } from '@material-ui/core';
 import { CardRow } from '../Cards';
 import Hidden from '../HiddenSSRCompatible';
 import NumberFormat from '../NumberFormat';
-import usePaymentTypes from '../../hooks/usePaymentTypes';
 import useTranslation from 'next-translate/useTranslation';
 
 export function getRentAmounts(rent) {
@@ -67,7 +66,6 @@ export function RentAmount({ label, amount, color, ...props }) {
 
 export default function RentDetails({ rent }) {
   const { t } = useTranslation('common');
-  const paymentTypes = usePaymentTypes();
 
   const rentAmounts = getRentAmounts(rent);
 
@@ -122,23 +120,10 @@ export default function RentDetails({ rent }) {
         <NumberFormat color="text.secondary" value={rentAmounts.totalAmount} />
       </CardRow>
       <CardRow pb={1.5}>
-        <>
-          <Typography color="textSecondary" noWrap>
-            {t('Settlements')}
-          </Typography>
-          {rentAmounts.payment > 0 &&
-            !!rentAmounts.paymentReferences.length && (
-              <Typography variant="caption" color="textSecondary" noWrap>
-                {rentAmounts.paymentReferences
-                  .map(({ type, reference }) =>
-                    type === 'cash'
-                      ? paymentTypes.itemMap[type].label
-                      : `${paymentTypes.itemMap[type].label} ${reference}`
-                  )
-                  .join(', ')}
-              </Typography>
-            )}
-        </>
+        <Typography color="textSecondary" noWrap>
+          {t('Settlements')}
+        </Typography>
+
         <NumberFormat
           color="text.secondary"
           value={rentAmounts.payment}
@@ -147,7 +132,7 @@ export default function RentDetails({ rent }) {
         />
       </CardRow>
       <Divider />
-      <CardRow pt={1.5}>
+      <CardRow py={1.5}>
         <Typography color="textSecondary" noWrap>
           {rentAmounts.newBalance === 0
             ? t('Balance')
@@ -162,6 +147,23 @@ export default function RentDetails({ rent }) {
           debitColor={rentAmounts.isDebitNewBalance}
           creditColor={!rentAmounts.isDebitNewBalance}
         />
+      </CardRow>
+      <Divider />
+      <CardRow pt={1.5}>
+        <Box>
+          <Box pb={1}>
+            <Typography color="textSecondary">{t('Note')}</Typography>
+          </Box>
+          <Box
+            height={60}
+            whiteSpace="pre"
+            fontSize="caption.fontSize"
+            color="text.secondary"
+            overflow="scroll"
+          >
+            {rent.description}
+          </Box>
+        </Box>
       </CardRow>
     </>
   );
