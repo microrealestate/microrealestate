@@ -1,7 +1,6 @@
 import {
   Box,
   Grid,
-  Hidden,
   List,
   ListItem,
   Paper,
@@ -16,7 +15,6 @@ import moment from 'moment';
 import NumberFormat from '../NumberFormat';
 import { observer } from 'mobx-react-lite';
 import { StoreContext } from '../../store';
-import TenantAvatar from '../../components/tenants/TenantAvatar';
 import useFormatNumber from '../../hooks/useFormatNumber';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
@@ -25,11 +23,6 @@ function TenantListItem({ tenant, balance, onClick }) {
   return (
     <ListItem button onClick={onClick}>
       <Box display="flex" alignItems="center" width="100%">
-        <Hidden smDown>
-          <Box mr={1}>
-            <TenantAvatar tenant={tenant} />
-          </Box>
-        </Hidden>
         <Box flexGrow={1}>
           <Typography variant="body2">{tenant.name}</Typography>
         </Box>
@@ -79,8 +72,8 @@ function MonthFigures() {
             <Typography variant="subtitle1">{t('Settlements')}</Typography>
           </Box>
           <Paper>
-            <Box pt={2} width="100%" height={296}>
-              <ResponsiveContainer height={296}>
+            <Box pt={2} width="100%" height={239}>
+              <ResponsiveContainer height={239}>
                 <PieChart>
                   <Legend
                     verticalAlign="top"
@@ -128,7 +121,7 @@ function MonthFigures() {
           </Box>
           <Paper>
             {store.dashboard.data.topUnpaid?.length ? (
-              <List style={{ height: 296 }}>
+              <List style={{ height: 239 }}>
                 {store.dashboard.data.topUnpaid.map(
                   ({ tenant, balance, rent }) => (
                     <TenantListItem
@@ -150,7 +143,7 @@ function MonthFigures() {
               <Box py={1}>
                 <CelebrationIllustration
                   label={t('Well done! All rents are paid')}
-                  height={252}
+                  height={223}
                 />
               </Box>
             )}

@@ -5,7 +5,6 @@ import {
   Grid,
   List,
   ListItem,
-  ListItemAvatar,
   ListItemText,
   makeStyles,
   Paper,
@@ -30,7 +29,6 @@ import NumberFormat from '../../../components/NumberFormat';
 import { observer } from 'mobx-react-lite';
 import Page from '../../../components/Page';
 import PropertyForm from '../../../components/properties/PropertyForm';
-import TenantAvatar from '../../../components/tenants/TenantAvatar';
 import { toJS } from 'mobx';
 import useConfirmDialog from '../../../components/ConfirmDialog';
 import { useRouter } from 'next/router';
@@ -77,9 +75,6 @@ const OccupancyHistory = () => {
           });
           return (
             <ListItem key={occupant.id}>
-              <ListItemAvatar>
-                <TenantAvatar tenant={occupant} />
-              </ListItemAvatar>
               <ListItemText
                 primary={occupant.name}
                 secondary={occupationDates}
