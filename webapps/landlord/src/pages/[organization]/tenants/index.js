@@ -5,8 +5,8 @@ import {
   Chip,
   Divider,
   Grid,
-  Link,
   makeStyles,
+  Paper,
   Typography,
 } from '@material-ui/core';
 import { getStoreInstance, StoreContext } from '../../../store';
@@ -98,15 +98,13 @@ function TenantItem({ tenant }) {
   }, [t, router, tenant, store.organization.selected.name, store.tenant]);
 
   return (
-    <Link color="inherit" underline="none" href="#" onClick={handleClick}>
+    <Paper>
       <BoxWithHover
         display="flex"
         flexDirection="column"
-        bgcolor="background.paper"
-        borderRadius="borderRadius"
         alignItems="stretch"
-        height="100%"
-        boxShadow={1}
+        withCursor
+        onClick={handleClick}
       >
         <Box display="flex" justifyContent="space-between" m={2}>
           <Box fontSize="h6.fontSize">{tenant.name}</Box>
@@ -171,7 +169,7 @@ function TenantItem({ tenant }) {
           mx={2}
         />
       </BoxWithHover>
-    </Link>
+    </Paper>
   );
 }
 

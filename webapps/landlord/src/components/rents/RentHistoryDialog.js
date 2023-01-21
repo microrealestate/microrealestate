@@ -6,15 +6,14 @@ import {
   Box,
   Button,
   Dialog,
+  Grid,
   IconButton,
-  List,
-  ListItem,
-  ListItemText,
   Toolbar,
   Typography,
 } from '@material-ui/core';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 
+import BoxWithHover from '../../components/BoxWithHover';
 import DialogDefaultBackground from '../DialogDefaultBackground';
 import EditIcon from '@material-ui/icons/Edit';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
@@ -32,44 +31,25 @@ function RentListItem({ rent, tenant, onClick }) {
   const { t } = useTranslation('common');
 
   return (
-    <Box
-      border={1}
-      borderRadius="borderRadius"
-      borderColor="grey.300"
-      marginBottom={2}
+    <BoxWithHover
+      boxShadow={2}
+      p={2}
+      height="100%"
+      withCursor
+      onClick={onClick}
     >
-      <ListItem>
-        <ListItemText
-          primary={
-            <>
-              <Box
-                display="flex"
-                justifyContent="space-between"
-                alignItems="center"
-              >
-                <Box fontSize="h5.fontSize">
-                  {getPeriod(t, rent.term, tenant.occupant.frequency)}
-                </Box>
-                <IconButton onClick={onClick}>
-                  <EditIcon fontSize="small" />
-                </IconButton>
-              </Box>
-              <Box mt={1} px={1}>
-                <RentDetails rent={rent} />
-              </Box>
-              {!!rent.description && (
-                <Box mt={2} px={1}>
-                  <Typography color="textSecondary">{t('Note')}</Typography>
-                  <Typography variant="caption" color="textSecondary">
-                    {rent.description}
-                  </Typography>
-                </Box>
-              )}
-            </>
-          }
-        />
-      </ListItem>
-    </Box>
+      <Box display="flex" justifyContent="space-between" alignItems="center">
+        <Box fontSize="h5.fontSize">
+          {getPeriod(t, rent.term, tenant.occupant.frequency)}
+        </Box>
+        <IconButton onClick={onClick}>
+          <EditIcon fontSize="small" />
+        </IconButton>
+      </Box>
+      <Box mt={1}>
+        <RentDetails rent={rent} />
+      </Box>
+    </BoxWithHover>
   );
 }
 
@@ -86,20 +66,20 @@ function YearRentList({ tenant, year, onClick }) {
   );
 
   return (
-    <Box width="100%">
-      <List component="nav" disablePadding aria-labelledby="rent-history">
-        {rents?.map((rent) => {
-          return (
+    <Grid container spacing={2}>
+      {rents?.map((rent) => {
+        return (
+          <Grid item key={rent.term} xs={12} sm={12} md={6} lg={4} xl={2}>
             <RentListItem
               key={rent.term}
               rent={rent}
               tenant={tenant}
               onClick={handleClick(tenant, rent)}
             />
-          );
-        })}
-      </List>
-    </Box>
+          </Grid>
+        );
+      })}
+    </Grid>
   );
 }
 
