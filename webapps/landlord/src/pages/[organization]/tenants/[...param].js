@@ -275,7 +275,7 @@ const Tenant = observer(() => {
   return (
     <Page
       title={store.tenant.selected.name}
-      ActionToolbar={
+      ActionBar={
         <Box display="flex" alignItems="center" justifyContent="space-between">
           <BreadcrumbBar
             backPath={backPath}
@@ -397,7 +397,7 @@ const Tenant = observer(() => {
                       'DD/MM/YYYY'
                     ).format('LL'),
                   })
-                : t('Lease is in progress')
+                : t('Lease running')
             }
             subTitle={t(
               'Modifying this form might break the contract signed with the tenant'

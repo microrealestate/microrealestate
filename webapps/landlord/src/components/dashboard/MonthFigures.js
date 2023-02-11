@@ -43,16 +43,16 @@ function MonthFigures() {
     const currentRevenues = store.dashboard.currentRevenues;
     return [
       {
-        name: 'paid',
-        value: currentRevenues.paid,
-        yearMonth,
-        status: 'paid',
-      },
-      {
         name: 'notPaid',
         value: currentRevenues.notPaid,
         yearMonth,
         status: 'notpaid',
+      },
+      {
+        name: 'paid',
+        value: currentRevenues.paid,
+        yearMonth,
+        status: 'paid',
       },
     ];
   }, [store.dashboard.currentRevenues, yearMonth]);
@@ -97,7 +97,7 @@ function MonthFigures() {
                       const {
                         payload: { yearMonth, status },
                       } = data;
-                      store.rent.setFilters({ status });
+                      store.rent.setFilters({ status: [status] });
                       router.push(
                         `/${store.organization.selected.name}/rents/${yearMonth}?status=${status}`
                       );
@@ -105,8 +105,8 @@ function MonthFigures() {
                     label={({ value }) => (value ? formatNumber(value) : '')}
                     labelLine={false}
                   >
-                    <Cell fill={theme.palette.success.dark} />
                     <Cell fill={theme.palette.warning.dark} />
+                    <Cell fill={theme.palette.success.dark} />
                   </Pie>
                 </PieChart>
               </ResponsiveContainer>

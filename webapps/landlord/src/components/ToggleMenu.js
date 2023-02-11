@@ -1,25 +1,21 @@
-import { Box, IconButton, Typography } from '@material-ui/core';
-import { memo, useCallback, useEffect, useState } from 'react';
+import { Box, IconButton } from '@material-ui/core';
+import { useCallback, useMemo, useState } from 'react';
 
-import Button from '@material-ui/core/Button';
 import CheckIcon from '@material-ui/icons/Check';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 
-const ToggleMenu = ({
+export default function ToggleMenu({
   startIcon,
   options,
-  value,
+  selectedIds = [],
+  multi = false,
   onChange,
-  noLabel = false,
-}) => {
+}) {
   const [anchorEl, setAnchorEl] = useState(null);
-  const [selectedOption, setSelectedOption] = useState(value);
-
-  useEffect(() => {
-    setSelectedOption(value);
-  }, [value]);
+  const selectedOptions = useMemo(() => {
+    return selectedIds.map((id) => options.find((option) => option.id === id));
+  }, [options, selectedIds]);
 
   const handleClick = useCallback((event) => {
     setAnchorEl(event.currentTarget);
@@ -29,61 +25,59 @@ const ToggleMenu = ({
     setAnchorEl(null);
   }, []);
 
-  const onClick = useCallback(
-    (option) => {
-      setSelectedOption(option);
-      onChange(option);
-      handleClose();
+  const handleMenuItemClick = useCallback(
+    (option) => () => {
+      if (multi === false) {
+        onChange([option]);
+        handleClose();
+      } else {
+        let newOptions;
+        if (!option?.id) {
+          newOptions = [option];
+        } else if (selectedOptions.map(({ id }) => id).includes(option.id)) {
+          newOptions = selectedOptions.filter(({ id }) => id !== option.id);
+        } else {
+          newOptions = [...selectedOptions, option];
+        }
+        onChange(newOptions);
+      }
     },
-    [onChange, handleClose]
+    [handleClose, multi, onChange, selectedOptions]
   );
 
   return (
     <Box display="flex" flexWrap="nowrap">
-      {!noLabel ? (
-        <Button
-          aria-controls="select-menu"
-          aria-haspopup="true"
-          size="large"
-          color="inherit"
-          startIcon={startIcon}
-          endIcon={<ExpandMoreIcon />}
-          onClick={handleClick}
-          fullWidth
+      <IconButton color="inherit" onClick={handleClick}>
+        {startIcon}
+      </IconButton>
+      {anchorEl ? (
+        <Menu
+          id="select-menu"
+          anchorEl={anchorEl}
+          keepMounted
+          open={Boolean(anchorEl)}
+          onClose={handleClose}
         >
-          <Typography noWrap>
-            {selectedOption && selectedOption.label ? selectedOption.label : ''}
-          </Typography>
-        </Button>
-      ) : (
-        <IconButton color="inherit" onClick={handleClick}>
-          {startIcon}
-        </IconButton>
-      )}
-      <Menu
-        id="select-menu"
-        anchorEl={anchorEl}
-        keepMounted
-        open={Boolean(anchorEl)}
-        onClose={handleClose}
-      >
-        {options.map((option) => (
-          <MenuItem key={option.id} onClick={() => onClick(option)}>
-            <Box display="flex" justifyContent="center" mr={1}>
-              <CheckIcon
-                size="small"
-                color="primary"
-                style={{
-                  visibility: option?.id === value?.id ? 'visible' : 'hidden',
-                }}
-              />
-            </Box>
-            {option.label}
-          </MenuItem>
-        ))}
-      </Menu>
+          {options.map((option) => (
+            <MenuItem key={option.label} onClick={handleMenuItemClick(option)}>
+              <Box display="flex" justifyContent="center" mr={1}>
+                <CheckIcon
+                  size="small"
+                  color="primary"
+                  style={{
+                    visibility:
+                      (option.id === '' && selectedIds.length === 0) ||
+                      selectedIds.includes(option.id)
+                        ? 'visible'
+                        : 'hidden',
+                  }}
+                />
+              </Box>
+              {option.label}
+            </MenuItem>
+          ))}
+        </Menu>
+      ) : null}
     </Box>
   );
-};
-
-export default memo(ToggleMenu);
+}

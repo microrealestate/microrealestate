@@ -106,7 +106,7 @@ const Lease = observer(() => {
   return (
     <Page
       title={store.lease.selected?.name || t('New contract')}
-      ActionToolbar={
+      ActionBar={
         <Box display="flex" justifyContent="space-between">
           <BreadcrumbBar
             backPath={backPath}

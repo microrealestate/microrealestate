@@ -11,7 +11,7 @@ import {
   Typography,
 } from '@material-ui/core';
 import { getStoreInstance, StoreContext } from '../../../store';
-import { useCallback, useContext, useMemo } from 'react';
+import { useCallback, useContext, useState } from 'react';
 
 import AddIcon from '@material-ui/icons/Add';
 import { EmptyIllustration } from '../../../components/Illustrations';
@@ -24,7 +24,9 @@ import Page from '../../../components/Page';
 import PropertyAvatar from '../../../components/properties/PropertyAvatar';
 import SearchFilterBar from '../../../components/SearchFilterBar';
 import { toJS } from 'mobx';
+import types from '../../../components/properties/types';
 import useNewPropertyDialog from '../../../components/properties/NewPropertyDialog';
+import usePagination from '../../../hooks/usePagination';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 import { withAuthentication } from '../../../components/Authentication';
@@ -48,7 +50,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const PropertyListItem = ({ property }) => {
+function PropertyListItem({ property }) {
   const router = useRouter();
   const store = useContext(StoreContext);
   const { t } = useTranslation('common');
@@ -90,7 +92,7 @@ const PropertyListItem = ({ property }) => {
                 size="small"
                 label={
                   <Typography variant="caption">
-                    {property.status === 'vacant' ? t('Vacant') : t('Occupied')}
+                    {property.status === 'vacant' ? t('Vacant') : t('Rented')}
                   </Typography>
                 }
                 className={
@@ -166,15 +168,45 @@ const PropertyListItem = ({ property }) => {
       />
     </ListItem>
   );
-};
+}
 
-const PropertyList = observer(() => {
+const SearchBar = observer(function SearchBar() {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
 
-  return store.property.filteredItems?.length ? (
+  const handleSearch = useCallback(
+    (status, searchText) => {
+      store.property.setFilters({
+        status: status.filter(({ id }) => id).map(({ id }) => id),
+        searchText,
+      });
+    },
+    [store.property]
+  );
+
+  return (
+    <SearchFilterBar
+      searchText={store.property.filters.searchText}
+      selectedIds={store.property.filters.status}
+      statusList={[
+        { id: 'vacant', label: t('Vacant') },
+        { id: 'occupied', label: t('Rented') },
+        ...types.map(({ id, labelId }) => ({
+          id,
+          label: t(labelId),
+        })),
+      ]}
+      onSearch={handleSearch}
+    />
+  );
+});
+
+function PropertyList({ properties }) {
+  const { t } = useTranslation('common');
+
+  return properties.length ? (
     <List component="nav" disablePadding aria-labelledby="property-list">
-      {store.property.filteredItems.map((property) => {
+      {properties.map((property) => {
         return (
           <Paper key={property._id}>
             <PropertyListItem property={property} />
@@ -185,29 +217,20 @@ const PropertyList = observer(() => {
   ) : (
     <EmptyIllustration label={t('No properties found')} />
   );
-});
+}
 
-const Properties = observer(() => {
+const Properties = observer(function Properties() {
   const { t } = useTranslation('common');
-  const store = useContext(StoreContext);
   const router = useRouter();
+  const store = useContext(StoreContext);
+  const [pageData, setPageData] = useState([]);
+  const [Pagination] = usePagination(
+    20,
+    store.property.filteredItems,
+    setPageData
+  );
+
   const [NewPropertyDialog, setOpenNewPropertyDialog] = useNewPropertyDialog();
-
-  const filters = useMemo(
-    () => [
-      { id: '', label: t('All') },
-      { id: 'vacant', label: t('Vacant') },
-      { id: 'occupied', label: t('Occupied') },
-    ],
-    [t]
-  );
-
-  const onSearch = useCallback(
-    (status, searchText) => {
-      store.property.setFilters({ status, searchText });
-    },
-    [store.property]
-  );
 
   const onNewProperty = useCallback(() => {
     setOpenNewPropertyDialog(true);
@@ -216,7 +239,7 @@ const Properties = observer(() => {
   return (
     <Page
       title={t('Properties')}
-      ActionToolbar={
+      ActionBar={
         <Box display="flex" justifyContent="end">
           <Hidden smDown>
             <ButtonGroup variant="contained">
@@ -236,15 +259,23 @@ const Properties = observer(() => {
           </Hidden>
         </Box>
       }
-      SearchBar={
-        <SearchFilterBar
-          filters={filters}
-          defaultValue={store.property.filters}
-          onSearch={onSearch}
-        />
-      }
     >
-      <PropertyList />
+      <Hidden smDown>
+        <Box display="flex" alignItems="end" justifyContent="space-between">
+          <SearchBar />
+          <Pagination />
+        </Box>
+      </Hidden>
+      <Hidden mdUp>
+        <SearchBar />
+        <Box display="flex" justifyContent="center">
+          <Pagination />
+        </Box>
+      </Hidden>
+      <PropertyList properties={pageData} />
+      <Box display="flex" justifyContent="center">
+        <Pagination />
+      </Box>
       <NewPropertyDialog backPage={t('Properties')} backPath={router.asPath} />
     </Page>
   );

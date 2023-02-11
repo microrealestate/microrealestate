@@ -19,56 +19,18 @@ import Hidden from '../../../../components/HiddenSSRCompatible';
 import { isServer } from '../../../../utils';
 import { MobileButton } from '../../../../components/MobileMenuButton';
 import moment from 'moment';
+import { observer } from 'mobx-react-lite';
 import Page from '../../../../components/Page';
+import PeriodPicker from '../../../../components/PeriodPicker';
+import { RentOverview } from '../../../../components/rents/RentOverview';
 import RentTable from '../../../../components/rents/RentTable';
 import SearchFilterBar from '../../../../components/SearchFilterBar';
 import SendIcon from '@material-ui/icons/Send';
 import { toJS } from 'mobx';
+import usePagination from '../../../../hooks/usePagination';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 import { withAuthentication } from '../../../../components/Authentication';
-
-function SearchBar() {
-  const { t } = useTranslation('common');
-  const router = useRouter();
-  const store = useContext(StoreContext);
-
-  const filters = useMemo(
-    () => [
-      { id: '', label: t('All') },
-      { id: 'notpaid', label: t('Not paid') },
-      { id: 'partiallypaid', label: t('Partially paid') },
-      { id: 'paid', label: t('Paid') },
-    ],
-    [t]
-  );
-
-  const handleSearch = useCallback(
-    (status, searchText) => {
-      let queryString = '';
-      if (searchText || status) {
-        queryString = `?search=${encodeURIComponent(
-          searchText
-        )}&status=${encodeURIComponent(status)}`;
-      }
-      router.push(
-        `/${store.organization.selected.name}/rents/${store.rent.periodAsString}${queryString}`,
-        undefined,
-        { shallow: true }
-      );
-      store.rent.setFilters({ status, searchText });
-    },
-    [router, store.rent, store.organization.selected.name]
-  );
-
-  return (
-    <SearchFilterBar
-      filters={filters}
-      defaultValue={store.rent.filters}
-      onSearch={handleSearch}
-    />
-  );
-}
 
 function ActionToolbar({ selected, setSelected }) {
   const { t } = useTranslation('common');
@@ -328,11 +290,80 @@ function ActionToolbar({ selected, setSelected }) {
   );
 }
 
-function Rents() {
+function Navbar({ onChange, ...props }) {
+  const { t } = useTranslation('common');
+  const router = useRouter();
+  const rentPeriod = moment(router.query.yearMonth, 'YYYY.MM');
+
+  return (
+    <Box display="flex" alignItems="center" {...props}>
+      <Hidden smDown>
+        <Box color="text.secondary" fontSize="h5.fontSize" mr={1}>
+          {t('Rents')}
+        </Box>
+      </Hidden>
+
+      <PeriodPicker
+        format="MMMM YYYY"
+        period="month"
+        value={rentPeriod}
+        onChange={onChange}
+      />
+    </Box>
+  );
+}
+
+const SearchBar = observer(function SearchBar() {
+  const { t } = useTranslation('common');
+  const router = useRouter();
+  const store = useContext(StoreContext);
+
+  const filters = useMemo(
+    () => [
+      { id: '', label: t('All') },
+      { id: 'notpaid', label: t('Not paid') },
+      { id: 'partiallypaid', label: t('Partially paid') },
+      { id: 'paid', label: t('Paid') },
+    ],
+    [t]
+  );
+
+  const handleSearch = useCallback(
+    (status = [], searchText) => {
+      let queryString = '';
+      const statusIds = status.filter(({ id }) => id).map(({ id }) => id);
+      if (searchText || statusIds.length) {
+        queryString = `?search=${encodeURIComponent(
+          searchText
+        )}&status=${encodeURIComponent(statusIds.join(','))}`;
+      }
+      router.push(
+        `/${store.organization.selected.name}/rents/${store.rent.periodAsString}${queryString}`,
+        undefined,
+        { shallow: true }
+      );
+      store.rent.setFilters({ status: statusIds, searchText });
+    },
+    [router, store.rent, store.organization.selected.name]
+  );
+
+  return (
+    <SearchFilterBar
+      searchText={store.rent.filters.searchText}
+      selectedIds={store.rent.filters.status}
+      statusList={filters}
+      onSearch={handleSearch}
+    />
+  );
+});
+
+const Rents = observer(function Rents() {
   const { t } = useTranslation('common');
   const router = useRouter();
   const store = useContext(StoreContext);
   const [rentSelected, setRentSelected] = useState([]);
+  const [pageData, setPageData] = useState([]);
+  const [Pagination] = usePagination(20, store.rent.filteredItems, setPageData);
 
   const handlePeriodChange = useCallback(
     async (period) => {
@@ -344,14 +375,35 @@ function Rents() {
     [router, store.rent, store.organization.selected.name]
   );
 
+  const handlePageChange = useCallback(() => {
+    setRentSelected([]);
+  }, []);
+
   return (
     <Page
       title={t('Rents')}
-      SearchBar={<SearchBar />}
-      ActionToolbar={
+      ActionBar={
         <ActionToolbar selected={rentSelected} setSelected={setRentSelected} />
       }
     >
+      <Navbar onChange={handlePeriodChange} />
+      <Hidden smDown>
+        <Box mb={4}>
+          <RentOverview width="100%" />
+        </Box>
+      </Hidden>
+      <Hidden smDown>
+        <Box display="flex" alignItems="end" justifyContent="space-between">
+          <SearchBar />
+          <Pagination onPageChange={handlePageChange} />
+        </Box>
+      </Hidden>
+      <Hidden mdUp>
+        <SearchBar />
+        <Box display="flex" justifyContent="center">
+          <Pagination onPageChange={handlePageChange} />
+        </Box>
+      </Hidden>
       {!store.organization.canSendEmails ? (
         <Box mb={1}>
           <Alert
@@ -364,13 +416,16 @@ function Rents() {
         </Box>
       ) : null}
       <RentTable
+        rents={pageData}
         selected={rentSelected}
         setSelected={setRentSelected}
-        onPeriodChange={handlePeriodChange}
       />
+      <Box display="flex" justifyContent="center">
+        <Pagination />
+      </Box>
     </Page>
   );
-}
+});
 
 Rents.getInitialProps = async (context) => {
   const store = isServer() ? context.store : getStoreInstance();
@@ -382,7 +437,10 @@ Rents.getInitialProps = async (context) => {
       return { error: { statusCode: 404 } };
     }
     store.rent.setPeriod(rentPeriod);
-    store.rent.setFilters({ searchText: search, status });
+    store.rent.setFilters({
+      searchText: search,
+      status: status?.split(',') || [],
+    });
   }
 
   const { status } = await store.rent.fetch();

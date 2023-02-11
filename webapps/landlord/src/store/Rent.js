@@ -12,7 +12,7 @@ function getMoment(current) {
 }
 export default class Rent {
   selected = {};
-  filters = { searchText: '', status: '' };
+  filters = { searchText: '', status: [] };
   _period = moment();
   items = [];
   countAll;
@@ -61,15 +61,11 @@ export default class Rent {
 
   get filteredItems() {
     let filteredItems =
-      this.filters.status === ''
+      this.filters.status?.length === 0
         ? this.items
-        : this.items.filter(({ status }) => {
-            if (status === this.filters.status) {
-              return true;
-            }
-
-            return false;
-          });
+        : this.items.filter(({ status }) =>
+            this.filters.status.includes(status)
+          );
 
     if (this.filters.searchText) {
       const regExp = /\s|\.|-/gi;
@@ -128,7 +124,7 @@ export default class Rent {
   }
   setSelected = (rent) => (this.selected = rent);
 
-  setFilters = ({ searchText = '', status = '' }) =>
+  setFilters = ({ searchText = '', status = [] }) =>
     (this.filters = { searchText, status });
 
   setPeriod = (period) => (this._period = getMoment(period));

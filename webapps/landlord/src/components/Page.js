@@ -38,7 +38,7 @@ function EnvironmentBar() {
   ) : null;
 }
 
-function MainToolbar({ maxWidth, loading, SearchBar, onSignOut }) {
+function MainToolbar({ maxWidth, onSignOut }) {
   const { t } = useTranslation('common');
 
   return (
@@ -47,11 +47,13 @@ function MainToolbar({ maxWidth, loading, SearchBar, onSignOut }) {
         <Box ml={7}>
           <Toolbar disableGutters>
             <Container maxWidth={maxWidth}>
-              <Box display="flex" alignItems="center" width="100%">
+              <Box
+                display="flex"
+                alignItems="center"
+                justifyContent="space-between"
+                width="100%"
+              >
                 <Typography variant="h5">{APP_NAME}</Typography>
-                <Box flexGrow={1} mx={10}>
-                  {!loading && SearchBar}
-                </Box>
                 <Box display="flex" alignItems="center">
                   <OrganizationSwitcher />
                   <Tooltip title={t('Sign out')} aria-label="sign out">
@@ -80,7 +82,6 @@ function MainToolbar({ maxWidth, loading, SearchBar, onSignOut }) {
               width="100%"
             >
               <OrganizationSwitcher />
-              <Box flexGrow={1}>{!loading && SearchBar}</Box>
               <IconButton
                 aria-label="sign out"
                 onClick={onSignOut}
@@ -118,24 +119,13 @@ function SubBar({ Bar, maxWidth, loading }) {
   );
 }
 
-function MobileToolbars({
-  loading,
-  SearchBar,
-  ActionBar,
-  maxWidth,
-  onSignOut,
-}) {
+function MobileToolbars({ ActionBar, maxWidth, onSignOut }) {
   return (
     <>
       <ElevationScroll>
         <AppBar position="fixed">
           <EnvironmentBar />
-          <MainToolbar
-            maxWidth={maxWidth}
-            SearchBar={SearchBar}
-            onSignOut={onSignOut}
-            loading={loading}
-          />
+          <MainToolbar maxWidth={maxWidth} onSignOut={onSignOut} />
           <SubBar Bar={ActionBar} />
         </AppBar>
       </ElevationScroll>
@@ -143,24 +133,13 @@ function MobileToolbars({
   );
 }
 
-function DesktopToolbars({
-  loading,
-  SearchBar,
-  ActionBar,
-  maxWidth,
-  onSignOut,
-}) {
+function DesktopToolbars({ loading, ActionBar, maxWidth, onSignOut }) {
   return (
     <>
       <ElevationScroll>
         <AppBar position="sticky">
           <EnvironmentBar />
-          <MainToolbar
-            maxWidth={maxWidth}
-            SearchBar={SearchBar}
-            onSignOut={onSignOut}
-            loading={loading}
-          />
+          <MainToolbar maxWidth={maxWidth} onSignOut={onSignOut} />
         </AppBar>
       </ElevationScroll>
       <SubBar Bar={ActionBar} loading={loading} />
@@ -168,14 +147,7 @@ function DesktopToolbars({
   );
 }
 
-function Toolbars({
-  title,
-  SearchBar,
-  ActionBar,
-  loading,
-  maxWidth,
-  onSignOut,
-}) {
+function Toolbars({ title, ActionBar, loading, maxWidth, onSignOut }) {
   const store = useContext(StoreContext);
 
   if (!store.user?.signedIn) {
@@ -187,7 +159,6 @@ function Toolbars({
       <Hidden smDown>
         <DesktopToolbars
           title={title}
-          SearchBar={SearchBar}
           ActionBar={ActionBar}
           loading={loading}
           maxWidth={maxWidth}
@@ -197,9 +168,7 @@ function Toolbars({
       <Hidden mdUp>
         <MobileToolbars
           title={title}
-          SearchBar={SearchBar}
           ActionBar={ActionBar}
-          loading={loading}
           maxWidth={maxWidth}
           onSignOut={onSignOut}
         />
@@ -230,8 +199,7 @@ function PageContent({ maxWidth, hasSubBar, children }) {
 function Page({
   children,
   title = '',
-  SearchBar,
-  ActionToolbar,
+  ActionBar,
   maxWidth = 'lg',
   loading = false,
 }) {
@@ -250,14 +218,13 @@ function Page({
     <>
       <Toolbars
         title={title}
-        SearchBar={SearchBar}
-        ActionBar={ActionToolbar}
+        ActionBar={ActionBar}
         loading={loading}
         maxWidth={maxWidth}
         onSignOut={handleSignOut}
       />
 
-      <PageContent maxWidth={maxWidth} hasSubBar={!!ActionToolbar}>
+      <PageContent maxWidth={maxWidth} hasSubBar={!!ActionBar}>
         {loading ? <Loading fullScreen /> : children}
       </PageContent>
     </>

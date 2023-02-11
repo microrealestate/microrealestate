@@ -10,7 +10,7 @@ import {
   Typography,
 } from '@material-ui/core';
 import { getStoreInstance, StoreContext } from '../../../store';
-import React, { useCallback, useContext } from 'react';
+import React, { useCallback, useContext, useState } from 'react';
 
 import _ from 'lodash';
 import AddIcon from '@material-ui/icons/Add';
@@ -27,6 +27,7 @@ import PropertyIcon from '../../../components/properties/PropertyIcon';
 import SearchFilterBar from '../../../components/SearchFilterBar';
 import { toJS } from 'mobx';
 import useNewTenantDialog from '../../../components/tenants/NewTenantDialog';
+import usePagination from '../../../hooks/usePagination';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 import { withAuthentication } from '../../../components/Authentication';
@@ -113,7 +114,7 @@ function TenantItem({ tenant }) {
               size="small"
               label={
                 <Typography variant="caption">
-                  {tenant.terminated ? t('Terminated') : t('In progress')}
+                  {tenant.terminated ? t('Lease ended') : t('Lease running')}
                 </Typography>
               }
               className={
@@ -173,13 +174,39 @@ function TenantItem({ tenant }) {
   );
 }
 
-const TenantGrid = observer(function TenantGrid() {
+const SearchBar = observer(function SearchBar() {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
 
-  return store.tenant.filteredItems?.length ? (
+  const handleSearch = useCallback(
+    (status, searchText) => {
+      store.tenant.setFilters({
+        status: status.filter(({ id }) => id).map(({ id }) => id),
+        searchText,
+      });
+    },
+    [store.tenant]
+  );
+
+  return (
+    <SearchFilterBar
+      searchText={store.tenant.filters.searchText}
+      selectedIds={store.tenant.filters.status}
+      statusList={[
+        { id: 'inprogress', label: t('Lease running') },
+        { id: 'stopped', label: t('Lease ended') },
+      ]}
+      onSearch={handleSearch}
+    />
+  );
+});
+
+function TenantGrid({ tenants }) {
+  const { t } = useTranslation('common');
+
+  return tenants?.length ? (
     <Grid container spacing={3}>
-      {store.tenant.filteredItems.map((tenant) => {
+      {tenants.map((tenant) => {
         return (
           <Grid key={tenant._id} item xs={12} md={6} lg={4}>
             <TenantItem tenant={tenant} />
@@ -190,20 +217,20 @@ const TenantGrid = observer(function TenantGrid() {
   ) : (
     <EmptyIllustration label={t('No tenants found')} />
   );
-});
+}
 
-function Tenants() {
+const Tenants = observer(function Tenants() {
   const { t } = useTranslation('common');
-  const store = useContext(StoreContext);
   const router = useRouter();
-  const [NewTenantDialog, setOpenNewTenantDialog] = useNewTenantDialog();
-
-  const onSearch = useCallback(
-    (status, searchText) => {
-      store.tenant.setFilters({ status, searchText });
-    },
-    [store.tenant]
+  const store = useContext(StoreContext);
+  const [pageData, setPageData] = useState([]);
+  const [Pagination] = usePagination(
+    20,
+    store.tenant.filteredItems,
+    setPageData
   );
+
+  const [NewTenantDialog, setOpenNewTenantDialog] = useNewTenantDialog();
 
   const onNewTenant = useCallback(() => {
     setOpenNewTenantDialog(true);
@@ -212,7 +239,7 @@ function Tenants() {
   return (
     <Page
       title={t('Tenants')}
-      ActionToolbar={
+      ActionBar={
         <Box display="flex" justifyContent="end">
           <Hidden smDown>
             <ButtonGroup variant="contained">
@@ -232,23 +259,27 @@ function Tenants() {
           </Hidden>
         </Box>
       }
-      SearchBar={
-        <SearchFilterBar
-          filters={[
-            { id: '', label: t('All') },
-            { id: 'inprogress', label: t('In progress') },
-            { id: 'stopped', label: t('Terminated') },
-          ]}
-          defaultValue={store.tenant.filters}
-          onSearch={onSearch}
-        />
-      }
     >
-      <TenantGrid />
+      <Hidden smDown>
+        <Box display="flex" alignItems="end" justifyContent="space-between">
+          <SearchBar />
+          <Pagination />
+        </Box>
+      </Hidden>
+      <Hidden mdUp>
+        <SearchBar />
+        <Box display="flex" justifyContent="center">
+          <Pagination />
+        </Box>
+      </Hidden>
+      <TenantGrid tenants={pageData} />
+      <Box display="flex" justifyContent="center">
+        <Pagination />
+      </Box>
       <NewTenantDialog backPage={t('Tenants')} backPath={router.asPath} />
     </Page>
   );
-}
+});
 
 Tenants.getInitialProps = async (context) => {
   const store = isServer() ? context.store : getStoreInstance();
@@ -265,4 +296,4 @@ Tenants.getInitialProps = async (context) => {
   };
 };
 
-export default withAuthentication(observer(Tenants));
+export default withAuthentication(Tenants);
