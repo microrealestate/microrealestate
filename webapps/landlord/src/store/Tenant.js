@@ -4,7 +4,7 @@ import { apiFetcher } from '../utils/fetch';
 
 export default class Tenant {
   selected = {};
-  filters = { searchText: '', status: 'inprogress' };
+  filters = { searchText: '', status: ['inprogress'] };
   items = [];
 
   constructor() {
@@ -25,15 +25,11 @@ export default class Tenant {
 
   get filteredItems() {
     let filteredItems =
-      this.filters.status === ''
+      this.filters.status?.length === 0
         ? this.items
-        : this.items.filter(({ status }) => {
-            if (status === this.filters.status) {
-              return true;
-            }
-
-            return false;
-          });
+        : this.items.filter(({ status }) =>
+            this.filters.status.includes(status)
+          );
 
     if (this.filters.searchText) {
       const regExp = /\s|\.|-/gi;
@@ -92,7 +88,7 @@ export default class Tenant {
 
   setSelected = (tenant) => (this.selected = tenant);
 
-  setFilters = ({ searchText = '', status = '' }) =>
+  setFilters = ({ searchText = '', status = [] }) =>
     (this.filters = { searchText, status });
 
   *fetch() {

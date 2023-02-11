@@ -4,7 +4,7 @@ import { apiFetcher } from '../utils/fetch';
 
 export default class Property {
   selected = {};
-  filters = { searchText: '', status: 'vacant' };
+  filters = { searchText: '', status: ['vacant'] };
   items = [];
 
   constructor() {
@@ -24,16 +24,26 @@ export default class Property {
   }
 
   get filteredItems() {
-    let filteredItems =
-      this.filters.status === ''
-        ? this.items
-        : this.items.filter(({ status }) => {
-            if (status === this.filters.status) {
-              return true;
-            }
+    let filteredItems = this.items;
+    if (this.filters.status?.length) {
+      const typeFilters = this.filters.status.filter(
+        (status) => !['vacant', 'occupied'].includes(status)
+      );
+      if (typeFilters.length) {
+        filteredItems = filteredItems.filter(({ type }) =>
+          typeFilters.includes(type)
+        );
+      }
 
-            return false;
-          });
+      const statusFilters = this.filters.status.filter((status) =>
+        ['vacant', 'occupied'].includes(status)
+      );
+      if (statusFilters.length) {
+        filteredItems = filteredItems.filter(({ status }) =>
+          statusFilters.includes(status)
+        );
+      }
+    }
 
     if (this.filters.searchText) {
       const regExp = /\s|\.|-/gi;
@@ -52,7 +62,7 @@ export default class Property {
 
   setSelected = (property) => (this.selected = property);
 
-  setFilters = ({ searchText = '', status = '' }) =>
+  setFilters = ({ searchText = '', status = [] }) =>
     (this.filters = { searchText, status });
 
   *fetch() {

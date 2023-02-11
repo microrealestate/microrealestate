@@ -18,36 +18,10 @@ import { EmptyIllustration } from '../Illustrations';
 import Hidden from '../HiddenSSRCompatible';
 import HistoryIcon from '@material-ui/icons/History';
 import moment from 'moment';
-import PeriodPicker from '../PeriodPicker';
-import { RentOverview } from './RentOverview';
 import { StoreContext } from '../../store';
 import useNewPaymentDialog from '../payment/NewPaymentDialog';
 import useRentHistoryDialog from './RentHistoryDialog';
-import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
-
-function Navbar({ onChange, ...props }) {
-  const { t } = useTranslation('common');
-  const router = useRouter();
-  const rentPeriod = moment(router.query.yearMonth, 'YYYY.MM');
-
-  return (
-    <Box display="flex" alignItems="center" {...props}>
-      <Hidden smDown>
-        <Box color="text.secondary" fontSize="h5.fontSize" mr={1}>
-          {t('Rents')}
-        </Box>
-      </Hidden>
-
-      <PeriodPicker
-        format="MMMM YYYY"
-        period="month"
-        value={rentPeriod}
-        onChange={onChange}
-      />
-    </Box>
-  );
-}
 
 const Reminder = memo(function Reminder({ rent, ...boxProps }) {
   const { t } = useTranslation('common');
@@ -320,26 +294,30 @@ const MobileRentRow = memo(function MobileRentRow({
   );
 });
 
-function RentTable({ selected, setSelected, onPeriodChange }) {
+function RentTable({ rents = [], selected, setSelected }) {
   const store = useContext(StoreContext);
   const { t } = useTranslation('common');
   const [NewPaymentDialog, setOpenNewPaymentDialog] = useNewPaymentDialog();
   const [RentHistoryDialog, setOpenRentHistoryDialog] = useRentHistoryDialog();
 
+  const selectableRentNum = useMemo(() => {
+    return rents.reduce((acc, { _id, occupant: { hasContactEmails } }) => {
+      if (hasContactEmails) {
+        acc.push(_id);
+      }
+      return acc;
+    }, []).length;
+  }, [rents]);
+
   const onSelectAllClick = useCallback(
     (event) => {
       let rentSelected = [];
       if (event.target.checked) {
-        rentSelected = store.rent.filteredItems.reduce((acc, rent) => {
-          if (rent.occupant.hasContactEmails) {
-            return [...acc, rent];
-          }
-          return acc;
-        }, []);
+        rentSelected = rents.filter((rent) => rent.occupant.hasContactEmails);
       }
       setSelected?.(rentSelected);
     },
-    [setSelected, store.rent.filteredItems]
+    [rents, setSelected]
   );
 
   const onSelectClick = useCallback(
@@ -353,20 +331,6 @@ function RentTable({ selected, setSelected, onPeriodChange }) {
       setSelected?.(rentSelected);
     },
     [selected, setSelected]
-  );
-
-  const selectableRentNum = useMemo(
-    () =>
-      store.rent.filteredItems.reduce(
-        (acc, { _id, occupant: { hasContactEmails } }) => {
-          if (hasContactEmails) {
-            acc.push(_id);
-          }
-          return acc;
-        },
-        []
-      ).length,
-    [store.rent.filteredItems]
   );
 
   const handleEdit = useCallback(
@@ -389,33 +353,26 @@ function RentTable({ selected, setSelected, onPeriodChange }) {
       <RentHistoryDialog />
 
       <Paper>
-        <Box px={2} pt={1} pb={3}>
-          <Navbar onChange={onPeriodChange} pb={4} />
-          {store.rent?.filteredItems.length ? (
+        <Box p={2}>
+          {rents.length ? (
             <>
-              <Hidden smDown>
-                <RentOverview width="100%" pb={4} />
-              </Hidden>
               <Box display="flex" alignItems="center">
                 <Checkbox
                   color="default"
                   indeterminate={
                     selected.length > 0 && selected.length < selectableRentNum
                   }
-                  checked={
-                    store.rent.filteredItems.length > 0 &&
-                    selected.length === selectableRentNum
-                  }
+                  checked={selected.length === selectableRentNum}
                   disabled={!store.organization.canSendEmails}
                   onChange={onSelectAllClick}
                   inputProps={{
-                    'aria-label': 'select all store.rent.filteredItems',
+                    'aria-label': 'select all rents',
                   }}
                 />
               </Box>
 
               <Divider />
-              {store.rent.filteredItems.map((rent) => {
+              {rents.map((rent) => {
                 const isItemSelected = selected
                   .map((r) => r._id)
                   .includes(rent._id);

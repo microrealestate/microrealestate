@@ -208,7 +208,7 @@ const Property = observer(() => {
   return (
     <Page
       title={store.property.selected.name}
-      ActionToolbar={
+      ActionBar={
         <Box display="flex" justifyContent="space-between">
           <BreadcrumbBar
             backPath={backPath}

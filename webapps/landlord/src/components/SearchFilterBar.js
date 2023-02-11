@@ -1,11 +1,15 @@
-import { Box, InputAdornment, TextField, withStyles } from '@material-ui/core';
-import { useCallback, useMemo, useState } from 'react';
+import {
+  Box,
+  Chip,
+  InputAdornment,
+  TextField,
+  withStyles,
+} from '@material-ui/core';
+import { useCallback, useMemo, useTransition } from 'react';
 
 import FilterListIcon from '@material-ui/icons/FilterList';
-import Hidden from './HiddenSSRCompatible';
 import SearchIcon from '@material-ui/icons/Search';
 import ToggleMenu from './ToggleMenu';
-import useTimeout from '../hooks/useTimeout';
 import useTranslation from 'next-translate/useTranslation';
 
 const StyledTextField = withStyles({
@@ -20,87 +24,89 @@ const StyledTextField = withStyles({
   },
 })(TextField);
 
-const SearchFilterBar = ({
-  filters,
+export default function SearchFilterBar({
+  searchText = '',
+  selectedIds = [],
+  statusList = [],
   onSearch,
-  defaultValue = { status: '', searchText: '' },
-}) => {
+}) {
   const { t } = useTranslation('common');
-  const [filter, setFilter] = useState(defaultValue.status);
-  const [searchText, setSearchText] = useState(defaultValue.searchText);
-  const triggerSearch = useTimeout(() => {
-    onSearch(filter, searchText);
-  }, 250);
+  const [, startTransition] = useTransition();
+  const currentSelectedStatus = useMemo(() => {
+    return selectedIds.map((value) =>
+      statusList.find(({ id }) => id === value)
+    );
+  }, [selectedIds, statusList]);
 
-  // TODO: use useEffect to trigger the search
-  // commented as now this cause infinite rendering loop
-  // useEffect(() => {
-  //   triggerSearch.start();
-  // }, [filter, searchText, triggerSearch]);
+  const triggerSearch = useCallback(
+    (inputSelectedStatus, inputSearchText) => {
+      startTransition(() => {
+        onSearch(inputSelectedStatus, inputSearchText);
+      });
+    },
+    [onSearch]
+  );
 
-  const onTextChange = useCallback(
+  const handleTextChange = useCallback(
     (event) => {
-      setSearchText(event.target.value || '');
-      // this hack works without useEffect because the action
-      // is triggered 250ms later after the state update
-      triggerSearch.start();
+      triggerSearch(currentSelectedStatus, event.target.value || '');
     },
-    [setSearchText, triggerSearch]
+    [currentSelectedStatus, triggerSearch]
   );
 
-  const onToggleChange = useCallback(
-    (option) => {
-      setFilter(option.id);
-      // this hack works without useEffect because the action
-      // is triggered 250ms later after the state update
-      triggerSearch.start();
+  const handleToggleChange = useCallback(
+    (values) => {
+      triggerSearch(values, searchText);
     },
-    [setFilter, triggerSearch]
+    [searchText, triggerSearch]
   );
 
-  const selectedItem = useMemo(
-    () => filters.find((f) => f.id === defaultValue.status) || filters[0],
-    [defaultValue, filters]
+  const handleDeleteFilter = useCallback(
+    (item) => () => {
+      const values = currentSelectedStatus.filter(({ id }) => item.id !== id);
+      triggerSearch(values, searchText);
+    },
+    [currentSelectedStatus, searchText, triggerSearch]
   );
 
   return (
-    <Box display="flex" flexWrap="nowrap" alignItems="center">
-      <Box flexGrow={1}>
-        <StyledTextField
-          placeholder={t('Search')}
-          defaultValue={defaultValue.searchText}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon />
-              </InputAdornment>
-            ),
-          }}
-          onChange={onTextChange}
+    <Box mb={1}>
+      <Box display="flex" flexWrap="nowrap" alignItems="center" width={330}>
+        <Box flexGrow={1}>
+          <StyledTextField
+            placeholder={t('Search')}
+            defaultValue={searchText}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon />
+                </InputAdornment>
+              ),
+            }}
+            onChange={handleTextChange}
+          />
+        </Box>
+        <ToggleMenu
+          startIcon={<FilterListIcon />}
+          options={statusList}
+          selectedIds={selectedIds}
+          onChange={handleToggleChange}
+          multi
         />
       </Box>
-      <Box>
-        <Hidden smDown>
-          <ToggleMenu
-            startIcon={<FilterListIcon />}
-            options={filters}
-            value={selectedItem}
-            noLabel={false}
-            onChange={onToggleChange}
-          />
-        </Hidden>
-        <Hidden mdUp>
-          <ToggleMenu
-            startIcon={<FilterListIcon />}
-            options={filters}
-            value={selectedItem}
-            noLabel={true}
-            onChange={onToggleChange}
-          />
-        </Hidden>
+      <Box display="flex" gridGap={10} py={0.5}>
+        {selectedIds
+          .filter((id) => id !== '')
+          .map((id) => statusList.find((status) => status?.id === id))
+          .map((status) => (
+            <Chip
+              key={status.id}
+              label={status.label}
+              size="small"
+              onDelete={handleDeleteFilter(status)}
+            />
+          ))}
       </Box>
     </Box>
   );
-};
-
-export default SearchFilterBar;
+}
