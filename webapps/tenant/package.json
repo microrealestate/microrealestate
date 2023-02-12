@@ -11,21 +11,23 @@
     "generateStrings": "node scripts/extractlocalizedstrings.js"
   },
   "dependencies": {
+    "@material-ui/core": "4.12.4",
+    "@material-ui/lab": "4.0.0-alpha.61",
     "@microrealestate/commonui": "*",
     "axios": "0.27.2",
     "formik": "2.2.9",
-    "jose": "4.11.2",
+    "jose": "4.11.4",
     "lodash": "4.17.21",
     "material-ui-formik-components": "0.7.3",
     "moment": "2.29.4",
-    "next": "13.0.7",
+    "next": "13.1.6",
     "next-translate": "1.6.0",
     "react": "18.2.0",
     "react-dom": "18.2.0"
   },
   "devDependencies": {
-    "@netlify/plugin-nextjs": "4.29.3",
-    "eslint": "8.22.0",
+    "@netlify/plugin-nextjs": "4.30.4",
+    "eslint": "8.34.0",
     "eslint-config-next": "13.0.7",
     "fdir": "5.2.0"
   }
