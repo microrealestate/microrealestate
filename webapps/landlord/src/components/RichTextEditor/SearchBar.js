@@ -1,31 +1,25 @@
 import { InputAdornment, TextField } from '@material-ui/core';
-import { useCallback, useState } from 'react';
+import { useCallback, useTransition } from 'react';
 
 import SearchIcon from '@material-ui/icons/Search';
-import useTimeout from '../hooks/useTimeout';
+import useTimeout from '../../hooks/useTimeout';
 import useTranslation from 'next-translate/useTranslation';
 
 const SearchBar = ({ onSearch, defaultValue = '' }) => {
   const { t } = useTranslation('common');
-  const [searchText, setSearchText] = useState(defaultValue);
-  const triggerSearch = useTimeout(() => {
-    onSearch(searchText);
-  }, 250);
+  const [, startTransition] = useTransition();
 
-  // TODO: use useEffect to trigger the search
-  // commented as now this cause infinite rendering loop
-  // useEffect(() => {
-  //   triggerSearch.start();
-  // }, [searchText, onSearch]);
+  const triggerSearch = useTimeout((searchText) => {
+    startTransition(() => {
+      onSearch(searchText);
+    });
+  }, 250);
 
   const onChange = useCallback(
     (event) => {
-      setSearchText(event.target.value || '');
-      // this hack works without useEffect because the action
-      // is triggered 250ms later after the state update
-      triggerSearch.start();
+      triggerSearch.start(event.target.value || '');
     },
-    [setSearchText, triggerSearch]
+    [triggerSearch]
   );
 
   return (
