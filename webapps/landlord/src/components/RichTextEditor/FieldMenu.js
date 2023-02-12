@@ -9,7 +9,7 @@ import {
 import { useCallback, useState } from 'react';
 
 import _ from 'lodash';
-import SearchBar from '../SearchBar';
+import SearchBar from './SearchBar';
 import useTranslation from 'next-translate/useTranslation';
 import { withStyles } from '@material-ui/core/styles';
 

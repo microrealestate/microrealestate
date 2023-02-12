@@ -1,5 +1,12 @@
 import { ListItemIcon, Typography, useMediaQuery } from '@material-ui/core';
-import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  useTransition,
+} from 'react';
 
 import AccountBalanceWalletIcon from '@material-ui/icons/AccountBalanceWallet';
 import DashboardIcon from '@material-ui/icons/Dashboard';
@@ -106,6 +113,7 @@ function MenuItem({ item, selected, open, onClick }) {
 function Nav() {
   const classes = useStyles();
   const [menuItems, setMenuItems] = useState([]);
+  const [, startTransition] = useTransition();
   const [selectedPathname, setSelectedPathname] = useState('');
   const [openDebounced, setOpenDebounced] = useState(false);
   const store = useContext(StoreContext);
@@ -127,11 +135,11 @@ function Nav() {
   }, [router.pathname]);
 
   const triggerOpen = useTimeout(() => {
-    !openDebounced && setOpenDebounced(true);
+    startTransition(() => !openDebounced && setOpenDebounced(true));
   }, 1000);
 
   const triggerClose = useTimeout(() => {
-    openDebounced && setOpenDebounced(false);
+    startTransition(() => openDebounced && setOpenDebounced(false));
   }, 250);
 
   const handleMenuClick = useCallback(
