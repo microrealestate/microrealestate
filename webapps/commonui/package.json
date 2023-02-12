@@ -24,16 +24,21 @@
     "build-storybook": "build-storybook"
   },
   "devDependencies": {
-    "@storybook/addon-actions": "6.5.9",
-    "@storybook/addon-essentials": "6.5.9",
-    "@storybook/addon-interactions": "6.5.9",
-    "@storybook/addon-links": "6.5.9",
-    "@storybook/builder-webpack5": "6.5.9",
-    "@storybook/cli": "6.5.9",
-    "@storybook/manager-webpack5": "6.5.9",
-    "@storybook/react": "6.5.9",
+    "@babel/core": "7.18.6",
+    "@storybook/addon-actions": "6.5.16",
+    "@storybook/addon-essentials": "6.5.16",
+    "@storybook/addon-interactions": "6.5.16",
+    "@storybook/addon-links": "6.5.16",
+    "@storybook/addons": "6.5.16",
+    "@storybook/builder-webpack5": "6.5.16",
+    "@storybook/cli": "6.5.16",
+    "@storybook/manager-webpack5": "6.5.16",
+    "@storybook/react": "6.5.16",
     "@storybook/testing-library": "0.0.13",
+    "eslint": "8.34.0",
     "eslint-plugin-react": "7.30.1",
+    "prop-types": "15.8.1",
+    "require-from-string": "2.0.2",
     "storybook-addon-material-ui": "0.9.0-alpha.24"
   }
 }
