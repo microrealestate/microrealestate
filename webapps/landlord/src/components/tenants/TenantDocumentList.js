@@ -2,24 +2,17 @@ import {
   BlankDocumentIllustration,
   TermsDocumentIllustration,
 } from '../Illustrations';
-import { Box, Button } from '@material-ui/core';
-import { useCallback, useContext, useMemo, useState } from 'react';
+import { useCallback, useContext, useMemo } from 'react';
 
 import AddIcon from '@material-ui/icons/Add';
-import Alert from '../Alert';
+import { Box } from '@material-ui/core';
 import DocumentList from '../DocumentList';
-import { downloadDocument } from '../../utils/fetch';
 import FullScreenDialogMenu from '../FullScreenDialogMenu';
-import Hidden from '../HiddenSSRCompatible';
-import ImageViewer from '../ImageViewer/ImageViewer';
-import { MobileButton } from '../MobileMenuButton';
 import { Observer } from 'mobx-react-lite';
-import PdfViewer from '../PdfViewer/PdfViewer';
 import { StoreContext } from '../../store';
 import useConfirmDialog from '../ConfirmDialog';
 import useRichTextEditorDialog from '../RichTextEditor/RichTextEditorDialog';
 import useTranslation from 'next-translate/useTranslation';
-import useUploadDialog from '../UploadDialog';
 
 function DocumentItems({ onView, onEdit, onDelete, disabled }) {
   const store = useContext(StoreContext);
@@ -27,7 +20,8 @@ function DocumentItems({ onView, onEdit, onDelete, disabled }) {
     <Observer>
       {() => {
         const documents = store.document.items.filter(
-          ({ tenantId }) => store.tenant.selected?._id === tenantId
+          ({ tenantId, type }) =>
+            store.tenant.selected?._id === tenantId && type === 'text'
         );
 
         return (
@@ -50,12 +44,9 @@ function TenantDocumentList({ disabled = false }) {
 
   const [ConfirmDialog, setDocumentToRemove, documentToRemove] =
     useConfirmDialog();
-  const [UploadDialog, setEditUploadDocument] = useUploadDialog();
 
   const [RichTextEditorDialog, setEditTextDocument, editTextDocument] =
     useRichTextEditorDialog();
-  const [openImageViewer, setOpenImageViewer] = useState(false);
-  const [openPdfViewer, setOpenPdfViewer] = useState(false);
 
   const menuItems = useMemo(() => {
     const templates = store.template.items.filter(
@@ -81,27 +72,10 @@ function TenantDocumentList({ disabled = false }) {
 
   const handleClickEdit = useCallback(
     (doc) => {
-      if (doc.type === 'text') {
-        setEditTextDocument(doc);
-      } else if (doc.type === 'file') {
-        if (doc.mimeType.indexOf('image/') !== -1) {
-          setOpenImageViewer({ url: `/documents/${doc._id}`, title: doc.name });
-        } else if (doc.mimeType.indexOf('application/pdf') !== -1) {
-          setOpenPdfViewer({ url: `/documents/${doc._id}`, title: doc.name });
-        } else {
-          downloadDocument({
-            endpoint: `/documents/${doc._id}`,
-            documentName: doc.name,
-          });
-        }
-      }
+      setEditTextDocument(doc);
     },
     [setEditTextDocument]
   );
-
-  const handleClickUpload = useCallback(() => {
-    setEditUploadDocument(true);
-  }, [setEditUploadDocument]);
 
   const handleClickAddText = useCallback(
     async (template) => {
@@ -155,30 +129,6 @@ function TenantDocumentList({ disabled = false }) {
     [editTextDocument, store, t]
   );
 
-  const handleSaveUploadDocument = useCallback(
-    async (doc) => {
-      const { status } = await store.document.create({
-        tenantId: store.tenant.selected?._id,
-        leaseId: store.tenant.selected?.leaseId,
-        templateId: doc.template._id,
-        type: 'file',
-        name: doc.name || t('Untitled document'),
-        description: doc.description || '',
-        mimeType: doc.mimeType || '',
-        expiryDate: doc.expiryDate || '',
-        url: doc.url || '',
-        versionId: doc.versionId,
-      });
-      if (status !== 200) {
-        return store.pushToastMessage({
-          message: t('Something went wrong'),
-          severity: 'error',
-        });
-      }
-    },
-    [store, t]
-  );
-
   const handleDeleteDocument = useCallback(async () => {
     if (!documentToRemove) {
       return;
@@ -194,54 +144,25 @@ function TenantDocumentList({ disabled = false }) {
 
   return (
     <>
-      {!store.organization.canUploadDocumentsInCloud ? (
-        <Box mb={1}>
-          <Alert
-            severity="warning"
-            title={t(
-              'Unable to upload documents without configuring the cloud storage service in Settings page'
-            )}
-          />
-        </Box>
-      ) : null}
-      <Box display="flex" mb={1}>
-        <Hidden smDown>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={handleClickUpload}
-            disabled={!store.organization.canUploadDocumentsInCloud || disabled}
-            data-cy="addTenantFile"
-          >
-            {t('Upload document')}
-          </Button>
-        </Hidden>
-        <Hidden mdUp>
-          <MobileButton
-            label={t('Upload document')}
-            Icon={AddIcon}
-            onClick={handleClickUpload}
-            disabled={!store.organization.canUploadDocumentsInCloud || disabled}
-          />
-        </Hidden>
-        <Box ml={1}>
-          <FullScreenDialogMenu
-            variant="contained"
-            Icon={AddIcon}
-            buttonLabel={t('Create document')}
-            dialogTitle={t('Create a document')}
-            menuItems={menuItems}
-            onClick={handleClickAddText}
-            disabled={disabled}
-            data-cy="addTenantTextDocument"
-          />
-        </Box>
+      <Box mb={1}>
+        <FullScreenDialogMenu
+          variant="contained"
+          Icon={AddIcon}
+          buttonLabel={t('Create document')}
+          dialogTitle={t('Create a document')}
+          menuItems={menuItems}
+          onClick={handleClickAddText}
+          disabled={disabled}
+          data-cy="addTenantTextDocument"
+        />
       </Box>
+
       <DocumentItems
         onEdit={handleClickEdit}
         onDelete={setDocumentToRemove}
         disabled={disabled}
       />
+
       <RichTextEditorDialog
         onLoad={handleLoadTextDocument}
         onSave={handleSaveTextDocument}
@@ -249,17 +170,11 @@ function TenantDocumentList({ disabled = false }) {
         editable={!disabled}
       />
 
-      <UploadDialog onSave={handleSaveUploadDocument} />
-
       <ConfirmDialog
         title={t('Are you sure to remove this document?')}
         subTitle={documentToRemove.name}
         onConfirm={handleDeleteDocument}
       />
-
-      <ImageViewer open={openImageViewer} setOpen={setOpenImageViewer} />
-
-      <PdfViewer open={openPdfViewer} setOpen={setOpenPdfViewer} />
     </>
   );
 }

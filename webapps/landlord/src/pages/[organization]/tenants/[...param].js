@@ -360,22 +360,22 @@ const Tenant = observer(() => {
         </Paper>
       ) : (
         <>
-          <CompulsoryDocumentStatus
-            tenant={store.tenant.selected}
-            variant="compact"
-            elevation={1}
-            mb={3}
-          />
           <Grid container spacing={5}>
             <Grid item xs={12} md={7} lg={8}>
               <TenantTabs onSubmit={onSubmit} readOnly={readOnly} />
             </Grid>
             {!!store.tenant.selected.properties && (
               <Grid item xs={12} md={5} lg={4}>
-                <Box pb={4}>
+                <CompulsoryDocumentStatus
+                  tenant={store.tenant.selected}
+                  variant="compact"
+                  elevation={1}
+                  mb={4}
+                />
+                <Box mb={4}>
                   <ContractOverviewCard />
                 </Box>
-                <Box pb={4}>
+                <Box mb={4}>
                   <RentOverviewCard />
                 </Box>
               </Grid>

@@ -1,4 +1,4 @@
-import { Box, Divider, Typography } from '@material-ui/core';
+import { Box, Divider } from '@material-ui/core';
 
 import { CardRow } from '../Cards';
 import Hidden from '../HiddenSSRCompatible';
@@ -72,76 +72,46 @@ export default function RentDetails({ rent }) {
   return (
     <>
       <CardRow>
-        <Typography color="textSecondary" noWrap>
-          {rentAmounts.balance === 0
-            ? t('Previous balance')
-            : rentAmounts.isDebitBalance
-            ? t('Previous debit balance')
-            : t('Previous credit balance')}
-        </Typography>
+        {rentAmounts.balance === 0
+          ? t('Previous balance')
+          : rentAmounts.isDebitBalance
+          ? t('Previous debit balance')
+          : t('Previous credit balance')}
         <NumberFormat
-          color="text.secondary"
           value={rentAmounts.balance}
           debitColor={rentAmounts.isDebitBalance}
           creditColor={!rentAmounts.isDebitBalance}
         />
       </CardRow>
       <CardRow>
-        <Typography color="textSecondary" noWrap>
-          {t('Rent')}
-        </Typography>
-        <NumberFormat color="text.secondary" value={rentAmounts.rent} />
+        {t('Rent')}
+        <NumberFormat value={rentAmounts.rent} />
       </CardRow>
       <CardRow>
-        <Typography color="textSecondary" noWrap>
-          {t('Additional costs')}
-        </Typography>
-        <NumberFormat
-          color="text.secondary"
-          value={rentAmounts.additionalCosts}
-          showZero={false}
-        />
+        {t('Additional costs')}
+        <NumberFormat value={rentAmounts.additionalCosts} showZero={false} />
       </CardRow>
       <CardRow pb={1.5}>
-        <Typography color="textSecondary" noWrap>
-          {t('Discount')}
-        </Typography>
-        <NumberFormat
-          color="text.secondary"
-          value={rentAmounts.discount}
-          showZero={false}
-        />
+        {t('Discount')}
+        <NumberFormat value={rentAmounts.discount} showZero={false} />
       </CardRow>
       <Divider />
       <CardRow pt={1.5}>
-        <Typography color="textSecondary" noWrap>
-          {t('Total to pay')}
-        </Typography>
-        <NumberFormat color="text.secondary" value={rentAmounts.totalAmount} />
+        {t('Total to pay')}
+        <NumberFormat value={rentAmounts.totalAmount} />
       </CardRow>
       <CardRow pb={1.5}>
-        <Typography color="textSecondary" noWrap>
-          {t('Settlements')}
-        </Typography>
-
-        <NumberFormat
-          color="text.secondary"
-          value={rentAmounts.payment}
-          showZero={false}
-          withColor
-        />
+        {t('Settlements')}
+        <NumberFormat value={rentAmounts.payment} showZero={false} withColor />
       </CardRow>
       <Divider />
       <CardRow py={1.5}>
-        <Typography color="textSecondary" noWrap>
-          {rentAmounts.newBalance === 0
-            ? t('Balance')
-            : rentAmounts.isDebitNewBalance
-            ? t('Debit balance')
-            : t('Credit balance')}
-        </Typography>
+        {rentAmounts.newBalance === 0
+          ? t('Balance')
+          : rentAmounts.isDebitNewBalance
+          ? t('Debit balance')
+          : t('Credit balance')}
         <NumberFormat
-          color="text.secondary"
           value={rentAmounts.newBalance}
           abs={true}
           debitColor={rentAmounts.isDebitNewBalance}
@@ -151,9 +121,7 @@ export default function RentDetails({ rent }) {
       <Divider />
       <CardRow pt={1.5}>
         <Box>
-          <Box pb={1}>
-            <Typography color="textSecondary">{t('Note')}</Typography>
-          </Box>
+          <Box pb={1}>{t('Note')}</Box>
           <Box
             height={60}
             whiteSpace="pre"

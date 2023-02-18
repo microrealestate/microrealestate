@@ -85,7 +85,7 @@ function PaymentPartForm({ term, payments }) {
             p={2}
             mb={2}
             border={1}
-            borderColor="grey.300"
+            borderColor="divider"
             borderRadius="borderRadius"
           >
             <Grid container spacing={2}>
@@ -328,7 +328,7 @@ function PaymentTabs({ rent, onSubmit }, ref) {
                 py={expandedNote ? 2 : 0}
                 mb={1}
                 border={1}
-                borderColor="grey.300"
+                borderColor="divider"
                 borderRadius="borderRadius"
               >
                 <Box
@@ -354,7 +354,7 @@ function PaymentTabs({ rent, onSubmit }, ref) {
                 py={expandedDiscount ? 2 : 0}
                 mb={1}
                 border={1}
-                borderColor="grey.300"
+                borderColor="divider"
                 borderRadius="borderRadius"
               >
                 <Box
@@ -379,7 +379,7 @@ function PaymentTabs({ rent, onSubmit }, ref) {
                 px={2}
                 py={expandedAdditionalCost ? 2 : 0}
                 border={1}
-                borderColor="grey.300"
+                borderColor="divider"
                 borderRadius="borderRadius"
               >
                 <Box

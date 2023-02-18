@@ -32,9 +32,10 @@ function RentListItem({ rent, tenant, onClick }) {
 
   return (
     <BoxWithHover
-      boxShadow={2}
       p={2}
       height="100%"
+      border={1}
+      borderColor="divider"
       withCursor
       onClick={onClick}
     >

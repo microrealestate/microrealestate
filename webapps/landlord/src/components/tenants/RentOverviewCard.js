@@ -1,6 +1,6 @@
-import { Box, Divider, Typography } from '@material-ui/core';
 import { CardRow, PageInfoCard } from '../Cards';
 
+import { Divider } from '@material-ui/core';
 import NumberFormat from '../NumberFormat';
 import ReceiptIcon from '@material-ui/icons/Receipt';
 import { StoreContext } from '../../store';
@@ -14,18 +14,14 @@ export default function RentOverview() {
   return (
     <PageInfoCard Icon={ReceiptIcon} title={t('Rental')}>
       <CardRow>
-        <Typography color="textSecondary" noWrap>
-          {t('Rent')}
-        </Typography>
+        {t('Rent')}
         <NumberFormat
           color="text.secondary"
           value={store.tenant.selected.rental}
         />
       </CardRow>
       <CardRow>
-        <Typography color="textSecondary" noWrap>
-          {t('Expenses')}
-        </Typography>
+        {t('Expenses')}
         <NumberFormat
           color="text.secondary"
           value={store.tenant.selected.expenses}
@@ -33,9 +29,7 @@ export default function RentOverview() {
       </CardRow>
       {store.tenant.selected.discount > 0 ? (
         <CardRow>
-          <Typography color="textSecondary" noWrap>
-            {t('Discount')}
-          </Typography>
+          {t('Discount')}
           <NumberFormat
             color="text.secondary"
             value={store.tenant.selected.discount * -1}
@@ -44,22 +38,16 @@ export default function RentOverview() {
       ) : null}
       {store.tenant.selected.isVat && (
         <>
-          <Box pb={1}>
-            <Divider />
-          </Box>
-          <CardRow>
-            <Typography color="textSecondary" noWrap>
-              {t('Pre-tax total')}
-            </Typography>
+          <Divider />
+          <CardRow mt={1}>
+            {t('Pre-tax total')}
             <NumberFormat
               color="text.secondary"
               value={store.tenant.selected.preTaxTotal}
             />
           </CardRow>
           <CardRow>
-            <Typography color="textSecondary" noWrap>
-              {t('VAT')}
-            </Typography>
+            {t('VAT')}
             <NumberFormat
               color="text.secondary"
               value={store.tenant.selected.vat}
@@ -67,18 +55,10 @@ export default function RentOverview() {
           </CardRow>
         </>
       )}
-      <Box pb={1}>
-        <Divider />
-      </Box>
-      <CardRow>
-        <Typography color="textSecondary" variant="h5" noWrap>
-          {t('Total')}
-        </Typography>
-        <NumberFormat
-          color="text.secondary"
-          fontSize="h5.fontSize"
-          value={store.tenant.selected.total}
-        />
+      <Divider />
+      <CardRow mt={1}>
+        {t('Total')}
+        <NumberFormat value={store.tenant.selected.total} />
       </CardRow>
     </PageInfoCard>
   );

@@ -1,67 +1,84 @@
+import { List } from '@material-ui/core';
 import moment from 'moment';
-import UploadFileCard from '../components/UploadFileCard';
+import UploadFileItem from '../components/tenants/UploadFileItem';
 
 const page = {
   title: 'UploadFileCard',
-  component: UploadFileCard,
+  component: UploadFileItem,
 };
 
 export default page;
 
-export const FileUploaded = (args) => {
-  return <UploadFileCard {...args} />;
+export const UploadFileList = (args) => {
+  return (
+    <List>
+      {args.items.map(({ key, ...item }) => {
+        return <UploadFileItem key={key} {...item} mb={2} />;
+      })}
+    </List>
+  );
 };
-FileUploaded.args = {
-  documentInfo: {
-    name: 'ID card',
-    description: 'scan of the legal representative ID card',
-    url: '/cloud/document/1',
-  },
-};
-
-export const FileUploadedWithExpiryDate = (args) => {
-  return <UploadFileCard {...args} />;
-};
-FileUploadedWithExpiryDate.args = {
-  documentInfo: {
-    name: 'ID card',
-    description: 'scan of the legal representative ID card',
-    expiryDate: moment().add(30, 'days').toDate(),
-    url: '/cloud/document/1',
-  },
-};
-
-export const FileNotUploaded = (args) => {
-  return <UploadFileCard {...args} />;
-};
-FileNotUploaded.args = {
-  documentInfo: {
-    name: 'ID card',
-    description: 'scan of the legal representative ID card',
-    expiryDate: moment().add(30, 'days').toDate(),
-  },
-};
-
-export const FileCloseToExpire = (args) => {
-  return <UploadFileCard {...args} />;
-};
-FileCloseToExpire.args = {
-  documentInfo: {
-    name: 'ID card',
-    description: 'scan of the legal representative ID card',
-    expiryDate: moment().add(10, 'days').toDate(),
-    url: '/cloud/document/1',
-  },
-};
-
-export const FileExpired = (args) => {
-  return <UploadFileCard {...args} />;
-};
-FileExpired.args = {
-  documentInfo: {
-    name: 'ID card',
-    description: 'scan of the legal representative ID card',
-    expiryDate: moment().subtract(10, 'days').toDate(),
-    url: '/cloud/document/1',
-  },
+UploadFileList.args = {
+  items: [
+    {
+      key: '1',
+      template: {
+        name: 'ID card',
+        description: 'scan of the legal representative ID card',
+        required: true,
+      },
+      document: {
+        url: '/cloud/document/1',
+        updatedDate: moment().toDate(),
+      },
+    },
+    {
+      key: '2',
+      template: {
+        name: 'ID card',
+        description: 'scan of the legal representative ID card',
+        required: false,
+      },
+      document: {
+        url: '/cloud/document/1',
+        updatedDate: moment().toDate(),
+        expiryDate: moment().add(30, 'days').toDate(),
+      },
+    },
+    {
+      key: '3',
+      template: {
+        name: 'ID card',
+        description: 'scan of the legal representative ID card',
+        required: true,
+      },
+      document: {},
+    },
+    {
+      key: '4',
+      template: {
+        name: 'ID card',
+        description: 'scan of the legal representative ID card',
+        required: false,
+      },
+      document: {
+        url: '/cloud/document/1',
+        updatedDate: moment().toDate(),
+        expiryDate: moment().add(10, 'days').toDate(),
+      },
+    },
+    {
+      key: '5',
+      template: {
+        name: 'ID card',
+        description: 'scan of the legal representative ID card',
+        required: true,
+      },
+      document: {
+        url: '/cloud/document/1',
+        updatedDate: moment().toDate(),
+        expiryDate: moment().subtract(10, 'days').toDate(),
+      },
+    },
+  ],
 };

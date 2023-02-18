@@ -37,16 +37,11 @@ const DocumentItem = ({ document, onEdit, onDelete, disabled }) => {
   }, [expiryMoment]);
 
   return (
-    <ListItem button divider dense onClick={handleEditClick}>
+    <ListItem button divider onClick={handleEditClick}>
       <ListItemText
         id={document._id}
         primary={
-          <Box
-            display="flex"
-            flexDirection="column"
-            justifyContent="center"
-            minHeight={65.5}
-          >
+          <Box display="flex" flexDirection="column" justifyContent="center">
             <Box display="flex">
               <Box mr={1}>
                 {document.type === 'text' ? (
@@ -79,13 +74,12 @@ const DocumentItem = ({ document, onEdit, onDelete, disabled }) => {
           </Box>
         }
       />
-      {!disabled ? (
-        <ListItemSecondaryAction>
-          <IconButton edge="end" onClick={handleDeleteClick}>
-            <DeleteIcon />
-          </IconButton>
-        </ListItemSecondaryAction>
-      ) : null}
+
+      <ListItemSecondaryAction>
+        <IconButton edge="end" onClick={handleDeleteClick} disabled={disabled}>
+          <DeleteIcon />
+        </IconButton>
+      </ListItemSecondaryAction>
     </ListItem>
   );
 };
@@ -98,24 +92,22 @@ export default function DocumentList({
 }) {
   return (
     <Paper variant="outlined">
-      <Box height={396} overflow="auto">
-        {documents.length > 0 ? (
-          <List dense>
-            {documents
-              .sort(({ type: type1 }, { type: type2 }) =>
-                type1.localeCompare(type2)
-              )
-              .map((document) => (
-                <DocumentItem
-                  key={document._id}
-                  document={document}
-                  onEdit={onEdit}
-                  onDelete={onDelete}
-                  disabled={disabled}
-                />
-              ))}
-          </List>
-        ) : null}
+      <Box minHeight={200}>
+        <List>
+          {documents
+            ?.sort(({ type: type1 }, { type: type2 }) =>
+              type1.localeCompare(type2)
+            )
+            .map((document) => (
+              <DocumentItem
+                key={document._id}
+                document={document}
+                onEdit={onEdit}
+                onDelete={onDelete}
+                disabled={disabled}
+              />
+            ))}
+        </List>
       </Box>
     </Paper>
   );

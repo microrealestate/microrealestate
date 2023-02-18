@@ -2,11 +2,7 @@ import Alert from '../Alert';
 import { useMemo } from 'react';
 import useTranslation from 'next-translate/useTranslation';
 
-export default function CompulsoryDocumentStatus({
-  tenant,
-  variant = 'full', // 'full', 'compact'
-  ...props
-}) {
+export default function CompulsoryDocumentStatus({ tenant, ...props }) {
   const { t } = useTranslation('common');
 
   const missingDocuments = useMemo(() => {
@@ -17,31 +13,11 @@ export default function CompulsoryDocumentStatus({
     return null;
   }
 
-  if (variant === 'compact') {
-    return (
-      <Alert
-        title={t('Some compulsary documents are missing')}
-        severity="warning"
-        {...props}
-      />
-    );
-  }
-
   return (
     <Alert
-      title={
-        missingDocuments.length > 1
-          ? t('The following documents were not uploaded')
-          : t('The following document was not uploaded')
-      }
+      title={t('Some compulsary documents are missing')}
       severity="warning"
       {...props}
-    >
-      <ul>
-        {missingDocuments.map(({ _id, name }) => {
-          return <li key={_id}>{name}</li>;
-        })}
-      </ul>
-    </Alert>
+    />
   );
 }

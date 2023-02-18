@@ -9,7 +9,7 @@ import {
   UploadField,
 } from '@microrealestate/commonui/components';
 import { Form, Formik, useFormikContext } from 'formik';
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useMemo } from 'react';
 
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -59,7 +59,7 @@ const validationSchema = Yup.object().shape({
     }),
 });
 
-const initialValues = {
+const defaultValues = {
   template: '',
   description: '',
   file: '',
@@ -93,10 +93,11 @@ const FormDialog = ({ open, onClose, children }) => {
 function UploadDialog({ open, setOpen, onSave }) {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
-  const [templates, setTemplates] = useState([]);
 
-  useEffect(() => {
-    const uploadTemplates = store.template.items
+  const selectedTemplate = open?._id ? open : null;
+
+  const templates = useMemo(() => {
+    return store.template.items
       .filter(
         (template) =>
           template.type === 'fileDescriptor' &&
@@ -108,8 +109,12 @@ function UploadDialog({ open, setOpen, onSave }) {
         description: template.description,
         value: toJS(template),
       }));
-    setTemplates(uploadTemplates);
   }, [store.template.items, store.tenant.selected]);
+
+  const initialValues = {
+    ...defaultValues,
+    template: selectedTemplate || '',
+  };
 
   const handleClose = useCallback(() => {
     setOpen(false);
@@ -165,18 +170,24 @@ function UploadDialog({ open, setOpen, onSave }) {
       >
         {({ isSubmitting, values }) => {
           return (
-            <FormDialog open={open} onClose={handleClose}>
+            <FormDialog open={!!open} onClose={handleClose}>
               <DialogTitle>{t('Document to upload')}</DialogTitle>
               <Box p={1}>
                 <Form autoComplete="off">
                   <DialogContent>
                     <Grid container>
                       <Grid item xs={12}>
-                        <SelectField
-                          label={t('Document')}
-                          name="template"
-                          values={templates}
-                        />
+                        {selectedTemplate ? (
+                          <Box fontSize="body1.fontSize">
+                            {selectedTemplate.name}
+                          </Box>
+                        ) : (
+                          <SelectField
+                            label={t('Document')}
+                            name="template"
+                            values={templates}
+                          />
+                        )}
                       </Grid>
                       {values.template?.hasExpiryDate && (
                         <Grid item xs={12}>

@@ -40,7 +40,7 @@ export default class Document {
       const updatedDocument = response.data;
       const index = this.items.findIndex((item) => item._id === documentId);
       if (index > -1) {
-        this.items.splice(index, 1, updatedDocument);
+        this.items = [...this.items.splice(index, 1, updatedDocument)];
       }
       if (this.selected?._id === updatedDocument._id) {
         this.selected = updatedDocument;
@@ -56,6 +56,7 @@ export default class Document {
       const response = yield apiFetcher().post('/documents', document);
       const createdDocument = response.data;
       this.items.push(createdDocument);
+      this.items = [...this.items];
 
       return { status: 200, data: createdDocument };
     } catch (error) {
@@ -69,7 +70,7 @@ export default class Document {
       const updatedDocument = response.data;
       const index = this.items.findIndex((item) => item._id === document._id);
       if (index > -1) {
-        this.items.splice(index, 1, updatedDocument);
+        this.items = [...this.items.splice(index, 1, updatedDocument)];
       }
       if (this.selected?._id === updatedDocument._id) {
         this.selected = updatedDocument;

@@ -44,7 +44,7 @@ function Alert({ title, severity, elevation, children, ...props }) {
   ) : (
     <Box
       border={1}
-      borderColor="grey.300"
+      borderColor="divider"
       borderRadius="borderRadius"
       {...props}
     >
