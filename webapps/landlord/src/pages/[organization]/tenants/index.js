@@ -105,6 +105,7 @@ function TenantItem({ tenant }) {
         flexDirection="column"
         alignItems="stretch"
         withCursor
+        height={370}
         onClick={handleClick}
       >
         <Box display="flex" justifyContent="space-between" m={2}>

@@ -41,13 +41,8 @@ const PropertyOverview = () => {
   return (
     <Box py={2}>
       <CardRow>
-        <Typography color="textSecondary" noWrap>
-          {store.property.selected.name}
-        </Typography>
-        <NumberFormat
-          color="text.secondary"
-          value={store.property.selected.price}
-        />
+        {store.property.selected.name}
+        <NumberFormat value={store.property.selected.price} />
       </CardRow>
       <Map address={store.property.selected.address} />
     </Box>

@@ -20,4 +20,4 @@ function translateDecorator(Story) {
   );
 }
 
-export const decorators = [muiTheme(theme), translateDecorator];
+export const decorators = [muiTheme(theme) /*translateDecorator*/];

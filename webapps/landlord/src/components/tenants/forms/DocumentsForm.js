@@ -1,16 +1,12 @@
-import { useCallback, useContext } from 'react';
-
 import { Button } from '@material-ui/core';
-import CompulsoryDocumentStatus from '../CompulsaryDocumentStatus';
-import { observer } from 'mobx-react-lite';
 import { Section } from '@microrealestate/commonui/components';
-import { StoreContext } from '../../../store';
 import TenantDocumentList from '../TenantDocumentList';
+import UploadFileList from '../UploadFileList';
+import { useCallback } from 'react';
 import useTranslation from 'next-translate/useTranslation';
 
-function DocumentsForm({ onSubmit, readOnly }) {
+export default function DocumentsForm({ onSubmit, readOnly }) {
   const { t } = useTranslation('common');
-  const store = useContext(StoreContext);
 
   const handleNext = useCallback(() => {
     onSubmit();
@@ -18,10 +14,14 @@ function DocumentsForm({ onSubmit, readOnly }) {
 
   return (
     <>
-      <Section label={t('Documents')}>
-        <CompulsoryDocumentStatus tenant={store.tenant.selected} mb={2} />
+      <Section label={t('Uploaded documents')}>
+        <UploadFileList disabled={readOnly} mb={4} />
+      </Section>
+
+      <Section label={t('Text documents')}>
         <TenantDocumentList disabled={readOnly} />
       </Section>
+
       <Button
         variant="contained"
         color="primary"
@@ -33,5 +33,3 @@ function DocumentsForm({ onSubmit, readOnly }) {
     </>
   );
 }
-
-export default observer(DocumentsForm);

@@ -38,10 +38,10 @@ function TenantTabs({ onSubmit /*, setError*/, readOnly }) {
                   display="flex"
                   justifyContent="center"
                   alignItems="center"
-                  color="warning.dark"
+                  color="warning.main"
                   mr={0.8}
                 >
-                  <ReportProblemOutlinedIcon color="inherit" fontSize="small" />
+                  <ReportProblemOutlinedIcon fontSize="small" />
                 </Box>
               ) : null}
               <Box color="text.primary" fontSize="caption.fontSize">
