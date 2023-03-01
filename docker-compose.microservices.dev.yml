@@ -7,11 +7,19 @@ services:
     ports:
       - "$MONGO_PORT:$MONGO_PORT"
   ###############################################################################
-  # NGINX
+  # Gateway
   ###############################################################################
-  nginx:
+  gateway:
+    build:
+      context: .
+      dockerfile: services/gateway/dev.Dockerfile
     volumes:
-      - ./config/nginx/etc/conf.d/dev.conf:/etc/nginx/conf.d/default.template
+      - ./services/common:/usr/app/services/common
+      - ./services/gateway:/usr/app/services/gateway
+      - /usr/app/node_modules
+      - /usr/app/services/gateway/node_modules
+    ports:
+      - "$GATEWAY_DEBUG_PORT:9225"
   ###############################################################################
   # Authenticator
   ###############################################################################
@@ -67,7 +75,7 @@ services:
       - /usr/app/node_modules
       - /usr/app/services/api/node_modules
     ports:
-      - "$API_DEBUG_PORT:9230"
+      - "$API_DEBUG_PORT:9229"
   ###############################################################################
   # Landlord frontend
   ###############################################################################

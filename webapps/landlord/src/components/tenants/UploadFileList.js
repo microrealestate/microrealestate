@@ -90,7 +90,6 @@ function UploadFileList({ disabled }) {
 
   const handleDelete = useCallback(
     (doc) => {
-      console.log({ doc });
       setDocumentToRemove(doc);
     },
     [setDocumentToRemove]

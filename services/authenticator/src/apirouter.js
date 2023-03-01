@@ -22,7 +22,7 @@ const _generateTokens = async (dbAccount) => {
     expiresIn: '600s',
   });
   const accessToken = jwt.sign({ account }, config.ACCESS_TOKEN_SECRET, {
-    expiresIn: '10s',
+    expiresIn: '30s',
   });
 
   // save tokens

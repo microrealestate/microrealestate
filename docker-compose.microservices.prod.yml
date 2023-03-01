@@ -25,17 +25,13 @@ services:
   #   depends_on:
   #     - kibana
   ###############################################################################
-  # NGINX
+  # Gateway
   ###############################################################################
-  # nginx:
-  #   logging:
-  #     driver: 'syslog'
-  #     options:
-  #       syslog-address: 'udp://localhost:$LOGSTASH_UDP_PORT'
-  #       tag: '{{.Name}}/{{.ID}}'
-  #     #   syslog-facility: 'daemon'
-  #   depends_on:
-  #     - kibana
+  gateway:
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: services/gateway/Dockerfile
   ###############################################################################
   # Authenticator
   ###############################################################################

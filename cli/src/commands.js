@@ -61,7 +61,16 @@ const start = async () => {
     );
 
     console.log(
-      chalk.green(`Front-end ready and accessible on ${process.env.APP_URL}`)
+      chalk.green(
+        `Landlord front-end ready and accessible on ${
+          process.env.APP_URL || process.env.LANDLORD_APP_URL
+        }`
+      )
+    );
+    console.log(
+      chalk.green(
+        `Tenant front-end ready and accessible on ${process.env.TENANT_APP_URL}`
+      )
     );
   } catch (error) {
     console.error(chalk.red(error));
@@ -367,7 +376,8 @@ const writeDotEnv = (promptsConfig, envConfig) => {
   const restoreDb = envConfig?.RESTORE_DB || demoMode;
   const dbName = demoMode ? 'demodb' : 'mre';
   const dbUrl = envConfig?.BASE_DB_URL || `mongodb://mongo/${dbName}`;
-  const nginxPort = envConfig?.NGINX_PORT || port || '8000';
+  const gatewayPort = envConfig?.GATEWAY_PORT || port || '8000';
+  const corsEnabled = envConfig?.CORS_ENABLED === 'true';
   const domainUrl =
     envConfig?.DOMAIN_URL ||
     buildUrl({
@@ -378,18 +388,23 @@ const writeDotEnv = (promptsConfig, envConfig) => {
     });
   const apiUrl =
     envConfig?.API_URL ||
-    buildUrl({ protocol, domain, port: '${NGINX_PORT}', basePath: '/api/v2' });
+    buildUrl({
+      protocol,
+      domain,
+      port: '${GATEWAY_PORT}',
+      basePath: '/api/v2',
+    });
   const landlordAppUrl =
     envConfig?.LANDLORD_APP_URL ||
     buildUrl({
       ...destructUrl(promptsConfig.landlordAppUrl),
-      port: '${NGINX_PORT}',
+      port: '${GATEWAY_PORT}',
     });
   const tenantAppUrl =
     envConfig?.TENANT_APP_URL ||
     buildUrl({
       ...destructUrl(promptsConfig.tenantAppUrl),
-      port: '${NGINX_PORT}',
+      port: '${GATEWAY_PORT}',
     });
 
   if (envConfig) {
@@ -409,9 +424,11 @@ const writeDotEnv = (promptsConfig, envConfig) => {
     delete envConfig.EMAIL_BCC;
     delete envConfig.DEMO_MODE;
     delete envConfig.RESTORE_DB;
-    delete envConfig.NGINX_PORT;
+    delete envConfig.GATEWAY_PORT;
+    delete envConfig.CORS_ENABLED;
     delete envConfig.BASE_PATH;
     delete envConfig.APP_URL;
+    delete envConfig.DOMAIN_URL;
     delete envConfig.API_URL;
     delete envConfig.LANDLORD_BASE_PATH;
     delete envConfig.LANDLORD_APP_URL;
@@ -433,6 +450,10 @@ BASE_DB_URL=${dbUrl}
 CIPHER_KEY=${cipherKey}
 CIPHER_IV_KEY=${cipherIvKey}
 
+## gateway
+GATEWAY_PORT=${gatewayPort}
+CORS_ENABLED=${corsEnabled}
+
 ## authenticator
 AUTHENTICATOR_TOKEN_DB_PASSWORD=${tokenDbPassword}
 AUTHENTICATOR_ACCESS_TOKEN_SECRET=${accessTokenSecret}
@@ -452,7 +473,6 @@ DEMO_MODE=${demoMode}
 RESTORE_DB=${restoreDb}
 
 ## frontend
-NGINX_PORT=${nginxPort}
 DOMAIN_URL=${domainUrl}
 API_URL=${apiUrl}
 

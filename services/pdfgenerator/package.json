@@ -2,11 +2,11 @@
   "name": "@microrealestate/pdfgenerator",
   "version": "1.0.0",
   "description": "Generates PDF documents (letters, contracts, invoices...)",
-  "main": "index.js",
+  "main": "./src/index.js",
   "private": true,
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js",
+    "start": "node ./src/index.js",
     "dev": "nodemon -w ../common -w src -w data -w templates -e js,ejs,css,png --inspect=0.0.0.0:9227 src/index.js",
     "lint": "eslint .",
     "format": "prettier --write '**/*.{js,jsx,ts,tsx,json,css}'"

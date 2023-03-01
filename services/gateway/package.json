@@ -1,0 +1,27 @@
+{
+  "name": "@microrealestate/gateway",
+  "version": "1.0.0",
+  "description": "Microservices gateway",
+  "main": "./src/index.js",
+  "private": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node ./src/index.js",
+    "dev": "nodemon -w ../common -w src --inspect=0.0.0.0:9225 ./src/index.js",
+    "lint": "eslint .",
+    "format": "prettier --write '**/*.{js,jsx,ts,tsx,json,css}'"
+  },
+  "author": "Camel Aissani",
+  "license": "MIT",
+  "dependencies": {
+    "@microrealestate/common": "*",
+    "cors": "2.8.5",
+    "express": "4.18.2",
+    "express-winston": "2.6.0",
+    "http-proxy-middleware": "2.0.6",
+    "winston": "2.4.4"
+  },
+  "devDependencies": {
+    "nodemon": "2.0.19"
+  }
+}
