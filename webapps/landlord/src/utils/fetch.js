@@ -216,7 +216,7 @@ export const uploadDocument = async ({
   formData.append('file', file);
   return await apiFetcher().post(endpoint, formData, {
     headers: {
-      timeout: 60000,
+      timeout: 30000,
       'Content-Type': 'multipart/form-data',
     },
   });

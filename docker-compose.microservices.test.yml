@@ -1,8 +1,16 @@
 version: "3.3"
 services:
-  nginx:
+  ###############################################################################
+  # Gateway
+  ###############################################################################
+  gateway:
     environment:
       - RESETSERVICE_PORT=$RESETSERVICE_PORT
+    depends_on:
+      - resetservice
+  ###############################################################################
+  # ResetService
+  ###############################################################################
   resetservice:
     build:
       context: .
@@ -22,7 +30,7 @@ services:
     expose:
       - "$RESETSERVICE_PORT"
     ports:
-      - "$RESETSERVICE_DEBUG_PORT:9225"
+      - "$RESETSERVICE_DEBUG_PORT:9230"
     networks:
       - net
     depends_on:

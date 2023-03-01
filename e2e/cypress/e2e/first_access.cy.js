@@ -83,12 +83,12 @@ describe('User access', () => {
     cy.navToPage('tenants');
     cy.checkUrl('/tenants');
     cy.contains(i18n.getFixedT('fr-FR')('Tenants'));
-    cy.contains(i18n.getFixedT('fr-FR')('New tenant'));
+    cy.contains(i18n.getFixedT('fr-FR')('Add a tenant'));
 
     cy.navToPage('properties');
     cy.checkUrl('/properties');
     cy.contains(i18n.getFixedT('fr-FR')('Properties'));
-    cy.contains(i18n.getFixedT('fr-FR')('New property'));
+    cy.contains(i18n.getFixedT('fr-FR')('Add a property'));
 
     cy.navToPage('accounting');
     cy.checkUrl(`/accounting/${now.getFullYear()}`);

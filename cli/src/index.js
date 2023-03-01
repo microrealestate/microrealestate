@@ -50,6 +50,12 @@ const Main = async () => {
   if (fs.existsSync(path.resolve(process.cwd(), '.env'))) {
     console.log('Found .env file and rely on it to run\n');
     envConfig = parseEnv();
+
+    // for backward compatibility
+    if (envConfig?.NGINX_PORT) {
+      envConfig.GATEWAY_PORT = envConfig.NGINX_PORT;
+      delete envConfig.NGINX_PORT;
+    }
   }
 
   const promptsConfig = await askForEnvironmentVariables(envConfig);

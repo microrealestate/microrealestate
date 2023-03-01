@@ -28,33 +28,32 @@ services:
     networks:
       - net
   ###############################################################################
-  # NGINX
+  # Gateway
   ###############################################################################
-  nginx:
-    image: nginx:1.17
-    volumes:
-      - ./config/nginx/etc/conf.d/prod.conf:/etc/nginx/conf.d/default.template
-    ports:
-      - '$NGINX_PORT:$NGINX_PORT'
+  gateway:
+    image: mre/gateway:latest
     environment:
+      - NODE_ENV
+      - LOGGER_LEVEL=$LOGGER_LEVEL
+      - PORT=$GATEWAY_PORT
+      - EXPOSE_FRONTENDS=$GATEWAY_EXPOSE_FRONTENDS
+      - AUTHENTICATOR_PORT=$AUTHENTICATOR_PORT
+      - API_PORT=$API_PORT
+      - PDFGENERATOR_PORT=$PDFGENERATOR_PORT
       - LANDLORD_FRONTEND_PORT=$LANDLORD_FRONTEND_PORT
       - LANDLORD_BASE_PATH=$LANDLORD_BASE_PATH
       - TENANT_FRONTEND_PORT=$TENANT_FRONTEND_PORT
       - TENANT_BASE_PATH=$TENANT_BASE_PATH
-      - AUTHENTICATOR_PORT=$AUTHENTICATOR_PORT
-      - PDFGENERATOR_PORT=$PDFGENERATOR_PORT
-      - API_PORT=$API_PORT
-      - NGINX_PORT=$NGINX_PORT
-    command:
-      - 'bin/bash'
-      - '-c'
-      - "envsubst '$${NGINX_PORT},$${LANDLORD_BASE_PATH},$${TENANT_BASE_PATH},$${API_PORT},$${AUTHENTICATOR_PORT},$${LANDLORD_FRONTEND_PORT},$${TENANT_FRONTEND_PORT},$${PDFGENERATOR_PORT},$${RESETSERVICE_PORT}' < /etc/nginx/conf.d/default.template > /etc/nginx/conf.d/default.conf && cat /etc/nginx/conf.d/default.conf && exec nginx -g 'daemon off;'"
+      - DOMAIN_URL=$DOMAIN_URL
+      - CORS_ENABLED=$CORS_ENABLED
+    ports:
+      - '$GATEWAY_PORT:$GATEWAY_PORT'
     networks:
       - net
     depends_on:
-      - landlord-frontend
-      - tenant-frontend
       - authenticator
+      - api
+      - pdfgenerator
   ###############################################################################
   # Authenticator
   ###############################################################################
@@ -178,6 +177,7 @@ services:
       - REFRESH_TOKEN_SECRET=$AUTHENTICATOR_REFRESH_TOKEN_SECRET
       - DEMO_MODE=$DEMO_MODE
       - SIGNUP=$SIGNUP
+      - CORS_ENABLED=$CORS_ENABLED
     expose:
       - '$LANDLORD_FRONTEND_PORT'
     extra_hosts:
@@ -185,8 +185,7 @@ services:
     networks:
       - net
     depends_on:
-      - api
-      - authenticator
+      - gateway
   ###############################################################################
   # Tenant frontend
   ###############################################################################
@@ -206,6 +205,7 @@ services:
       - DOCKER_API_URL=$DOCKER_API_URL
       - REFRESH_TOKEN_SECRET=$AUTHENTICATOR_REFRESH_TOKEN_SECRET
       - DEMO_MODE=$DEMO_MODE
+      - CORS_ENABLED=$CORS_ENABLED
     expose:
       - '$TENANT_FRONTEND_PORT'
     extra_hosts:
@@ -213,8 +213,7 @@ services:
     networks:
       - net
     depends_on:
-      - api
-      - authenticator
+      - gateway
 ###############################################################################
 # microservices network
 ###############################################################################
