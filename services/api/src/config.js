@@ -9,9 +9,8 @@ const toBoolean = (value) => {
 
 module.exports = {
   ...baseConfig,
-  appHttpPort: process.env.PORT || 8080,
+  PORT: process.env.PORT || 8080,
   businesslogic: 'FR',
-  productive: process.env.NODE_ENV === 'production',
   signup: toBoolean(process.env.SIGNUP || false),
   restoreDatabase: toBoolean(process.env.RESTORE_DB || true),
   demoMode: toBoolean(process.env.DEMO_MODE || true),

@@ -2,7 +2,6 @@ const baseConfig = require('@microrealestate/common/config');
 
 module.exports = {
   ...baseConfig,
-  PRODUCTIVE: process.env.NODE_ENV === 'production',
   PORT: process.env.PORT || 8080,
   EXPOSE_FRONTENDS: process.env.EXPOSE_FRONTENDS === 'true',
   AUTHENTICATOR_PORT: process.env.AUTHENTICATOR_PORT,
