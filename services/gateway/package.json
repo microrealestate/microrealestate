@@ -16,8 +16,6 @@
   "dependencies": {
     "@microrealestate/common": "*",
     "cors": "2.8.5",
-    "express": "4.18.2",
-    "express-winston": "2.6.0",
     "http-proxy-middleware": "2.0.6",
     "winston": "2.4.4"
   },

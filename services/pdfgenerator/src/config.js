@@ -5,7 +5,6 @@ const root_dir = path.join(__dirname, '..');
 
 module.exports = {
   ...baseConfig,
-  PRODUCTIVE: process.env.NODE_ENV === 'production',
   PORT: process.env.PORT || 8082,
   DATA_DIRECTORY: process.env.DATA_DIRECTORY || path.join(root_dir, '/data'),
   TEMPLATES_DIRECTORY:

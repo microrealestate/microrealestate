@@ -20,6 +20,7 @@ services:
   ###############################################################################
   mongo:
     image: mongo:4.4
+    command: --quiet
     expose:
       - '$MONGO_PORT'
     volumes:

@@ -33,7 +33,7 @@ module.exports = {
           to: email.toLowerCase(),
           replyTo: replyToEmail,
         };
-        if (config.PRODUCTIVE && data.landlord.members.length) {
+        if (config.PRODUCTION && data.landlord.members.length) {
           recipients = {
             ...recipients,
             bcc: data.landlord.members

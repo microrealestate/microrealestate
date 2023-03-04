@@ -5,7 +5,6 @@ const root_dir = path.join(__dirname, '..');
 
 module.exports = {
   ...baseConfig,
-  PRODUCTIVE: process.env.NODE_ENV === 'production',
   ALLOW_SENDING_EMAILS:
     process.env.NODE_ENV === 'production' ||
     process.env.ALLOW_SENDING_EMAILS === 'true',

@@ -7,10 +7,13 @@ const {
 const templates = require('./templates');
 const documents = require('./documents');
 
+const apiRoutes = express.Router('/pdfgenerator');
+apiRoutes.use(needAccessToken(config.ACCESS_TOKEN_SECRET));
+apiRoutes.use(checkOrganization());
+apiRoutes.use('/templates', templates);
+apiRoutes.use('/documents', documents);
+
 const routes = express.Router();
-routes.use(needAccessToken(config.ACCESS_TOKEN_SECRET));
-routes.use(checkOrganization());
-routes.use('/templates', templates);
-routes.use('/documents', documents);
+routes.use('/pdfgenerator', apiRoutes);
 
 module.exports = routes;

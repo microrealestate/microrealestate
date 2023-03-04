@@ -3,7 +3,7 @@ const logger = require('winston');
 
 module.exports = {
   LOGGER_LEVEL: process.env.LOGGER_LEVEL || 'debug',
-
+  PRODUCTION: process.env.NODE_ENV === 'production',
   MONGO_URL:
     process.env.MONGO_URL ||
     process.env.BASE_DB_URL ||
@@ -35,6 +35,7 @@ module.exports = {
     if (escapedConfig.MAILGUN?.apiKey) {
       escapedConfig.MAILGUN.apiKey = '****';
     }
+    logger.debug('Environment variables set:');
     Object.entries(escapedConfig)
       .sort(([key1], [key2]) => key1.localeCompare(key2))
       .reduce(
