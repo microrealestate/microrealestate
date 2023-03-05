@@ -3009,7 +3009,8 @@ __metadata:
     formik: 2.2.9
     moment: 2.29.4
     next: 13.2.3
-    next-translate: 1.6.0
+    next-translate: 2.0.2
+    next-translate-plugin: 2.0.2
     prop-types: 15.8.1
     react: 18.2.0
     react-dom: 18.2.0
@@ -3118,7 +3119,8 @@ __metadata:
     moment: 2.29.4
     nanoid: 4.0.1
     next: 13.2.3
-    next-translate: 1.6.0
+    next-translate: 2.0.2
+    next-translate-plugin: 2.0.2
     pdfjs-dist: 2.14.305
     pigeon-maps: 0.21.3
     prop-types: 15.8.1
@@ -3184,7 +3186,8 @@ __metadata:
     material-ui-formik-components: 0.7.3
     moment: 2.29.4
     next: 13.2.3
-    next-translate: 1.6.0
+    next-translate: 2.0.2
+    next-translate-plugin: 2.0.2
     react: 18.2.0
     react-dom: 18.2.0
   languageName: unknown
@@ -17673,13 +17676,24 @@ __metadata:
   languageName: node
   linkType: hard
 
-"next-translate@npm:1.6.0":
-  version: 1.6.0
-  resolution: "next-translate@npm:1.6.0"
+"next-translate-plugin@npm:2.0.2":
+  version: 2.0.2
+  resolution: "next-translate-plugin@npm:2.0.2"
+  dependencies:
+    typescript: 4.5.2
+  peerDependencies:
+    next-translate: ">= 2.0.0-canary.1"
+  checksum: 693a6c1586d490510c3521a983fd694cecac7edc9e7dd583a0f564058d253b0130f40fabf4a69667c4d8ec90b2043de56de6a3f4bbcb7ed9bdd4ce09d7d55f53
+  languageName: node
+  linkType: hard
+
+"next-translate@npm:2.0.2":
+  version: 2.0.2
+  resolution: "next-translate@npm:2.0.2"
   peerDependencies:
     next: ">= 10.0.0"
     react: ">= 16.8.0"
-  checksum: 766475bc7362fc8b6a5409586d6248e0c03405d71b5ced2274fefc275803eb68137225952ed9d1651d8bd396fec14fad42ad63b4eca64e2b038dbcc7926a3ddc
+  checksum: 3c14bcf9e7056be3480d6cb3888e62ff30ca3188755b1a9efc3ce159d0599349001bfd262c0ae5efcfdbea08b44c40cdd39a9226e861d598bdbd943f9fb52786
   languageName: node
   linkType: hard
 
@@ -23086,6 +23100,26 @@ __metadata:
   version: 0.0.6
   resolution: "typedarray@npm:0.0.6"
   checksum: 33b39f3d0e8463985eeaeeacc3cb2e28bc3dfaf2a5ed219628c0b629d5d7b810b0eb2165f9f607c34871d5daa92ba1dc69f49051cf7d578b4cbd26c340b9d1b1
+  languageName: node
+  linkType: hard
+
+"typescript@npm:4.5.2":
+  version: 4.5.2
+  resolution: "typescript@npm:4.5.2"
+  bin:
+    tsc: bin/tsc
+    tsserver: bin/tsserver
+  checksum: 74f9ce65d532bdf5d0214b3f60cf37992180023388c87a11ee6f838a803067ef0b63c600fa501b0deb07f989257dce1e244c9635ed79feca40bbccf6e0aa1ebc
+  languageName: node
+  linkType: hard
+
+"typescript@patch:typescript@4.5.2#~builtin<compat/typescript>":
+  version: 4.5.2
+  resolution: "typescript@patch:typescript@npm%3A4.5.2#~builtin<compat/typescript>::version=4.5.2&hash=bcec9a"
+  bin:
+    tsc: bin/tsc
+    tsserver: bin/tsserver
+  checksum: e25e689eba64f7da7cfc43f8ea76cac7176b56caba42655f0a4cb29c0b7c36e67ca54f33df95902859f56108464245d8b45bcdfe21e3d66d9560feb8db780246
   languageName: node
   linkType: hard
 

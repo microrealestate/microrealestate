@@ -67,7 +67,7 @@ function MyApp(props) {
       <ThemeProvider theme={theme}>
         {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
         <CssBaseline />
-        <InjectStoreContext initialData={pageProps.initialState.store}>
+        <InjectStoreContext initialData={pageProps.initialState?.store}>
           <Application {...pageProps}>
             <Component {...pageProps} />
           </Application>
