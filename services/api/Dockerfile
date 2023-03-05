@@ -1,4 +1,4 @@
-FROM node:16.18-alpine
+FROM node:18-alpine
 
 RUN apk --no-cache add build-base python3 mongodb-tools
 
