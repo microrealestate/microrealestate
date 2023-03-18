@@ -13,6 +13,7 @@ if (process.env.API_URL) {
 module.exports = defineConfig({
   viewportWidth: 1200,
   viewportHeight: 1200,
+  defaultCommandTimeout: 10000,
   env: {
     API_BASEURL,
   },
