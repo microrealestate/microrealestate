@@ -59,6 +59,7 @@ const RichTextEditor = ({
       }),
     ],
     onUpdate({ editor }) {
+      setSaving(true);
       triggerSaveContents.start();
       handlePageBreaks(editor);
     },
@@ -84,18 +85,19 @@ const RichTextEditor = ({
   const triggerSaveContents = useTimeout(async () => {
     if (editor) {
       try {
-        setSaving(true);
         await onSave(title, editor.getJSON(), jsesc(editor.getHTML()));
-        setSaving(false);
         triggerClearSaveState.start();
       } catch (error) {
         console.error(error);
+      } finally {
+        setSaving(false);
       }
     }
   }, SAVE_DELAY);
 
   const onTitleChange = useCallback(
     (value) => {
+      setSaving(true);
       setTitle(value);
       triggerSaveContents.start();
     },
