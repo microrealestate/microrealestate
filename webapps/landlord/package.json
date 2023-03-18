@@ -20,6 +20,7 @@
     "@material-ui/lab": "4.0.0-alpha.61",
     "@material-ui/pickers": "3.3.10",
     "@microrealestate/commonui": "*",
+    "@next/font": "13.2.3",
     "@react-pdf-viewer/core": "3.6.0",
     "@react-pdf-viewer/default-layout": "3.6.0",
     "@react-pdf-viewer/full-screen": "3.6.0",
@@ -57,7 +58,7 @@
     "react": "18.2.0",
     "react-awesome-lightbox": "1.8.1",
     "react-dom": "18.2.0",
-    "recharts": "2.4.1",
+    "recharts": "2.5.0",
     "universal-cookie": "4.0.4",
     "yup": "0.32.11"
   },

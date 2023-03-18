@@ -1,13 +1,11 @@
 import { Box, Container, Paper, Typography } from '@material-ui/core';
-import { getStoreInstance, StoreContext } from '../store';
-import { isServer, redirect } from '../utils';
 import React, { useContext } from 'react';
 
 import Landlord from '../components/organization/LandlordForm';
 import { observer } from 'mobx-react-lite';
 import Page from '../components/Page';
 import { setOrganizationId } from '../utils/fetch';
-import { toJS } from 'mobx';
+import { StoreContext } from '../store';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 import Welcome from '../components/Welcome';
@@ -59,7 +57,12 @@ const FirstAccess = observer(() => {
     });
   };
 
-  return !store.organization.selected?.name ? (
+  if (store.organization.items.length) {
+    router.push(`/${store.organization.selected.name}/dashboard`);
+    return null;
+  }
+
+  return (
     <Page>
       <Container maxWidth="sm">
         <Box my={5}>
@@ -77,25 +80,7 @@ const FirstAccess = observer(() => {
         </Paper>
       </Container>
     </Page>
-  ) : null;
+  );
 });
-
-FirstAccess.getInitialProps = async (context) => {
-  const store = isServer() ? context.store : getStoreInstance();
-
-  if (isServer()) {
-    if (store.organization.selected?.name) {
-      redirect(context, `/${store.organization.selected.name}/dashboard`);
-      return {};
-    }
-  }
-
-  const props = {
-    initialState: {
-      store: isServer() ? toJS(store) : store,
-    },
-  };
-  return props;
-};
 
 export default withAuthentication(FirstAccess);

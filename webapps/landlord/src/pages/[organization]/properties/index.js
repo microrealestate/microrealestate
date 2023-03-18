@@ -10,21 +10,20 @@ import {
   Paper,
   Typography,
 } from '@material-ui/core';
-import { getStoreInstance, StoreContext } from '../../../store';
 import { useCallback, useContext, useState } from 'react';
 
 import AddIcon from '@material-ui/icons/Add';
 import { EmptyIllustration } from '../../../components/Illustrations';
 import Hidden from '../../../components/HiddenSSRCompatible';
-import { isServer } from '../../../utils';
 import { MobileButton } from '../../../components/MobileMenuButton';
 import NumberFormat from '../../../components/NumberFormat';
 import { observer } from 'mobx-react-lite';
 import Page from '../../../components/Page';
 import PropertyAvatar from '../../../components/properties/PropertyAvatar';
 import SearchFilterBar from '../../../components/SearchFilterBar';
-import { toJS } from 'mobx';
+import { StoreContext } from '../../../store';
 import types from '../../../components/properties/types';
+import useFillStore from '../../../hooks/useFillStore';
 import useNewPropertyDialog from '../../../components/properties/NewPropertyDialog';
 import usePagination from '../../../hooks/usePagination';
 import { useRouter } from 'next/router';
@@ -219,6 +218,10 @@ function PropertyList({ properties }) {
   );
 }
 
+async function fetchData(store) {
+  return await store.property.fetch();
+}
+
 const Properties = observer(function Properties() {
   const { t } = useTranslation('common');
   const router = useRouter();
@@ -232,12 +235,15 @@ const Properties = observer(function Properties() {
 
   const [NewPropertyDialog, setOpenNewPropertyDialog] = useNewPropertyDialog();
 
+  const [fetching] = useFillStore(fetchData);
+
   const onNewProperty = useCallback(() => {
     setOpenNewPropertyDialog(true);
   }, [setOpenNewPropertyDialog]);
 
   return (
     <Page
+      loading={fetching}
       title={t('Properties')}
       ActionBar={
         <Box display="flex" justifyContent="end">
@@ -280,20 +286,5 @@ const Properties = observer(function Properties() {
     </Page>
   );
 });
-
-Properties.getInitialProps = async (context) => {
-  const store = isServer() ? context.store : getStoreInstance();
-
-  const { status } = await store.property.fetch();
-  if (status !== 200) {
-    return { error: { statusCode: status } };
-  }
-
-  return {
-    initialState: {
-      store: isServer() ? toJS(store) : store,
-    },
-  };
-};
 
 export default withAuthentication(Properties);

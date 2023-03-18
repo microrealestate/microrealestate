@@ -1,4 +1,3 @@
-import { getStoreInstance, StoreContext } from '../../../store';
 import { Paper, Tab, Tabs } from '@material-ui/core';
 import { TabPanel, useTabChangeHelper } from '../../../components/Tabs';
 import { useCallback, useContext } from 'react';
@@ -6,15 +5,15 @@ import { useCallback, useContext } from 'react';
 import { ADMIN_ROLE } from '../../../store/User';
 import BillingForm from '../../../components/organization/BillingForm';
 import getConfig from 'next/config';
-import { isServer } from '../../../utils';
 import LandlordForm from '../../../components/organization/LandlordForm';
 import Leases from '../../../components/organization/Leases';
 import Members from '../../../components/organization/Members';
 import { observer } from 'mobx-react-lite';
 import Page from '../../../components/Page';
 import { setOrganizationId } from '../../../utils/fetch';
+import { StoreContext } from '../../../store';
 import ThirdPartiesForm from '../../../components/organization/ThirdPartiesForm';
-import { toJS } from 'mobx';
+import useFillStore from '../../../hooks/useFillStore';
 import useTranslation from 'next-translate/useTranslation';
 import { withAuthentication } from '../../../components/Authentication';
 
@@ -71,9 +70,14 @@ const SettingTabs = observer(({ onSubmit }) => {
   );
 });
 
+async function fetchData(store) {
+  return await store.lease.fetch();
+}
+
 const Settings = observer(() => {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
+  const [fetching] = useFillStore(fetchData);
 
   const onSubmit = useCallback(
     async (orgPart) => {
@@ -132,27 +136,12 @@ const Settings = observer(() => {
   );
 
   return (
-    <Page>
+    <Page loading={fetching}>
       <Paper>
         <SettingTabs onSubmit={onSubmit} />
       </Paper>
     </Page>
   );
 });
-
-Settings.getInitialProps = async (context) => {
-  const store = isServer() ? context.store : getStoreInstance();
-
-  const { status } = await store.lease.fetch();
-  if (status !== 200) {
-    return { error: { statusCode: status } };
-  }
-
-  return {
-    initialState: {
-      store: isServer() ? toJS(store) : store,
-    },
-  };
-};
 
 export default withAuthentication(Settings, ADMIN_ROLE);

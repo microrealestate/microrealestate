@@ -1,12 +1,10 @@
 import { Box, Paper } from '@material-ui/core';
-import { getStoreInstance, StoreContext } from '../../../../store';
 import { useCallback, useContext } from 'react';
 
 import { ADMIN_ROLE } from '../../../../store/User';
 import BreadcrumbBar from '../../../../components/BreadcrumbBar';
 import DeleteIcon from '@material-ui/icons/Delete';
 import Hidden from '../../../../components/HiddenSSRCompatible';
-import { isServer } from '../../../../utils';
 import LeaseStepper from '../../../../components/organization/lease/LeaseStepper';
 import LeaseTabs from '../../../../components/organization/lease/LeaseTabs';
 import { MobileButton } from '../../../../components/MobileMenuButton';
@@ -14,15 +12,33 @@ import { observer } from 'mobx-react-lite';
 import Page from '../../../../components/Page';
 import { RestrictButton } from '../../../../components/RestrictedComponents';
 import router from 'next/router';
-import { toJS } from 'mobx';
+import { StoreContext } from '../../../../store';
 import useConfirmDialog from '../../../../components/ConfirmDialog';
+import useFillStore from '../../../../hooks/useFillStore';
 import useTranslation from 'next-translate/useTranslation';
 import { withAuthentication } from '../../../../components/Authentication';
+
+async function fetchData(store, router) {
+  const {
+    param: [leaseId],
+  } = router.query;
+
+  const results = await Promise.all([
+    store.lease.fetchOne(leaseId),
+    store.template.fetch(),
+    store.template.fetchFields(),
+  ]);
+
+  store.lease.setSelected(store.lease.items.find(({ _id }) => _id === leaseId));
+
+  return results;
+}
 
 const Lease = observer(() => {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const [ConfirmDialog, setRemoveLease] = useConfirmDialog();
+  const [fetching] = useFillStore(fetchData, [router]);
 
   const {
     query: {
@@ -105,6 +121,7 @@ const Lease = observer(() => {
 
   return (
     <Page
+      loading={fetching}
       title={store.lease.selected?.name || t('New contract')}
       ActionBar={
         <Box display="flex" justifyContent="space-between">
@@ -152,34 +169,5 @@ const Lease = observer(() => {
     </Page>
   );
 });
-
-Lease.getInitialProps = async (context) => {
-  const store = isServer() ? context.store : getStoreInstance();
-  const {
-    param: [leaseId],
-  } = context.query;
-
-  const responses = await Promise.all([
-    store.lease.fetchOne(leaseId),
-    store.template.fetch(),
-    store.template.fetchFields(),
-  ]);
-
-  const errorStatusCode = responses.find(({ status }) => status !== 200);
-
-  if (errorStatusCode) {
-    return { error: { statusCode: errorStatusCode } };
-  }
-
-  const [leaseResponse] = responses;
-  const { data: lease } = leaseResponse;
-  store.lease.setSelected(lease);
-
-  return {
-    initialState: {
-      store: isServer() ? toJS(store) : store,
-    },
-  };
-};
 
 export default withAuthentication(Lease, ADMIN_ROLE);

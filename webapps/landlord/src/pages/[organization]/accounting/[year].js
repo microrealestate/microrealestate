@@ -13,7 +13,7 @@ import {
   TableRow,
   Typography,
 } from '@material-ui/core';
-import { useCallback, useContext, useEffect, useState } from 'react';
+import { useCallback, useContext, useState } from 'react';
 
 import { downloadDocument } from '../../../utils/fetch';
 import { EmptyIllustration } from '../../../components/Illustrations';
@@ -26,6 +26,7 @@ import PeriodPicker from '../../../components/PeriodPicker';
 import PropertyIcon from '../../../components/properties/PropertyIcon';
 import SaveAltIcon from '@material-ui/icons/SaveAlt';
 import { StoreContext } from '../../../store';
+import useFillStore from '../../../hooks/useFillStore';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 import { withAuthentication } from '../../../components/Authentication';
@@ -445,19 +446,15 @@ const Settlements = ({ id, onCSVClick, onDownloadYearInvoices }) => {
   );
 };
 
+async function fetchData(store, router) {
+  return await store.accounting.fetch(router.query.year);
+}
+
 const Accounting = observer(() => {
   const { t } = useTranslation('common');
   const router = useRouter();
   const store = useContext(StoreContext);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    (async () => {
-      setLoading(true);
-      await store.accounting.fetch(router.query.year);
-      setLoading(false);
-    })();
-  }, [store, router.query.year]);
+  const [fetching] = useFillStore(fetchData, [router]);
 
   const getSettlementsAsCsv = useCallback(
     async (e) => {
@@ -509,7 +506,7 @@ const Accounting = observer(() => {
   );
 
   return (
-    <Page loading={loading} ActionBar={<PeriodToolbar />}>
+    <Page loading={fetching} ActionBar={<PeriodToolbar />}>
       {store.accounting?.data?.incomingTenants?.length ||
       store.accounting?.data?.outgoingTenants?.length ||
       store.accounting?.data?.settlements?.length ? (

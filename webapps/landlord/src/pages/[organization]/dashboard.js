@@ -1,4 +1,4 @@
-import { useContext, useEffect, useMemo, useState } from 'react';
+import { useContext, useMemo } from 'react';
 
 import { Box } from '@material-ui/core';
 import GeneralFigures from '../../components/dashboard/GeneralFigures';
@@ -8,31 +8,22 @@ import { observer } from 'mobx-react-lite';
 import Page from '../../components/Page';
 import Shortcuts from '../../components/dashboard/Shortcuts';
 import { StoreContext } from '../../store';
+import useFillStore from '../../hooks/useFillStore';
 import Welcome from '../../components/Welcome';
 import { withAuthentication } from '../../components/Authentication';
 import YearFigures from '../../components/dashboard/YearFigures';
 
-const fetchDashboardData = async (store) => {
-  const responses = await Promise.all([
+async function fetchData(store) {
+  return await Promise.all([
     store.dashboard.fetch(),
     store.tenant.fetch(),
     store.lease.fetch(),
   ]);
-
-  return responses.find(({ status }) => status !== 200);
-};
+}
 
 const Dashboard = observer(() => {
   const store = useContext(StoreContext);
-  const [ready, setReady] = useState(false);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      await fetchDashboardData(store);
-      setReady(true);
-    };
-    fetchData();
-  }, [store]);
+  const [fetching] = useFillStore(fetchData);
 
   const isFirstConnection = useMemo(() => {
     return (
@@ -47,7 +38,7 @@ const Dashboard = observer(() => {
   ]);
 
   return (
-    <Page loading={!ready}>
+    <Page loading={fetching}>
       <Box my={5}>
         <Welcome />
       </Box>

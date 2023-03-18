@@ -2773,6 +2773,7 @@ __metadata:
     "@material-ui/pickers": 3.3.10
     "@microrealestate/commonui": "*"
     "@netlify/plugin-nextjs": 4.32.2
+    "@next/font": 13.2.3
     "@react-pdf-viewer/core": 3.6.0
     "@react-pdf-viewer/default-layout": 3.6.0
     "@react-pdf-viewer/full-screen": 3.6.0
@@ -2824,7 +2825,7 @@ __metadata:
     react: 18.2.0
     react-awesome-lightbox: 1.8.1
     react-dom: 18.2.0
-    recharts: 2.4.1
+    recharts: 2.5.0
     require-from-string: 2.0.2
     storybook-addon-material-ui: 0.9.0-alpha.24
     universal-cookie: 4.0.4
@@ -2873,6 +2874,7 @@ __metadata:
     "@material-ui/lab": 4.0.0-alpha.61
     "@microrealestate/commonui": "*"
     "@netlify/plugin-nextjs": 4.32.2
+    "@next/font": 13.2.4
     axios: 0.27.2
     eslint: 8.36.0
     eslint-config-next: 13.2.4
@@ -3181,6 +3183,20 @@ __metadata:
   dependencies:
     glob: 7.1.7
   checksum: 95f9a84922ec1c73aa51b794f9d2dc49c165a1c793db17cab4558097d31aaf65c2e5e3390d0691c056fac105562d6dc974b13b1df79981f8b7faba005f6eb3b5
+  languageName: node
+  linkType: hard
+
+"@next/font@npm:13.2.3":
+  version: 13.2.3
+  resolution: "@next/font@npm:13.2.3"
+  checksum: 241baec8c441448df2d7e7755eca4876e018a874555ddd22816585b50f03eac357f15576762ad1011b4a4c245e7dba9675ae7ec4289196943a51bc25fa203863
+  languageName: node
+  linkType: hard
+
+"@next/font@npm:13.2.4":
+  version: 13.2.4
+  resolution: "@next/font@npm:13.2.4"
+  checksum: f5319c895b6a6633b181f1c17d52dd98753dd7706db27644bf12383e0fa164f5223b8c5c70eb28edb9b9a113cdfb04a995accc16dba1655b850c9db8a05036b7
   languageName: node
   linkType: hard
 
@@ -19686,19 +19702,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-resize-detector@npm:^7.1.2":
-  version: 7.1.2
-  resolution: "react-resize-detector@npm:7.1.2"
+"react-resize-detector@npm:^8.0.4":
+  version: 8.0.4
+  resolution: "react-resize-detector@npm:8.0.4"
   dependencies:
     lodash: ^4.17.21
   peerDependencies:
     react: ^16.0.0 || ^17.0.0 || ^18.0.0
     react-dom: ^16.0.0 || ^17.0.0 || ^18.0.0
-  checksum: 55f4abad7f7523d16b081b5ab20f75c539a54a08253ce7e9df473d48386f42ceca6c31584ba9fa26e3528b498ef6685ec77fb9a22cffc97df05fb326d0bf1b26
+  checksum: f53a99cc5413844a6fc2a713b0b1094d23947897c14ab64481938632f4e77fadded52d91a6619055abf6240c7cacd6cc7dd492ea866639b302f81df680709d45
   languageName: node
   linkType: hard
 
-"react-smooth@npm:^2.0.1":
+"react-smooth@npm:^2.0.2":
   version: 2.0.2
   resolution: "react-smooth@npm:2.0.2"
   dependencies:
@@ -19907,16 +19923,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"recharts@npm:2.4.1":
-  version: 2.4.1
-  resolution: "recharts@npm:2.4.1"
+"recharts@npm:2.5.0":
+  version: 2.5.0
+  resolution: "recharts@npm:2.5.0"
   dependencies:
     classnames: ^2.2.5
     eventemitter3: ^4.0.1
     lodash: ^4.17.19
     react-is: ^16.10.2
-    react-resize-detector: ^7.1.2
-    react-smooth: ^2.0.1
+    react-resize-detector: ^8.0.4
+    react-smooth: ^2.0.2
     recharts-scale: ^0.4.4
     reduce-css-calc: ^2.1.8
     victory-vendor: ^36.6.8
@@ -19924,7 +19940,7 @@ __metadata:
     prop-types: ^15.6.0
     react: ^16.0.0 || ^17.0.0 || ^18.0.0
     react-dom: ^16.0.0 || ^17.0.0 || ^18.0.0
-  checksum: 95c2fe46ae331e9dbd0aad97b1005083fd5ea03c95680cdb267db07be2b6598cc7dfb28b4f604d59f5bdc504ba56b1cb576b4dd47995944866d1a6736b3d9790
+  checksum: a40d1788589926fa8a5844868a338aae75a2077a2bc2ac57fc5d61ad21fb62660aed6f00ae8d8a94948b9143255c1760db0d386ecb257ed8290dd7f164b5bd5f
   languageName: node
   linkType: hard
 

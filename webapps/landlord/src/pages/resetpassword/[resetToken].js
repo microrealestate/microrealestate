@@ -6,7 +6,6 @@ import React, { useContext } from 'react';
 import { SubmitButton, TextField } from '@microrealestate/commonui/components';
 
 import LocationCityIcon from '@material-ui/icons/LocationCity';
-import { observer } from 'mobx-react-lite';
 import Page from '../../components/Page';
 import { StoreContext } from '../../store';
 import { useRouter } from 'next/router';
@@ -24,7 +23,7 @@ const validationSchema = Yup.object().shape({
     .oneOf([Yup.ref('password'), null], 'Passwords must match'), // TODO translate this
 });
 
-const ResetPassword = observer(() => {
+export default function ResetPassword() {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const router = useRouter();
@@ -127,6 +126,4 @@ const ResetPassword = observer(() => {
       </Paper>
     </Page>
   );
-});
-
-export default ResetPassword;
+}

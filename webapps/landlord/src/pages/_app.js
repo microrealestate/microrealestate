@@ -9,18 +9,18 @@ import '../components/RichTextEditor/richtexteditor.css';
 
 import * as Yup from 'yup';
 
-import App from 'next/app';
 import Application from '../components/Application';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import getConfig from 'next/config';
 import Head from 'next/head';
 import { InjectStoreContext } from '../store';
+import { Roboto } from 'next/font/google';
 import theme from '../styles/theme';
 import { ThemeProvider } from '@material-ui/core/styles';
 import { useEffect } from 'react';
 
 const {
-  publicRuntimeConfig: { APP_NAME, DEMO_MODE },
+  publicRuntimeConfig: { APP_NAME, DEMO_MODE, BASE_PATH },
 } = getConfig();
 
 const APP_TITLE = [APP_NAME, 'Landlord'];
@@ -48,6 +48,12 @@ Yup.addMethod(Yup.string, 'emails', function (message) {
   });
 });
 
+const roboto = Roboto({
+  weight: ['300', '400', '500', '700'],
+  display: 'swap',
+  subsets: ['latin', 'latin-ext'],
+});
+
 function MyApp(props) {
   const { Component, pageProps } = props;
 
@@ -63,26 +69,31 @@ function MyApp(props) {
     <>
       <Head>
         <title>{APP_TITLE.join(' - ')}</title>
+        {/* PWA primary color */}
+        <meta name="theme-color" content={theme.palette.primary.main} />
+        <meta
+          name="viewport"
+          content="minimum-scale=1, initial-scale=1, width=device-width"
+        />
+        <link rel="shortcut icon" href={`${BASE_PATH}/favicon.svg`} />
+        <link
+          href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.min.css"
+          rel="stylesheet"
+        />
       </Head>
-      <ThemeProvider theme={theme}>
-        {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
-        <CssBaseline />
-        <InjectStoreContext initialData={pageProps.initialState?.store}>
-          <Application {...pageProps}>
-            <Component {...pageProps} />
-          </Application>
-        </InjectStoreContext>
-      </ThemeProvider>
+      <main className={roboto.className}>
+        <ThemeProvider theme={theme}>
+          {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
+          <CssBaseline />
+          <InjectStoreContext initialData={pageProps.initialState?.store}>
+            <Application {...pageProps}>
+              <Component {...pageProps} />
+            </Application>
+          </InjectStoreContext>
+        </ThemeProvider>
+      </main>
     </>
   );
 }
-
-MyApp.getInitialProps = async (appContext) => {
-  const appProps = await App.getInitialProps(appContext);
-  if (!appProps.pageProps.initialState) {
-    appProps.pageProps.initialState = {};
-  }
-  return { ...appProps };
-};
 
 export default MyApp;

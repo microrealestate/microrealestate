@@ -1,119 +1,53 @@
-import { getStoreInstance, StoreContext } from '../store';
-import { isServer, redirect } from '../utils';
-import { memo, useContext, useEffect } from 'react';
-import { setAcceptLanguage, setOrganizationId } from '../utils/fetch';
+import { setupOrganizationsInStore, StoreContext } from '../store';
 
 import ErrorPage from 'next/error';
 import getConfig from 'next/config';
-import moment from 'moment';
-import { Observer } from 'mobx-react-lite';
-import { toJS } from 'mobx';
+import { useContext } from 'react';
+import useFillStore from '../hooks/useFillStore';
+import { useRouter } from 'next/router';
 
 const {
   publicRuntimeConfig: { BASE_PATH },
 } = getConfig();
 
+async function fetchData(store, router) {
+  if (store.user.signedIn) {
+    return store.organization.items;
+  }
+
+  await setupOrganizationsInStore(router.query.organization);
+  return store.organization.items;
+}
+
 export function withAuthentication(PageComponent, grantedRole) {
-  const MemoizedPageComponent = memo(PageComponent);
   function WithAuth(pageProps) {
     const store = useContext(StoreContext);
+    const router = useRouter();
+    const [fetching] = useFillStore(fetchData, [router]);
 
-    useEffect(() => {
-      if ([401, 403].includes(pageProps.error?.statusCode)) {
-        window.location.assign(BASE_PATH); // will be redirected to /signin
-      }
-    }, [pageProps.error?.statusCode]);
-
-    if ([401, 403].includes(pageProps.error?.statusCode)) {
+    if (fetching) {
       return null;
     }
 
-    if (pageProps.error) {
-      return <ErrorPage statusCode={pageProps.error.statusCode} />;
+    if (store.user.signedIn === false) {
+      window.location.assign(`${BASE_PATH}/signin`);
+      return null;
     }
 
-    return (
-      <Observer>
-        {() => {
-          if (!store.user.signedIn) {
-            return null;
-          }
+    if (
+      router.pathname !== '/firstaccess' &&
+      !store.organization.items.length
+    ) {
+      window.location.assign(`${BASE_PATH}/firstaccess`);
+      return null;
+    }
 
-          if (grantedRole && grantedRole !== store.user.role) {
-            return <ErrorPage statusCode={404} />;
-          }
+    if (grantedRole && grantedRole !== store.user.role) {
+      return <ErrorPage statusCode={404} />;
+    }
 
-          return <MemoizedPageComponent {...pageProps} />;
-        }}
-      </Observer>
-    );
+    return <PageComponent {...pageProps} />;
   }
 
-  WithAuth.getInitialProps = async (context) => {
-    const store = getStoreInstance();
-    context.store = store;
-    if (isServer()) {
-      try {
-        // needed to update axios headers with Accept-Language for future requests done during SSR
-        // like that the targeted service requested will get this header
-        // see /api/documents, /api/templates
-        setAcceptLanguage(context.req.headers['accept-language']);
-
-        // Force the refresh tokens to get an accessToken
-        const { status } = await store.user.refreshTokens(context);
-        if (status === 403) {
-          console.log('current refresh token invalid redirecting to /signin');
-          redirect(context, '/signin');
-          return {};
-        }
-        // Fetch user's organizations
-        await store.organization.fetch();
-        if (store.organization.items.length) {
-          const organizationName = context.query.organization;
-          if (organizationName) {
-            store.organization.setSelected(
-              store.organization.items.find(
-                (org) => org.name === organizationName
-              ),
-              store.user
-            );
-          } else {
-            store.organization.setSelected(
-              store.organization.items[0],
-              store.user
-            );
-          }
-          setOrganizationId(store.organization.selected?._id);
-          moment.locale(store.organization.selected?.locale ?? 'en');
-          if (!store.organization.selected) {
-            return {
-              error: {
-                statusCode: 404,
-              },
-            };
-          }
-        }
-      } catch (error) {
-        console.error(error);
-        return {
-          error: {
-            statusCode: error.response?.status || 500,
-          },
-        };
-      }
-    }
-
-    const initialProps = PageComponent.getInitialProps
-      ? await PageComponent.getInitialProps(context)
-      : { initialState: { store: isServer() ? toJS(store) : store } };
-
-    if (isServer() && initialProps.error?.statusCode === 403) {
-      console.log('current refresh token invalid redirecting to /signin');
-      redirect(context, '/signin');
-      return {};
-    }
-
-    return initialProps;
-  };
   return WithAuth;
 }

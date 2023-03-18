@@ -7,7 +7,6 @@ import { SubmitButton, TextField } from '@microrealestate/commonui/components';
 
 import CheckCircleOutlineIcon from '@material-ui/icons/CheckCircleOutline';
 import LocationCityIcon from '@material-ui/icons/LocationCity';
-import { observer } from 'mobx-react-lite';
 import Page from '../components/Page';
 import { StoreContext } from '../store';
 import { useRouter } from 'next/router';
@@ -21,7 +20,7 @@ const validationSchema = Yup.object().shape({
   email: Yup.string().email().required(),
 });
 
-const ForgotPassword = observer(() => {
+export default function ForgotPassword() {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const [emailSent, setEmailSent] = useState('');
@@ -60,6 +59,11 @@ const ForgotPassword = observer(() => {
     event.preventDefault();
     router.push('/signin');
   };
+
+  if (store.organization.selected?.name) {
+    router.push(`/${store.organization.selected.name}/dashboard`);
+    return null;
+  }
 
   return (
     <Page maxWidth="sm">
@@ -139,6 +143,4 @@ const ForgotPassword = observer(() => {
       </Paper>
     </Page>
   );
-});
-
-export default ForgotPassword;
+}
