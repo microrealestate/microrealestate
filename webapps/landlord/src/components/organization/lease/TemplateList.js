@@ -3,34 +3,24 @@ import { useCallback, useContext } from 'react';
 
 import AddIcon from '@material-ui/icons/Add';
 import DocumentList from '../../DocumentList';
-import { Observer } from 'mobx-react-lite';
+import { observer } from 'mobx-react-lite';
 import { StoreContext } from '../../../store';
 import useConfirmDialog from '../../ConfirmDialog';
 import useFileDescriptorDialog from './FileDescriptorDialog';
 import useRichTextEditorDialog from '../../RichTextEditor/RichTextEditorDialog';
 import useTranslation from 'next-translate/useTranslation';
 
-function TemplateItems({ onEdit, onDelete }) {
+const TemplateItems = observer(function TemplateItems({ onEdit, onDelete }) {
   const store = useContext(StoreContext);
-  return (
-    <Observer>
-      {() => {
-        const templates = store.template.items.filter(
-          ({ linkedResourceIds = [] }) =>
-            linkedResourceIds.includes(store.lease.selected?._id)
-        );
 
-        return (
-          <DocumentList
-            documents={templates}
-            onEdit={onEdit}
-            onDelete={onDelete}
-          />
-        );
-      }}
-    </Observer>
+  const templates = store.template.items.filter(({ linkedResourceIds = [] }) =>
+    linkedResourceIds.includes(store.lease.selected?._id)
   );
-}
+
+  return (
+    <DocumentList documents={templates} onEdit={onEdit} onDelete={onDelete} />
+  );
+});
 
 function TemplateList() {
   const { t } = useTranslation('common');

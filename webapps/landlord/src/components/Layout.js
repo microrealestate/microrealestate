@@ -1,10 +1,9 @@
 import { Box } from '@material-ui/core';
 import Hidden from './HiddenSSRCompatible';
 import Nav from './Nav';
-import useToast from '../hooks/useToast';
+import Toast from './Toast';
 
 export default function Layout({ showNav, children }) {
-  const Toast = useToast();
   return (
     <>
       <Hidden mdUp>
