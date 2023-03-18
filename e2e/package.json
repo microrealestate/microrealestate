@@ -12,7 +12,7 @@
   "author": "Camel Aissani",
   "license": "MIT",
   "devDependencies": {
-    "cypress": "10.3.0",
+    "cypress": "12.8.1",
     "dotenv": "16.0.1",
     "dotenv-expand": "8.0.3",
     "i18next": "21.8.14",
