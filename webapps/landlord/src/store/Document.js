@@ -1,6 +1,7 @@
 import { action, flow, makeObservable, observable } from 'mobx';
 
 import { apiFetcher } from '../utils/fetch';
+import { updateItems } from './utils';
 
 export default class Document {
   selected = {};
@@ -38,10 +39,7 @@ export default class Document {
     try {
       const response = yield apiFetcher().get(`/documents/${documentId}`);
       const updatedDocument = response.data;
-      const index = this.items.findIndex((item) => item._id === documentId);
-      if (index > -1) {
-        this.items = [...this.items.splice(index, 1, updatedDocument)];
-      }
+      this.items = updateItems(updatedDocument, this.items);
       if (this.selected?._id === updatedDocument._id) {
         this.selected = updatedDocument;
       }
@@ -55,8 +53,7 @@ export default class Document {
     try {
       const response = yield apiFetcher().post('/documents', document);
       const createdDocument = response.data;
-      this.items.push(createdDocument);
-      this.items = [...this.items];
+      this.items = updateItems(createdDocument, this.items);
 
       return { status: 200, data: createdDocument };
     } catch (error) {
@@ -68,10 +65,7 @@ export default class Document {
     try {
       const response = yield apiFetcher().patch('/documents', document);
       const updatedDocument = response.data;
-      const index = this.items.findIndex((item) => item._id === document._id);
-      if (index > -1) {
-        this.items = [...this.items.splice(index, 1, updatedDocument)];
-      }
+      this.items = updateItems(updatedDocument, this.items);
       if (this.selected?._id === updatedDocument._id) {
         this.selected = updatedDocument;
       }

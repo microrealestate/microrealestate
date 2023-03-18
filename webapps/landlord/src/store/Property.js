@@ -1,6 +1,7 @@
 import { action, computed, flow, makeObservable, observable } from 'mobx';
 
 import { apiFetcher } from '../utils/fetch';
+import { updateItems } from './utils';
 
 export default class Property {
   selected = {};
@@ -70,7 +71,7 @@ export default class Property {
       const response = yield apiFetcher().get('/properties');
 
       this.items = response.data;
-      if (this.selected._id) {
+      if (this.selected?._id) {
         this.setSelected(
           this.items.find((item) => item._id === this.selected._id) || {}
         );
@@ -84,7 +85,11 @@ export default class Property {
   *fetchOne(propertyId) {
     try {
       const response = yield apiFetcher().get(`/properties/${propertyId}`);
-
+      const updatedProperty = response.data;
+      this.items = updateItems(updatedProperty, this.items);
+      if (this.selected?._id === updatedProperty._id) {
+        this.selected = updatedProperty;
+      }
       return { status: 200, data: response.data };
     } catch (error) {
       return { status: error?.response?.status };
@@ -95,7 +100,7 @@ export default class Property {
     try {
       const response = yield apiFetcher().post('/properties', property);
       const createdProperty = response.data;
-      this.items.push(createdProperty);
+      this.items = updateItems(createdProperty, this.items);
 
       return { status: 200, data: createdProperty };
     } catch (error) {
@@ -110,11 +115,8 @@ export default class Property {
         property
       );
       const updatedProperty = response.data;
-      const index = this.items.findIndex((item) => item._id === property._id);
-      if (index > -1) {
-        this.items.splice(index, 1, updatedProperty);
-      }
-      if (this.selected._id === updatedProperty._id) {
+      this.items = updateItems(updatedProperty, this.items);
+      if (this.selected?._id === updatedProperty._id) {
         this.setSelected(updatedProperty);
       }
       return { status: 200, data: updatedProperty };

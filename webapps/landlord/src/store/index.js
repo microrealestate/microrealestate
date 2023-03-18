@@ -3,15 +3,16 @@ import { isClient, isServer } from '../utils';
 
 import { enableStaticRendering } from 'mobx-react-lite';
 import moment from 'moment';
+import { setOrganizationId } from '../utils/fetch';
 import Store from './Store';
 
 enableStaticRendering(isServer());
 
 let _store;
 
-function getStoreInstance(initialData) {
+export function getStoreInstance(initialData) {
   if (isServer()) {
-    return new Store();
+    _store = new Store();
   }
 
   if (!_store) {
@@ -25,9 +26,9 @@ function getStoreInstance(initialData) {
   return _store;
 }
 
-const StoreContext = createContext();
+export const StoreContext = createContext();
 
-function InjectStoreContext({ children, initialData }) {
+export function InjectStoreContext({ children, initialData }) {
   const [store, setStore] = useState();
 
   useEffect(() => {
@@ -47,4 +48,27 @@ function InjectStoreContext({ children, initialData }) {
   ) : null;
 }
 
-export { InjectStoreContext, StoreContext, getStoreInstance };
+export async function setupOrganizationsInStore(selectedOrgName) {
+  if (!_store) {
+    console.error(
+      'the store is not created. Fill organizations in store is not possible'
+    );
+    return;
+  }
+
+  await _store.organization.fetch();
+  // Select the organization if set in the url otherwise take the firstone in the list
+  if (_store.organization.items.length && !_store.organization.selected) {
+    let selectedOrganization;
+    if (selectedOrgName) {
+      selectedOrganization = _store.organization.items.find(
+        ({ name }) => name === selectedOrgName
+      );
+    }
+    if (!selectedOrganization) {
+      selectedOrganization = _store.organization.items[0];
+    }
+    _store.organization.setSelected(selectedOrganization, _store.user);
+    setOrganizationId(_store.organization.selected._id);
+  }
+}

@@ -178,7 +178,7 @@ export default class Rent {
 
       if (!_.isEqual(this.items, response.data.rents)) {
         this.items = response.data.rents;
-        if (this.selected._id) {
+        if (this.selected?._id) {
           this.setSelected(
             this.items.find((item) => item._id === this.selected._id) || {}
           );
@@ -223,7 +223,7 @@ export default class Rent {
       if (index > -1) {
         this.items.splice(index, 1, rent);
       }
-      if (this.selected._id === payment._id) {
+      if (this.selected?._id === payment._id) {
         this.setSelected(rent);
       }
       return 200;
