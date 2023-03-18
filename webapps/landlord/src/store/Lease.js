@@ -1,6 +1,7 @@
 import { action, flow, makeObservable, observable } from 'mobx';
 
 import { apiFetcher } from '../utils/fetch';
+import { updateItems } from './utils';
 
 export default class Lease {
   selected = {};
@@ -39,10 +40,7 @@ export default class Lease {
     try {
       const response = yield apiFetcher().get(`/leases/${leaseId}`);
       const updatedLease = response.data;
-      const index = this.items.findIndex((item) => item._id === leaseId);
-      if (index > -1) {
-        this.items.splice(index, 1, updatedLease);
-      }
+      this.items = updateItems(updatedLease, this.items);
       if (this.selected?._id === updatedLease._id) {
         this.selected = updatedLease;
       }
@@ -56,7 +54,7 @@ export default class Lease {
     try {
       const response = yield apiFetcher().post('/leases', lease);
       const createdLease = response.data;
-      this.items.push(createdLease);
+      this.items = updateItems(createdLease, this.items);
 
       return { status: 200, data: createdLease };
     } catch (error) {
@@ -68,10 +66,7 @@ export default class Lease {
     try {
       const response = yield apiFetcher().patch(`/leases/${lease._id}`, lease);
       const updatedLease = response.data;
-      const index = this.items.findIndex((item) => item._id === lease._id);
-      if (index > -1) {
-        this.items.splice(index, 1, updatedLease);
-      }
+      this.items = updateItems(updatedLease, this.items);
       if (this.selected?._id === updatedLease._id) {
         this.selected = updatedLease;
       }

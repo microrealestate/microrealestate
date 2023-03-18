@@ -1,6 +1,7 @@
 import { action, flow, makeObservable, observable } from 'mobx';
 
 import { apiFetcher } from '../utils/fetch';
+import { updateItems } from './utils';
 
 export default class Template {
   selected = {};
@@ -41,10 +42,7 @@ export default class Template {
     try {
       const response = yield apiFetcher().get(`/templates/${templateId}`);
       const updatedTemplate = response.data;
-      const index = this.items.findIndex((item) => item._id === templateId);
-      if (index > -1) {
-        this.items.splice(index, 1, updatedTemplate);
-      }
+      this.items = updateItems(updatedTemplate, this.items);
       if (this.selected?._id === updatedTemplate._id) {
         this.selected = updatedTemplate;
       }
@@ -58,7 +56,7 @@ export default class Template {
     try {
       const response = yield apiFetcher().post('/templates', template);
       const createdTemplate = response.data;
-      this.items.push(createdTemplate);
+      this.items = updateItems(createdTemplate, this.items);
 
       return { status: 200, data: createdTemplate };
     } catch (error) {
@@ -70,10 +68,7 @@ export default class Template {
     try {
       const response = yield apiFetcher().patch('/templates', template);
       const updatedTemplate = response.data;
-      const index = this.items.findIndex((item) => item._id === template._id);
-      if (index > -1) {
-        this.items.splice(index, 1, updatedTemplate);
-      }
+      this.items = updateItems(updatedTemplate, this.items);
       if (this.selected?._id === updatedTemplate._id) {
         this.selected = updatedTemplate;
       }

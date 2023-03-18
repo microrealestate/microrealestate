@@ -1,6 +1,7 @@
 import { action, computed, flow, makeObservable, observable } from 'mobx';
 
 import { apiFetcher } from '../utils/fetch';
+import { updateItems } from './utils';
 
 export default class Tenant {
   selected = {};
@@ -110,8 +111,12 @@ export default class Tenant {
   *fetchOne(tenantId) {
     try {
       const response = yield apiFetcher().get(`/tenants/${tenantId}`);
-
-      return { status: 200, data: response.data };
+      const updatedTenant = response.data;
+      this.items = updateItems(updatedTenant, this.items);
+      if (this.selected?._id === updatedTenant._id) {
+        this.setSelected(updatedTenant);
+      }
+      return { status: 200, data: updatedTenant };
     } catch (error) {
       return { status: error?.response?.status };
     }
@@ -121,7 +126,7 @@ export default class Tenant {
     try {
       const response = yield apiFetcher().post('/tenants', tenant);
       const createdTenant = response.data;
-      this.items.push(createdTenant);
+      this.items = updateItems(createdTenant, this.items);
 
       return { status: 200, data: createdTenant };
     } catch (error) {
@@ -136,11 +141,8 @@ export default class Tenant {
         tenant
       );
       const updatedTenant = response.data;
-      const index = this.items.findIndex((item) => item._id === tenant._id);
-      if (index > -1) {
-        this.items.splice(index, 1, updatedTenant);
-      }
-      if (this.selected._id === updatedTenant._id) {
+      this.items = updateItems(updatedTenant, this.items);
+      if (this.selected?._id === updatedTenant._id) {
         this.setSelected(updatedTenant);
       }
       return { status: 200, data: updatedTenant };
