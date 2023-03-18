@@ -17,7 +17,7 @@ module.exports = {
       .format('MM_YY')}_${tenant.reference}`;
     const filename = `${i18n(locale)['short_rentcall']}-${
       tenant.name
-    }-${billingRef}`;
+    }-${billingRef}.pdf`;
     const filePath = await fetchPDF(
       authorizationHeader,
       organizationId,
