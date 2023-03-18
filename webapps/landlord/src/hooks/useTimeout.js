@@ -1,9 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import useComponentMountedRef from './useComponentMountedRef';
-
 export default function useTimeout(fn, delay) {
-  const mountedRef = useComponentMountedRef();
   const fnRef = useRef(fn);
   const timerRef = useRef();
   const [isRunning, setIsRunning] = useState(false);
@@ -23,9 +20,6 @@ export default function useTimeout(fn, delay) {
       setIsRunning(true);
       setIsDone(false);
       timerRef.current = setTimeout(async () => {
-        if (!mountedRef.current) {
-          return clear();
-        }
         if (fnRef.current) {
           await fnRef.current(...params);
           setIsRunning(false);
@@ -33,7 +27,7 @@ export default function useTimeout(fn, delay) {
         }
       }, delay);
     },
-    [clear, delay, mountedRef]
+    [clear, delay]
   );
 
   return { start, clear, isRunning, isDone };

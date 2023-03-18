@@ -18,7 +18,6 @@ import { Loading } from '@microrealestate/commonui/components';
 import { MobileButton } from './MobileMenuButton';
 import TransitionSlideUp from './TransitionSlideUp';
 import Typography from '@material-ui/core/Typography';
-import useComponentMountedRef from '../hooks/useComponentMountedRef';
 import useTranslation from 'next-translate/useTranslation';
 
 const CardMenuItemContent = ({ illustration, label, description }) => {
@@ -76,7 +75,6 @@ const FullScreenDialogMenu = ({
   ...props
 }) => {
   const { t } = useTranslation('common');
-  const mountedRef = useComponentMountedRef();
   const theme = useTheme();
 
   const [runningAction, setRunningAction] = useState(false);
@@ -94,12 +92,10 @@ const FullScreenDialogMenu = ({
     async (value) => {
       setRunningAction(true);
       await onClick(value);
-      if (mountedRef.current) {
-        setOpen(false);
-        setRunningAction(false);
-      }
+      setOpen(false);
+      setRunningAction(false);
     },
-    [onClick, mountedRef]
+    [onClick]
   );
 
   return (

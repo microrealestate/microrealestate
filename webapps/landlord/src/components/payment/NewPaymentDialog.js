@@ -24,7 +24,6 @@ import { flushSync } from 'react-dom';
 import Hidden from '../HiddenSSRCompatible';
 import PaymentTabs from './PaymentTabs';
 import { StoreContext } from '../../store';
-import useComponentMountedRef from '../../hooks/useComponentMountedRef';
 import useDialog from '../../hooks/useDialog';
 import useTranslation from 'next-translate/useTranslation';
 
@@ -34,25 +33,24 @@ function NewPaymentDialog({ open, setOpen, onClose }) {
   const [loading, setLoading] = useState(true);
   const [rents, setRents] = useState([]);
   const [selectedRent, setSelectedRent] = useState({});
-  const mountedRef = useComponentMountedRef();
   const formRef = useRef();
 
   useEffect(() => {
     const fetchRents = async () => {
       const { status, data } = await store.rent.fetchWithoutUpdatingStore();
-      if (mountedRef.current) {
-        if (status !== 200) {
-          store.pushToastMessage({
-            message: t('Something went wrong'),
-            severity: 'error',
-          });
-          setRents([]);
-        } else {
-          setRents(data.rents);
-        }
-        setLoading(false);
+
+      if (status !== 200) {
+        store.pushToastMessage({
+          message: t('Something went wrong'),
+          severity: 'error',
+        });
+        setRents([]);
+      } else {
+        setRents(data.rents);
       }
+      setLoading(false);
     };
+
     if (open) {
       setLoading(true);
       if (!open?._id) {
@@ -60,19 +58,17 @@ function NewPaymentDialog({ open, setOpen, onClose }) {
       } else {
         const rent = open;
         setTimeout(() => {
-          if (mountedRef.current) {
-            flushSync(() => {
-              setSelectedRent(rent);
-            });
-            flushSync(() => {
-              setRents([rent]);
-            });
-            setLoading(false);
-          }
+          flushSync(() => {
+            setSelectedRent(rent);
+          });
+          flushSync(() => {
+            setRents([rent]);
+          });
+          setLoading(false);
         });
       }
     }
-  }, [mountedRef, open, store, t]);
+  }, [open, store, t]);
 
   const onRentChange = async (event) => {
     const rent = event.target.value;

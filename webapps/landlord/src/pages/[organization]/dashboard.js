@@ -8,7 +8,6 @@ import { observer } from 'mobx-react-lite';
 import Page from '../../components/Page';
 import Shortcuts from '../../components/dashboard/Shortcuts';
 import { StoreContext } from '../../store';
-import useComponentMountedRef from '../../hooks/useComponentMountedRef';
 import Welcome from '../../components/Welcome';
 import { withAuthentication } from '../../components/Authentication';
 import YearFigures from '../../components/dashboard/YearFigures';
@@ -26,17 +25,14 @@ const fetchDashboardData = async (store) => {
 const Dashboard = observer(() => {
   const store = useContext(StoreContext);
   const [ready, setReady] = useState(false);
-  const mountedRef = useComponentMountedRef();
 
   useEffect(() => {
     const fetchData = async () => {
       await fetchDashboardData(store);
-      if (mountedRef.current) {
-        setReady(true);
-      }
+      setReady(true);
     };
     fetchData();
-  }, [mountedRef, store]);
+  }, [store]);
 
   const isFirstConnection = useMemo(() => {
     return (
