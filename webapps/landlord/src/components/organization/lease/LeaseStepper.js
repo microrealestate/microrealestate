@@ -8,14 +8,12 @@ import StepLabel from '@material-ui/core/StepLabel';
 import Stepper from '@material-ui/core/Stepper';
 import { StoreContext } from '../../../store';
 import TemplateForm from './TemplateForm';
-import useComponentMountedRef from '../../../hooks/useComponentMountedRef';
 import useTranslation from 'next-translate/useTranslation';
 
 export default function LeaseStepper({ onSubmit }) {
   const store = useContext(StoreContext);
   const { t } = useTranslation('common');
   const [activeStep, setActiveStep] = useState(0);
-  const mountedRef = useComponentMountedRef();
 
   const handleSubmit = useCallback(
     async (leasePart = {}) => {
@@ -29,20 +27,13 @@ export default function LeaseStepper({ onSubmit }) {
           isFormsValid = false;
         }
         await onSubmit({ ...leasePart, stepperMode: !isFormsValid });
-        if (mountedRef.current) {
-          setActiveStep(activeStep + 1);
-        }
+
+        setActiveStep(activeStep + 1);
       } catch (error) {
         // do nothing on error
       }
     },
-    [
-      onSubmit,
-      mountedRef,
-      store.lease?.selected,
-      store.lease?.items,
-      activeStep,
-    ]
+    [onSubmit, store.lease?.selected, store.lease?.items, activeStep]
   );
 
   return (

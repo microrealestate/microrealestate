@@ -4,7 +4,6 @@ import { memo, useEffect, useState } from 'react';
 import axios from 'axios';
 import { Loading } from '@microrealestate/commonui/components';
 import { LocationIllustration } from './Illustrations';
-import useComponentMountedRef from '../hooks/useComponentMountedRef';
 import { useTheme } from '@material-ui/core';
 
 const nominatimBaseURL = 'https://nominatim.openstreetmap.org';
@@ -12,14 +11,11 @@ const nominatimBaseURL = 'https://nominatim.openstreetmap.org';
 const Map = memo(function Map({ address, height = 200, zoom = 16 }) {
   const [center, setCenter] = useState();
   const [loading, setLoading] = useState(true);
-  const mountedRef = useComponentMountedRef();
   const theme = useTheme();
 
   useEffect(() => {
     const getLatLong = async () => {
-      if (mountedRef.current) {
-        setLoading(true);
-      }
+      setLoading(true);
 
       if (address) {
         let queryAddress;
@@ -42,28 +38,25 @@ const Map = memo(function Map({ address, height = 200, zoom = 16 }) {
           const response = await axios.get(
             `${nominatimBaseURL}/search?${queryAddress}&format=json&addressdetails=1`
           );
-          if (mountedRef.current) {
-            if (response.data?.[0]?.lat && response.data?.[0]?.lon) {
-              setCenter([
-                Number(response.data[0].lat),
-                Number(response.data[0].lon),
-              ]);
-            } else {
-              setCenter();
-            }
+
+          if (response.data?.[0]?.lat && response.data?.[0]?.lon) {
+            setCenter([
+              Number(response.data[0].lat),
+              Number(response.data[0].lon),
+            ]);
+          } else {
+            setCenter();
           }
         } catch (error) {
           console.error(error);
         }
       }
 
-      if (mountedRef.current) {
-        setLoading(false);
-      }
+      setLoading(false);
     };
 
     getLatLong();
-  }, [mountedRef, address]);
+  }, [address]);
 
   return (
     <>
