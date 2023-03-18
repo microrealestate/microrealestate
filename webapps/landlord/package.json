@@ -64,7 +64,7 @@
   "devDependencies": {
     "@babel/core": "7.18.6",
     "@bbbtech/storybook-formik": "2.5.0",
-    "@netlify/plugin-nextjs": "4.30.4",
+    "@netlify/plugin-nextjs": "4.32.2",
     "@storybook/addon-actions": "6.5.16",
     "@storybook/addon-essentials": "6.5.16",
     "@storybook/addon-interactions": "6.5.16",
