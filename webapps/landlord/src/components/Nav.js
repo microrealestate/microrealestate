@@ -131,21 +131,19 @@ function Nav() {
   }, [isMobile, store.user.isAdministrator]);
 
   useEffect(() => {
-    setSelectedPathname(router.pathname.replace('/[organization]', ''));
+    startTransition(() =>
+      setSelectedPathname(router.pathname.replace('/[organization]', ''))
+    );
   }, [router.pathname]);
 
   const triggerOpen = useTimeout(() => {
     startTransition(() => !openDebounced && setOpenDebounced(true));
   }, 1000);
 
-  const triggerClose = useTimeout(() => {
-    startTransition(() => openDebounced && setOpenDebounced(false));
-  }, 250);
-
   const handleMenuClick = useCallback(
     (menuItem) => {
       triggerOpen.clear();
-      setSelectedPathname(menuItem.pathname);
+      startTransition(() => setSelectedPathname(menuItem.pathname));
       if (store.organization.selected?.name && store.rent?.periodAsString) {
         let pathname = menuItem.pathname.replace(
           '[yearMonth]',
@@ -171,14 +169,13 @@ function Nav() {
   );
 
   const handleMouseEnter = useCallback(() => {
-    triggerClose.clear();
     !openDebounced && triggerOpen.start();
-  }, [openDebounced, triggerOpen, triggerClose]);
+  }, [openDebounced, triggerOpen]);
 
   const handleMouseLeave = useCallback(() => {
     triggerOpen.clear();
-    openDebounced && triggerClose.start();
-  }, [openDebounced, triggerOpen, triggerClose]);
+    startTransition(() => setOpenDebounced(false));
+  }, [triggerOpen]);
 
   return (
     <>

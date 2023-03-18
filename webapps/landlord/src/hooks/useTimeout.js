@@ -1,22 +1,23 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 export default function useTimeout(fn, delay) {
-  const fnRef = useRef(fn);
-  const timerRef = useRef();
   const [isRunning, setIsRunning] = useState(false);
   const [isDone, setIsDone] = useState(false);
 
-  const clear = useCallback(() => {
+  const fnClearRef = useRef(() => {
     timerRef.current && clearTimeout(timerRef.current);
-  }, []);
+    setIsRunning(false);
+  });
 
+  const fnRef = useRef(fn);
   useEffect(() => {
     fnRef.current = fn;
-  }, [fn, clear]);
+  }, [fn]);
 
+  const timerRef = useRef();
   const start = useCallback(
     (...params) => {
-      clear();
+      fnClearRef.current();
       setIsRunning(true);
       setIsDone(false);
       timerRef.current = setTimeout(async () => {
@@ -27,8 +28,8 @@ export default function useTimeout(fn, delay) {
         }
       }, delay);
     },
-    [clear, delay]
+    [delay]
   );
 
-  return { start, clear, isRunning, isDone };
+  return { start, clear: fnClearRef.current, isRunning, isDone };
 }
