@@ -1,5 +1,4 @@
 import { Box, Button, ButtonGroup, Grid, Paper } from '@material-ui/core';
-import { getStoreInstance, StoreContext } from '../../../store';
 import { useCallback, useContext, useMemo, useState } from 'react';
 
 import BreadcrumbBar from '../../../components/BreadcrumbBar';
@@ -9,23 +8,41 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
 import Hidden from '../../../components/HiddenSSRCompatible';
 import HistoryIcon from '@material-ui/icons/History';
-import { isServer } from '../../../utils';
 import { MobileButton } from '../../../components/MobileMenuButton';
 import moment from 'moment';
 import { observer } from 'mobx-react-lite';
 import Page from '../../../components/Page';
 import RentOverviewCard from '../../../components/tenants/RentOverviewCard';
 import StopIcon from '@material-ui/icons/Stop';
+import { StoreContext } from '../../../store';
 import TenantStepper from '../../../components/tenants/TenantStepper';
 import TenantTabs from '../../../components/tenants/TenantTabs';
 import { toJS } from 'mobx';
 import useConfirmDialog from '../../../components/ConfirmDialog';
+import useFillStore from '../../../hooks/useFillStore';
 import useRentHistoryDialog from '../../../components/rents/RentHistoryDialog';
 import useRichTextEditorDialog from '../../../components/RichTextEditor/RichTextEditorDialog';
 import { useRouter } from 'next/router';
 import useTerminateLeaseDialog from '../../../components/tenants/TerminateLeaseDialog';
 import useTranslation from 'next-translate/useTranslation';
 import { withAuthentication } from '../../../components/Authentication';
+
+async function fetchData(store, router) {
+  const tenantId = store.tenant.selected?._id || router.query.param[0];
+  const results = await Promise.all([
+    store.tenant.fetchOne(tenantId),
+    store.property.fetch(),
+    store.lease.fetch(),
+    store.template.fetch(),
+    store.document.fetch(),
+  ]);
+
+  store.tenant.setSelected(
+    store.tenant.items.find(({ _id }) => _id === tenantId)
+  );
+
+  return results;
+}
 
 const Tenant = observer(() => {
   const { t } = useTranslation('common');
@@ -43,6 +60,9 @@ const Tenant = observer(() => {
     useTerminateLeaseDialog();
 
   const [RichTextEditorDialog, , editContract] = useRichTextEditorDialog();
+
+  const [fetching] = useFillStore(fetchData, [router]);
+
   const {
     query: {
       param: [, backPage, backPath],
@@ -274,6 +294,7 @@ const Tenant = observer(() => {
 
   return (
     <Page
+      loading={fetching}
       title={store.tenant.selected.name}
       ActionBar={
         <Box display="flex" alignItems="center" justifyContent="space-between">
@@ -435,35 +456,5 @@ const Tenant = observer(() => {
     </Page>
   );
 });
-
-Tenant.getInitialProps = async (context) => {
-  const store = isServer() ? context.store : getStoreInstance();
-  const tenantId = isServer()
-    ? context.query.param[0]
-    : store.tenant.selected._id;
-
-  const responses = await Promise.all([
-    store.tenant.fetchOne(tenantId),
-    store.property.fetch(),
-    store.lease.fetch(),
-    store.template.fetch(),
-    store.document.fetch(),
-  ]);
-
-  const statuses = responses.map(({ status }) => status);
-
-  if (statuses.every((status) => status !== 200)) {
-    return { error: { statusCode: statuses.find((status) => status !== 200) } };
-  }
-
-  store.tenant.setSelected(responses[0].data);
-
-  const props = {
-    initialState: {
-      store: isServer() ? toJS(store) : store,
-    },
-  };
-  return props;
-};
 
 export default withAuthentication(Tenant);

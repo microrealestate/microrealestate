@@ -13,7 +13,6 @@ import {
   Typography,
 } from '@material-ui/core';
 import { CardRow, PageInfoCard } from '../../../components/Cards';
-import { getStoreInstance, StoreContext } from '../../../store';
 import { TabPanel, useTabChangeHelper } from '../../../components/Tabs';
 import { useCallback, useContext } from 'react';
 
@@ -21,7 +20,6 @@ import BreadcrumbBar from '../../../components/BreadcrumbBar';
 import DeleteIcon from '@material-ui/icons/Delete';
 import Hidden from '../../../components/HiddenSSRCompatible';
 import HistoryIcon from '@material-ui/icons/History';
-import { isServer } from '../../../utils';
 import Map from '../../../components/Map';
 import { MobileButton } from '../../../components/MobileMenuButton';
 import moment from 'moment';
@@ -29,8 +27,10 @@ import NumberFormat from '../../../components/NumberFormat';
 import { observer } from 'mobx-react-lite';
 import Page from '../../../components/Page';
 import PropertyForm from '../../../components/properties/PropertyForm';
+import { StoreContext } from '../../../store';
 import { toJS } from 'mobx';
 import useConfirmDialog from '../../../components/ConfirmDialog';
+import useFillStore from '../../../hooks/useFillStore';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 import VpnKeyIcon from '@material-ui/icons/VpnKey';
@@ -86,12 +86,22 @@ const OccupancyHistory = () => {
   );
 };
 
+async function fetchData(store, router) {
+  const propertyId = store.property.selected?._id || router.query.param[0];
+  const results = await store.property.fetchOne(propertyId);
+  store.property.setSelected(
+    store.property.items.find(({ _id }) => _id === propertyId)
+  );
+  return results;
+}
+
 const Property = observer(() => {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const router = useRouter();
   const { handleTabChange, tabSelectedIndex } = useTabChangeHelper();
   const [ConfirmDialog, setOpenConfirmDeleteProperty] = useConfirmDialog();
+  const [fetching] = useFillStore(fetchData, [router]);
 
   const {
     query: {
@@ -202,6 +212,7 @@ const Property = observer(() => {
 
   return (
     <Page
+      loading={fetching}
       title={store.property.selected.name}
       ActionBar={
         <Box display="flex" justifyContent="space-between">
@@ -288,29 +299,5 @@ const Property = observer(() => {
     </Page>
   );
 });
-
-Property.getInitialProps = async (context) => {
-  const store = isServer() ? context.store : getStoreInstance();
-  const propertyId = isServer()
-    ? context.query.param[0]
-    : store.property.selected._id;
-
-  const response = await store.property.fetch();
-
-  if (response.status !== 200) {
-    return { error: { statusCode: response.status } };
-  }
-
-  store.property.setSelected(
-    store.property.items.find(({ _id }) => _id === propertyId)
-  );
-
-  const props = {
-    initialState: {
-      store: isServer() ? toJS(store) : store,
-    },
-  };
-  return props;
-};
 
 export default withAuthentication(Property);

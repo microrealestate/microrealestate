@@ -9,7 +9,6 @@ import ErrorPage from 'next/error';
 import getConfig from 'next/config';
 import Link from '../components/Link';
 import LocationCityIcon from '@material-ui/icons/LocationCity';
-import { observer } from 'mobx-react-lite';
 import Page from '../components/Page';
 import { StoreContext } from '../store';
 import { useRouter } from 'next/router';
@@ -33,7 +32,7 @@ const validationSchema = Yup.object().shape({
   password: Yup.string().required(),
 });
 
-const SignUp = observer(({ pageError }) => {
+export default function SignUp({ pageError }) {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const router = useRouter();
@@ -81,6 +80,11 @@ const SignUp = observer(({ pageError }) => {
       });
     }
   };
+
+  if (store.organization.selected?.name) {
+    router.push(`/${store.organization.selected.name}/dashboard`);
+    return null;
+  }
 
   return (
     <Page maxWidth="sm">
@@ -138,14 +142,13 @@ const SignUp = observer(({ pageError }) => {
       </Box>
     </Page>
   );
-});
+}
 
-SignUp.getInitialProps = async () => {
+export async function getServerSideProps() {
+  let props = {};
   if (!SIGNUP) {
-    return { pageError: { statusCode: 404 } };
+    props = { pageError: { statusCode: 404 } };
   }
 
-  return {};
-};
-
-export default SignUp;
+  return { props };
+}

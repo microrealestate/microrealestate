@@ -9,7 +9,6 @@ import {
   Paper,
   Typography,
 } from '@material-ui/core';
-import { getStoreInstance, StoreContext } from '../../../store';
 import React, { useCallback, useContext, useState } from 'react';
 
 import _ from 'lodash';
@@ -18,14 +17,14 @@ import BoxWithHover from '../../../components/BoxWithHover';
 import CompulsoryDocumentStatus from '../../../components/tenants/CompulsaryDocumentStatus';
 import { EmptyIllustration } from '../../../components/Illustrations';
 import Hidden from '../../../components/HiddenSSRCompatible';
-import { isServer } from '../../../utils';
 import { MobileButton } from '../../../components/MobileMenuButton';
 import moment from 'moment';
 import { observer } from 'mobx-react-lite';
 import Page from '../../../components/Page';
 import PropertyIcon from '../../../components/properties/PropertyIcon';
 import SearchFilterBar from '../../../components/SearchFilterBar';
-import { toJS } from 'mobx';
+import { StoreContext } from '../../../store';
+import useFillStore from '../../../hooks/useFillStore';
 import useNewTenantDialog from '../../../components/tenants/NewTenantDialog';
 import usePagination from '../../../hooks/usePagination';
 import { useRouter } from 'next/router';
@@ -220,6 +219,10 @@ function TenantGrid({ tenants }) {
   );
 }
 
+async function fetchData(store) {
+  await store.tenant.fetch();
+}
+
 const Tenants = observer(function Tenants() {
   const { t } = useTranslation('common');
   const router = useRouter();
@@ -232,6 +235,7 @@ const Tenants = observer(function Tenants() {
   );
 
   const [NewTenantDialog, setOpenNewTenantDialog] = useNewTenantDialog();
+  const [fetching] = useFillStore(fetchData);
 
   const onNewTenant = useCallback(() => {
     setOpenNewTenantDialog(true);
@@ -239,6 +243,7 @@ const Tenants = observer(function Tenants() {
 
   return (
     <Page
+      loading={fetching}
       title={t('Tenants')}
       ActionBar={
         <Box display="flex" justifyContent="end">
@@ -281,20 +286,5 @@ const Tenants = observer(function Tenants() {
     </Page>
   );
 });
-
-Tenants.getInitialProps = async (context) => {
-  const store = isServer() ? context.store : getStoreInstance();
-
-  const { status } = await store.tenant.fetch();
-  if (status !== 200) {
-    return { error: { statusCode: status } };
-  }
-
-  return {
-    initialState: {
-      store: isServer() ? toJS(store) : store,
-    },
-  };
-};
 
 export default withAuthentication(Tenants);

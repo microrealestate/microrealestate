@@ -8,7 +8,6 @@ import { SubmitButton, TextField } from '@microrealestate/commonui/components';
 import getConfig from 'next/config';
 import Link from '../components/Link';
 import LocationCityIcon from '@material-ui/icons/LocationCity';
-import { observer } from 'mobx-react-lite';
 import Page from '../components/Page';
 import { setOrganizationId } from '../utils/fetch';
 import { StoreContext } from '../store';
@@ -29,7 +28,7 @@ const validationSchema = Yup.object().shape({
   password: Yup.string().required(),
 });
 
-function SignIn() {
+export default function SignIn() {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const [initialValues, setInitialValues] = useState(defaultValues);
@@ -101,7 +100,12 @@ function SignIn() {
     [router, store, t]
   );
 
-  return !store.user.signedIn ? (
+  if (store.organization.selected?.name) {
+    router.push(`/${store.organization.selected.name}/dashboard`);
+    return null;
+  }
+
+  return (
     <Page maxWidth="sm">
       <Box mt={10} mb={5}>
         <Box align="center">
@@ -164,7 +168,5 @@ function SignIn() {
         </Box>
       )}
     </Page>
-  ) : null;
+  );
 }
-
-export default observer(SignIn);

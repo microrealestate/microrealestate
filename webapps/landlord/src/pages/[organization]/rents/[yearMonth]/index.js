@@ -10,13 +10,11 @@ import {
   Paper,
   Popper,
 } from '@material-ui/core';
-import { getStoreInstance, StoreContext } from '../../../../store';
 import { useCallback, useContext, useMemo, useRef, useState } from 'react';
 
 import Alert from '../../../../components/Alert';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import Hidden from '../../../../components/HiddenSSRCompatible';
-import { isServer } from '../../../../utils';
 import { MobileButton } from '../../../../components/MobileMenuButton';
 import moment from 'moment';
 import { observer } from 'mobx-react-lite';
@@ -26,7 +24,8 @@ import { RentOverview } from '../../../../components/rents/RentOverview';
 import RentTable from '../../../../components/rents/RentTable';
 import SearchFilterBar from '../../../../components/SearchFilterBar';
 import SendIcon from '@material-ui/icons/Send';
-import { toJS } from 'mobx';
+import { StoreContext } from '../../../../store';
+import useFillStore from '../../../../hooks/useFillStore';
 import usePagination from '../../../../hooks/usePagination';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
@@ -357,6 +356,20 @@ const SearchBar = observer(function SearchBar() {
   );
 });
 
+async function fetchData(store, router) {
+  const { yearMonth, search, status } = router.query;
+  let rentPeriod = moment(yearMonth, 'YYYY.MM', true);
+  if (rentPeriod.isValid()) {
+    store.rent.setPeriod(rentPeriod);
+    store.rent.setFilters({
+      searchText: search,
+      status: status?.split(',') || [],
+    });
+    return await store.rent.fetch();
+  }
+  return [];
+}
+
 const Rents = observer(function Rents() {
   const { t } = useTranslation('common');
   const router = useRouter();
@@ -364,6 +377,7 @@ const Rents = observer(function Rents() {
   const [rentSelected, setRentSelected] = useState([]);
   const [pageData, setPageData] = useState([]);
   const [Pagination] = usePagination(20, store.rent.filteredItems, setPageData);
+  const [fetching] = useFillStore(fetchData, [router]);
 
   const handlePeriodChange = useCallback(
     async (period) => {
@@ -381,6 +395,7 @@ const Rents = observer(function Rents() {
 
   return (
     <Page
+      loading={fetching}
       title={t('Rents')}
       ActionBar={
         <ActionToolbar selected={rentSelected} setSelected={setRentSelected} />
@@ -426,33 +441,5 @@ const Rents = observer(function Rents() {
     </Page>
   );
 });
-
-Rents.getInitialProps = async (context) => {
-  const store = isServer() ? context.store : getStoreInstance();
-
-  if (isServer()) {
-    const { yearMonth, search, status } = context.query;
-    const rentPeriod = moment(yearMonth, 'YYYY.MM', true);
-    if (!rentPeriod.isValid()) {
-      return { error: { statusCode: 404 } };
-    }
-    store.rent.setPeriod(rentPeriod);
-    store.rent.setFilters({
-      searchText: search,
-      status: status?.split(',') || [],
-    });
-  }
-
-  const { status } = await store.rent.fetch();
-  if (status !== 200) {
-    return { error: { statusCode: status } };
-  }
-
-  return {
-    initialState: {
-      store: isServer() ? toJS(store) : store,
-    },
-  };
-};
 
 export default withAuthentication(Rents);

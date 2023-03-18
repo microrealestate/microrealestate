@@ -1,46 +1,36 @@
-import { isServer, redirect } from '../utils';
+import { getStoreInstance, setupOrganizationsInStore } from '../store';
 
-import { getStoreInstance } from '../store';
-import { setOrganizationId } from '../utils/fetch';
+import { redirect } from '../utils';
 import { toJS } from 'mobx';
-import { useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { withAuthentication } from '../components/Authentication';
 
-const Index = (props) => {
-  const { redirectPath } = props;
+export default function Index({ organization }) {
   const router = useRouter();
 
-  useEffect(() => {
-    router.push(redirectPath);
-  }, [router, redirectPath]);
+  if (organization) {
+    router.push(`/${organization.name}/dashboard`);
+  } else {
+    router.push('/signin');
+  }
 
   return null;
-};
+}
 
-Index.getInitialProps = async (context) => {
-  const store = isServer() ? context.store : getStoreInstance();
+export async function getServerSideProps(context) {
+  // redirect if not signed in
+  const store = getStoreInstance();
 
-  let redirectPath = '/firstaccess';
-  if (store.organization.items.length) {
-    if (!store.organization.selected) {
-      store.organization.setSelected(store.organization.items[0], store.user);
-      setOrganizationId(store.organization.items[0]._id);
-    }
-    redirectPath = `/${store.organization.selected.name}/dashboard`;
+  const { status } = await store.user.refreshTokens(context);
+  if (status !== 200) {
+    redirect(context, '/signin');
+    return { props: {} };
   }
 
-  if (isServer()) {
-    redirect(context, redirectPath);
+  await setupOrganizationsInStore();
+  if (!store.user.signedIn) {
+    redirect(context, '/signin');
+    return { props: {} };
   }
 
-  const props = {
-    redirectPath,
-    initialState: {
-      store: isServer() ? toJS(store) : store,
-    },
-  };
-  return props;
-};
-
-export default withAuthentication(Index);
+  return { props: { organization: toJS(store.organization.selected) } };
+}
