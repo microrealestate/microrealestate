@@ -63,7 +63,7 @@
     "yup": "0.32.11"
   },
   "devDependencies": {
-    "@babel/core": "7.18.6",
+    "@babel/core": "7.21.3",
     "@bbbtech/storybook-formik": "2.5.0",
     "@netlify/plugin-nextjs": "4.32.2",
     "@storybook/addon-actions": "6.5.16",

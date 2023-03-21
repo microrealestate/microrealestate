@@ -5,6 +5,15 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Run cli",
+      "program": "${workspaceFolder}/cli/src/index.js",
+      "args": ["dev"],
+      "request": "launch",
+      "skipFiles": ["<node_internals>/**"],
+      "type": "node",
+      "console": "integratedTerminal"
+    },
+    {
       "type": "node",
       "request": "attach",
       "name": "Docker: Attach to Gateway",

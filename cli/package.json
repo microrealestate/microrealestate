@@ -6,12 +6,13 @@
   "private": true,
   "scripts": {
     "start": "node src/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "lint": "eslint .",
     "format": "prettier --write '**/*.{js,jsx,ts,tsx,json,css}'"
   },
   "bin": "src/index.js",
   "pkg": {
+    "scripts": "src/**/*.js",
     "assets": "../node_modules/figlet/fonts/Standard.flf",
     "targets": [
       "node16-linux-x64",
@@ -31,5 +32,8 @@
     "inquirer": "8.2.4",
     "minimist": "1.2.6",
     "moment": "2.29.4"
+  },
+  "devDependencies": {
+    "jest": "27.5.0"
   }
 }

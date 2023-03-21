@@ -376,7 +376,7 @@ const writeDotEnv = (promptsConfig, envConfig) => {
   const restoreDb = envConfig?.RESTORE_DB || demoMode;
   const dbName = demoMode ? 'demodb' : 'mre';
   const dbUrl = envConfig?.BASE_DB_URL || `mongodb://mongo/${dbName}`;
-  const gatewayPort = envConfig?.GATEWAY_PORT || port || '8000';
+  const gatewayPort = envConfig?.GATEWAY_PORT || port || '80';
   const corsEnabled = envConfig?.CORS_ENABLED === 'true';
   const domainUrl =
     envConfig?.DOMAIN_URL ||
@@ -391,20 +391,20 @@ const writeDotEnv = (promptsConfig, envConfig) => {
     buildUrl({
       protocol,
       domain,
-      port: '${GATEWAY_PORT}',
+      port: gatewayPort !== '80' ? '${GATEWAY_PORT}' : null,
       basePath: '/api/v2',
     });
   const landlordAppUrl =
     envConfig?.LANDLORD_APP_URL ||
     buildUrl({
       ...destructUrl(promptsConfig.landlordAppUrl),
-      port: '${GATEWAY_PORT}',
+      port: gatewayPort !== '80' ? '${GATEWAY_PORT}' : null,
     });
   const tenantAppUrl =
     envConfig?.TENANT_APP_URL ||
     buildUrl({
       ...destructUrl(promptsConfig.tenantAppUrl),
-      port: '${GATEWAY_PORT}',
+      port: gatewayPort !== '80' ? '${GATEWAY_PORT}' : null,
     });
 
   if (envConfig) {
