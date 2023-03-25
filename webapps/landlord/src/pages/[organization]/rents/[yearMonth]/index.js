@@ -396,7 +396,6 @@ const Rents = observer(function Rents() {
   return (
     <Page
       loading={fetching}
-      title={t('Rents')}
       ActionBar={
         <ActionToolbar selected={rentSelected} setSelected={setRentSelected} />
       }

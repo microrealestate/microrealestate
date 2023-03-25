@@ -122,7 +122,6 @@ const Lease = observer(() => {
   return (
     <Page
       loading={fetching}
-      title={store.lease.selected?.name || t('New contract')}
       ActionBar={
         <Box display="flex" justifyContent="space-between">
           <BreadcrumbBar

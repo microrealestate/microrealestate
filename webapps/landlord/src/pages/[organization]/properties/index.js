@@ -244,7 +244,6 @@ const Properties = observer(function Properties() {
   return (
     <Page
       loading={fetching}
-      title={t('Properties')}
       ActionBar={
         <Box display="flex" justifyContent="end">
           <Hidden smDown>
