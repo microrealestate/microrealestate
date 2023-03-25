@@ -295,7 +295,6 @@ const Tenant = observer(() => {
   return (
     <Page
       loading={fetching}
-      title={store.tenant.selected.name}
       ActionBar={
         <Box display="flex" alignItems="center" justifyContent="space-between">
           <BreadcrumbBar

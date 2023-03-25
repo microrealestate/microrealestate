@@ -213,9 +213,13 @@ const Property = observer(() => {
   return (
     <Page
       loading={fetching}
-      title={store.property.selected.name}
       ActionBar={
-        <Box display="flex" justifyContent="space-between">
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          mb={4}
+        >
           <BreadcrumbBar
             backPath={backPath}
             backPage={backPage}
