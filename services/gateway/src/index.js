@@ -2,6 +2,7 @@ const cors = require('cors');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 const logger = require('winston');
 const server = require('@microrealestate/common/utils/server');
+const URL = require('@microrealestate/common/utils/url');
 const config = require('./config');
 
 Main();
@@ -29,8 +30,7 @@ async function Main() {
 
 function configureCORS(app) {
   if (config.CORS_ENABLED && config.DOMAIN_URL) {
-    const DOMAIN_URL = new URL(config.DOMAIN_URL);
-    const domain = DOMAIN_URL.hostname.split('.').slice(-2).join('.');
+    const { domain } = URL.destructUrl(config.DOMAIN_URL);
     const corsOptions = {
       origin: new RegExp(`^https?://(.*\\.)?${domain}$`),
       methods: 'GET,POST,PUT,PATCH,DELETE',
@@ -68,7 +68,7 @@ function exposeServices(app) {
   app.use(
     '/api/v2/authenticator',
     createProxyMiddleware({
-      target: `http://authenticator:${config.AUTHENTICATOR_PORT}`,
+      target: config.AUTHENTICATOR_URL,
       pathRewrite: { '^/api/v2/authenticator': '' },
     })
   );
@@ -76,23 +76,24 @@ function exposeServices(app) {
   app.use(
     '/api/v2/documents',
     createProxyMiddleware({
-      target: `http://pdfgenerator:${config.PDFGENERATOR_PORT}`,
-      pathRewrite: { '^/api/v2': '/pdfgenerator' },
+      target: config.PDFGENERATOR_URL,
+      pathRewrite: { '^/api/v2': '' },
     })
   );
 
   app.use(
     '/api/v2/templates',
     createProxyMiddleware({
-      target: `http://pdfgenerator:${config.PDFGENERATOR_PORT}`,
-      pathRewrite: { '^/api/v2': '/pdfgenerator' },
+      target: config.PDFGENERATOR_URL,
+      pathRewrite: { '^/api/v2': '' },
     })
   );
 
   app.use(
     '/api/v2',
     createProxyMiddleware({
-      target: `http://api:${config.API_PORT}`,
+      target: config.API_URL,
+      pathRewrite: { '^/api/v2': '' },
     })
   );
 
@@ -101,7 +102,7 @@ function exposeServices(app) {
     app.use(
       '/api/reset',
       createProxyMiddleware({
-        target: `http://resetservice:${config.RESETSERVICE_PORT}`,
+        target: config.RESETSERVICE_URL,
         pathRewrite: { '^/api': '' },
       })
     );

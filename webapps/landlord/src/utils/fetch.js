@@ -40,12 +40,12 @@ export const apiFetcher = () => {
     // create axios instance
     if (isServer()) {
       apiFetch = axios.create({
-        baseURL: serverRuntimeConfig.API_URL,
+        baseURL: serverRuntimeConfig.GATEWAY_URL,
         withCredentials,
       });
     } else {
       apiFetch = axios.create({
-        baseURL: publicRuntimeConfig.API_URL,
+        baseURL: publicRuntimeConfig.GATEWAY_URL,
         withCredentials,
       });
     }
@@ -168,7 +168,7 @@ export const authApiFetcher = (cookie) => {
 
   const { serverRuntimeConfig } = getConfig();
   const axiosConfig = {
-    baseURL: serverRuntimeConfig.API_URL,
+    baseURL: serverRuntimeConfig.GATEWAY_URL,
     withCredentials,
   };
   if (cookie) {

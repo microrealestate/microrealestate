@@ -13,9 +13,7 @@ function Application({ children }) {
   const router = useRouter();
 
   const showNav = !!(
-    store.user.signedIn &&
-    store.organization.items &&
-    store.organization.items.length
+    store.organization.items && store.organization.items.length
   );
 
   useEffect(() => {

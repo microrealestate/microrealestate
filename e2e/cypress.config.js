@@ -4,10 +4,10 @@ const dotenvExpand = require('dotenv-expand');
 
 dotenvExpand.expand(dotenv.config({ path: '../.env' }));
 
-let API_BASEURL = 'http://localhost:8080';
-if (process.env.API_URL) {
-  const apiUrl = new URL(process.env.API_URL);
-  API_BASEURL = `${apiUrl.protocol}//${apiUrl.host}`;
+let GATEWAY_BASEURL = 'http://localhost:8080';
+if (process.env.GATEWAY_URL) {
+  const apiUrl = new URL(process.env.GATEWAY_URL);
+  GATEWAY_BASEURL = `${apiUrl.protocol}//${apiUrl.host}`;
 }
 
 module.exports = defineConfig({
@@ -15,7 +15,7 @@ module.exports = defineConfig({
   viewportHeight: 1200,
   defaultCommandTimeout: 10000,
   env: {
-    API_BASEURL,
+    GATEWAY_BASEURL,
   },
   e2e: {
     // We've imported your old cypress plugins here.

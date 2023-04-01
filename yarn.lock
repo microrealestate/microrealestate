@@ -2628,6 +2628,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@microrealestate/cli@workspace:cli"
   dependencies:
+    "@microrealestate/common": "*"
     chalk: 4.1.2
     clear: 0.1.0
     clui: 0.3.6
@@ -2652,6 +2653,7 @@ __metadata:
     cookie-parser: 1.4.5
     express: 4.18.2
     express-winston: 2.6.0
+    jest: 27.5.0
     jsonwebtoken: 9.0.0
     lodash: 4.17.21
     method-override: 3.0.0

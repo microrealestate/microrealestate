@@ -24,7 +24,7 @@
 // -- This will overwrite an existing command --
 // Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
 Cypress.Commands.add('resetAppData', () => {
-  const apiBaseUrl = Cypress.env('API_BASEURL');
+  const apiBaseUrl = Cypress.env('GATEWAY_BASEURL');
   cy.request('DELETE', `${apiBaseUrl}/api/reset`);
 });
 
