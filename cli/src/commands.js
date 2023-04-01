@@ -5,13 +5,8 @@ const chalk = require('chalk');
 const figlet = require('figlet');
 const inquirer = require('inquirer');
 const moment = require('moment');
-const {
-  generateRandomToken,
-  runCompose,
-  buildUrl,
-  destructUrl,
-  loadEnv,
-} = require('./utils');
+const { buildUrl, destructUrl } = require('@microrealestate/common/utils/url');
+const { generateRandomToken, runCompose, loadEnv } = require('./utils');
 
 const initDirectories = () => {
   const mongoDir = path.join('.', 'data', 'mongodb');
@@ -386,8 +381,8 @@ const writeDotEnv = (promptsConfig, envConfig) => {
       port: null,
       basePath: null,
     });
-  const apiUrl =
-    envConfig?.API_URL ||
+  const gatewayUrl =
+    envConfig?.GATEWAY_URL ||
     buildUrl({
       protocol,
       domain,
@@ -430,6 +425,7 @@ const writeDotEnv = (promptsConfig, envConfig) => {
     delete envConfig.APP_URL;
     delete envConfig.DOMAIN_URL;
     delete envConfig.API_URL;
+    delete envConfig.GATEWAY_URL;
     delete envConfig.LANDLORD_BASE_PATH;
     delete envConfig.LANDLORD_APP_URL;
     delete envConfig.TENANT_BASE_PATH;
@@ -453,6 +449,7 @@ CIPHER_IV_KEY=${cipherIvKey}
 ## gateway
 GATEWAY_PORT=${gatewayPort}
 CORS_ENABLED=${corsEnabled}
+GATEWAY_URL=${gatewayUrl}
 
 ## authenticator
 AUTHENTICATOR_TOKEN_DB_PASSWORD=${tokenDbPassword}
@@ -474,7 +471,6 @@ RESTORE_DB=${restoreDb}
 
 ## frontend
 DOMAIN_URL=${domainUrl}
-API_URL=${apiUrl}
 
 ## landlord frontend
 LANDLORD_BASE_PATH=${landlordBasePath || ''}

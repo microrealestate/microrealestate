@@ -5,7 +5,7 @@ services:
   ###############################################################################
   gateway:
     environment:
-      - RESETSERVICE_PORT=$RESETSERVICE_PORT
+      - RESETSERVICE_URL=$RESETSERVICE_URL
     depends_on:
       - resetservice
   ###############################################################################
