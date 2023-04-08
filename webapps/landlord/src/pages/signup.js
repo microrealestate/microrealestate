@@ -6,17 +6,12 @@ import React, { useContext } from 'react';
 import { SubmitButton, TextField } from '@microrealestate/commonui/components';
 
 import ErrorPage from 'next/error';
-import getConfig from 'next/config';
 import Link from '../components/Link';
 import LocationCityIcon from '@material-ui/icons/LocationCity';
 import Page from '../components/Page';
 import { StoreContext } from '../store';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
-
-const {
-  publicRuntimeConfig: { APP_NAME, SIGNUP },
-} = getConfig();
 
 const initialValues = {
   firstName: '',
@@ -93,7 +88,9 @@ export default function SignUp({ pageError }) {
           <LocationCityIcon fontSize="large" />
         </Box>
         <Typography component="h1" variant="h5" align="center">
-          {t('Sign up to {{APP_NAME}}', { APP_NAME })}
+          {t('Sign up to {{APP_NAME}}', {
+            APP_NAME: process.env.NEXT_PUBLIC_APP_NAME,
+          })}
         </Typography>
       </Box>
       <Paper>
@@ -131,7 +128,9 @@ export default function SignUp({ pageError }) {
         <Paper>
           <Box px={4} py={2}>
             <Typography variant="body2">
-              {t('Already on {{APP_NAME}}?', { APP_NAME })}{' '}
+              {t('Already on {{APP_NAME}}?', {
+                APP_NAME: process.env.NEXT_PUBLIC_APP_NAME,
+              })}{' '}
               <Link href="/signin" data-cy="signin">
                 {t('Sign in')}
               </Link>
@@ -146,7 +145,7 @@ export default function SignUp({ pageError }) {
 
 export async function getServerSideProps() {
   let props = {};
-  if (!SIGNUP) {
+  if (process.env.SIGNUP !== 'true') {
     props = { pageError: { statusCode: 404 } };
   }
 

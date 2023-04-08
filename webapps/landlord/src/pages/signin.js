@@ -5,7 +5,6 @@ import { Form, Formik } from 'formik';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { SubmitButton, TextField } from '@microrealestate/commonui/components';
 
-import getConfig from 'next/config';
 import Link from '../components/Link';
 import LocationCityIcon from '@material-ui/icons/LocationCity';
 import Page from '../components/Page';
@@ -13,10 +12,6 @@ import { setOrganizationId } from '../utils/fetch';
 import { StoreContext } from '../store';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
-
-const {
-  publicRuntimeConfig: { DEMO_MODE, SIGNUP, APP_NAME },
-} = getConfig();
 
 const defaultValues = {
   email: '',
@@ -35,7 +30,7 @@ export default function SignIn() {
   const router = useRouter();
 
   useEffect(() => {
-    if (DEMO_MODE) {
+    if (process.env.NEXT_PUBLIC_DEMO_MODE === 'true') {
       setInitialValues({
         email: 'demo@demo.com',
         password: 'demo',
@@ -112,7 +107,9 @@ export default function SignIn() {
           <LocationCityIcon fontSize="large" />
         </Box>
         <Typography component="h1" variant="h5" align="center">
-          {t('Sign in to {{APP_NAME}}', { APP_NAME })}
+          {t('Sign in to {{APP_NAME}}', {
+            APP_NAME: process.env.NEXT_PUBLIC_APP_NAME,
+          })}
         </Typography>
       </Box>
       <Paper>
@@ -133,7 +130,7 @@ export default function SignIn() {
                     type="password"
                     autoComplete="current-password"
                   />
-                  {!DEMO_MODE && (
+                  {process.env.NEXT_PUBLIC_DEMO_MODE !== 'true' && (
                     <Typography variant="body2">
                       <Link href="/forgotpassword" data-cy="forgotpassword">
                         {t('Forgot password?')}
@@ -152,21 +149,24 @@ export default function SignIn() {
           </Formik>
         </Box>
       </Paper>
-      {!DEMO_MODE && SIGNUP && (
-        <Box mt={4}>
-          <Paper>
-            <Box px={4} py={2}>
-              <Typography variant="body2">
-                {t('New to {{APP_NAME}}?', { APP_NAME })}{' '}
-                <Link href="/signup" data-cy="signup">
-                  {t('Create an account')}
-                </Link>
-                .
-              </Typography>
-            </Box>
-          </Paper>
-        </Box>
-      )}
+      {process.env.NEXT_PUBLIC_DEMO_MODE !== 'true' &&
+        process.env.NEXT_PUBLIC_SIGNUP === 'true' && (
+          <Box mt={4}>
+            <Paper>
+              <Box px={4} py={2}>
+                <Typography variant="body2">
+                  {t('New to {{APP_NAME}}?', {
+                    APP_NAME: process.env.NEXT_PUBLIC_APP_NAME,
+                  })}{' '}
+                  <Link href="/signup" data-cy="signup">
+                    {t('Create an account')}
+                  </Link>
+                  .
+                </Typography>
+              </Box>
+            </Paper>
+          </Box>
+        )}
     </Page>
   );
 }

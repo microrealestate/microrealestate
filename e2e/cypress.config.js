@@ -18,11 +18,6 @@ module.exports = defineConfig({
     GATEWAY_BASEURL,
   },
   e2e: {
-    // We've imported your old cypress plugins here.
-    // You may want to clean this up later by importing these.
-    setupNodeEvents(on, config) {
-      return require('./cypress/plugins/index.js')(on, config);
-    },
     baseUrl: process.env.LANDLORD_APP_URL || 'http://localhost:8080/landlord',
   },
 });

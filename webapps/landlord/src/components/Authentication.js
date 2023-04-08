@@ -1,14 +1,9 @@
 import { setupOrganizationsInStore, StoreContext } from '../store';
 
 import ErrorPage from 'next/error';
-import getConfig from 'next/config';
 import { useContext } from 'react';
 import useFillStore from '../hooks/useFillStore';
 import { useRouter } from 'next/router';
-
-const {
-  publicRuntimeConfig: { BASE_PATH },
-} = getConfig();
 
 async function fetchData(store, router) {
   if (store.user.signedIn) {
@@ -30,7 +25,7 @@ export function withAuthentication(PageComponent, grantedRole) {
     }
 
     if (store.user.signedIn === false) {
-      window.location.assign(`${BASE_PATH}/signin`);
+      window.location.assign(`${process.env.NEXT_PUBLIC_BASE_PATH}/signin`);
       return null;
     }
 
@@ -38,7 +33,9 @@ export function withAuthentication(PageComponent, grantedRole) {
       router.pathname !== '/firstaccess' &&
       !store.organization.items.length
     ) {
-      window.location.assign(`${BASE_PATH}/firstaccess`);
+      window.location.assign(
+        `${process.env.NEXT_PUBLIC_BASE_PATH}/firstaccess`
+      );
       return null;
     }
 

@@ -1,9 +1,3 @@
-import getConfig from 'next/config';
-
-const {
-  publicRuntimeConfig: { APP_URL },
-} = getConfig();
-
 export const isServer = () => typeof window === 'undefined';
 
 export const isClient = () => !isServer();
@@ -14,7 +8,7 @@ export const redirect = (context, path) => {
   }
 
   context.res.writeHead(302, {
-    Location: `${APP_URL}/${context.locale}${path}`,
+    Location: `${process.env.APP_URL}/${context.locale}${path}`,
   });
   context.res.end();
 };

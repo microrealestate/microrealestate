@@ -3,21 +3,16 @@ import 'moment/locale/pt';
 import 'moment/locale/de';
 
 import CssBaseline from '@material-ui/core/CssBaseline';
-import getConfig from 'next/config';
 import Head from 'next/head';
 import { Roboto } from 'next/font/google';
 import theme from '../styles/theme';
 import { ThemeProvider } from '@material-ui/core/styles';
 import { useEffect } from 'react';
 
-const {
-  publicRuntimeConfig: { APP_NAME, DEMO_MODE, BASE_PATH },
-} = getConfig();
-
-const APP_TITLE = [APP_NAME, 'Tenant'];
+const APP_TITLE = [process.env_NEXT_PUBLIC_APP_NAME, 'Tenant'];
 if (process.env.NODE_ENV === 'development') {
   APP_TITLE.push('DEV');
-} else if (DEMO_MODE) {
+} else if (process.env_NEXT_PUBLIC_DEMO_MODE === 'true') {
   APP_TITLE.push('DEMO');
 }
 
@@ -46,7 +41,10 @@ export default function MyApp({ Component, pageProps }) {
           name="viewport"
           content="minimum-scale=1, initial-scale=1, width=device-width"
         />
-        <link rel="shortcut icon" href={`${BASE_PATH}/favicon.svg`} />
+        <link
+          rel="shortcut icon"
+          href={`${process.env_NEXT_PUBLIC_BASE_PATH}/favicon.svg`}
+        />
       </Head>
       <main className={roboto.className}>
         <ThemeProvider theme={theme}>
@@ -57,4 +55,3 @@ export default function MyApp({ Component, pageProps }) {
     </>
   );
 }
-
