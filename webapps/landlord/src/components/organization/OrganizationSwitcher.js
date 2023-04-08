@@ -1,14 +1,9 @@
 import { useCallback, useContext, useMemo } from 'react';
 
-import getConfig from 'next/config';
 import LocationCityIcon from '@material-ui/icons/LocationCity';
 import { observer } from 'mobx-react-lite';
 import { StoreContext } from '../../store';
 import ToggleMenu from '../ToggleMenu';
-
-const {
-  publicRuntimeConfig: { BASE_PATH },
-} = getConfig();
 
 const OrganizationSwitcher = observer(() => {
   const store = useContext(StoreContext);
@@ -20,7 +15,7 @@ const OrganizationSwitcher = observer(() => {
           ({ _id }) => _id === id
         );
         window.location.assign(
-          `${BASE_PATH}/${organization.locale}/${organization.name}/dashboard`
+          `${process.env.NEXT_PUBLIC_BASE_PATH}/${organization.locale}/${organization.name}/dashboard`
         );
       }
     },

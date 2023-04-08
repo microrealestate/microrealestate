@@ -1,16 +1,11 @@
-import getConfig from 'next/config';
 import { Illustration } from '@microrealestate/commonui/components';
 import useTranslation from 'next-translate/useTranslation';
-
-const {
-  publicRuntimeConfig: { BASE_PATH },
-} = getConfig();
 
 export const EmptyIllustration = ({ label }) => {
   const { t } = useTranslation();
   return (
     <Illustration
-      src={`${BASE_PATH}/undraw_Empty_re_opql.svg`}
+      src={`${process.env.NEXT_PUBLIC_BASE_PATH}/undraw_Empty_re_opql.svg`}
       label={label || t('No data found')}
       alt="no data found"
     />
@@ -19,7 +14,7 @@ export const EmptyIllustration = ({ label }) => {
 
 export const LocationIllustration = ({ width, height }) => (
   <Illustration
-    src={`${BASE_PATH}/undraw_Location_tracking.svg`}
+    src={`${process.env.NEXT_PUBLIC_BASE_PATH}/undraw_Location_tracking.svg`}
     alt="no location found"
     width={width}
     height={height}
@@ -28,19 +23,22 @@ export const LocationIllustration = ({ width, height }) => (
 
 export const BlankDocumentIllustration = () => (
   <Illustration
-    src={`${BASE_PATH}/undraw_add_document_re_mbjx.svg`}
+    src={`${process.env.NEXT_PUBLIC_BASE_PATH}/undraw_add_document_re_mbjx.svg`}
     alt="blank document"
   />
 );
 
 export const TermsDocumentIllustration = () => (
   //TODO: fill the alt attribute
-  <Illustration src={`${BASE_PATH}/undraw_Terms_re_6ak4.svg`} alt="" />
+  <Illustration
+    src={`${process.env.NEXT_PUBLIC_BASE_PATH}/undraw_Terms_re_6ak4.svg`}
+    alt=""
+  />
 );
 
 export const WelcomeIllustration = ({ height = '100%' }) => (
   <Illustration
-    src={`${BASE_PATH}/undraw_apartment_rent_o0ut.svg`}
+    src={`${process.env.NEXT_PUBLIC_BASE_PATH}/undraw_apartment_rent_o0ut.svg`}
     height={height}
     alt="welcome"
   />
@@ -48,7 +46,7 @@ export const WelcomeIllustration = ({ height = '100%' }) => (
 
 export const CelebrationIllustration = ({ label, height = '100%' }) => (
   <Illustration
-    src={`${BASE_PATH}/undraw_Celebration_re_kc9k.svg`}
+    src={`${process.env.NEXT_PUBLIC_BASE_PATH}/undraw_Celebration_re_kc9k.svg`}
     height={height}
     label={label}
     alt="celebration"
