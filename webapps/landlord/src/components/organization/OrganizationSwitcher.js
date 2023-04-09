@@ -1,5 +1,6 @@
 import { useCallback, useContext, useMemo } from 'react';
 
+import config from '../../config';
 import LocationCityIcon from '@material-ui/icons/LocationCity';
 import { observer } from 'mobx-react-lite';
 import { StoreContext } from '../../store';
@@ -15,7 +16,7 @@ const OrganizationSwitcher = observer(() => {
           ({ _id }) => _id === id
         );
         window.location.assign(
-          `${process.env.NEXT_PUBLIC_BASE_PATH}/${organization.locale}/${organization.name}/dashboard`
+          `${config.NEXT_PUBLIC_BASE_PATH}/${organization.locale}/${organization.name}/dashboard`
         );
       }
     },

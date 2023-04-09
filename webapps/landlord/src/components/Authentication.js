@@ -1,5 +1,6 @@
 import { setupOrganizationsInStore, StoreContext } from '../store';
 
+import config from '../config';
 import ErrorPage from 'next/error';
 import { useContext } from 'react';
 import useFillStore from '../hooks/useFillStore';
@@ -25,7 +26,7 @@ export function withAuthentication(PageComponent, grantedRole) {
     }
 
     if (store.user.signedIn === false) {
-      window.location.assign(`${process.env.NEXT_PUBLIC_BASE_PATH}/signin`);
+      window.location.assign(`${config.NEXT_PUBLIC_BASE_PATH}/signin`);
       return null;
     }
 
@@ -33,9 +34,7 @@ export function withAuthentication(PageComponent, grantedRole) {
       router.pathname !== '/firstaccess' &&
       !store.organization.items.length
     ) {
-      window.location.assign(
-        `${process.env.NEXT_PUBLIC_BASE_PATH}/firstaccess`
-      );
+      window.location.assign(`${config.NEXT_PUBLIC_BASE_PATH}/firstaccess`);
       return null;
     }
 

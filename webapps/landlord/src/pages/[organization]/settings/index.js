@@ -4,6 +4,7 @@ import { useCallback, useContext } from 'react';
 
 import { ADMIN_ROLE } from '../../../store/User';
 import BillingForm from '../../../components/organization/BillingForm';
+import config from '../../../config';
 import LandlordForm from '../../../components/organization/LandlordForm';
 import Leases from '../../../components/organization/Leases';
 import Members from '../../../components/organization/Members';
@@ -25,7 +26,7 @@ const SettingTabs = observer(({ onSubmit }) => {
     ({ isOrgNameChanged, isLocaleChanged }) => {
       if (isOrgNameChanged || isLocaleChanged) {
         window.location.assign(
-          `${process.env.NEXT_PUBLIC_BASE_PATH}/${store.organization.selected.locale}/${store.organization.selected.name}/settings`
+          `${config.NEXT_PUBLIC_BASE_PATH}/${store.organization.selected.locale}/${store.organization.selected.name}/settings`
         );
       }
     },
