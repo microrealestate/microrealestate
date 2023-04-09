@@ -1,3 +1,5 @@
+import config from '../config';
+
 export const isServer = () => typeof window === 'undefined';
 
 export const isClient = () => !isServer();
@@ -8,7 +10,7 @@ export const redirect = (context, path) => {
   }
 
   context.res.writeHead(302, {
-    Location: `${process.env.APP_URL}/${context.locale}${path}`,
+    Location: `${config.APP_URL}/${context.locale}${path}`,
   });
   context.res.end();
 };

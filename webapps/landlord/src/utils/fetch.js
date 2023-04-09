@@ -1,14 +1,15 @@
 import { isClient, isServer } from './index';
 
 import axios from 'axios';
+import config from '../config';
 import FileDownload from 'js-file-download';
 import { getStoreInstance } from '../store';
 
 let apiFetch;
 let authApiFetch;
 const withCredentials = isServer()
-  ? process.env.CORS_ENABLED === 'true'
-  : process.env.NEXT_PUBLIC_CORS_ENABLED === 'true';
+  ? config.CORS_ENABLED
+  : config.NEXT_PUBLIC_CORS_ENABLED;
 
 export const setAccessToken = (accessToken) => {
   apiFetcher();
@@ -40,12 +41,12 @@ export const apiFetcher = () => {
     // create axios instance
     if (isServer()) {
       apiFetch = axios.create({
-        baseURL: process.env.DOCKER_GATEWAY_URL || process.env.GATEWAY_URL,
+        baseURL: config.DOCKER_GATEWAY_URL || config.GATEWAY_URL,
         withCredentials,
       });
     } else {
       apiFetch = axios.create({
-        baseURL: process.env.NEXT_PUBLIC_GATEWAY_URL,
+        baseURL: config.NEXT_PUBLIC_GATEWAY_URL,
         withCredentials,
       });
     }
@@ -116,7 +117,7 @@ export const apiFetcher = () => {
         // Force signin if an api responded 403
         if (error.response?.status === 403) {
           if (isClient()) {
-            window.location.assign(`${process.env.NEXT_PUBLIC_BASE_PATH}`);
+            window.location.assign(`${config.NEXT_PUBLIC_BASE_PATH}`);
           }
           throw new axios.Cancel('Operation canceled force login');
         }
@@ -167,7 +168,7 @@ export const authApiFetcher = (cookie) => {
   }
 
   const axiosConfig = {
-    baseURL: process.env.DOCKER_GATEWAY_URL || process.env.GATEWAY_URL,
+    baseURL: config.DOCKER_GATEWAY_URL || config.GATEWAY_URL,
     withCredentials,
   };
   if (cookie) {

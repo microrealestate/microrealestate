@@ -5,6 +5,7 @@ import { Form, Formik } from 'formik';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { SubmitButton, TextField } from '@microrealestate/commonui/components';
 
+import config from '../config';
 import Link from '../components/Link';
 import LocationCityIcon from '@material-ui/icons/LocationCity';
 import Page from '../components/Page';
@@ -30,7 +31,7 @@ export default function SignIn() {
   const router = useRouter();
 
   useEffect(() => {
-    if (process.env.NEXT_PUBLIC_DEMO_MODE === 'true') {
+    if (config.NEXT_PUBLIC_DEMO_MODE) {
       setInitialValues({
         email: 'demo@demo.com',
         password: 'demo',
@@ -108,7 +109,7 @@ export default function SignIn() {
         </Box>
         <Typography component="h1" variant="h5" align="center">
           {t('Sign in to {{APP_NAME}}', {
-            APP_NAME: process.env.NEXT_PUBLIC_APP_NAME,
+            APP_NAME: config.NEXT_PUBLIC_APP_NAME,
           })}
         </Typography>
       </Box>
@@ -130,7 +131,7 @@ export default function SignIn() {
                     type="password"
                     autoComplete="current-password"
                   />
-                  {process.env.NEXT_PUBLIC_DEMO_MODE !== 'true' && (
+                  {!config.NEXT_PUBLIC_DEMO_MODE && (
                     <Typography variant="body2">
                       <Link href="/forgotpassword" data-cy="forgotpassword">
                         {t('Forgot password?')}
@@ -149,24 +150,23 @@ export default function SignIn() {
           </Formik>
         </Box>
       </Paper>
-      {process.env.NEXT_PUBLIC_DEMO_MODE !== 'true' &&
-        process.env.NEXT_PUBLIC_SIGNUP === 'true' && (
-          <Box mt={4}>
-            <Paper>
-              <Box px={4} py={2}>
-                <Typography variant="body2">
-                  {t('New to {{APP_NAME}}?', {
-                    APP_NAME: process.env.NEXT_PUBLIC_APP_NAME,
-                  })}{' '}
-                  <Link href="/signup" data-cy="signup">
-                    {t('Create an account')}
-                  </Link>
-                  .
-                </Typography>
-              </Box>
-            </Paper>
-          </Box>
-        )}
+      {!config.NEXT_PUBLIC_DEMO_MODE && config.NEXT_PUBLIC_SIGNUP && (
+        <Box mt={4}>
+          <Paper>
+            <Box px={4} py={2}>
+              <Typography variant="body2">
+                {t('New to {{APP_NAME}}?', {
+                  APP_NAME: config.NEXT_PUBLIC_APP_NAME,
+                })}{' '}
+                <Link href="/signup" data-cy="signup">
+                  {t('Create an account')}
+                </Link>
+                .
+              </Typography>
+            </Box>
+          </Paper>
+        </Box>
+      )}
     </Page>
   );
 }

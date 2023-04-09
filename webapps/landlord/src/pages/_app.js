@@ -10,6 +10,7 @@ import '../components/RichTextEditor/richtexteditor.css';
 import * as Yup from 'yup';
 
 import Application from '../components/Application';
+import config from '../config';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Head from 'next/head';
 import { InjectStoreContext } from '../store';
@@ -18,10 +19,10 @@ import theme from '../styles/theme';
 import { ThemeProvider } from '@material-ui/core/styles';
 import { useEffect } from 'react';
 
-const APP_TITLE = [process.env.NEXT_PUBLIC_APP_NAME, 'Landlord'];
-if (process.env.NODE_ENV === 'development') {
+const APP_TITLE = [config.NEXT_PUBLIC_APP_NAME, 'Landlord'];
+if (config.NODE_ENV === 'development') {
   APP_TITLE.push('DEV');
-} else if (process.env.NEXT_PUBLIC_DEMO_MODE === 'true') {
+} else if (config.NEXT_PUBLIC_DEMO_MODE) {
   APP_TITLE.push('DEMO');
 }
 
@@ -72,7 +73,7 @@ function MyApp(props) {
         />
         <link
           rel="shortcut icon"
-          href={`${process.env.NEXT_PUBLIC_BASE_PATH}/favicon.svg`}
+          href={`${config.NEXT_PUBLIC_BASE_PATH}/favicon.svg`}
         />
         <link
           href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.min.css"

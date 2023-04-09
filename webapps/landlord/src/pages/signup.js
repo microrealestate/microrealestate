@@ -5,6 +5,7 @@ import { Form, Formik } from 'formik';
 import React, { useContext } from 'react';
 import { SubmitButton, TextField } from '@microrealestate/commonui/components';
 
+import config from '../config';
 import ErrorPage from 'next/error';
 import Link from '../components/Link';
 import LocationCityIcon from '@material-ui/icons/LocationCity';
@@ -89,7 +90,7 @@ export default function SignUp({ pageError }) {
         </Box>
         <Typography component="h1" variant="h5" align="center">
           {t('Sign up to {{APP_NAME}}', {
-            APP_NAME: process.env.NEXT_PUBLIC_APP_NAME,
+            APP_NAME: config.NEXT_PUBLIC_APP_NAME,
           })}
         </Typography>
       </Box>
@@ -129,7 +130,7 @@ export default function SignUp({ pageError }) {
           <Box px={4} py={2}>
             <Typography variant="body2">
               {t('Already on {{APP_NAME}}?', {
-                APP_NAME: process.env.NEXT_PUBLIC_APP_NAME,
+                APP_NAME: config.NEXT_PUBLIC_APP_NAME,
               })}{' '}
               <Link href="/signin" data-cy="signin">
                 {t('Sign in')}
@@ -145,7 +146,7 @@ export default function SignUp({ pageError }) {
 
 export async function getServerSideProps() {
   let props = {};
-  if (process.env.SIGNUP !== 'true') {
+  if (!config.SIGNUP) {
     props = { pageError: { statusCode: 404 } };
   }
 

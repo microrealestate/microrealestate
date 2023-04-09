@@ -8,6 +8,7 @@ import {
 } from '@material-ui/core';
 import { useCallback, useContext } from 'react';
 
+import config from '../config';
 import Hidden from './HiddenSSRCompatible';
 import MobileMenu from './MobileMenu';
 import OrganizationSwitcher from './organization/OrganizationSwitcher';
@@ -17,20 +18,15 @@ import useTranslation from 'next-translate/useTranslation';
 
 function EnvironmentBar() {
   const { t } = useTranslation('common');
-  return process.env.NEXT_PUBLIC_DEMO_MODE === 'true' ||
-    process.env.NODE_ENV === 'development' ? (
+  return config.NEXT_PUBLIC_DEMO_MODE || config.NODE_ENV === 'development' ? (
     <Box
       color="primary.contrastText"
-      bgcolor={
-        process.env.NEXT_PUBLIC_DEMO_MODE === 'true'
-          ? 'success.dark'
-          : 'grey.700'
-      }
+      bgcolor={config.NEXT_PUBLIC_DEMO_MODE ? 'success.dark' : 'grey.700'}
       fontSize="caption.fontSize"
       textAlign="center"
       py={0.2}
     >
-      {process.env.NEXT_PUBLIC_DEMO_MODE === 'true'
+      {config.NEXT_PUBLIC_DEMO_MODE
         ? t('Demonstration mode')
         : t('Development mode')}
     </Box>
@@ -56,9 +52,7 @@ function MainToolbar({ maxWidth, onSignOut }) {
                 justifyContent="space-between"
                 width="100%"
               >
-                <Box fontSize="h5.fontSize">
-                  {process.env.NEXT_PUBLIC_APP_NAME}
-                </Box>
+                <Box fontSize="h5.fontSize">{config.NEXT_PUBLIC_APP_NAME}</Box>
                 <Box display="flex" alignItems="center">
                   <OrganizationSwitcher />
                   <Tooltip title={t('Sign out')} aria-label="sign out">
@@ -110,7 +104,7 @@ export default function AppBar() {
     async (event) => {
       event.preventDefault();
       await store.user.signOut();
-      window.location.assign(process.env.NEXT_PUBLIC_BASE_PATH); // will be redirected to /signin
+      window.location.assign(config.NEXT_PUBLIC_BASE_PATH); // will be redirected to /signin
     },
     [store.user]
   );

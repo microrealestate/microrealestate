@@ -1,6 +1,7 @@
 import { createContext, useEffect, useState } from 'react';
 import { isClient, isServer } from '../utils';
 
+import config from '../config';
 import { enableStaticRendering } from 'mobx-react-lite';
 import moment from 'moment';
 import { setOrganizationId } from '../utils/fetch';
@@ -18,7 +19,7 @@ export function getStoreInstance(initialData) {
   if (!_store) {
     _store = new Store();
     _store.hydrate(initialData);
-    if (process.env.NODE_ENV === 'development') {
+    if (config.NODE_ENV === 'development') {
       window.__store = _store;
     }
   }
@@ -38,7 +39,7 @@ export function InjectStoreContext({ children, initialData }) {
 
   useEffect(() => {
     moment.locale(store?.organization?.selected?.locale ?? 'en');
-    if (isClient() && process.env.NODE_ENV === 'development') {
+    if (isClient() && config.NODE_ENV === 'development') {
       window.__store = store;
     }
   }, [store, store?.organization?.selected?.locale]);
