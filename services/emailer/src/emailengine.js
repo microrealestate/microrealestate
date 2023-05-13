@@ -38,12 +38,11 @@ async function _sendWithGmail(config, email) {
 }
 
 async function _sendWithMailgun(config, email) {
-  const { replyTo, ...emailParameters } = email;
   const mailgun = new Mailgun(formData);
   const mg = mailgun.client({ username: 'api', key: config.apiKey });
   return await mg.messages.create(config.domain, {
-    ...emailParameters,
-    'h:Reply-To': replyTo,
+    ...email,
+    'h:Reply-To': email.replyTo,
   });
 }
 
