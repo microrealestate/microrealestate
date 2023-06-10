@@ -1,64 +1,55 @@
 # Microrealestate
 
-Microrealestate is a set of microservices which work together to offer an open source application for property management.
-
-This application draws its fundamentals from the monolithic application: [Loca](https://github.com/camelaissani/loca)
+Here is a diagram showcasing the microservices on the backend and the two frontend applications:
 
 [<img src="./pictures/overview.png" alt="drawing" width="770"/>](./pictures/overview.png)
 
-| µService                                   | Description                                                                        |     Status      |
-| :----------------------------------------- | :--------------------------------------------------------------------------------- | :-------------: |
-| [Landlord UI](../webapps/landlord)         | Landlord web application                                                           |    Available    |
-| [Tenant UI](../webapps/tenant)             | Tenant web application                                                             | Dev in progress |
-| [Gateway](../services/gateway)             | Exposes UI API, handles CORS and reverse proxies                                   |    Available    |
-| [Authenticator](../services/authenticator) | Handles login/logout and tokens management                                         |    Available    |
-| [EMailer](../services/emailer)             | Generates and sends emails with [Gmail] or [mailgun](https://www.mailgun.com/)     |    Available    |
-| [API](../services/api)                     | Core engine                                                                        |    Available    |
-| [PDFGenerator](../services/pdfgenerator)   | Generates PDF documents (letters, contracts, invoices...)                          |    Available    |
-| Messages                                   | message broker                                                                     |  Not available  |
-| Alert                                      | Sends alert messages based on business rules (contract deadlines, unpaid rents...) |  Not available  |
-| Text                                       | Generates and texts (cash balance, alerts...)                                      |  Not available  |
+This diagram serves as a helpful guide to understand the overall structure and flow of the application.
 
-## Debugging the application
+| Applications and Services                  | Description                                                                    | Development Status |
+| :----------------------------------------- | :----------------------------------------------------------------------------- | :----------------: |
+| [Landlord UI](../webapps/landlord)         | Landlord web application                                                       |     Available      |
+| [Tenant UI](../webapps/tenant)             | Tenant web application                                                         |  Dev in progress   |
+| [Gateway](../services/gateway)             | Exposes UI and services, handles CORS and reverse proxies                      |     Available      |
+| [Authenticator](../services/authenticator) | Handles login/logout and tokens management                                     |     Available      |
+| [API](../services/api)                     | Core engine                                                                    |     Available      |
+| [EMailer](../services/emailer)             | Generates and sends emails with [Gmail] or [mailgun](https://www.mailgun.com/) |     Available      |
+| [PDFGenerator](../services/pdfgenerator)   | Generates PDF documents (letters, contracts, invoices...)                      |     Available      |
+| [ResetService](../services/resetservice)   | Uses to erase all data, only active in DEV and CI environments                 |     Available      |
+
+## Start the application in DEV mode
 
 ### Prerequisite
 
 - Docker and docker-compose installed
-  > The `mre` bash script is uses for building, running the application. If running on Windows use `mre.ps1`.
-
-You would need to have the latest version of [VS Code](https://code.visualstudio.com/) installed.
-
-Then bring up the Debug view, click on the Debug icon in the **Activity Bar** on the side of VS Code. You can also use the keyboard shortcut `Ctrl+Shift+D`.
-
-![Activity Bar](https://code.visualstudio.com/assets/docs/editor/debugging/debugicon.png)
+- [VS Code](https://code.visualstudio.com/) installed.
 
 ### Clone the GitHub repository
 
 ```shell
-$ git clone --recursive https://github.com/microrealestate/microrealestate.git
-```
-
-### Go to the microrealestate
-
-```shell
-$ cd microrealestate
+$ git clone https://github.com/microrealestate/microrealestate.git
 ```
 
 ### Launch the application in development mode:
 
 ```shell
+$ cd microrealestate
 $ ./mre dev
 ```
 
-Next, go to the debug bar:
+## Debug
 
-![Activity Bar](https://code.visualstudio.com/assets/docs/editor/debugging/launch-configuration.png)
+To access the debug functionality in VS Code, navigate to the debug bar located within the IDE.
 
-Then select one of these values to attach the VS Code debugger to the application:
+![Activity Bar](./pictures/vscode-debugbar.png)
 
-- `Docker: Attach to API` (Exposes the UI API and core engine)
-- `Docker: Attach to Authenticator` (Handles the authentication)
-- `Docker: Attach to Emailer` (Sends emails)
-- `Docker: Attach to PdfGenerator` (Generates PDF documents)
+Next, attach the debugger to the service you wish to debug. This will enable you to step through the code and inspect variables, making it easier to identify and resolve any issues.
+
+- Docker: Attach to Gateway
+- Docker: Attach to Authenticator
+- Docker: Attach to API
+- Docker: Attach to Emailer
+- Docker: Attach to PdfGenerator
+- Docker: Attach to ResetService
 
 For more information about VS Code debugging go [here](https://code.visualstudio.com/Docs/editor/debugging#_debug-actions)
