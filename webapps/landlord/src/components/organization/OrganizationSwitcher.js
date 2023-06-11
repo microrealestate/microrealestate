@@ -16,7 +16,7 @@ const OrganizationSwitcher = observer(() => {
           ({ _id }) => _id === id
         );
         window.location.assign(
-          `${config.NEXT_PUBLIC_BASE_PATH}/${organization.locale}/${organization.name}/dashboard`
+          `${config.BASE_PATH}/${organization.locale}/${organization.name}/dashboard`
         );
       }
     },

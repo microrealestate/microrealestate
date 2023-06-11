@@ -111,6 +111,13 @@ describe('utils', () => {
     expect(destructedUrl.domain).toBe('example.com');
     expect(destructedUrl.port).toBe('');
     expect(destructedUrl.basePath).toBe('/basePath');
+
+    destructedUrl = URL.destructUrl('http://stage.mre.example.com/basePath');
+    expect(destructedUrl.protocol).toBe('http:');
+    expect(destructedUrl.subDomain).toBe('stage.mre');
+    expect(destructedUrl.domain).toBe('example.com');
+    expect(destructedUrl.port).toBe('');
+    expect(destructedUrl.basePath).toBe('/basePath');
   });
 
   it('can destruct url containing ip address', () => {

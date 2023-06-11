@@ -14,19 +14,19 @@ import Tenant from './Tenant';
 import User from './User';
 
 export default class Store {
-  toastMessages = [];
-  user = new User();
-  organization = new Organization();
-  lease = new Lease();
-  rent = new Rent();
-  tenant = new Tenant();
-  property = new Property();
-  template = new Template();
-  document = new Document();
-  dashboard = new Dashboard();
-  accounting = new Accounting();
-
   constructor() {
+    this.toastMessages = [];
+    this.user = new User();
+    this.organization = new Organization();
+    this.lease = new Lease();
+    this.rent = new Rent();
+    this.tenant = new Tenant();
+    this.property = new Property();
+    this.template = new Template();
+    this.document = new Document();
+    this.dashboard = new Dashboard();
+    this.accounting = new Accounting();
+
     makeObservable(this, {
       toastMessages: observable,
       pushToastMessage: action,

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { isServer } from '../utils';
+import { isServer } from '@microrealestate/commonui/utils';
 import { useTheme } from '@material-ui/core';
 
 function getCurrentBreakpoint(theme) {

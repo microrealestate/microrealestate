@@ -18,17 +18,15 @@ import useTranslation from 'next-translate/useTranslation';
 
 function EnvironmentBar() {
   const { t } = useTranslation('common');
-  return config.NEXT_PUBLIC_DEMO_MODE || config.NODE_ENV === 'development' ? (
+  return config.DEMO_MODE || config.NODE_ENV === 'development' ? (
     <Box
       color="primary.contrastText"
-      bgcolor={config.NEXT_PUBLIC_DEMO_MODE ? 'success.dark' : 'grey.700'}
+      bgcolor={config.DEMO_MODE ? 'success.dark' : 'grey.700'}
       fontSize="caption.fontSize"
       textAlign="center"
       py={0.2}
     >
-      {config.NEXT_PUBLIC_DEMO_MODE
-        ? t('Demonstration mode')
-        : t('Development mode')}
+      {config.DEMO_MODE ? t('Demonstration mode') : t('Development mode')}
     </Box>
   ) : null;
 }
@@ -52,7 +50,7 @@ function MainToolbar({ maxWidth, onSignOut }) {
                 justifyContent="space-between"
                 width="100%"
               >
-                <Box fontSize="h5.fontSize">{config.NEXT_PUBLIC_APP_NAME}</Box>
+                <Box fontSize="h5.fontSize">{config.APP_NAME}</Box>
                 <Box display="flex" alignItems="center">
                   <OrganizationSwitcher />
                   <Tooltip title={t('Sign out')} aria-label="sign out">
@@ -104,7 +102,7 @@ export default function AppBar() {
     async (event) => {
       event.preventDefault();
       await store.user.signOut();
-      window.location.assign(config.NEXT_PUBLIC_BASE_PATH); // will be redirected to /signin
+      window.location.assign(config.BASE_PATH); // will be redirected to /signin
     },
     [store.user]
   );

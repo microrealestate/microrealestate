@@ -26,7 +26,7 @@ const SettingTabs = observer(({ onSubmit }) => {
     ({ isOrgNameChanged, isLocaleChanged }) => {
       if (isOrgNameChanged || isLocaleChanged) {
         window.location.assign(
-          `${config.NEXT_PUBLIC_BASE_PATH}/${store.organization.selected.locale}/${store.organization.selected.name}/settings`
+          `${config.BASE_PATH}/${store.organization.selected.locale}/${store.organization.selected.name}/settings`
         );
       }
     },

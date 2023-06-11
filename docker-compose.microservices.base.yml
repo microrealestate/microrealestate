@@ -8,11 +8,11 @@ services:
     expose:
       - '$REDIS_PORT'
     volumes:
-      - './data/redis:/data'
+      - ./data/redis:/data
     command:
       - 'bash'
       - '-c'
-      - 'docker-entrypoint.sh --requirepass $AUTHENTICATOR_TOKEN_DB_PASSWORD'
+      - 'docker-entrypoint.sh --requirepass $REDIS_PASSWORD'
     networks:
       - net
   ###############################################################################
@@ -24,8 +24,8 @@ services:
     expose:
       - '$MONGO_PORT'
     volumes:
-      - './data/mongodb:/data/db'
-      - './backup:/backup'
+      - ./data/mongodb:/data/db
+      - ./backup:/backup
     networks:
       - net
   ###############################################################################
@@ -41,9 +41,9 @@ services:
       - AUTHENTICATOR_URL=$AUTHENTICATOR_URL
       - API_URL=$API_URL
       - PDFGENERATOR_URL=$PDFGENERATOR_URL
-      - LANDLORD_FRONTEND_PORT=$LANDLORD_FRONTEND_PORT
+      - LANDLORD_FRONTEND_URL=$LANDLORD_FRONTEND_URL
       - LANDLORD_BASE_PATH=$LANDLORD_BASE_PATH
-      - TENANT_FRONTEND_PORT=$TENANT_FRONTEND_PORT
+      - TENANT_FRONTEND_URL=$TENANT_FRONTEND_URL
       - TENANT_BASE_PATH=$TENANT_BASE_PATH
       - DOMAIN_URL=$DOMAIN_URL
       - CORS_ENABLED=$CORS_ENABLED
@@ -64,12 +64,12 @@ services:
       - NODE_ENV
       - PORT=$AUTHENTICATOR_PORT
       - LOGGER_LEVEL=$LOGGER_LEVEL
-      - TOKEN_DB_URL=$AUTHENTICATOR_TOKEN_DB_URL
-      - TOKEN_DB_PASSWORD=$AUTHENTICATOR_TOKEN_DB_PASSWORD
+      - REDIS_URL=$REDIS_URL
+      - REDIS_PASSWORD=$REDIS_PASSWORD
       - ACCESS_TOKEN_SECRET=$AUTHENTICATOR_ACCESS_TOKEN_SECRET
       - REFRESH_TOKEN_SECRET=$AUTHENTICATOR_REFRESH_TOKEN_SECRET
       - RESET_TOKEN_SECRET=$AUTHENTICATOR_RESET_TOKEN_SECRET
-      - BASE_DB_URL=$BASE_DB_URL
+      - MONGO_URL=$MONGO_URL
       - EMAILER_URL=$EMAILER_URL
       - SIGNUP=$SIGNUP
       - DOMAIN_URL=$DOMAIN_URL
@@ -90,7 +90,7 @@ services:
       - NODE_ENV
       - PORT=$PDFGENERATOR_PORT
       - LOGGER_LEVEL=$LOGGER_LEVEL
-      - MONGO_URL=$BASE_DB_URL
+      - MONGO_URL=$MONGO_URL
       - ACCESS_TOKEN_SECRET=$AUTHENTICATOR_ACCESS_TOKEN_SECRET
       - CIPHER_KEY=$CIPHER_KEY
       - CIPHER_IV_KEY=$CIPHER_IV_KEY
@@ -113,7 +113,7 @@ services:
       - APP_NAME=$APP_NAME
       - LANDLORD_APP_URL=$LANDLORD_APP_URL
       - TENANT_APP_URL=$TENANT_APP_URL
-      - MONGO_URL=$BASE_DB_URL
+      - MONGO_URL=$MONGO_URL
       - ACCESS_TOKEN_SECRET=$AUTHENTICATOR_ACCESS_TOKEN_SECRET
       - CIPHER_KEY=$CIPHER_KEY
       - CIPHER_IV_KEY=$CIPHER_IV_KEY
@@ -141,8 +141,7 @@ services:
       - NODE_ENV
       - PORT=$API_PORT
       - LOGGER_LEVEL=$LOGGER_LEVEL
-      - SIGNUP=$SIGNUP
-      - MONGO_URL=$BASE_DB_URL
+      - MONGO_URL=$MONGO_URL
       - DEMO_MODE=$DEMO_MODE
       - EMAILER_URL=$EMAILER_URL
       - PDFGENERATOR_URL=$PDFGENERATOR_URL
@@ -162,26 +161,22 @@ services:
   # Landlord frontend
   ###############################################################################
   landlord-frontend:
+    # base path cannot be set at runtime: https://github.com/vercel/next.js/discussions/41769
     build:
       args:
-        - NODE_ENV
-        - PORT=$LANDLORD_FRONTEND_PORT
-        - LOGGER_LEVEL=$LOGGER_LEVEL
-        - BASE_PATH=$LANDLORD_BASE_PATH
-        - GATEWAY_URL=$GATEWAY_URL
-        - DOCKER_GATEWAY_URL=$DOCKER_GATEWAY_URL
-        - APP_URL=$LANDLORD_APP_URL
-        - REFRESH_TOKEN_SECRET=$AUTHENTICATOR_REFRESH_TOKEN_SECRET
-        - SIGNUP=$SIGNUP
-        - CORS_ENABLED=$CORS_ENABLED
-        - NEXT_PUBLIC_DEMO_MODE=$DEMO_MODE
-        - NEXT_PUBLIC_SIGNUP=$SIGNUP
-        - NEXT_PUBLIC_APP_NAME=$APP_NAME
-        - NEXT_PUBLIC_APP_URL=$LANDLORD_APP_URL
-        - NEXT_PUBLIC_GATEWAY_URL=$GATEWAY_URL
-        - NEXT_PUBLIC_CORS_ENABLED=$CORS_ENABLED
-        - NEXT_PUBLIC_BASE_PATH=$LANDLORD_BASE_PATH
+        - LANDLORD_BASE_PATH=$LANDLORD_BASE_PATH
     image: mre/landlord-frontend:latest
+    environment:
+      - BASE_PATH=$LANDLORD_BASE_PATH
+      - PORT=$LANDLORD_FRONTEND_PORT
+      - DOCKER_GATEWAY_URL=$DOCKER_GATEWAY_URL
+      - NEXT_PUBLIC_APP_NAME=$APP_NAME
+      - NEXT_PUBLIC_BASE_PATH=$LANDLORD_BASE_PATH
+      - NEXT_PUBLIC_CORS_ENABLED=$CORS_ENABLED
+      - NEXT_PUBLIC_DEMO_MODE=$DEMO_MODE
+      - NEXT_PUBLIC_GATEWAY_URL=$GATEWAY_URL
+      - NEXT_PUBLIC_NODE_ENV=$NODE_ENV
+      - NEXT_PUBLIC_SIGNUP=$SIGNUP
     expose:
       - '$LANDLORD_FRONTEND_PORT'
     extra_hosts:
@@ -194,25 +189,19 @@ services:
   # Tenant frontend
   ###############################################################################
   tenant-frontend:
+    # base path cannot be set at runtime: https://github.com/vercel/next.js/discussions/41769
     build:
       args:
-        - NODE_ENV
-        - PORT=$TENANT_FRONTEND_PORT
-        - LOGGER_LEVEL=$LOGGER_LEVEL
-        - BASE_PATH=$TENANT_BASE_PATH
-        - GATEWAY_URL=$GATEWAY_URL
-        - DOCKER_GATEWAY_URL=$DOCKER_GATEWAY_URL
-        - APP_URL=$TENANT_APP_URL
-        - REFRESH_TOKEN_SECRET=$AUTHENTICATOR_REFRESH_TOKEN_SECRET
-        - CORS_ENABLED=$CORS_ENABLED
-        - NEXT_PUBLIC_DEMO_MODE=$DEMO_MODE
-        - NEXT_PUBLIC_SIGNUP=$SIGNUP
-        - NEXT_PUBLIC_APP_NAME=$APP_NAME
-        - NEXT_PUBLIC_APP_URL=$TENANT_APP_URL
-        - NEXT_PUBLIC_GATEWAY_URL=$GATEWAY_URL
-        - NEXT_PUBLIC_CORS_ENABLED=$CORS_ENABLED
-        - NEXT_PUBLIC_BASE_PATH=$TENANT_BASE_PATH
+        - TENANT_BASE_PATH=$TENANT_BASE_PATH
     image: mre/tenant-frontend:latest
+    environment:
+      - BASE_PATH=$TENANT_BASE_PATH
+      - PORT=$TENANT_FRONTEND_PORT
+      - DOCKER_GATEWAY_URL=$DOCKER_GATEWAY_URL
+      - NEXT_PUBLIC_APP_NAME=$APP_NAME
+      - NEXT_PUBLIC_BASE_PATH=$TENANT_BASE_PATH
+      - NEXT_PUBLIC_DEMO_MODE=$DEMO_MODE
+      - NEXT_PUBLIC_NODE_ENV=$NODE_ENV
     expose:
       - '$TENANT_FRONTEND_PORT'
     extra_hosts:

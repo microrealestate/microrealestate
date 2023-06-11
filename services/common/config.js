@@ -12,7 +12,8 @@ module.exports = {
     process.env.REDIS_URL ||
     process.env.TOKEN_DB_URL ||
     'redis://localhost:6379',
-  REDIS_PASSWORD: process.env.TOKEN_DB_PASSWORD || undefined,
+  REDIS_PASSWORD:
+    process.env.REDIS_PASSWORD || process.env.TOKEN_DB_PASSWORD || undefined,
 
   ACCESS_TOKEN_SECRET: process.env.ACCESS_TOKEN_SECRET,
   REFRESH_TOKEN_SECRET: process.env.REFRESH_TOKEN_SECRET,
