@@ -26,7 +26,7 @@ export function withAuthentication(PageComponent, grantedRole) {
     }
 
     if (store.user.signedIn === false) {
-      window.location.assign(`${config.NEXT_PUBLIC_BASE_PATH}/signin`);
+      window.location.assign(`${config.BASE_PATH}/signin`);
       return null;
     }
 
@@ -34,7 +34,7 @@ export function withAuthentication(PageComponent, grantedRole) {
       router.pathname !== '/firstaccess' &&
       !store.organization.items.length
     ) {
-      window.location.assign(`${config.NEXT_PUBLIC_BASE_PATH}/firstaccess`);
+      window.location.assign(`${config.BASE_PATH}/firstaccess`);
       return null;
     }
 

@@ -1,6 +1,5 @@
 import { getStoreInstance, setupOrganizationsInStore } from '../store';
 
-import { redirect } from '../utils';
 import { toJS } from 'mobx';
 import { useRouter } from 'next/router';
 
@@ -22,13 +21,11 @@ export async function getServerSideProps(context) {
 
   const { status } = await store.user.refreshTokens(context);
   if (status !== 200) {
-    redirect(context, '/signin');
     return { props: {} };
   }
 
   await setupOrganizationsInStore();
   if (!store.user.signedIn) {
-    redirect(context, '/signin');
     return { props: {} };
   }
 

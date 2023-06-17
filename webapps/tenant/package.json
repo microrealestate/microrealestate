@@ -8,28 +8,28 @@
     "start": "next start",
     "lint": "next lint --no-cache",
     "format": "prettier --write '**/*.{js,jsx,ts,tsx,json,css}'",
+    "generateRuntimeEnvFile": "node ../commonui/scripts/generateruntimeenvfile.js",
     "generateStrings": "node scripts/extractlocalizedstrings.js"
   },
   "dependencies": {
     "@material-ui/core": "4.12.4",
     "@material-ui/lab": "4.0.0-alpha.61",
     "@microrealestate/commonui": "*",
-    "@next/font": "13.2.4",
     "axios": "0.27.2",
     "formik": "2.2.9",
     "jose": "4.11.4",
     "lodash": "4.17.21",
     "material-ui-formik-components": "0.7.3",
     "moment": "2.29.4",
-    "next": "13.2.3",
+    "next": "13.4.4",
     "next-translate": "2.0.2",
     "react": "18.2.0",
     "react-dom": "18.2.0"
   },
   "devDependencies": {
-    "@netlify/plugin-nextjs": "4.32.2",
+    "@netlify/plugin-nextjs": "4.37.2",
     "eslint": "8.36.0",
-    "eslint-config-next": "13.2.4",
+    "eslint-config-next": "13.4.4",
     "fdir": "5.2.0",
     "next-translate-plugin": "2.0.2"
   }

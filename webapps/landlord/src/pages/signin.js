@@ -31,7 +31,7 @@ export default function SignIn() {
   const router = useRouter();
 
   useEffect(() => {
-    if (config.NEXT_PUBLIC_DEMO_MODE) {
+    if (config.DEMO_MODE) {
       setInitialValues({
         email: 'demo@demo.com',
         password: 'demo',
@@ -109,7 +109,7 @@ export default function SignIn() {
         </Box>
         <Typography component="h1" variant="h5" align="center">
           {t('Sign in to {{APP_NAME}}', {
-            APP_NAME: config.NEXT_PUBLIC_APP_NAME,
+            APP_NAME: config.APP_NAME,
           })}
         </Typography>
       </Box>
@@ -131,7 +131,7 @@ export default function SignIn() {
                     type="password"
                     autoComplete="current-password"
                   />
-                  {!config.NEXT_PUBLIC_DEMO_MODE && (
+                  {!config.DEMO_MODE && (
                     <Typography variant="body2">
                       <Link href="/forgotpassword" data-cy="forgotpassword">
                         {t('Forgot password?')}
@@ -150,13 +150,13 @@ export default function SignIn() {
           </Formik>
         </Box>
       </Paper>
-      {!config.NEXT_PUBLIC_DEMO_MODE && config.NEXT_PUBLIC_SIGNUP && (
+      {!config.DEMO_MODE && config.SIGNUP && (
         <Box mt={4}>
           <Paper>
             <Box px={4} py={2}>
               <Typography variant="body2">
                 {t('New to {{APP_NAME}}?', {
-                  APP_NAME: config.NEXT_PUBLIC_APP_NAME,
+                  APP_NAME: config.APP_NAME,
                 })}{' '}
                 <Link href="/signup" data-cy="signup">
                   {t('Create an account')}

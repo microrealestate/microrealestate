@@ -1,14 +1,23 @@
+const path = require('path');
+const fs = require('fs');
 const { defineConfig } = require('cypress');
 const dotenv = require('dotenv');
 const dotenvExpand = require('dotenv-expand');
 
-dotenvExpand.expand(dotenv.config({ path: '../.env' }));
-
-let GATEWAY_BASEURL = 'http://localhost:8080';
-if (process.env.GATEWAY_URL) {
-  const apiUrl = new URL(process.env.GATEWAY_URL);
-  GATEWAY_BASEURL = `${apiUrl.protocol}//${apiUrl.host}`;
+let env = {};
+const envFile = path.resolve(process.cwd(), '.env');
+if (fs.existsSync(envFile)) {
+  env = dotenvExpand.expand({
+    ignoreProcessEnv: true,
+    parsed: { ...dotenv.parse(fs.readFileSync(envFile)) },
+    ...dotenv.config({ path: '../.env' }),
+  });
 }
+
+let GATEWAY_BASEURL =
+  process.env.GATEWAY_URL || env.GATEWAY_BASEURL || 'http://localhost:8080';
+const apiUrl = new URL(GATEWAY_BASEURL);
+GATEWAY_BASEURL = `${apiUrl.protocol}//${apiUrl.host}`;
 
 module.exports = defineConfig({
   viewportWidth: 1200,
@@ -18,6 +27,9 @@ module.exports = defineConfig({
     GATEWAY_BASEURL,
   },
   e2e: {
-    baseUrl: process.env.LANDLORD_APP_URL || 'http://localhost:8080/landlord',
+    baseUrl:
+      process.env.LANDLORD_APP_URL ||
+      env.LANDLORD_APP_URL ||
+      'http://localhost:8080/landlord',
   },
 });

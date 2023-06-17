@@ -90,7 +90,7 @@ export default function SignUp({ pageError }) {
         </Box>
         <Typography component="h1" variant="h5" align="center">
           {t('Sign up to {{APP_NAME}}', {
-            APP_NAME: config.NEXT_PUBLIC_APP_NAME,
+            APP_NAME: config.APP_NAME,
           })}
         </Typography>
       </Box>
@@ -130,7 +130,7 @@ export default function SignUp({ pageError }) {
           <Box px={4} py={2}>
             <Typography variant="body2">
               {t('Already on {{APP_NAME}}?', {
-                APP_NAME: config.NEXT_PUBLIC_APP_NAME,
+                APP_NAME: config.APP_NAME,
               })}{' '}
               <Link href="/signin" data-cy="signin">
                 {t('Sign in')}

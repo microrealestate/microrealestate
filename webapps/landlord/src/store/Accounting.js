@@ -3,9 +3,9 @@ import { flow, makeObservable, observable } from 'mobx';
 import { apiFetcher } from '../utils/fetch';
 
 export default class Accounting {
-  data = {};
-
   constructor() {
+    this.data = {};
+
     makeObservable(this, {
       data: observable,
       fetch: flow,

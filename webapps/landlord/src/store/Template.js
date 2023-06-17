@@ -4,11 +4,11 @@ import { apiFetcher } from '../utils/fetch';
 import { updateItems } from './utils';
 
 export default class Template {
-  selected = {};
-  items = [];
-  fields = [];
-
   constructor() {
+    this.selected = {};
+    this.items = [];
+    this.fields = [];
+
     makeObservable(this, {
       selected: observable,
       setSelected: action,

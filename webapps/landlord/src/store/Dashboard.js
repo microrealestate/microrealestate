@@ -4,9 +4,9 @@ import { apiFetcher } from '../utils/fetch';
 import moment from 'moment';
 
 export default class Dashboard {
-  data = {};
-
   constructor() {
+    this.data = {};
+
     makeObservable(this, {
       data: observable,
       fetch: flow,

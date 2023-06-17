@@ -4,10 +4,10 @@ import { apiFetcher } from '../utils/fetch';
 import { updateItems } from './utils';
 
 export default class Document {
-  selected = {};
-  items = [];
-
   constructor() {
+    this.selected = {};
+    this.items = [];
+
     makeObservable(this, {
       selected: observable,
       setSelected: action,

@@ -4,11 +4,11 @@ import { apiFetcher } from '../utils/fetch';
 import { updateItems } from './utils';
 
 export default class Tenant {
-  selected = {};
-  filters = { searchText: '', status: ['inprogress'] };
-  items = [];
-
   constructor() {
+    this.selected = {};
+    this.filters = { searchText: '', status: ['inprogress'] };
+    this.items = [];
+
     makeObservable(this, {
       selected: observable,
       filters: observable,

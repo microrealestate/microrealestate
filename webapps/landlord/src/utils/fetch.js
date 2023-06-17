@@ -1,4 +1,4 @@
-import { isClient, isServer } from './index';
+import { isClient, isServer } from '@microrealestate/commonui/utils';
 
 import axios from 'axios';
 import config from '../config';
@@ -7,9 +7,7 @@ import { getStoreInstance } from '../store';
 
 let apiFetch;
 let authApiFetch;
-const withCredentials = isServer()
-  ? config.CORS_ENABLED
-  : config.NEXT_PUBLIC_CORS_ENABLED;
+const withCredentials = config.CORS_ENABLED;
 
 export const setAccessToken = (accessToken) => {
   apiFetcher();
@@ -39,17 +37,12 @@ export const setAcceptLanguage = (acceptLanguage) => {
 export const apiFetcher = () => {
   if (!apiFetch) {
     // create axios instance
-    if (isServer()) {
-      apiFetch = axios.create({
-        baseURL: config.DOCKER_GATEWAY_URL || config.GATEWAY_URL,
-        withCredentials,
-      });
-    } else {
-      apiFetch = axios.create({
-        baseURL: config.NEXT_PUBLIC_GATEWAY_URL,
-        withCredentials,
-      });
-    }
+    apiFetch = axios.create({
+      baseURL: isServer()
+        ? config.DOCKER_GATEWAY_URL || config.GATEWAY_URL
+        : config.GATEWAY_URL,
+      withCredentials,
+    });
 
     // manage refresh token on 401
     let isRefreshingToken = false;
@@ -117,7 +110,7 @@ export const apiFetcher = () => {
         // Force signin if an api responded 403
         if (error.response?.status === 403) {
           if (isClient()) {
-            window.location.assign(`${config.NEXT_PUBLIC_BASE_PATH}`);
+            window.location.assign(`${config.BASE_PATH}`);
           }
           throw new axios.Cancel('Operation canceled force login');
         }

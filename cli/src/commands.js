@@ -8,14 +8,14 @@ const moment = require('moment');
 const { buildUrl, destructUrl } = require('@microrealestate/common/utils/url');
 const { generateRandomToken, runCompose, loadEnv } = require('./utils');
 
-const initDirectories = () => {
+function initDirectories() {
   const mongoDir = path.join('.', 'data', 'mongodb');
   if (!fs.existsSync(mongoDir)) {
     fs.mkdirSync(mongoDir, { recursive: true });
   }
-};
+}
 
-const displayHeader = () => {
+function displayHeader() {
   clear();
   console.log(
     chalk.white(
@@ -26,182 +26,239 @@ const displayHeader = () => {
   );
   console.log(
     chalk.white(
-      'The application which helps the landlords to manage their property rents'
+      'The application designed to assist landlords in managing their properties and rentals'
     )
   );
   console.log('');
-};
+}
 
-const build = async () => {
-  try {
-    await runCompose(
-      ['build', '--no-cache', '--force-rm', '--quiet'],
-      { runMode: 'prod' },
-      { waitLog: 'building containers...' }
-    );
+async function build({ service = 'all' }) {
+  const composeCmd = ['build', '--no-cache', '--force-rm'];
+  composeCmd.push('--quiet');
 
-    console.log(chalk.green('build completed'));
-  } catch (error) {
-    console.error(chalk.red(error));
+  if (service !== 'all') {
+    composeCmd.push(service);
   }
-};
 
-const start = async () => {
-  try {
-    initDirectories();
-    await runCompose(
-      ['up', '-d', '--force-recreate', '--remove-orphans'],
-      { runMode: 'prod' },
-      { waitLog: 'starting the application...' }
-    );
+  await runCompose(
+    composeCmd,
+    { runMode: 'prod' },
+    {
+      waitLog: 'building containers...',
+    }
+  );
 
-    console.log(
-      chalk.green(
-        `Landlord front-end ready and accessible on ${
-          process.env.APP_URL || process.env.LANDLORD_APP_URL
-        }`
-      )
-    );
-    console.log(
-      chalk.green(
-        `Tenant front-end ready and accessible on ${process.env.TENANT_APP_URL}`
-      )
-    );
-  } catch (error) {
-    console.error(chalk.red(error));
-  }
-};
+  console.log(chalk.green('build completed'));
+}
 
-const stop = async (runConfig = { runMode: 'prod' }) => {
-  try {
-    await runCompose(
-      ['rm', '--stop', '--force'],
-      { runMode: runConfig.runMode },
-      { waitLog: 'stopping current running application...' }
-    );
-  } catch (error) {
-    console.error(chalk.red(error));
-  }
-};
-
-const dev = async () => {
-  try {
-    initDirectories();
-    await runCompose(
-      ['up', '--build', '--force-recreate', '--remove-orphans', '--no-color'],
-      {
-        runMode: 'dev',
-      },
-      {
-        logErrorsDuringExecution: true,
-      }
-    );
-  } catch (error) {
-    console.error(chalk.red(error));
-  }
-};
-
-const status = async () => {
-  try {
-    await runCompose(
-      ['ps'],
-      {
-        runMode: 'prod',
-      },
-      {
-        logErrorsDuringExecution: true,
-      }
-    );
-  } catch (error) {
-    console.error(chalk.red(error));
-  }
-};
-
-const config = async (runMode) => {
-  try {
-    await runCompose(
-      ['config'],
-      {
-        runMode,
-      },
-      {
-        logErrorsDuringExecution: true,
-      }
-    );
-  } catch (error) {
-    console.error(chalk.red(error));
-  }
-};
-
-const restoreDB = async (backupFile) => {
+async function start() {
   loadEnv();
-  try {
-    const connectionString = process.env.MONGO_URL || process.env.BASE_DB_URL;
-    const archiveFile = `/backup/${backupFile}`;
 
-    await runCompose(
-      [
-        'run',
-        'mongo',
-        'mongorestore',
-        '--uri',
-        connectionString,
-        '--drop',
-        '--gzip',
-        `--archive=${archiveFile}`,
-      ],
-      {},
-      {
-        logErrorsDuringExecution: true,
-        waitLog: 'restoring database...',
-      }
-    );
-  } catch (error) {
-    console.error(chalk.red(error));
-  }
-};
+  initDirectories();
 
-const dumpDB = async () => {
-  loadEnv();
-  try {
-    const connectionString = process.env.MONGO_URL || process.env.BASE_DB_URL;
-    const dbUrl = new URL(connectionString);
-    const dbName = dbUrl.pathname.slice(1);
-    const timeStamp = moment().format('YYYYMMDDHHmm');
-    const archiveFile = `/backup/${dbName}-${timeStamp}.dump`;
+  await runCompose(
+    ['up', '-d', '--force-recreate', '--remove-orphans'],
+    { runMode: 'prod' },
+    {
+      waitLog: 'starting the application...',
+    }
+  );
 
-    await runCompose(
-      [
-        'run',
-        'mongo',
-        'mongodump',
-        '--uri',
-        connectionString,
-        '--gzip',
-        `--archive=${archiveFile}`,
-      ],
-      {
-        root: true,
-      },
-      {
-        logErrorsDuringExecution: true,
-        waitLog: 'dumping database...',
-      }
-    );
-  } catch (error) {
-    console.error(chalk.red(error));
-  }
-};
-
-const displayHelp = () => {
   console.log(
-    chalk.white(
-      'Usage: mre [option...] {dev|build|status|start|stop|config|restoredb|dumpdb}'
+    chalk.green(
+      `Landlord front-end ready and accessible on ${
+        process.env.APP_URL || process.env.LANDLORD_APP_URL
+      }`
     )
   );
-};
+  console.log(
+    chalk.green(
+      `Tenant front-end ready and accessible on ${process.env.TENANT_APP_URL}`
+    )
+  );
+}
 
-const askForEnvironmentVariables = (envConfig) => {
+async function stop({ runMode = 'prod' }) {
+  loadEnv();
+
+  await runCompose(
+    ['rm', '--stop', '--force'],
+    { runMode },
+    { waitLog: 'stopping current running application...' }
+  );
+}
+
+async function dev() {
+  loadEnv();
+
+  initDirectories();
+
+  await runCompose(
+    ['up', '--build', '--force-recreate', '--remove-orphans', '--no-color'],
+    {
+      runMode: 'dev',
+    },
+    {
+      logErrorsDuringExecution: true,
+    }
+  );
+}
+
+async function status() {
+  loadEnv();
+
+  await runCompose(
+    ['ps'],
+    {
+      runMode: 'prod',
+    },
+    {
+      logErrorsDuringExecution: true,
+    }
+  );
+}
+
+async function config(runMode) {
+  loadEnv();
+
+  await runCompose(
+    ['config'],
+    {
+      runMode,
+    },
+    {
+      logErrorsDuringExecution: true,
+    }
+  );
+}
+
+async function restoreDB(backupFile) {
+  loadEnv();
+
+  const connectionString = process.env.MONGO_URL;
+  const archiveFile = path.join('backup', backupFile);
+
+  await runCompose(
+    [
+      'run',
+      'mongo',
+      '/usr/bin/mongorestore',
+      `--uri=${connectionString}`,
+      '--drop',
+      '--gzip',
+      `--archive=${archiveFile}`,
+    ],
+    {},
+    {
+      logErrorsDuringExecution: true,
+      waitLog: 'restoring database...',
+    }
+  );
+}
+
+async function dumpDB() {
+  loadEnv();
+
+  const connectionString = process.env.MONGO_URL;
+  const dbUrl = new URL(connectionString);
+  const dbName = dbUrl.pathname.slice(1);
+  const timeStamp = moment().format('YYYYMMDDHHmm');
+  const archiveFile = path.join('backup', `${dbName}-${timeStamp}.dump`);
+
+  await runCompose(
+    [
+      'run',
+      'mongo',
+      '/usr/bin/mongodump',
+      `--uri=${connectionString}`,
+      '--gzip',
+      `--archive=${archiveFile}`,
+    ],
+    {},
+    {
+      logErrorsDuringExecution: true,
+      waitLog: 'dumping database...',
+    }
+  );
+}
+
+function displayHelp() {
+  const commands = [
+    {
+      name: 'dev',
+      description: 'Start the application in development mode',
+    },
+    {
+      name: 'build',
+      description: 'Build the application for production',
+      options: [
+        {
+          name: '--service',
+          description: 'Build only one service',
+        },
+      ],
+    },
+    {
+      name: 'start',
+      description:
+        'Start the application in production mode (build command has to be run first)',
+    },
+    {
+      name: 'stop',
+      description: 'Stop the application running in production mode',
+    },
+    {
+      name: 'status',
+      description: 'Display the status of the application',
+    },
+    {
+      name: 'config',
+      description: 'Display the configuration of the application',
+    },
+    {
+      name: 'restoredb',
+      description:
+        'Restore the database from a backup file located in /backup. The application has to be started to run this command.',
+    },
+    {
+      name: 'dumpdb',
+      description:
+        'Dump the database to a backup file located in /backup. The application has to be started to run this command.',
+    },
+  ];
+
+  console.log(
+    chalk.white(
+      `Usage: mre [option...] {${commands.map(({ name }) => name).join('|')}}`
+    )
+  );
+  console.log('');
+  console.log(chalk.white('Options:'));
+  console.log('');
+  console.log(
+    chalk.white(`  ${'-h, --help'.padEnd(20, ' ')}Display help for command`)
+  );
+  console.log('');
+  console.log(chalk.white('Commands:'));
+  console.log('');
+  commands.map((command) => {
+    // display the command name and description
+    console.log(
+      chalk.white(`  ${command.name.padEnd(20, ' ')}${command.description}`)
+    );
+
+    // display the options for each command
+    if (command.options) {
+      command.options.map((option) => {
+        console.log(
+          chalk.white(`    ${option.name.padEnd(20, ' ')}${option.description}`)
+        );
+      });
+    }
+  });
+}
+
+function askForEnvironmentVariables(envConfig) {
   const questions = [
     {
       name: 'dbData',
@@ -310,9 +367,9 @@ const askForEnvironmentVariables = (envConfig) => {
     landlordAppUrl: envConfig?.APP_URL || envConfig?.LANDLORD_APP_URL,
     tenantAppUrl: envConfig?.TENANT_APP_URL,
   });
-};
+}
 
-const askRunMode = () => {
+function askRunMode() {
   const questions = [
     {
       name: 'runMode',
@@ -326,9 +383,28 @@ const askRunMode = () => {
     },
   ];
   return inquirer.prompt(questions);
-};
+}
 
-const askBackupFile = (backupFiles) => {
+function askBackupFile() {
+  const backupFiles = [];
+  try {
+    const files = fs.readdirSync(
+      path.resolve(process.execPath, '..', 'backup')
+    );
+    files
+      .filter((file) => file.endsWith('.dump'))
+      .forEach((file) => {
+        backupFiles.push(file);
+      });
+  } catch (error) {
+    console.error(chalk.red(error.stack || error));
+  }
+
+  if (backupFiles.length === 0) {
+    console.error(chalk.red('No dump files found in the backup directory'));
+    return;
+  }
+
   const questions = [
     {
       name: 'backupFile',
@@ -341,13 +417,13 @@ const askBackupFile = (backupFiles) => {
     },
   ];
   return inquirer.prompt(questions);
-};
+}
 
-const writeDotEnv = (promptsConfig, envConfig) => {
+function writeDotEnv(promptsConfig, envConfig) {
+  // init variables that have to be overwritten
   const cipherKey = envConfig?.CIPHER_KEY || generateRandomToken(32);
   const cipherIvKey = envConfig?.CIPHER_IV_KEY || generateRandomToken(32);
-  const tokenDbPassword =
-    envConfig?.AUTHENTICATOR_TOKEN_DB_PASSWORD || generateRandomToken(64);
+  const tokenDbPassword = envConfig?.REDIS_PASSWORD || generateRandomToken(64);
   const accessTokenSecret =
     envConfig?.AUTHENTICATOR_ACCESS_TOKEN_SECRET || generateRandomToken(64);
   const refreshTokenSecret =
@@ -370,7 +446,7 @@ const writeDotEnv = (promptsConfig, envConfig) => {
   const demoMode = promptsConfig.dbData === 'demo_data';
   const restoreDb = envConfig?.RESTORE_DB || demoMode;
   const dbName = demoMode ? 'demodb' : 'mre';
-  const dbUrl = envConfig?.BASE_DB_URL || `mongodb://mongo/${dbName}`;
+  const dbUrl = envConfig?.MONGO_URL || `mongodb://mongo/${dbName}`;
   const gatewayPort = envConfig?.GATEWAY_PORT || port || '80';
   const corsEnabled = envConfig?.CORS_ENABLED === 'true';
   const domainUrl =
@@ -402,12 +478,13 @@ const writeDotEnv = (promptsConfig, envConfig) => {
       port: gatewayPort !== '80' ? '${GATEWAY_PORT}' : null,
     });
 
+  // delete env variables already taken in account in prompts
+  // to keep the ones set manually in the .env file (others)
   if (envConfig) {
-    // delete env variables already taken in account in prompts
-    delete envConfig.BASE_DB_URL;
+    delete envConfig.MONGO_URL;
     delete envConfig.CIPHER_KEY;
     delete envConfig.CIPHER_IV_KEY;
-    delete envConfig.AUTHENTICATOR_TOKEN_DB_PASSWORD;
+    delete envConfig.REDIS_PASSWORD;
     delete envConfig.AUTHENTICATOR_ACCESS_TOKEN_SECRET;
     delete envConfig.AUTHENTICATOR_REFRESH_TOKEN_SECRET;
     delete envConfig.AUTHENTICATOR_RESET_TOKEN_SECRET;
@@ -440,24 +517,45 @@ ${Object.entries(envConfig)
   .join('\n')}`
     : '';
 
+  // .env file content
   const content = `
-## mongo
-BASE_DB_URL=${dbUrl}
+###############################################################################
+##                                                                           ##
+##  The environment variables below overwrite the ones in the base.env file. ##
+##  The MRE application uses the merge of the base.env and .env files.       ##
+##                                                                           ##
+##  /!\\ The secrets and tokens have to be backed up otherwise you will not   ##
+##  be able to log in to the application, to access data from third-parties  ##
+##  (e.g. Mailgun, Blackblaze, etc.) or to decrypt data from the database.   ##
+##                                                                           ##
+##  /!\\ The .env file is not versioned and should not be committed as it     ##
+##  contains sensitive data (e.g. passwords, API keys, etc.).                ##
+##                                                                           ##
+############################################################################### 
+
+## Redis
+REDIS_PASSWORD=${tokenDbPassword}
+
+## Mongo
+MONGO_URL=${dbUrl}
+
+## CIPHER to encrypt/decrypt third-party tokens (e.g. Mailgun API key, Blackblaze API key, etc.)
 CIPHER_KEY=${cipherKey}
 CIPHER_IV_KEY=${cipherIvKey}
 
 ## gateway
 GATEWAY_PORT=${gatewayPort}
 CORS_ENABLED=${corsEnabled}
+DOMAIN_URL=${domainUrl}
 GATEWAY_URL=${gatewayUrl}
 
 ## authenticator
-AUTHENTICATOR_TOKEN_DB_PASSWORD=${tokenDbPassword}
 AUTHENTICATOR_ACCESS_TOKEN_SECRET=${accessTokenSecret}
 AUTHENTICATOR_REFRESH_TOKEN_SECRET=${refreshTokenSecret}
 AUTHENTICATOR_RESET_TOKEN_SECRET=${resetTokenSecret}
 
 ## emailer
+# General Mailgun configuration to send emails for forgot password, welcome, etc.
 ALLOW_SENDING_EMAILS=${sendEmails}
 MAILGUN_API_KEY=${mailgunApiKey}
 MAILGUN_DOMAIN=${mailgunDomain}
@@ -468,9 +566,6 @@ EMAIL_BCC=${mailgunBccEmails}
 ## api
 DEMO_MODE=${demoMode}
 RESTORE_DB=${restoreDb}
-
-## frontend
-DOMAIN_URL=${domainUrl}
 
 ## landlord frontend
 LANDLORD_BASE_PATH=${landlordBasePath || ''}
@@ -483,7 +578,7 @@ TENANT_APP_URL=${tenantAppUrl}
 ${others}
 `;
   fs.writeFileSync(path.resolve(process.cwd(), '.env'), content);
-};
+}
 
 module.exports = {
   config,
