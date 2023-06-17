@@ -27,3 +27,6 @@ coverage
 
 backup/*
 !backup/demodb.dump
+
+webapps/*/public/__ENV.js
+

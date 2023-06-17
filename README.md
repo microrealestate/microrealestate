@@ -44,7 +44,7 @@ Get started with the application by following the installation steps.
 ### 1. Clone the GitHub repository
 
 ```shell
-$ git clone --recursive https://github.com/microrealestate/microrealestate.git
+$ git clone https://github.com/microrealestate/microrealestate.git
 ```
 
 ### 2. Build an Start the application

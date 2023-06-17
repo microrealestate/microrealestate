@@ -11,19 +11,19 @@ function getMoment(current) {
   return moment(current);
 }
 export default class Rent {
-  selected = {};
-  filters = { searchText: '', status: [] };
-  _period = moment();
-  items = [];
-  countAll;
-  countPaid;
-  countPartiallyPaid;
-  countNotPaid;
-  totalToPay;
-  totalPaid;
-  totalNotPaid;
-
   constructor() {
+    this.selected = {};
+    this.filters = { searchText: '', status: [] };
+    this._period = moment();
+    this.items = [];
+    this.countAll = undefined;
+    this.countPaid = undefined;
+    this.countPartiallyPaid = undefined;
+    this.countNotPaid = undefined;
+    this.totalToPay = undefined;
+    this.totalPaid = undefined;
+    this.totalNotPaid = undefined;
+
     makeObservable(this, {
       selected: observable,
       filters: observable,

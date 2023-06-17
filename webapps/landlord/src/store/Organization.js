@@ -3,10 +3,10 @@ import { action, computed, flow, makeObservable, observable } from 'mobx';
 import { apiFetcher } from '../utils/fetch';
 
 export default class Organization {
-  selected;
-  items = [];
-
   constructor() {
+    this.selected = undefined;
+    this.items = [];
+
     makeObservable(this, {
       selected: observable,
       items: observable,

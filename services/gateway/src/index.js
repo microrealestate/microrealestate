@@ -49,7 +49,7 @@ function exposeFrontends(app) {
     app.use(
       config.LANDLORD_BASE_PATH,
       createProxyMiddleware({
-        target: `http://landlord-frontend:${config.LANDLORD_FRONTEND_PORT}`,
+        target: config.LANDLORD_FRONTEND_URL,
         ws: true,
       })
     );
@@ -57,7 +57,7 @@ function exposeFrontends(app) {
     app.use(
       config.TENANT_BASE_PATH,
       createProxyMiddleware({
-        target: `http://tenant-frontend:${config.TENANT_FRONTEND_PORT}`,
+        target: config.TENANT_FRONTEND_URL,
         ws: true,
       })
     );

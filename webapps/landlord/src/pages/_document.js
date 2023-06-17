@@ -1,13 +1,19 @@
 import Document, { Head, Html, Main, NextScript } from 'next/document';
 
 import React from 'react';
+import Script from 'next/script';
 import { ServerStyleSheets } from '@material-ui/core/styles';
 import theme from '../styles/theme';
 
 export default function MyDocument() {
   return (
     <Html translate="no">
-      <Head />
+      <Head>
+        <Script
+          src={`${process.env.BASE_PATH}/__ENV.js`}
+          strategy="beforeInteractive"
+        />
+      </Head>
       <body
         style={{
           backgroundColor: theme.palette.background,

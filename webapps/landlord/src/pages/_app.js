@@ -19,10 +19,10 @@ import theme from '../styles/theme';
 import { ThemeProvider } from '@material-ui/core/styles';
 import { useEffect } from 'react';
 
-const APP_TITLE = [config.NEXT_PUBLIC_APP_NAME, 'Landlord'];
+const APP_TITLE = [config.APP_NAME, 'Landlord'];
 if (config.NODE_ENV === 'development') {
   APP_TITLE.push('DEV');
-} else if (config.NEXT_PUBLIC_DEMO_MODE) {
+} else if (config.DEMO_MODE) {
   APP_TITLE.push('DEMO');
 }
 
@@ -71,10 +71,7 @@ function MyApp(props) {
           name="viewport"
           content="minimum-scale=1, initial-scale=1, width=device-width"
         />
-        <link
-          rel="shortcut icon"
-          href={`${config.NEXT_PUBLIC_BASE_PATH}/favicon.svg`}
-        />
+        <link rel="shortcut icon" href={`${config.BASE_PATH}/favicon.svg`} />
         <link
           href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.min.css"
           rel="stylesheet"

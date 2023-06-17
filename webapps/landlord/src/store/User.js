@@ -3,20 +3,20 @@ import * as jose from 'jose';
 import { action, computed, flow, makeObservable, observable } from 'mobx';
 import { apiFetcher, authApiFetcher, setAccessToken } from '../utils/fetch';
 
-import { isServer } from '../utils';
+import { isServer } from '@microrealestate/commonui/utils';
 
 export const ADMIN_ROLE = 'administrator';
 export const RENTER_ROLE = 'renter';
 export const ROLES = [ADMIN_ROLE, RENTER_ROLE];
 export default class User {
-  token;
-  tokenExpiry;
-  firstName;
-  lastName;
-  email;
-  role;
-
   constructor() {
+    this.token = undefined;
+    this.tokenExpiry = undefined;
+    this.firstName = undefined;
+    this.lastName = undefined;
+    this.email = undefined;
+    this.role = undefined;
+
     makeObservable(this, {
       token: observable,
       tokenExpiry: observable,

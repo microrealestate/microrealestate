@@ -9,34 +9,33 @@ const dotenvExpand = require('dotenv-expand');
 
 const Spinner = clui.Spinner;
 
-const generateRandomToken = (size = 64) => {
+function generateRandomToken(size = 64) {
   return crypto.randomBytes(size).toString('hex');
-};
+}
 
-const removeEndLineBreak = (log) => {
+function removeEndLineBreak(log) {
   return log.replace(/\s$/g, '');
-};
+}
 
-const parseEnv = (wd) => {
-  const dotEnvFilePath = path.resolve(wd || process.cwd(), '.env');
-  const env = dotenv.parse(fs.readFileSync(dotEnvFilePath));
+function loadEnv(args) {
+  const { ignoreBaseEnv = false, ignoreProcessEnv = false } = args || {};
 
-  return dotenvExpand.expand({ ignoreProcessEnv: true, parsed: env }).parsed;
-};
+  let baseEnv = {};
+  if (!ignoreBaseEnv) {
+    const baseEnvFile = path.resolve(process.cwd(), 'base.env');
+    baseEnv = dotenv.parse(fs.readFileSync(baseEnvFile));
+  }
 
-const loadEnv = (wd, runMode) => {
-  dotenv.config(); // load .env config
-  const env = dotenv.config({
-    // complete environment variables with 'dev.env" or "prod.env"
-    path: path.resolve(
-      wd || process.cwd(),
-      runMode === 'prod' ? 'prod.env' : 'dev.env'
-    ),
-  });
-  dotenvExpand.expand(env); // expand env variables which reference env variable
-};
+  const envFile = path.resolve(process.cwd(), '.env');
+  const env = dotenv.parse(fs.readFileSync(envFile));
 
-const runCommand = async (cmd, parameters = [], options = {}) => {
+  return dotenvExpand.expand({
+    ignoreProcessEnv,
+    parsed: { ...baseEnv, ...env },
+  }).parsed;
+}
+
+async function runCommand(cmd, parameters = [], options = {}) {
   let spinner;
   if (options.waitLog) {
     spinner = new Spinner(options.waitLog);
@@ -53,16 +52,15 @@ const runCommand = async (cmd, parameters = [], options = {}) => {
         spinner?.start();
       });
       shellCommand.stderr.on('data', (data) => {
-        if (options.noErrorsOnStdErr) {
-          spinner?.stop();
-          console.log(removeEndLineBreak(data.toString()));
-          spinner?.start();
-          return;
-        }
-
         if (options.logErrorsDuringExecution) {
           spinner?.stop();
-          console.error(chalk.red(removeEndLineBreak(data.toString())));
+          // see https://github.com/docker/compose/issues/6078
+          // const noErrorsOnStdErr = true;
+          // if (noErrorsOnStdErr) {
+          console.log(removeEndLineBreak(data.toString()));
+          // } else {
+          //console.error(chalk.red(removeEndLineBreak(data.toString())));
+          // }
           spinner?.start();
         } else {
           errors.push(removeEndLineBreak(data.toString()));
@@ -89,16 +87,17 @@ const runCommand = async (cmd, parameters = [], options = {}) => {
       });
     } catch (error) {
       spinner?.stop();
-      console.error(chalk.red(error));
+      console.error(chalk.red(error.stack || error));
+      reject(1);
     }
   });
-};
+}
 
-const runCompose = async (
+async function runCompose(
   composeCmd,
   composeOptions = { runMode: 'dev' },
   commandOptions = { logErrorsDuringExecution: false }
-) => {
+) {
   const prodComposeArgs = [
     '-f',
     'docker-compose.microservices.base.yml',
@@ -114,20 +113,22 @@ const runCompose = async (
     'docker-compose.microservices.test.yml',
   ];
 
-  loadEnv(composeOptions.wd, composeOptions.runMode);
+  // set NODE_ENV environment variable according to runMode
+  process.env.NODE_ENV =
+    composeOptions.runMode === 'prod' ? 'production' : 'development';
+
   await runCommand(
     'docker-compose',
     [
       ...(composeOptions.runMode === 'prod' ? prodComposeArgs : devComposeArgs),
       ...composeCmd,
     ],
-    { ...commandOptions, noErrorsOnStdErr: true } // noErrorsOnStdErr see https://github.com/docker/compose/issues/6078
+    commandOptions
   );
-};
+}
 
 module.exports = {
   generateRandomToken,
   loadEnv,
-  parseEnv,
   runCompose,
 };
