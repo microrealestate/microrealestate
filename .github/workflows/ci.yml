@@ -12,72 +12,39 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    # outputs:
-    #   gateway_image: ${{ steps.set-outputs.outputs.gateway_image }}
-    #   api_image: ${{ steps.set-outputs.outputs.api_image }}
-    #   authenticator_image: ${{ steps.set-outputs.outputs.authenticator_image }}
-    #   pdfgenerator_image: ${{ steps.set-outputs.outputs.pdfgenerator_image }}
-    #   emailer_image: ${{ steps.set-outputs.outputs.emailer_image }}
-    #   resetservice_image: ${{ steps.set-outputs.outputs.resetservice_image }}
-    #   landlord-frontend_image: ${{ steps.set-outputs.outputs.landlord-frontend_image }}
-    #   tenant-frontend_image: ${{ steps.set-outputs.outputs.tenant-frontend_image }}
     strategy:
-      # max-parallel: 3
       matrix:
         include:
           - appname: gateway
             image: ghcr.io/${{ github.repository }}/gateway
             dockerfile: services/gateway/Dockerfile
-            # srcFolder: services/gateway
           - appname: api
             image: ghcr.io/${{ github.repository }}/api
             dockerfile: services/api/Dockerfile
-            # srcFolder: services/api
           - appname: authenticator
             image: ghcr.io/${{ github.repository }}/authenticator
             dockerfile: services/authenticator/Dockerfile
-            # srcFolder: services/authenticator
           - appname: pdfgenerator
             image: ghcr.io/${{ github.repository }}/pdfgenerator
             dockerfile: services/pdfgenerator/Dockerfile
-            # srcFolder: services/pdfgenerator
           - appname: emailer
             image: ghcr.io/${{ github.repository }}/emailer
             dockerfile: services/emailer/Dockerfile
-            # srcFolder: services/emailer
           - appname: resetservice
             image: ghcr.io/${{ github.repository }}/resetservice
             dockerfile: services/resetservice/Dockerfile
-            # srcFolder: services/resetservice
           - appname: landlord-frontend
             image: ghcr.io/${{ github.repository }}/landlord-frontend
             dockerfile: webapps/landlord/Dockerfile
-            # srcFolder: webapps/landlord
           - appname: tenant-frontend
             image: ghcr.io/${{ github.repository }}/tenant-frontend
             dockerfile: webapps/tenant/Dockerfile
-            # srcFolder: webapps/tenant
 
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-        # with:
-        #   fetch-depth: 2
-
-      # - name: Get modified files in the source folder
-      #   id: modified-files
-      #   uses: tj-actions/changed-files@v36
-      #   with:
-      #     files: ${{ matrix.srcFolder }}/**
-
-      # - name: List all modified files
-      #   run: |
-      #     for file in ${{ steps.modified-files.outputs.all_modified_files }}; do
-      #       echo "$file was modified"
-      #     done
 
       - name: Login to GitHub Container Registry
-        # if: steps.modified-files.outputs.any_modified == 'true'
         uses: docker/login-action@v2
         with:
           registry: ghcr.io
@@ -85,14 +52,12 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Extract metadata (tags, labels) for Docker
-        # if: steps.modified-files.outputs.any_modified == 'true'
         id: meta
         uses: docker/metadata-action@v4
         with:
           images: ${{ matrix.image }}
 
       - name: Build and push to GitHub Container Registry
-        # if: steps.modified-files.outputs.any_modified == 'true'
         uses: docker/build-push-action@v4
         # base path cannot be set at runtime: https://github.com/vercel/next.js/discussions/41769
         # only for landlord-fronted and tenant-frontend
@@ -103,7 +68,6 @@ jobs:
           context: .
           file: ${{ matrix.dockerfile }}
           push: true
-          # tags: ${{ steps.meta.outputs.tags }}
           tags: '${{ matrix.image }}:${{ github.sha }}'
           labels: ${{ steps.meta.outputs.labels }}
           # base path cannot be set at runtime: https://github.com/vercel/next.js/discussions/41769
@@ -111,23 +75,7 @@ jobs:
             LANDLORD_BASE_PATH=${{ env.LANDLORD_BASE_PATH }}
             TENANT_BASE_PATH=${{ env.TENANT_BASE_PATH }}
 
-      # - name: Set outputs
-      #   id: set-outputs
-      #   run: echo "${{ matrix.appname }}_image=${{ steps.modified-files.outputs.any_modified }}" >> $GITHUB_OUTPUT
-
-      # Dokku server cannot handle multiple deployments at the same time
-      # - name: Push to dokku
-      #   # if: steps.modified-files.outputs.any_modified == 'true'
-      #   uses: dokku/github-action@master
-      #   with:
-      #     git_remote_url: '${{ secrets.DOKKU_URL}}/${{ matrix.appname }}'
-      #     git_push_flags: --force
-      #     ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
-      #     # deploy_docker_image: ${{ steps.meta.outputs.tags }}
-      #     deploy_docker_image: ghcr.io/${{ github.repository }}/${{ matrix.appname }}:${{ github.sha }}
-
   deploy_gateway:
-    # if: needs.build.outputs.gateway_image == 'true'
     runs-on: ubuntu-latest
     needs: build
     steps:
@@ -138,12 +86,10 @@ jobs:
         uses: dokku/github-action@master
         with:
           git_remote_url: '${{ secrets.DOKKU_URL}}/gateway-stage'
-          git_push_flags: --force
           ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
           deploy_docker_image: ghcr.io/${{ github.repository }}/gateway:${{ github.sha }}
 
   deploy_authenticator:
-    # if: needs.build.outputs.authenticator_image == 'true'
     runs-on: ubuntu-latest
     needs: [build, deploy_gateway]
     steps:
@@ -154,12 +100,10 @@ jobs:
         uses: dokku/github-action@master
         with:
           git_remote_url: '${{ secrets.DOKKU_URL}}/authenticator-stage'
-          git_push_flags: --force
           ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
           deploy_docker_image: ghcr.io/${{ github.repository }}/authenticator:${{ github.sha }}
 
   deploy_api:
-    # if: needs.build.outputs.api_image == 'true'
     runs-on: ubuntu-latest
     needs: [build, deploy_authenticator]
     steps:
@@ -170,12 +114,10 @@ jobs:
         uses: dokku/github-action@master
         with:
           git_remote_url: '${{ secrets.DOKKU_URL}}/api-stage'
-          git_push_flags: --force
           ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
           deploy_docker_image: ghcr.io/${{ github.repository }}/api:${{ github.sha }}
 
   deploy_pdfgenerator:
-    # if: needs.build.outputs.pdfgenerator_image == 'true'
     runs-on: ubuntu-latest
     needs: build
     steps:
@@ -186,12 +128,10 @@ jobs:
         uses: dokku/github-action@master
         with:
           git_remote_url: '${{ secrets.DOKKU_URL}}/pdfgenerator-stage'
-          git_push_flags: --force
           ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
           deploy_docker_image: ghcr.io/${{ github.repository }}/pdfgenerator:${{ github.sha }}
 
   deploy_emailer:
-    # if: needs.build.outputs.emailer_image == 'true'
     runs-on: ubuntu-latest
     needs: [build, deploy_pdfgenerator]
     steps:
@@ -202,12 +142,10 @@ jobs:
         uses: dokku/github-action@master
         with:
           git_remote_url: '${{ secrets.DOKKU_URL}}/emailer-stage'
-          git_push_flags: --force
           ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
           deploy_docker_image: ghcr.io/${{ github.repository }}/emailer:${{ github.sha }}
 
   deploy_resetservice:
-    # if: needs.build.outputs.resetservice_image == 'true'
     runs-on: ubuntu-latest
     needs: [build, deploy_emailer]
     steps:
@@ -218,12 +156,10 @@ jobs:
         uses: dokku/github-action@master
         with:
           git_remote_url: '${{ secrets.DOKKU_URL}}/resetservice-stage'
-          git_push_flags: --force
           ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
           deploy_docker_image: ghcr.io/${{ github.repository }}/resetservice:${{ github.sha }}
 
   deploy_landlord_frontend:
-    # if: needs.build.outputs.landlord-frontend_image == 'true'
     runs-on: ubuntu-latest
     needs: build
     steps:
@@ -234,12 +170,10 @@ jobs:
         uses: dokku/github-action@master
         with:
           git_remote_url: '${{ secrets.DOKKU_URL}}/landlord-stage'
-          git_push_flags: --force
           ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
           deploy_docker_image: ghcr.io/${{ github.repository }}/landlord-frontend:${{ github.sha }}
 
   deploy_tenant_frontend:
-    # if: needs.build.outputs.tenant-frontend_image == 'true'
     runs-on: ubuntu-latest
     needs: [build, deploy_landlord_frontend]
     steps:
@@ -250,7 +184,6 @@ jobs:
         uses: dokku/github-action@master
         with:
           git_remote_url: '${{ secrets.DOKKU_URL}}/tenant-stage'
-          git_push_flags: --force
           ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
           deploy_docker_image: ghcr.io/${{ github.repository }}/tenant-frontend:${{ github.sha }}
 
