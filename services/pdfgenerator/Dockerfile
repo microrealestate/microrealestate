@@ -1,9 +1,6 @@
-FROM node:18-alpine
+FROM node:18-alpine AS build
 
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
-ENV CHROMIUM_BIN "/usr/bin/chromium-browser"
-
-RUN apk --no-cache add build-base python3 chromium
+RUN apk --no-cache add build-base python3
 
 WORKDIR /usr/app
 
@@ -18,11 +15,16 @@ COPY yarn.lock .
 COPY .yarnrc.yml .
 COPY .yarn .yarn
 
-ENV NODE_ENV production
-
 RUN corepack enable && \
     corepack prepare yarn@stable --activate
 
 RUN yarn workspaces focus --production @microrealestate/pdfgenerator
 
+FROM node:18-alpine
+ENV NODE_ENV production
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
+ENV CHROMIUM_BIN "/usr/bin/chromium-browser"
+RUN apk --no-cache add chromium
+WORKDIR /usr/app
+COPY --from=build /usr/app ./
 CMD ["node", "services/pdfgenerator/src/index.js"]

@@ -1,4 +1,4 @@
-FROM node:18-alpine
+FROM node:18-alpine AS build
 
 RUN apk --no-cache add build-base python3
 
@@ -16,4 +16,8 @@ RUN corepack enable && \
 
 RUN yarn workspaces focus @microrealestate/resetservice
 
+
+FROM node:18-slim
+WORKDIR /usr/app
+COPY --from=build /usr/app ./
 CMD ["yarn", "workspace", "@microrealestate/resetservice", "run", "dev"]

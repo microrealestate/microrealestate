@@ -1,6 +1,6 @@
-FROM node:18-alpine
+FROM node:18-alpine AS build
 
-RUN apk --no-cache add build-base python3 mongodb-tools
+RUN apk --no-cache add build-base python3
 
 WORKDIR /usr/app
 
@@ -16,4 +16,8 @@ RUN corepack enable && \
 
 RUN yarn workspaces focus @microrealestate/api
 
+FROM node:18-alpine
+RUN apk --no-cache add mongodb-tools
+WORKDIR /usr/app
+COPY --from=build /usr/app ./
 CMD ["yarn", "workspace", "@microrealestate/api", "run", "dev"]

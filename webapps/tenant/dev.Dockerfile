@@ -1,4 +1,10 @@
-FROM node:18-alpine
+FROM node:18-alpine AS build
+
+ENV NEXT_TELEMETRY_DISABLED=1
+# base path cannot be set at runtime: https://github.com/vercel/next.js/discussions/41769
+ARG TENANT_BASE_PATH
+ENV BASE_PATH=$TENANT_BASE_PATH
+ENV NEXT_PUBLIC_BASE_PATH=$TENANT_BASE_PATH
 
 RUN apk --no-cache add build-base python3
 
@@ -19,17 +25,17 @@ COPY webapps/tenant/next.config.js webapps/tenant
 COPY webapps/tenant/package.json webapps/tenant
 COPY webapps/tenant/LICENSE webapps/tenant
 
-ENV NEXT_TELEMETRY_DISABLED=1
-
-# base path cannot be set at runtime: https://github.com/vercel/next.js/discussions/41769
-ARG TENANT_BASE_PATH
-ENV BASE_PATH=$TENANT_BASE_PATH
-ENV NEXT_PUBLIC_BASE_PATH=$TENANT_BASE_PATH
-
 RUN corepack enable && \
     corepack prepare yarn@stable --activate
 
 RUN yarn workspaces focus @microrealestate/tenant 
 
+FROM node:18-slim
+ENV NEXT_TELEMETRY_DISABLED=1
+# base path cannot be set at runtime: https://github.com/vercel/next.js/discussions/41769
+ARG TENANT_BASE_PATH
+ENV BASE_PATH=$TENANT_BASE_PATH
+ENV NEXT_PUBLIC_BASE_PATH=$TENANT_BASE_PATH
+COPY --from=build /usr/app ./
 CMD yarn workspace @microrealestate/tenant run generateRuntimeEnvFile && \
     yarn workspace @microrealestate/tenant run dev -p $PORT
