@@ -1,4 +1,4 @@
-FROM node:18-alpine
+FROM node:18-alpine AS build
 
 RUN apk --no-cache add build-base python3
 
@@ -13,11 +13,13 @@ COPY .yarnrc.yml .
 COPY .yarn .yarn
 COPY yarn.lock .
 
-ENV NODE_ENV production
-
 RUN corepack enable && \
     corepack prepare yarn@stable --activate
 
 RUN yarn workspaces focus --production @microrealestate/authenticator
 
+FROM node:18-alpine
+ENV NODE_ENV production
+WORKDIR /usr/app
+COPY --from=build /usr/app ./
 CMD ["node", "services/authenticator/src/index.js"]
