@@ -20,8 +20,4 @@ RUN corepack enable && \
 
 RUN yarn workspaces focus --production @microrealestate/gateway
 
-RUN chown -R node:node /usr/app
-
-USER node
-
 CMD ["node", "services/gateway/src/index.js"]

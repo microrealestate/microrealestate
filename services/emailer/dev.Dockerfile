@@ -16,8 +16,4 @@ RUN corepack enable && \
 
 RUN yarn workspaces focus @microrealestate/emailer
 
-RUN chown -R node:node /usr/app
-
-USER node
-
 CMD ["yarn", "workspace", "@microrealestate/emailer", "run", "dev"]

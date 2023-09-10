@@ -21,8 +21,4 @@ RUN corepack enable && \
 
 RUN yarn workspaces focus --production @microrealestate/api
 
-RUN chown -R node:node /usr/app
-
-USER node
-
 CMD ["node", "services/api/src/index.js"]
