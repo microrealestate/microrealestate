@@ -33,10 +33,5 @@ RUN corepack enable && \
 RUN yarn workspaces focus @microrealestate/landlord && \
     yarn workspace @microrealestate/landlord run build
 
-# TODO: check why using user node is failing
-# RUN chown -R node:node /usr/app
-
-# USER node
-
 CMD yarn workspace @microrealestate/landlord run generateRuntimeEnvFile && \
     yarn workspace @microrealestate/landlord start -p $PORT

@@ -20,8 +20,4 @@ RUN corepack enable && \
 
 RUN yarn workspaces focus --production @microrealestate/authenticator
 
-RUN chown -R node:node /usr/app
-
-USER node
-
 CMD ["node", "services/authenticator/src/index.js"]
