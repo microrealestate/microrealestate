@@ -13,6 +13,7 @@ let browserWSEndpoint;
 async function start() {
   logger.debug('chrome headless starting...');
   const browser = await puppeteer.launch({
+    headless: 'new',
     executablePath: process.env.CHROMIUM_BIN || null,
     args: ['--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage'],
   });
