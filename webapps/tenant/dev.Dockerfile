@@ -20,8 +20,11 @@ COPY webapps/tenant/public webapps/tenant/public
 COPY webapps/tenant/locales webapps/tenant/locales
 COPY webapps/tenant/src webapps/tenant/src
 COPY webapps/tenant/.eslintrc.json webapps/tenant
-COPY webapps/tenant/i18n.js webapps/tenant
 COPY webapps/tenant/next.config.js webapps/tenant
+COPY webapps/tenant/components.json webapps/tenant
+COPY webapps/tenant/postcss.config.js webapps/tenant
+COPY webapps/tenant/tailwind.config.ts webapps/tenant
+COPY webapps/tenant/tsconfig.json webapps/tenant
 COPY webapps/tenant/package.json webapps/tenant
 COPY webapps/tenant/LICENSE webapps/tenant
 
@@ -36,6 +39,6 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ARG TENANT_BASE_PATH
 ENV BASE_PATH=$TENANT_BASE_PATH
 ENV NEXT_PUBLIC_BASE_PATH=$TENANT_BASE_PATH
+WORKDIR /usr/app
 COPY --from=build /usr/app ./
-CMD yarn workspace @microrealestate/tenant run generateRuntimeEnvFile && \
-    yarn workspace @microrealestate/tenant run dev -p $PORT
+CMD yarn workspace @microrealestate/tenant run dev -p $PORT
