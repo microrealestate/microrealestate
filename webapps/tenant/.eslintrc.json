@@ -1,8 +1,17 @@
 {
-  "extends": "next/core-web-vitals",
+  "extends": ["next/core-web-vitals", "plugin:@typescript-eslint/recommended"],
   "settings": {
     "next": {
       "rootDir": ["webapps/tenant"]
+    },
+    "import/resolver": {
+      "typescript": {
+        "project": "webapps/tenant/tsconfig.json"
+      }
     }
+  },
+  "rules": {
+    "@typescript-eslint/no-unused-vars": "error",
+    "no-unused-vars": "off"
   }
 }
