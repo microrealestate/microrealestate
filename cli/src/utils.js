@@ -118,8 +118,9 @@ async function runCompose(
     composeOptions.runMode === 'prod' ? 'production' : 'development';
 
   await runCommand(
-    'docker-compose',
+    'docker',
     [
+      'compose',
       ...(composeOptions.runMode === 'prod' ? prodComposeArgs : devComposeArgs),
       ...composeCmd,
     ],
