@@ -34,7 +34,7 @@ function displayHeader() {
 
 async function build({ service = 'all' }) {
   const composeCmd = ['build', '--no-cache', '--force-rm'];
-  composeCmd.push('--quiet');
+  //composeCmd.push('--quiet'); // commented to display the build logs
 
   if (service !== 'all') {
     composeCmd.push(service);
