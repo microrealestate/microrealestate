@@ -11,6 +11,10 @@ module.exports = {
       emailDeliveryServiceConfig = data.landlord.thirdParties.gmail;
     }
 
+    if (data.landlord.thirdParties?.smtp?.selected) {
+      emailDeliveryServiceConfig = data.landlord.thirdParties.smtp;
+    }
+
     if (data.landlord.thirdParties?.mailgun?.selected) {
       emailDeliveryServiceConfig = data.landlord.thirdParties.mailgun;
     }

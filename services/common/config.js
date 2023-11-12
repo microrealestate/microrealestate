@@ -33,6 +33,9 @@ module.exports = {
     if (escapedConfig.GMAIL?.appPassword) {
       escapedConfig.GMAIL.appPassword = '****';
     }
+    if (escapedConfig.SMTP?.password) {
+      escapedConfig.SMTP.password = '****';
+    }
     if (escapedConfig.MAILGUN?.apiKey) {
       escapedConfig.MAILGUN.apiKey = '****';
     }

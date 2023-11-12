@@ -25,6 +25,9 @@ const _escapeSecrets = (realm) => {
   if (realm.thirdParties?.gmail?.appPassword) {
     realm.thirdParties.gmail.appPassword = SECRET_PLACEHOLDER;
   }
+  if (realm.thirdParties?.smtp?.password) {
+    realm.thirdParties.smtp.password = SECRET_PLACEHOLDER;
+  }
   if (realm.thirdParties?.mailgun?.apiKey) {
     realm.thirdParties.mailgun.apiKey = SECRET_PLACEHOLDER;
   }
@@ -42,6 +45,7 @@ module.exports = {
     const newRealm = realmModel.schema.filter(req.body);
 
     delete req.body.thirdParties?.gmail?.appPasswordUpdated;
+    delete req.body.thirdParties?.smtp?.passwordUpdated;
     delete req.body.thirdParties?.mailgun?.apiKeyUpdated;
     delete req.body.thirdParties?.b2?.keyIdUpdated;
     delete req.body.thirdParties?.b2?.applicationKeyUpdated;
@@ -59,6 +63,12 @@ module.exports = {
     if (newRealm.thirdParties?.gmail?.appPassword) {
       newRealm.thirdParties.gmail.appPassword = crypto.encrypt(
         newRealm.thirdParties.gmail.appPassword
+      );
+    }
+
+    if (newRealm.thirdParties?.smtp?.password) {
+      newRealm.thirdParties.smtp.password = crypto.encrypt(
+        newRealm.thirdParties.smtp.password
       );
     }
 
@@ -92,6 +102,8 @@ module.exports = {
   async update(req, res) {
     const gmailAppPasswordUpdated =
       !!req.body.thirdParties?.gmail?.appPasswordUpdated;
+    const smtpPasswordUpdated =
+      !!req.body.thirdParties?.smtp?.passwordUpdated;
     const mailgunApiKeyUpdated =
       !!req.body.thirdParties?.mailgun?.apiKeyUpdated;
     const b2KeyIdUpdated = !!req.body.thirdParties?.b2?.keyIdUpdated;
@@ -100,6 +112,7 @@ module.exports = {
     const updatedRealm = realmModel.schema.filter(req.body);
 
     delete req.body.thirdParties?.gmail?.appPasswordUpdated;
+    delete req.body.thirdParties?.smtp?.passwordUpdated;
     delete req.body.thirdParties?.mailgun?.apiKeyUpdated;
     delete req.body.thirdParties?.b2?.keyIdUpdated;
     delete req.body.thirdParties?.b2?.applicationKeyUpdated;
@@ -147,6 +160,19 @@ module.exports = {
       } else if (req.realm.thirdParties?.gmail?.appPassword) {
         updatedRealm.thirdParties.gmail.appPassword =
           req.realm.thirdParties.gmailappPassword;
+      }
+    }
+
+    if (updatedRealm.thirdParties?.smtp) {
+      logger.debug("realm update with smtp");
+      if (smtpPasswordUpdated) {
+        logger.debug("password updated");
+        updatedRealm.thirdParties.smtp.password = crypto.encrypt(
+          updatedRealm.thirdParties.smtp.password
+        );
+      } else if (req.realm.thirdParties?.smtp?.password) {
+        updatedRealm.thirdParties.smtp.password =
+          req.realm.thirdParties.smtp.password;
       }
     }
 
