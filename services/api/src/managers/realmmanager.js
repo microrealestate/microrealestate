@@ -159,7 +159,7 @@ module.exports = {
         );
       } else if (req.realm.thirdParties?.gmail?.appPassword) {
         updatedRealm.thirdParties.gmail.appPassword =
-          req.realm.thirdParties.gmailappPassword;
+          req.realm.thirdParties.gmail.appPassword;
       }
     }
 
