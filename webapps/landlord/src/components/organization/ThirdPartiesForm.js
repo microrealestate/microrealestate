@@ -1,12 +1,19 @@
 import * as Yup from 'yup';
 
 import { Box, Link } from '@material-ui/core';
-import { Form, Formik } from 'formik';
 import {
+  Form,
+  Formik,
+  validateYupSchema,
+  yupToFormErrors,
+} from 'formik';
+import {
+  NumberField,
   RadioField,
   RadioFieldGroup,
   Section,
   SubmitButton,
+  SwitchField,
   TextField,
 } from '@microrealestate/commonui/components';
 import { useCallback, useContext, useMemo } from 'react';
@@ -25,6 +32,31 @@ const validationSchema = Yup.object().shape({
   }),
   gmail_appPassword: Yup.string().when('emailDeliveryServiceName', {
     is: 'gmail',
+    then: Yup.string().required(),
+  }),
+
+  smtp_server: Yup.string().when('emailDeliveryServiceName', {
+    is: 'smtp',
+    then: Yup.string().email().required(),
+  }),
+  smtp_port: Yup.string().when('emailDeliveryServiceName', {
+    is: 'smtp',
+    then: Yup.number().required().integer().min(1).max(65535),
+  }),
+  smtp_secure: Yup.string().when('emailDeliveryServiceName', {
+    is: 'smtp',
+    then: Yup.boolean().required(),
+  }),
+  smtp_authentication: Yup.string().when('emailDeliveryServiceName', {
+    is: 'smtp',
+    then: Yup.boolean().required(),
+  }),
+  smtp_username: Yup.string().when(['emailDeliveryServiceName', 'smtp_authentication'], {
+    is: (scheme, auth) => scheme === 'smtp' && auth,
+    then: Yup.string().required(),
+  }),
+  smtp_password: Yup.string().when(['emailDeliveryServiceName', 'smtp_authentication'], {
+    is: (scheme, auth) => scheme === 'smtp' && auth,
     then: Yup.string().required(),
   }),
 
@@ -79,7 +111,12 @@ const ThirdPartiesForm = observer(({ onSubmit }) => {
       fromEmail = store.organization.selected?.contacts?.[0]?.email || '';
       replyToEmail = store.organization.selected?.contacts?.[0]?.email || '';
     }
-    if (store.organization.selected.thirdParties?.mailgun?.selected) {
+    else if (store.organization.selected.thirdParties?.smtp?.selected) {
+      emailDeliveryServiceName = 'smtp';
+      fromEmail = store.organization.selected?.contacts?.[0]?.email || '';
+      replyToEmail = store.organization.selected?.contacts?.[0]?.email || '';
+    }
+    else if (store.organization.selected.thirdParties?.mailgun?.selected) {
       emailDeliveryServiceName = 'mailgun';
       fromEmail =
         store.organization.selected.thirdParties?.mailgun?.fromEmail || '';
@@ -93,6 +130,21 @@ const ThirdPartiesForm = observer(({ onSubmit }) => {
       gmail_email: store.organization.selected.thirdParties?.gmail?.email || '',
       gmail_appPassword:
         store.organization.selected.thirdParties?.gmail?.appPassword || '',
+
+      smtp_server:
+        store.organization.selected.thirdParties?.smtp?.server || '',
+      smtp_port:
+        store.organization.selected.thirdParties?.smtp?.port || 25,
+      smtp_secure:
+        !!store.organization.selected.thirdParties?.smtp?.secure,
+      smtp_authentication:
+        store.organization.selected.thirdParties?.smtp?.authentication === undefined ?
+        true :
+        store.organization.selected.thirdParties.smtp.authentication,
+      smtp_username:
+        store.organization.selected.thirdParties?.smtp?.username || '',
+      smtp_password:
+        store.organization.selected.thirdParties?.smtp?.password || '',
 
       mailgun_apiKey:
         store.organization.selected.thirdParties?.mailgun?.apiKey || '',
@@ -117,6 +169,12 @@ const ThirdPartiesForm = observer(({ onSubmit }) => {
       emailDeliveryServiceName,
       gmail_email,
       gmail_appPassword,
+      smtp_server,
+      smtp_port,
+      smtp_secure,
+      smtp_authentication,
+      smtp_username,
+      smtp_password,
       mailgun_apiKey,
       mailgun_domain,
       fromEmail,
@@ -135,6 +193,20 @@ const ThirdPartiesForm = observer(({ onSubmit }) => {
           appPassword: gmail_appPassword,
           appPasswordUpdated:
             gmail_appPassword !== initialValues.gmail_appPassword,
+          fromEmail,
+          replyToEmail,
+        };
+
+        formData.thirdParties.smtp = {
+          selected: emailDeliveryServiceName === 'smtp',
+          server: smtp_server,
+          port: smtp_port,
+          secure: smtp_secure,
+          authentication: smtp_authentication,
+          username: smtp_username,
+          password: smtp_password,
+          passwordUpdated:
+            smtp_password !== initialValues.smtp_password,
           fromEmail,
           replyToEmail,
         };
@@ -164,16 +236,26 @@ const ThirdPartiesForm = observer(({ onSubmit }) => {
     [
       onSubmit,
       initialValues.gmail_appPassword,
+      initialValues.smtp_password,
       initialValues.mailgun_apiKey,
       initialValues.keyId,
       initialValues.applicationKey,
     ]
   );
 
+  const handleFormValidation = useCallback((value) => {
+    try {
+      validateYupSchema(value, validationSchema, true, value);
+    } catch (err) {
+      return yupToFormErrors(err); //for rendering validation errors
+    }
+    return {};
+  }, []);
+
   return (
     <Formik
       initialValues={initialValues}
-      validationSchema={validationSchema}
+      validate={handleFormValidation}
       onSubmit={_onSubmit}
     >
       {({ values, isSubmitting }) => {
@@ -194,6 +276,7 @@ const ThirdPartiesForm = observer(({ onSubmit }) => {
                     name="emailDeliveryServiceName"
                   >
                     <RadioField value="gmail" label="Gmail" />
+                    <RadioField value="smtp" label="SMTP" />
                     <RadioField value="mailgun" label="Mailgun" />
                   </RadioFieldGroup>
                   {values?.emailDeliveryServiceName === 'gmail' && (
@@ -216,6 +299,36 @@ const ThirdPartiesForm = observer(({ onSubmit }) => {
                           values.appPassword !== initialValues.appPassword
                         }
                       />
+                    </>
+                  )}
+                  {values?.emailDeliveryServiceName === 'smtp' && (
+                    <>
+                      <TextField label={t('Server')} name="smtp_server" />
+                      <NumberField label={t('Port')} name="smtp_port" min="1" max="65535" />
+                      <SwitchField
+                        label={t('Enable explicit TLS (Implicit TLS / StartTLS is always used when supported by the SMTP)')}
+                        name="smtp_secure"
+                        color="primary"
+                      />
+                      <br/>
+                      <SwitchField
+                        label={t('Use authentication')}
+                        name="smtp_authentication"
+                        color="primary"
+                      />
+                      {values?.smtp_authentication ? (
+                        <>
+                          <TextField label={t('Username')} name="smtp_username" />
+                          <TextField
+                            label={t('Password')}
+                            name="smtp_password"
+                            type="password"
+                            showHidePassword={
+                              values.password !== initialValues.password
+                            }
+                          />
+                        </>
+                      ) : null}
                     </>
                   )}
                   {values?.emailDeliveryServiceName === 'mailgun' && (

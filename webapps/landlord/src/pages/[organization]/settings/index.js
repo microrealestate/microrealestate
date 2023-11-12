@@ -85,6 +85,7 @@ const Settings = observer(() => {
         // Do not update keys when the thirdParties is not touched
         thirdParties: {
           gmail: { appPasswordUpdated: false },
+          smtp: { passwordUpdated: false },
           mailgun: { apiKeyUpdated: false },
           b2: { applicationKeyIdUpdated: false, applicationKeyUpdated: false },
         },
