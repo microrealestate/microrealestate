@@ -1,23 +1,21 @@
-FROM node:18-alpine AS build
+FROM node:18-alpine AS base
 
+FROM base AS deps
 RUN apk --no-cache add build-base python3
-
+RUN corepack enable && \
+    corepack prepare yarn@3.3.0 --activate
 WORKDIR /usr/app
-
 COPY package.json .
 COPY yarn.lock .
 COPY .yarnrc.yml .
-COPY .yarn .yarn
-COPY services/common services/common
-COPY services/resetservice services/resetservice
+COPY .yarn/plugins .yarn/plugins
+COPY .yarn/releases .yarn/releases
+COPY services/common/package.json services/common/package.json
+COPY services/resetservice/package.json services/resetservice/package.json
+RUN --mount=type=cache,id=node_modules,target=/root/.yarn YARN_CACHE_FOLDER=/root/.yarn \
+    yarn workspaces focus @microrealestate/resetservice
 
-RUN corepack enable && \
-    corepack prepare yarn@stable --activate
-
-RUN yarn workspaces focus @microrealestate/resetservice
-
-
-FROM node:18-slim
+FROM base
 WORKDIR /usr/app
-COPY --from=build /usr/app ./
+COPY --from=deps /usr/app ./
 CMD ["yarn", "workspace", "@microrealestate/resetservice", "run", "dev"]

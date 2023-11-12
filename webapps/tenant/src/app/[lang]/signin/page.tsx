@@ -34,7 +34,7 @@ export default function Signin() {
     },
   });
 
-  async function onSubmit(values: SignInFormValues) {
+  async function onSubmit(/*values: SignInFormValues*/) {
     window.location.href = `${config.BASE_PATH}/en/dashboard`;
   }
 

@@ -86,7 +86,6 @@ services:
     volumes:
       - ./webapps/commonui:/usr/app/webapps/commonui
       - ./webapps/landlord:/usr/app/webapps/landlord
-      - /usr/app/webapps/landlord/public
       - /usr/app/node_modules
       - /usr/app/webapps/landlord/node_modules
       - /usr/app/webapps/landlord/.next
@@ -100,7 +99,6 @@ services:
     volumes:
       - ./webapps/commonui:/usr/app/webapps/commonui
       - ./webapps/tenant:/usr/app/webapps/tenant
-      - /usr/app/webapps/tenant/public
       - /usr/app/node_modules
       - /usr/app/webapps/tenant/node_modules
       - /usr/app/webapps/tenant/.next

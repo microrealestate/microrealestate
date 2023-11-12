@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { Building2 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import config from '@/config';

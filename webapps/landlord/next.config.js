@@ -2,6 +2,7 @@ const path = require('path');
 const nextTranslate = require('next-translate-plugin');
 
 module.exports = nextTranslate({
+  output: 'standalone',
   experimental: {
     externalDir: true,
     appDir: false,
