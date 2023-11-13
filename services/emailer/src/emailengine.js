@@ -16,7 +16,7 @@ async function _sendWithMailgun(config, email) {
 async function _sendWithSmtp(config, email) {
   const { replyTo, from, to, bcc, subject, text, html, attachment } = email;
 
-  var auth = undefined;
+  let auth;
   if (config.authentication) {
     auth = {
       user: config.username,
@@ -28,7 +28,7 @@ async function _sendWithSmtp(config, email) {
     host: config.server,
     port: config.ports,
     secure: config.secure,
-    auth: auth,
+    auth,
   });
 
   const result = await transporter.sendMail({

@@ -153,6 +153,7 @@ module.exports = {
     }
 
     if (updatedRealm.thirdParties?.gmail) {
+      logger.debug("realm update with Gmail third party emailer");
       if (gmailAppPasswordUpdated) {
         updatedRealm.thirdParties.gmail.appPassword = crypto.encrypt(
           updatedRealm.thirdParties.gmail.appPassword
@@ -164,9 +165,8 @@ module.exports = {
     }
 
     if (updatedRealm.thirdParties?.smtp) {
-      logger.debug("realm update with smtp");
+      logger.debug("realm update with SMTP third party emailer");
       if (smtpPasswordUpdated) {
-        logger.debug("password updated");
         updatedRealm.thirdParties.smtp.password = crypto.encrypt(
           updatedRealm.thirdParties.smtp.password
         );
@@ -177,6 +177,7 @@ module.exports = {
     }
 
     if (updatedRealm.thirdParties?.mailgun) {
+      logger.debug("realm update with Mailgun third party emailer");
       if (mailgunApiKeyUpdated) {
         updatedRealm.thirdParties.mailgun.apiKey = crypto.encrypt(
           updatedRealm.thirdParties.mailgun.apiKey
