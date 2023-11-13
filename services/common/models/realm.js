@@ -50,6 +50,17 @@ const RealmSchema = mongoose.Schema({
       fromEmail: String,
       replyToEmail: String,
     },
+    smtp: {
+      selected: Boolean,
+      server: String,
+      port: Number,
+      secure: Boolean,
+      authentification: Boolean,
+      username: String,
+      password: String,
+      fromEmail: String,
+      replyToEmail: String,
+    },
     mailgun: {
       selected: Boolean,
       apiKey: String,

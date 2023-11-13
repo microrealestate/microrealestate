@@ -35,7 +35,7 @@ Response
         message   // error message
     },
     email,        // recipient email
-    status        // Gmail/Mailgun status
+    status        // emailer status
 }}
 ```
 

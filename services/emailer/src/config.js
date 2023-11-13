@@ -17,6 +17,14 @@ module.exports = {
     email: process.env.GMAIL_EMAIL || 'example@gmail.com',
     appPassword: process.env.GMAIL_APP_PASSWORD || 'wwww xxxx yyyy zzzz',
   },
+  SMTP: {
+    server: process.env.SMTP_SERVER || 'smtp.example.com',
+    port: process.env.SMTP_PORT || 587,
+    secure: process.env.SMTP_SECURE || false,
+    authentication: !!process.env.SMTP_USERNAME,
+    username: process.env.SMTP_USERNAME || 'your_username',
+    password: process.env.SMTP_PASSWORD || 'your_strong_password',
+  },
   MAILGUN: {
     apiKey: process.env.MAILGUN_API_KEY || 'your_api_key',
     domain: process.env.MAILGUN_DOMAIN || 'mg.example.com',
