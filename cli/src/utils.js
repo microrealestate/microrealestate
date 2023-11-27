@@ -6,6 +6,7 @@ const { spawn } = require('child_process');
 const path = require('path');
 const dotenv = require('dotenv');
 const dotenvExpand = require('dotenv-expand');
+const which = require('which')
 
 const Spinner = clui.Spinner;
 
@@ -93,8 +94,61 @@ async function runCommand(cmd, parameters = [], options = {}) {
   });
 }
 
+async function findCRI() {
+  // Resolve the CRI to be used
+  if (await which('docker-compose', { nothrow: true }))
+    return ['docker-compose']
+
+  if (await which('docker', { nothrow: true }))
+    return ['docker', 'compose']
+
+  if (await which('podman-compose', { nothrow: true }))
+    return ['podman-compose']
+
+  if (await which('podman', { nothrow: true }))
+    return ['podman', 'compose']
+
+  throw new Error('Cannot find a valid runtime to run containers');
+}
+
+const runComposeActions = {
+  'docker': {
+    start: ['up', '--build', '--force-recreate', '--remove-orphans', '--no-color'],
+    build: ['build', '--no-cache', '--force-rm'],
+    stop: ['rm', '--stop', '--force'],
+    status: ['ps'],
+    config: ['config'],
+    run: ['run'],
+  },
+  'docker-compose': {
+    start: ['up', '--build', '--force-recreate', '--remove-orphans', '--no-color'],
+    build: ['build', '--no-cache', '--force-rm'],
+    stop: ['rm', '--stop', '--force'],
+    status: ['ps'],
+    config: ['config'],
+    run: ['run'],
+  },
+  'podman': {
+    start: ['up', '--build', '--force-recreate', '--remove-orphans', '--no-color'],
+    build: ['build', '--no-cache'],
+    stop: ['down'],
+    status: ['ps'],
+    config: ['config'],
+    run: ['run'],
+  },
+  'podman-compose': {
+    start: ['up', '--build', '--force-recreate', '--remove-orphans', '--no-color'],
+    build: ['build', '--no-cache'],
+    stop: ['down'],
+    status: ['ps'],
+    config: ['config'],
+    run: ['run'],
+  },
+}
+
 async function runCompose(
-  composeCmd,
+  composeAction,
+  composeArgs,
   composeOptions = { runMode: 'dev' },
   commandOptions = { logErrorsDuringExecution: false }
 ) {
@@ -117,12 +171,19 @@ async function runCompose(
   process.env.NODE_ENV =
     composeOptions.runMode === 'prod' ? 'production' : 'development';
 
+  baseCmd = await findCRI();
+
+  const actionArgs = runComposeActions[baseCmd[0]][composeAction];
+  if (actionArgs === undefined)
+    return
+
   await runCommand(
-    'docker',
+    baseCmd[0],
     [
-      'compose',
+      ...baseCmd.slice(1),
       ...(composeOptions.runMode === 'prod' ? prodComposeArgs : devComposeArgs),
-      ...composeCmd,
+      ...actionArgs,
+      ...composeArgs,
     ],
     commandOptions
   );

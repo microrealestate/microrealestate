@@ -179,8 +179,6 @@ services:
       - NEXT_PUBLIC_SIGNUP=$SIGNUP
     expose:
       - '$LANDLORD_FRONTEND_PORT'
-    extra_hosts:
-      - 'host.docker.internal:host-gateway'
     networks:
       - net
     depends_on:
@@ -204,8 +202,6 @@ services:
       - NEXT_PUBLIC_NODE_ENV=$NODE_ENV
     expose:
       - '$TENANT_FRONTEND_PORT'
-    extra_hosts:
-      - 'host.docker.internal:host-gateway'
     networks:
       - net
     depends_on:
