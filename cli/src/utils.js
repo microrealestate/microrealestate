@@ -111,39 +111,32 @@ async function findCRI() {
   throw new Error('Cannot find a valid runtime to run containers');
 }
 
-const runComposeActions = {
-  'docker': {
-    start: ['up', '--build', '--force-recreate', '--remove-orphans', '--no-color'],
-    build: ['build', '--no-cache', '--force-rm'],
-    stop: ['rm', '--stop', '--force'],
-    status: ['ps'],
-    config: ['config'],
-    run: ['run'],
-  },
-  'docker-compose': {
-    start: ['up', '--build', '--force-recreate', '--remove-orphans', '--no-color'],
-    build: ['build', '--no-cache', '--force-rm'],
-    stop: ['rm', '--stop', '--force'],
-    status: ['ps'],
-    config: ['config'],
-    run: ['run'],
-  },
-  'podman': {
-    start: ['up', '--build', '--force-recreate', '--remove-orphans', '--no-color'],
-    build: ['build', '--no-cache'],
-    stop: ['down'],
-    status: ['ps'],
-    config: ['config'],
-    run: ['run'],
-  },
-  'podman-compose': {
-    start: ['up', '--build', '--force-recreate', '--remove-orphans', '--no-color'],
-    build: ['build', '--no-cache'],
-    stop: ['down'],
-    status: ['ps'],
-    config: ['config'],
-    run: ['run'],
-  },
+function getComposeActions(cri, action) {
+  switch (cri) {
+    case 'docker':
+    case 'docker-compose':
+      return {
+        start: ['up', '-d', '--force-recreate', '--remove-orphans'],
+        dev: ['up', '--build', '--force-recreate', '--remove-orphans', '--no-color'],
+        build: ['build', '--no-cache', '--force-rm'],
+        stop: ['rm', '--stop', '--force'],
+        status: ['ps'],
+        config: ['config'],
+        run: ['run'],
+      }[action];
+
+    case 'podman':
+    case 'podman-compose':
+      return {
+        start: ['up', '-d', '--force-recreate', '--remove-orphans'],
+        dev: ['up', '--build', '--force-recreate', '--remove-orphans', '--no-color'],
+        build: ['build', '--no-cache'],
+        stop: ['down'],
+        status: ['ps'],
+        config: ['config'],
+        run: ['run'],
+      }[action];
+  }
 }
 
 async function runCompose(
@@ -173,7 +166,7 @@ async function runCompose(
 
   baseCmd = await findCRI();
 
-  const actionArgs = runComposeActions[baseCmd[0]][composeAction];
+  const actionArgs = getComposeActions(baseCmd[0], composeAction);
   if (actionArgs === undefined)
     return
 

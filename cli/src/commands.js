@@ -97,7 +97,7 @@ async function dev() {
   initDirectories();
 
   await runCompose(
-    'start',
+    'dev',
     [],
     {
       runMode: 'dev',
