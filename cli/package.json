@@ -32,7 +32,8 @@
     "figlet": "1.5.2",
     "inquirer": "8.2.4",
     "minimist": "1.2.6",
-    "moment": "2.29.4"
+    "moment": "2.29.4",
+    "which": "4.0.0"
   },
   "devDependencies": {
     "jest": "27.5.0"

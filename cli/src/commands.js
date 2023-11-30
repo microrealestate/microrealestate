@@ -33,15 +33,16 @@ function displayHeader() {
 }
 
 async function build({ service = 'all' }) {
-  const composeCmd = ['build', '--no-cache', '--force-rm'];
-  //composeCmd.push('--quiet'); // commented to display the build logs
+  const composeArgs = [];
+  //composeArgs.push('--quiet'); // commented to display the build logs
 
   if (service !== 'all') {
-    composeCmd.push(service);
+    composeArgs.push(service);
   }
 
   await runCompose(
-    composeCmd,
+    'build',
+    composeArgs,
     { runMode: 'prod' },
     {
       waitLog: 'building containers...',
@@ -57,7 +58,8 @@ async function start() {
   initDirectories();
 
   await runCompose(
-    ['up', '-d', '--force-recreate', '--remove-orphans'],
+    'start',
+    [],
     { runMode: 'prod' },
     {
       waitLog: 'starting the application...',
@@ -82,7 +84,8 @@ async function stop({ runMode = 'prod' }) {
   loadEnv();
 
   await runCompose(
-    ['rm', '--stop', '--force'],
+    'stop',
+    [],
     { runMode },
     { waitLog: 'stopping current running application...' }
   );
@@ -94,7 +97,8 @@ async function dev() {
   initDirectories();
 
   await runCompose(
-    ['up', '--build', '--force-recreate', '--remove-orphans', '--no-color'],
+    'dev',
+    [],
     {
       runMode: 'dev',
     },
@@ -108,7 +112,8 @@ async function status() {
   loadEnv();
 
   await runCompose(
-    ['ps'],
+    'status',
+    [],
     {
       runMode: 'prod',
     },
@@ -122,7 +127,8 @@ async function config(runMode) {
   loadEnv();
 
   await runCompose(
-    ['config'],
+    'config',
+    [],
     {
       runMode,
     },
@@ -139,8 +145,8 @@ async function restoreDB(backupFile) {
   const archiveFile = path.join('backup', backupFile);
 
   await runCompose(
+    'run',
     [
-      'run',
       'mongo',
       '/usr/bin/mongorestore',
       `--uri=${connectionString}`,
@@ -166,8 +172,8 @@ async function dumpDB() {
   const archiveFile = path.join('backup', `${dbName}-${timeStamp}.dump`);
 
   await runCompose(
+    'run',
     [
-      'run',
       'mongo',
       '/usr/bin/mongodump',
       `--uri=${connectionString}`,
