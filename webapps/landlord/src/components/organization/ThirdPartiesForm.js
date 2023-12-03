@@ -103,18 +103,22 @@ const ThirdPartiesForm = observer(({ onSubmit }) => {
 
   const initialValues = useMemo(() => {
     let emailDeliveryServiceName;
-    let fromEmail;
-    let replyToEmail;
+    let fromEmail = store.organization.selected?.contacts?.[0]?.email || '';
+    let replyToEmail = store.organization.selected?.contacts?.[0]?.email || '';
 
     if (store.organization.selected.thirdParties?.gmail?.selected) {
       emailDeliveryServiceName = 'gmail';
-      fromEmail = store.organization.selected?.contacts?.[0]?.email || '';
-      replyToEmail = store.organization.selected?.contacts?.[0]?.email || '';
+      fromEmail =
+        store.organization.selected.thirdParties?.gmail?.fromEmail || '';
+      replyToEmail =
+        store.organization.selected.thirdParties?.gmail?.replyToEmail || '';
     }
     else if (store.organization.selected.thirdParties?.smtp?.selected) {
       emailDeliveryServiceName = 'smtp';
-      fromEmail = store.organization.selected?.contacts?.[0]?.email || '';
-      replyToEmail = store.organization.selected?.contacts?.[0]?.email || '';
+      fromEmail =
+        store.organization.selected.thirdParties?.smtp?.fromEmail || '';
+      replyToEmail =
+        store.organization.selected.thirdParties?.smtp?.replyToEmail || '';
     }
     else if (store.organization.selected.thirdParties?.mailgun?.selected) {
       emailDeliveryServiceName = 'mailgun';
