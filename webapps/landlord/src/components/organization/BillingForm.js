@@ -14,27 +14,33 @@ import { observer } from 'mobx-react-lite';
 import { StoreContext } from '../../store';
 import useTranslation from 'next-translate/useTranslation';
 
-const validationSchema = Yup.object().shape({
-  vatNumber: Yup.string(),
-  bankName: Yup.string().required(),
-  iban: Yup.string().required(),
-  contact: Yup.string().required(),
-  email: Yup.string().email().required(),
-  phone1: Yup.string().required(),
-  phone2: Yup.string(),
-  address: Yup.object().shape({
-    street1: Yup.string().required(),
-    street2: Yup.string(),
-    city: Yup.string().required(),
-    zipCode: Yup.string().required(),
-    state: Yup.string(),
-    country: Yup.string().required(),
-  }),
-});
-
 const BillingForm = observer(({ onSubmit }) => {
   const store = useContext(StoreContext);
   const { t } = useTranslation('common');
+
+  const validationSchema = Yup.object().shape({
+    vatNumber: store.organization.selected?.isCompany
+      ? Yup.string().required()
+      : Yup.string(),
+    bankName: store.organization.selected?.isCompany
+      ? Yup.string().required()
+      : Yup.string(),
+    iban: store.organization.selected?.isCompany
+      ? Yup.string().required()
+      : Yup.string(),
+    contact: Yup.string().required(),
+    email: Yup.string().email().required(),
+    phone1: Yup.string().required(),
+    phone2: Yup.string(),
+    address: Yup.object().shape({
+      street1: Yup.string().required(),
+      street2: Yup.string(),
+      city: Yup.string().required(),
+      zipCode: Yup.string().required(),
+      state: Yup.string(),
+      country: Yup.string().required(),
+    }),
+  });
 
   const initialValues = useMemo(
     () => ({
@@ -91,14 +97,14 @@ const BillingForm = observer(({ onSubmit }) => {
       {({ isSubmitting }) => {
         return (
           <Form autoComplete="off">
-            {store.organization.selected &&
-              store.organization.selected.isCompany && (
-                <Section label={t('Billing information')}>
+            <Section label={t('Billing information')}>
+              {store.organization.selected &&
+                store.organization.selected.isCompany && (
                   <TextField label={t('VAT number')} name="vatNumber" />
-                  <TextField label={t('Bank name')} name="bankName" />
-                  <TextField label={t('IBAN')} name="iban" />
-                </Section>
-              )}
+                )}
+              <TextField label={t('Bank name')} name="bankName" />
+              <TextField label={t('IBAN')} name="iban" />
+            </Section>
             <Section label={t('Contact')}>
               <ContactField />
             </Section>
