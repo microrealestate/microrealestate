@@ -15,4 +15,5 @@ module.exports = {
     process.env.PDF_DIRECTORY || path.join(root_dir, '/pdf_documents'),
   UPLOADS_DIRECTORY:
     process.env.UPLOADS_DIRECTORY || path.join(root_dir, '/uploads'),
+  UPLOAD_MAX_SIZE: process.env.UPLOAD_MAX_SIZE || 1024 * 1024 * 2 /* 2Mb */,
 };
