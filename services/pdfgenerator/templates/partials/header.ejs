@@ -19,10 +19,10 @@
     <% for (contact in landlord.contacts) { %>
         <div class="contact">
             <% if (contact.phone1) { %>
-                <%= _.t('Phone: {{phone}}', { phoneNumber: contact.phone1 }) %><br>
+                <%= _.t('Phone: {{phone}}', { phone: contact.phone1 }) %><br>
             <% } %>
             <% if (contact.phone2) { %>
-                <%= _.t('Phone: {{phone}}', { phoneNumber: contact.phone2 }) %><br>
+                <%= _.t('Phone: {{phone}}', { phone: contact.phone2 }) %><br>
             <% } %>
             <% if (contact.email) { %>
                 <%= _.t('Email: {{email}}', { email: contact.email }) %><br>
