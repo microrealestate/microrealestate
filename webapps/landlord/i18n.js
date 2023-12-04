@@ -8,4 +8,5 @@ module.exports = {
     '*': ['common'],
   },
   keySeparator: false,
+  nsSeparator: false,
 };
