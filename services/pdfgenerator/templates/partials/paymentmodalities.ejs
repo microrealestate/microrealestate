@@ -8,9 +8,9 @@
             <br><%= _.t('IBAN') %> <%= landlord.bankInfo.iban %>
             <br> &nbsp;
             <br><u><%= _.t('By cash') %></u>
-            <br><%= _.t('Contact {{name}}', { name: landlord.hasContact ? landlord.contacts[0].name : ''}) %>
-            <br><%= _.t('Phone {{phone}}', { phone: landlord.hasContact ? landlord.contacts[0].phone1 : '' }) %><%= landlord.hasContact && landlord.contacts[0].phone2 ? ' - '+landlord.contacts[0].phone2:'' %>
-            <br><%= _.t('Email {{email}}', { email: landlord.hasContact ? landlord.contacts[0].email : '' })  %>
+            <br><%= _.t('Contact: {{name}}', { name: landlord.hasContact ? landlord.contacts[0].name : ''}) %>
+            <br><%= _.t('Phone: {{phone}}', { phone: landlord.hasContact ? landlord.contacts[0].phone1 : '' }) %><%= landlord.hasContact && landlord.contacts[0].phone2 ? ' - '+landlord.contacts[0].phone2:'' %>
+            <br><%= _.t('Email: {{email}}', { email: landlord.hasContact ? landlord.contacts[0].email : '' })  %>
         </div>
         <div>
             <br><u><%= _.t('By bank cheque') %></u>
