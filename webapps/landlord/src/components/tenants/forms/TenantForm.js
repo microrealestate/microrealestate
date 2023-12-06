@@ -192,7 +192,12 @@ const TenantForm = observer(({ readOnly, onSubmit }) => {
             <Section label={t('Address')}>
               <AddressField disabled={readOnly} />
             </Section>
-            <Section label={t('Contacts')}>
+            <Section
+              label={t('Contacts')}
+              description={t(
+                "The contacts will receive the invoices and will be able to access the tenant's portal"
+              )}
+            >
               <FieldArray
                 name="contacts"
                 render={(arrayHelpers) => (

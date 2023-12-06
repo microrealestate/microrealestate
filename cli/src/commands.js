@@ -6,7 +6,12 @@ const figlet = require('figlet');
 const inquirer = require('inquirer');
 const moment = require('moment');
 const { buildUrl, destructUrl } = require('@microrealestate/common/utils/url');
-const { generateRandomToken, runCompose, loadEnv } = require('./utils');
+const {
+  generateRandomToken,
+  runCompose,
+  loadEnv,
+  validEmail,
+} = require('./utils');
 
 function initDirectories() {
   const mongoDir = path.join('.', 'data', 'mongodb');
@@ -66,18 +71,27 @@ async function start() {
     }
   );
 
+  console.log(chalk.green('application started\n'));
+  const landlordAppUrl = process.env.APP_URL || process.env.LANDLORD_APP_URL;
   console.log(
-    chalk.green(
-      `Landlord front-end ready and accessible on ${
-        process.env.APP_URL || process.env.LANDLORD_APP_URL
-      }`
-    )
+    'Landlord front-end ready and accessible on',
+    chalk.green.bold(landlordAppUrl)
   );
+
   console.log(
-    chalk.green(
-      `Tenant front-end ready and accessible on ${process.env.TENANT_APP_URL}`
-    )
+    'Tenant front-end ready and accessible on',
+    chalk.green.bold(process.env.TENANT_APP_URL)
   );
+
+  if (process.env.SIGNUP === 'true') {
+    console.log(
+      chalk.white.bgBlue('INFO'),
+      'You can now create your landlord account on the landlord front-end',
+      chalk.green.bold(`${landlordAppUrl}/signup`)
+    );
+  }
+
+  displayConfigWarningsAndErrors();
 }
 
 async function stop({ runMode = 'prod' }) {
@@ -123,7 +137,7 @@ async function status() {
   );
 }
 
-async function config(runMode) {
+async function showConfig(runMode) {
   loadEnv();
 
   await runCompose(
@@ -188,6 +202,48 @@ async function dumpDB() {
   );
 }
 
+function displayConfigWarningsAndErrors() {
+  loadEnv();
+  if (
+    !process.env.GMAIL_EMAIL &&
+    !process.env.SMTP_SERVER &&
+    !process.env.MAILGUN_API_KEY
+  ) {
+    console.log('');
+    console.log(
+      chalk.yellow(
+        chalk.black.bold.bgYellow('WARNING'),
+        'You might need to configure the email service:\n - to be able to reset the landlord password if forgotten\n - to let your tenants sign in with their email address'
+      )
+    );
+    console.log(
+      chalk.yellow(
+        'You can configure the email service by running the command "./mre configure". The application has to be stopped first to run this command.'
+      )
+    );
+  }
+
+  if (process.env.ALLOW_SENDING_EMAILS !== 'true') {
+    console.log('');
+    console.log(
+      chalk.yellow(
+        chalk.black.bold.bgYellow('WARNING'),
+        'Sending emails is disabled. You can enable it by setting the environment variable ALLOW_SENDING_EMAILS to true in the .env file and restarting the application.'
+      )
+    );
+  }
+
+  if (process.env.SIGNUP !== 'true') {
+    console.log('');
+    console.log(
+      chalk.yellow(
+        chalk.black.bold.bgYellow('WARNING'),
+        'Landlord signup is disabled. You can enable it by setting the environment variable SIGNUP to true in the .env file and restarting the application.'
+      )
+    );
+  }
+}
+
 function displayHelp() {
   const commands = [
     {
@@ -218,8 +274,13 @@ function displayHelp() {
       description: 'Display the status of the application',
     },
     {
-      name: 'config',
+      name: 'showconfig',
       description: 'Display the configuration of the application',
+    },
+    {
+      name: 'configure',
+      description:
+        'Prompt the user to configure the .env file. The application has to be stopped to run this command.',
     },
     {
       name: 'restoredb',
@@ -264,47 +325,114 @@ function displayHelp() {
   });
 }
 
-function askForEnvironmentVariables(envConfig) {
+function askForEnvironmentVariables(envConfig, ignorePreviousAnswers = false) {
   const questions = [
     {
       name: 'dbData',
       type: 'list',
       message: 'Do you want the database to be populated with?',
       choices: [
-        { name: 'empty data', value: 'empty_data' },
+        { name: 'no data (keep existing data)', value: 'no_data' },
         { name: 'demonstration data', value: 'demo_data' },
       ],
       default: 'empty_data',
     },
     {
-      name: 'mailgunConfig',
-      type: 'confirm',
+      name: 'emailConfig',
+      type: 'list',
       message:
-        'Have you created a mailgun account for sending emails (https://www.mailgun.com/)?',
+        'Select your email delivery service? (required for password reset and tenant sign in)',
+      choices: [
+        {
+          name: 'Gmail',
+          description: 'https://support.google.com/accounts/answer/185833',
+          value: 'gmail',
+        },
+        {
+          name: 'Mailgun',
+          description: 'https://www.mailgun.com/',
+          value: 'mailgun',
+        },
+        { name: 'SMTP server', value: 'smtp' },
+        { name: 'None', value: 'none' },
+      ],
+      default: 'gmail',
+    },
+    {
+      name: 'gmailEmail',
+      type: 'input',
+      message: 'Enter your Gmail email address:',
+      validate: (input) => validEmail(input),
+      when: (answers) => answers.emailConfig === 'gmail',
+    },
+    {
+      name: 'gmailAppPassword',
+      type: 'password',
+      message: 'Enter your Gmail app password:',
+      when: (answers) => answers.emailConfig === 'gmail',
     },
     {
       name: 'mailgunApiKey',
       type: 'input',
       message: 'Enter the mailgun API key:',
-      when: (answers) => answers.mailgunConfig,
+      validate: (input) => !!input,
+      when: (answers) => answers.emailConfig === 'mailgun',
     },
     {
       name: 'mailgunDomain',
       type: 'input',
       message: 'Enter the mailgun domain:',
-      when: (answers) => answers.mailgunConfig,
+      validate: (input) => !!input,
+      when: (answers) => answers.emailConfig === 'mailgun',
     },
     {
-      name: 'mailgunFromEmail',
+      name: 'smtpServer',
+      type: 'input',
+      message: 'Enter the SMTP server:',
+      validate: (input) => !!input,
+      when: (answers) => answers.emailConfig === 'smtp',
+    },
+    {
+      name: 'smtpPort',
+      type: 'input',
+      message: 'Enter the SMTP port:',
+      default: 587,
+      when: (answers) => answers.emailConfig === 'smtp',
+    },
+    {
+      name: 'smtpSecure',
+      type: 'confirm',
+      message: 'Is the SMTP server use SSL?',
+      default: false,
+      when: (answers) => answers.emailConfig === 'smtp',
+    },
+    {
+      name: 'smtpUsername',
+      type: 'input',
+      message: 'Enter the SMTP username:',
+      when: (answers) => answers.emailConfig === 'smtp',
+    },
+    {
+      name: 'smtpPassword',
+      type: 'password',
+      message: 'Enter the SMTP password:',
+      when: (answers) => answers.emailConfig === 'smtp',
+    },
+    {
+      name: 'fromEmail',
       type: 'input',
       message: 'Enter the sender email address (from):',
-      when: (answers) => answers.mailgunConfig,
+      validate: (input) => validEmail(input),
+      default: (answers) => answers.gmailEmail || null,
+      when: (answers) => answers.emailConfig !== 'none',
     },
     {
-      name: 'mailgunReplyToEmail',
+      name: 'replyToEmail',
       type: 'input',
       message: 'Enter the reply to email address (reply to):',
-      when: (answers) => answers.mailgunConfig,
+      validate: (input) => validEmail(input),
+      default: (answers) => answers.fromEmail || '',
+      when: (answers) => answers.emailConfig !== 'none',
     },
     {
       name: 'landlordAppUrl',
@@ -318,7 +446,7 @@ function askForEnvironmentVariables(envConfig) {
           return false;
         }
       },
-      default: 'http://localhost:8080/landlord',
+      default: envConfig?.LANDLORD_APP_URL || 'http://localhost:8080/landlord',
     },
     {
       name: 'tenantAppUrl',
@@ -363,16 +491,36 @@ function askForEnvironmentVariables(envConfig) {
       },
     },
   ];
-  return inquirer.prompt(questions, {
-    dbData: envConfig?.DEMO_MODE === 'true' ? 'demo_data' : 'empty_data',
-    mailgunConfig: envConfig?.ALLOW_SENDING_EMAILS,
-    mailgunApiKey: envConfig?.MAILGUN_API_KEY,
-    mailgunDomain: envConfig?.MAILGUN_DOMAIN,
-    mailgunFromEmail: envConfig?.EMAIL_FROM,
-    mailgunReplyToEmail: envConfig?.EMAIL_REPLY_TO,
-    landlordAppUrl: envConfig?.APP_URL || envConfig?.LANDLORD_APP_URL,
-    tenantAppUrl: envConfig?.TENANT_APP_URL,
-  });
+  return inquirer.prompt(
+    questions,
+    ignorePreviousAnswers
+      ? {}
+      : {
+          dbData: envConfig?.DEMO_MODE === 'true' ? 'demo_data' : 'empty_data',
+          emailConfig: envConfig?.GMAIL_EMAIL
+            ? 'gmail'
+            : envConfig?.SMTP_SERVER
+            ? 'smtp'
+            : envConfig?.MAILGUN_API_KEY
+            ? 'mailgun'
+            : envConfig?.ALLOW_SENDING_EMAILS === 'false'
+            ? 'none'
+            : undefined,
+          gmailEmail: envConfig?.GMAIL_EMAIL,
+          gmailAppPassword: envConfig?.GMAIL_APP_PASSWORD,
+          mailgunApiKey: envConfig?.MAILGUN_API_KEY,
+          mailgunDomain: envConfig?.MAILGUN_DOMAIN,
+          smtpServer: envConfig?.SMTP_SERVER,
+          smtpPort: envConfig?.SMTP_PORT,
+          smtpSecure: envConfig?.SMTP_SECURE,
+          smtpUsername: envConfig?.SMTP_USERNAME,
+          smtpPassword: envConfig?.SMTP_PASSWORD,
+          fromEmail: envConfig?.EMAIL_FROM,
+          replyToEmail: envConfig?.EMAIL_REPLY_TO,
+          landlordAppUrl: envConfig?.APP_URL || envConfig?.LANDLORD_APP_URL,
+          tenantAppUrl: envConfig?.TENANT_APP_URL,
+        }
+  );
 }
 
 function askRunMode() {
@@ -443,12 +591,21 @@ function writeDotEnv(promptsConfig, envConfig) {
     basePath: landlordBasePath,
   } = destructUrl(promptsConfig.landlordAppUrl);
   const { basePath: tenantBasePath } = destructUrl(promptsConfig.tenantAppUrl);
-  const sendEmails = !!promptsConfig.mailgunConfig;
+  const sendEmails =
+    envConfig?.ALLOW_SENDING_EMAILS === 'true' ||
+    (promptsConfig.emailConfig && promptsConfig.emailConfig !== 'none');
+  const gmailEmail = promptsConfig.gmailEmail || '';
+  const gmailAppPassword = promptsConfig.gmailAppPassword || '';
   const mailgunApiKey = promptsConfig.mailgunApiKey || '';
   const mailgunDomain = promptsConfig.mailgunDomain || '';
-  const mailgunFromEmail = promptsConfig.mailgunFromEmail || '';
-  const mailgunReplyToEmail = promptsConfig.mailgunReplyToEmail || '';
-  const mailgunBccEmails = promptsConfig.mailgunBccEmails || '';
+  const smtpServer = promptsConfig.smtpServer || '';
+  const smtpPort = promptsConfig.smtpPort || '';
+  const smtpSecure = promptsConfig.smtpSecure || false;
+  const smtpUsername = promptsConfig.smtpUsername || '';
+  const smtpPassword = promptsConfig.smtpPassword || '';
+  const fromEmail = promptsConfig.fromEmail || '';
+  const replyToEmail = promptsConfig.replyToEmail || '';
+  const bccEmails = promptsConfig.bccEmails || '';
   const demoMode = promptsConfig.dbData === 'demo_data';
   const restoreDb = envConfig?.RESTORE_DB || demoMode;
   const dbName = demoMode ? 'demodb' : 'mre';
@@ -469,7 +626,7 @@ function writeDotEnv(promptsConfig, envConfig) {
       protocol,
       domain,
       port: gatewayPort !== '80' ? '${GATEWAY_PORT}' : null,
-      basePath: '/api/v2',
+      basePath: null,
     });
   const landlordAppUrl =
     envConfig?.LANDLORD_APP_URL ||
@@ -495,8 +652,15 @@ function writeDotEnv(promptsConfig, envConfig) {
     delete envConfig.AUTHENTICATOR_REFRESH_TOKEN_SECRET;
     delete envConfig.AUTHENTICATOR_RESET_TOKEN_SECRET;
     delete envConfig.ALLOW_SENDING_EMAILS;
+    delete envConfig.GMAIL_EMAIL;
+    delete envConfig.GMAIL_APP_PASSWORD;
     delete envConfig.MAILGUN_API_KEY;
     delete envConfig.MAILGUN_DOMAIN;
+    delete envConfig.SMTP_SERVER;
+    delete envConfig.SMTP_PORT;
+    delete envConfig.SMTP_SECURE;
+    delete envConfig.SMTP_USERNAME;
+    delete envConfig.SMTP_PASSWORD;
     delete envConfig.EMAIL_FROM;
     delete envConfig.EMAIL_REPLY_TO;
     delete envConfig.EMAIL_BCC;
@@ -522,6 +686,34 @@ ${Object.entries(envConfig)
   .map(([key, value]) => `${key}=${value}`)
   .join('\n')}`
     : '';
+
+  // email delivery configuration
+  let emailDeliveryConfigContent = `
+# Email service has not been configured. Reset password and tenant sign in will not work.
+# You can configure it later by running the command ./mre configure  
+  `;
+  if (promptsConfig.emailConfig === 'gmail') {
+    emailDeliveryConfigContent = `
+## Gmail configuration
+GMAIL_EMAIL=${gmailEmail}
+GMAIL_APP_PASSWORD=${gmailAppPassword}
+    `;
+  } else if (promptsConfig.emailConfig === 'mailgun') {
+    emailDeliveryConfigContent = `
+## Mailgun configuration
+MAILGUN_API_KEY=${mailgunApiKey}
+MAILGUN_DOMAIN=${mailgunDomain}
+    `;
+  } else if (promptsConfig.emailConfig === 'smtp') {
+    emailDeliveryConfigContent = `
+## SMTP configuration
+SMTP_SERVER=${smtpServer}
+SMTP_PORT=${smtpPort}
+SMTP_SECURE=${smtpSecure}
+SMTP_USERNAME=${smtpUsername}
+SMTP_PASSWORD=${smtpPassword}
+    `;
+  }
 
   // .env file content
   const content = `
@@ -563,11 +755,11 @@ AUTHENTICATOR_RESET_TOKEN_SECRET=${resetTokenSecret}
 ## emailer
 # General Mailgun configuration to send emails for forgot password, welcome, etc.
 ALLOW_SENDING_EMAILS=${sendEmails}
-MAILGUN_API_KEY=${mailgunApiKey}
-MAILGUN_DOMAIN=${mailgunDomain}
-EMAIL_FROM=${mailgunFromEmail}
-EMAIL_REPLY_TO=${mailgunReplyToEmail}
-EMAIL_BCC=${mailgunBccEmails}
+EMAIL_FROM=${fromEmail}
+EMAIL_REPLY_TO=${replyToEmail}
+EMAIL_BCC=${bccEmails}
+
+## email delivery configuration${emailDeliveryConfigContent}
 
 ## api
 DEMO_MODE=${demoMode}
@@ -587,7 +779,7 @@ ${others}
 }
 
 module.exports = {
-  config,
+  showConfig,
   status,
   build,
   dev,
@@ -595,6 +787,7 @@ module.exports = {
   stop,
   displayHeader,
   displayHelp,
+  displayConfigWarningsAndErrors,
   askForEnvironmentVariables,
   askRunMode,
   askBackupFile,

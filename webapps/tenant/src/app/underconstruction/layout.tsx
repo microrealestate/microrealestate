@@ -1,10 +1,10 @@
 import '@/app/globals.css';
 import config from '@/config';
 import { Inter } from 'next/font/google';
-import type { Locale } from '@/types';
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import { cn } from '@/utils';
+import { Locale } from '@microrealestate/types';
 
 const APP_TITLE = [config.APP_NAME, 'Tenant'];
 if (config.NODE_ENV === 'development') {

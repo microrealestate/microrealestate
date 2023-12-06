@@ -27,6 +27,7 @@ services:
       - ./services/resetservice:/usr/app/services/resetservice
       - /usr/app/node_modules
       - /usr/app/services/resetservice/node_modules
+      - /usr/app/services/resetservice/dist
     expose:
       - "$RESETSERVICE_PORT"
     ports:

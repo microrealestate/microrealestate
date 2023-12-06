@@ -13,6 +13,7 @@ module.exports = {
     return {
       firstname: account.firstname,
       token: params.token,
+      useAppEmailService: true,
     };
   },
 };

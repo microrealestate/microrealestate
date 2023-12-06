@@ -8,12 +8,14 @@ export interface StatusBadgeProps {
     | 'info'
     | 'active'
     | 'default'
-    | 'inactive';
+    | 'inactive'
+    | 'terminated'
+    | 'ended';
   children: React.ReactNode;
 }
 
 export function StatusBadge({ variant, children }: StatusBadgeProps) {
-  const className = 'flex items-center gap-1 text-sm font-semibold';
+  const className = 'flex items-center gap-1 text-base font-semibold';
 
   if (['success', 'active'].includes(variant)) {
     return (

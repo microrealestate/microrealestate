@@ -15,9 +15,12 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { cn } from '@/utils';
 import config from '@/config';
 import useTranslation from '@/utils/i18n/client/useTranslation';
+import { useState } from 'react';
+import { Card } from '@/components/ui/card';
+import { useToast } from '@/components/ui/use-toast';
+import useApiFetcher from '@/utils/fetch/client';
 
 const signInFormSchema = z.object({
   email: z.string().email(),
@@ -26,79 +29,108 @@ const signInFormSchema = z.object({
 type SignInFormValues = z.infer<typeof signInFormSchema>;
 
 export default function Signin() {
+  const apiFetcher = useApiFetcher();
   const { t } = useTranslation();
+  const { toast } = useToast();
+  const [showMagicLinkSent, setShowMagicLinkSent] = useState(false);
   const form = useForm<SignInFormValues>({
     resolver: zodResolver(signInFormSchema),
-    defaultValues: {
-      email: 'john.doe@demo.com',
-    },
+    // defaultValues: {
+    //   email: 'john.doe@demo.com',
+    // },
   });
 
-  async function onSubmit(/*values: SignInFormValues*/) {
-    window.location.href = `${config.BASE_PATH}/en/dashboard`;
+  async function onSubmit(values: SignInFormValues) {
+    // window.location.href = `${config.BASE_PATH}/en/dashboard`;
+    try {
+      const response = await apiFetcher.post(
+        '/api/v2/authenticator/tenant/signin',
+        {
+          email: values.email,
+        }
+      );
+      if (response.status >= 200 && response.status < 300) {
+        return setShowMagicLinkSent(true);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+    toast({
+      variant: 'destructive',
+      title: t('Something went wrong'),
+      description: t('There was an error while signing in.'),
+    });
   }
 
   return (
-    <div className={cn('flex flex-col items-center justify-center mt-48')}>
-      <div
-        className={cn(
-          'flex items-center mb-6 text-2xl text-gray-900 dark:text-white font-semibold'
-        )}
-      >
-        <Image
-          src={`${config.BASE_PATH}/favicon.svg`}
-          alt="Logo"
-          width={40}
-          height={40}
-          className={cn('mr-2')}
-        />
-        {config.APP_NAME}
-      </div>
+    <div className="flex flex-col items-center justify-center mt-16">
+      <Image
+        src={`${config.BASE_PATH}/favicon.svg`}
+        alt="Logo"
+        width={40}
+        height={40}
+        className="mr-2"
+      />
+      <h1 className="flex items-center text-3xl">{config.APP_NAME}</h1>
+      <p className="text-sm mt-1 mb-8">{t('for tenants')}</p>
 
-      <div
-        className={cn(
-          'w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700'
-        )}
-      >
-        <div className={cn('p-6 space-y-4 md:space-y-6 sm:p-8')}>
-          <h1
-            className={cn(
-              'text-xl  leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white'
-            )}
-          >
-            {t('Sign in to your account')}
-          </h1>
-          <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(onSubmit)}
-              className={cn('space-y-4 md:space-y-6')}
+      <Card className="p-6 sm:p-8 w-[32rem]">
+        {showMagicLinkSent ? (
+          <>
+            <h2 className="text-xl">
+              {t('Check you received a link by email')}
+            </h2>
+            <div className="mt-4 mb-2">
+              {t('We just sent a sign in link at')}
+            </div>
+            <div className="font-semibold">{form.getValues('email')}</div>
+            <div className="my-2">
+              {t('This link expires shortly, so please check your email soon.')}
+            </div>
+            <Button
+              onClick={() => setShowMagicLinkSent(false)}
+              className="mt-4 mb-2 w-full"
             >
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('Your email')}</FormLabel>
-                    <FormControl>
-                      <Input {...field} disabled />
-                    </FormControl>
-                    {/* <FormDescription></FormDescription> */}
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button
-                type="submit"
-                className={cn(
-                  'w-full text-white bg-primary focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary dark:focus:ring-primary-800'
-                )}
+              {t('Back to Sign in page')}
+            </Button>
+            <div className="text-xs text-secondary-foreground text-center">
+              {t("If you haven't received the email, check your spam folder.")}
+            </div>
+          </>
+        ) : (
+          <>
+            <h2 className="text-xl mb-2">{t('Sign in to your account')}</h2>
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-4 md:space-y-6"
               >
-                Submit
-              </Button>
-            </form>
-          </Form>
-        </div>
-      </div>
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('Your email')}</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          // disabled
+                        />
+                      </FormControl>
+                      {/* <FormDescription></FormDescription> */}
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <Button type="submit" className="w-full">
+                  {t('Sign in with an email')}
+                </Button>
+              </form>
+            </Form>
+          </>
+        )}
+      </Card>
     </div>
   );
 }

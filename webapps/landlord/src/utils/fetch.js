@@ -36,11 +36,13 @@ export const setAcceptLanguage = (acceptLanguage) => {
 
 export const apiFetcher = () => {
   if (!apiFetch) {
-    // create axios instance
+    // create an axios instance
     apiFetch = axios.create({
-      baseURL: isServer()
-        ? config.DOCKER_GATEWAY_URL || config.GATEWAY_URL
-        : config.GATEWAY_URL,
+      baseURL: `${
+        isServer()
+          ? config.DOCKER_GATEWAY_URL || config.GATEWAY_URL
+          : config.GATEWAY_URL
+      }/api/v2`,
       withCredentials,
     });
 
@@ -53,7 +55,7 @@ export const apiFetcher = () => {
         const originalRequest = error.config;
 
         const isLoginRequest =
-          originalRequest?.url === '/authenticator/signin' &&
+          originalRequest?.url === '/authenticator/landlord/signin' &&
           originalRequest?.method === 'post';
 
         // Try to to refresh token once get 401
@@ -161,7 +163,7 @@ export const authApiFetcher = (cookie) => {
   }
 
   const axiosConfig = {
-    baseURL: config.DOCKER_GATEWAY_URL || config.GATEWAY_URL,
+    baseURL: `${config.DOCKER_GATEWAY_URL || config.GATEWAY_URL}/api/v2`,
     withCredentials,
   };
   if (cookie) {

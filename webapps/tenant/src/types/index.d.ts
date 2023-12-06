@@ -1,68 +1,78 @@
-import { LOCALES } from '@/utils/i18n/common';
+import {
+  LeaseStatus,
+  LeaseTimeRange,
+  Locale,
+  PaymentMethod,
+  PaymentStatus,
+} from '@microrealestate/types';
 
-type Locale = Readonly<(typeof LOCALES)[number]>;
 type LocalizedMessages = Record<string, string>;
 type LocaleMap = Map<Locale, LocalizedMessages>;
 type TFunction = (key: string, data?: Record<string, string>) => string;
 
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  currency: string;
-}
-
-interface Session {
-  user?: User;
-}
-
-interface Toast {
-  severity: 'success' | 'info' | 'warning' | 'error';
-  message: string;
-}
-
-interface AppContext {
-  toast: Toast | null;
-  setToast: (toast: Toast | null) => void;
-}
+type SessionStatus = 'loading' | 'authenticated' | 'unauthenticated';
+type Session = {
+  email?: string;
+};
 
 type FormattedDate = string; // YYYY-MM-DD
 
-interface Property {
+type Property = {
   id: string;
   name: string;
   description?: string;
-  address: string;
-  city: string;
-  state: string;
-  zip: string;
-  country: string;
-}
+  type: string;
+};
 
-interface Invoice {
+type Invoice = {
   id: string;
-  term: string;
-  amount: number;
-  status: 'paid' | 'unpaid';
-  method: 'bank-transfer' | 'credit-card' | 'cash' | 'check';
-}
+  term: number;
+  grandTotal: number;
+  payment: number;
+  status: PaymentStatus;
+  methods: PaymentMethod[] | [];
+};
 
-interface Document {
+type Document = {
   id: string;
   name: string;
   description: string;
-}
+  url: string;
+  versionId: string;
+};
 
-interface Contract {
+type Lease = {
+  landlord: {
+    name: string;
+    currency: string;
+    locale: Locale;
+    addresses: CollectionTypes.PartAddress[];
+    contacts: {
+      name: string;
+      email: string;
+      phone1: string;
+      phone2: string;
+    }[];
+  };
+  tenant: {
+    id: string;
+    name: string;
+    contacts: {
+      name: string;
+      email: string;
+      phone1: string;
+    }[];
+    addresses: CollectionTypes.PartAddress[];
+  };
   name: string;
-  tenantName: string;
-  startDate: FormattedDate;
-  endDate: FormattedDate;
-  terminationDate: FormattedDate;
-  status: 'active' | 'inactive';
+  beginDate: Date | undefined;
+  endDate: Date | undefined;
+  terminationDate?: Date | undefined;
+  timeRange: LeaseTimeRange;
+  status: LeaseStatus;
   properties: Property[];
   balance: number;
   deposit: number;
-  invoices: Invoice[];
-  documents: Document[];
-}
+  invoices: Invoice[] | [];
+  documents: Document[] | [];
+};

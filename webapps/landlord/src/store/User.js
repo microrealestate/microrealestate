@@ -64,7 +64,7 @@ export default class User {
 
   *signUp(firstname, lastname, email, password) {
     try {
-      yield apiFetcher().post('/authenticator/signup', {
+      yield apiFetcher().post('/authenticator/landlord/signup', {
         firstname,
         lastname,
         email,
@@ -78,10 +78,13 @@ export default class User {
 
   *signIn(email, password) {
     try {
-      const response = yield apiFetcher().post('/authenticator/signin', {
-        email,
-        password,
-      });
+      const response = yield apiFetcher().post(
+        '/authenticator/landlord/signin',
+        {
+          email,
+          password,
+        }
+      );
       const { accessToken } = response.data;
       this.setUserFromToken(accessToken);
       return 200;
@@ -93,7 +96,7 @@ export default class User {
 
   *signOut() {
     try {
-      yield apiFetcher().delete('/authenticator/signout');
+      yield apiFetcher().delete('/authenticator/landlord/signout');
     } finally {
       this.firstName = null;
       this.lastName = null;
@@ -110,14 +113,18 @@ export default class User {
       // request to get the new tokens
       if (isServer()) {
         const authFetchApi = authApiFetcher(context.req.headers.cookie);
-        response = yield authFetchApi.post('/authenticator/refreshtoken');
+        response = yield authFetchApi.post(
+          '/authenticator/landlord/refreshtoken'
+        );
 
         const cookies = response.headers['set-cookie'];
         if (cookies) {
           context.res.setHeader('Set-Cookie', cookies);
         }
       } else {
-        response = yield apiFetcher().post('/authenticator/refreshtoken');
+        response = yield apiFetcher().post(
+          '/authenticator/landlord/refreshtoken'
+        );
       }
 
       // set access token in store
@@ -147,7 +154,7 @@ export default class User {
 
   *forgotPassword(email) {
     try {
-      yield apiFetcher().post('/authenticator/forgotpassword', {
+      yield apiFetcher().post('/authenticator/landlord/forgotpassword', {
         email,
       });
       return 200;
@@ -159,7 +166,7 @@ export default class User {
 
   *resetPassword(resetToken, password) {
     try {
-      yield apiFetcher().patch('/authenticator/resetpassword', {
+      yield apiFetcher().patch('/authenticator/landlord/resetpassword', {
         resetToken,
         password,
       });
