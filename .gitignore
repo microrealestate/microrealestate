@@ -2,9 +2,10 @@
 node_modules
 tmp
 /data
-.env
+.env*
 .vscode/ipch
 deploy-*.sh
+dist
 
 # Logs
 logs

@@ -1,6 +1,6 @@
 version: "3.3"
 services:
- ###############################################################################
+  ###############################################################################
   # Mongo
   ###############################################################################
   mongo:
@@ -14,10 +14,12 @@ services:
       context: .
       dockerfile: services/gateway/dev.Dockerfile
     volumes:
-      - ./services/common:/usr/app/services/common
+      - ./types:/usr/app/types
+      - ./services/typed-common:/usr/app/services/typed-common
       - ./services/gateway:/usr/app/services/gateway
       - /usr/app/node_modules
       - /usr/app/services/gateway/node_modules
+      - /usr/app/services/gateway/dist
     ports:
       - "$GATEWAY_DEBUG_PORT:9225"
   ###############################################################################
@@ -32,6 +34,7 @@ services:
       - ./services/authenticator:/usr/app/services/authenticator
       - /usr/app/node_modules
       - /usr/app/services/authenticator/node_modules
+      - /usr/app/services/authenticator/dist
     ports:
       - "$AUTHENTICATOR_DEBUG_PORT:9226"
   ###############################################################################
@@ -46,6 +49,7 @@ services:
       - ./services/pdfgenerator:/usr/app/services/pdfgenerator
       - /usr/app/node_modules
       - /usr/app/services/pdfgenerator/node_modules
+      - /usr/app/services/pdfgenerator/dist
     ports:
       - "$PDFGENERATOR_DEBUG_PORT:9227"
   ###############################################################################
@@ -60,6 +64,7 @@ services:
       - ./services/emailer:/usr/app/services/emailer
       - /usr/app/node_modules
       - /usr/app/services/emailer/node_modules
+      - /usr/app/services/emailer/dist
     ports:
       - "$EMAILER_DEBUG_PORT:9228"
   ###############################################################################
@@ -74,8 +79,25 @@ services:
       - ./services/api:/usr/app/services/api
       - /usr/app/node_modules
       - /usr/app/services/api/node_modules
+      - /usr/app/services/api/dist
     ports:
       - "$API_DEBUG_PORT:9229"
+  ###############################################################################
+  # tenantapi
+  ###############################################################################
+  tenantapi:
+    build:
+      context: .
+      dockerfile: services/tenantapi/dev.Dockerfile
+    volumes:
+      - ./types:/usr/app/types
+      - ./services/typed-common:/usr/app/services/typed-common
+      - ./services/tenantapi:/usr/app/services/tenantapi
+      - /usr/app/node_modules
+      - /usr/app/services/tenantapi/node_modules
+      - /usr/app/services/tenantapi/dist
+    ports:
+      - "$TENANTAPI_DEBUG_PORT:9240"
   ###############################################################################
   # Landlord frontend
   ###############################################################################
@@ -97,6 +119,7 @@ services:
       context: .
       dockerfile: webapps/tenant/dev.Dockerfile
     volumes:
+      - ./types:/usr/app/types
       - ./webapps/commonui:/usr/app/webapps/commonui
       - ./webapps/tenant:/usr/app/webapps/tenant
       - /usr/app/node_modules

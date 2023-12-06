@@ -199,8 +199,14 @@ async function runCompose(
   );
 }
 
+function validEmail(email) {
+  const re = /\S+@\S+\.\S+/;
+  return re.test(email);
+}
+
 module.exports = {
   generateRandomToken,
   loadEnv,
   runCompose,
+  validEmail,
 };

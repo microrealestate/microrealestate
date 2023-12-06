@@ -46,6 +46,16 @@
     {
       "type": "node",
       "request": "attach",
+      "name": "Docker: Attach to tenant API",
+      "port": 9240,
+      "address": "localhost",
+      "localRoot": "${workspaceFolder}/",
+      "remoteRoot": "/usr/app/",
+      "restart": true
+    },
+    {
+      "type": "node",
+      "request": "attach",
       "name": "Docker: Attach to Emailer",
       "port": 9228,
       "address": "localhost",

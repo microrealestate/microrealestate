@@ -4,20 +4,28 @@ const Realm = require('../models/realm');
 
 const needAccessToken = (accessTokenSecret) => {
   return (req, res, next) => {
-    if (!req.headers.authorization) {
-      logger.warn('accessToken not passed in the request');
-      return res.sendStatus(401);
+    let accessToken;
+    // landlord api sends accessToken in the authorization header
+    if (req.headers.authorization) {
+      accessToken = req.headers.authorization.split(' ')[1];
     }
 
-    const accessToken = req.headers.authorization.split(' ')[1];
+    // tenant api sends accessToken in the sessionToken cookie
+    if (!req.headers.authorization && req.cookies && req.cookies.sessionToken) {
+      accessToken = req.cookies.sessionToken;
+    }
+
     if (!accessToken) {
       logger.warn('accessToken not passed in the request');
-      logger.debug(req.headers.authorization);
       return res.sendStatus(401);
     }
 
     try {
       const decoded = jwt.verify(accessToken, accessTokenSecret);
+      if (!decoded.account) {
+        logger.warn('accessToken is invalid');
+        return res.sendStatus(401);
+      }
       req.user = decoded.account;
     } catch (error) {
       logger.warn(error);
@@ -30,7 +38,10 @@ const needAccessToken = (accessTokenSecret) => {
 
 const checkOrganization = () => {
   return async (req, res, next) => {
-    const organizationId = req.headers.organizationid;
+    // skip organization checks when request comes from tenantapi with sessionToken cookie
+    if (!req.headers.authorization && req.cookies.sessionToken) {
+      return next();
+    }
 
     // for the currennt user, add all subscribed organizations in request object
     req.realms = (
@@ -49,6 +60,7 @@ const checkOrganization = () => {
     // For other requests
 
     // check if organizationid header exists
+    const organizationId = req.headers.organizationid;
     if (!organizationId) {
       logger.warn('organizationId not passed in request');
       return res.sendStatus(404);

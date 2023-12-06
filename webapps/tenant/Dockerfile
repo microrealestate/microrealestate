@@ -10,6 +10,7 @@ COPY .yarnrc.yml .
 COPY yarn.lock .
 COPY .yarn/plugins .yarn/plugins
 COPY .yarn/releases .yarn/releases
+COPY types/package.json types/package.json
 COPY webapps/tenant/package.json webapps/tenant/package.json
 RUN --mount=type=cache,id=node_modules,target=/root/.yarn YARN_CACHE_FOLDER=/root/.yarn \
     yarn workspaces focus @microrealestate/tenant
@@ -21,6 +22,7 @@ ENV BASE_PATH=$TENANT_BASE_PATH
 ENV NEXT_PUBLIC_BASE_PATH=$TENANT_BASE_PATH
 ENV NEXT_TELEMETRY_DISABLED=1
 COPY --from=deps /usr/app ./
+COPY types types
 COPY webapps/tenant/.eslintrc.json webapps/tenant
 COPY webapps/tenant/components.json webapps/tenant
 COPY webapps/tenant/next.config.js webapps/tenant
@@ -31,7 +33,8 @@ COPY webapps/tenant/tsconfig.json webapps/tenant
 COPY webapps/tenant/locales webapps/tenant/locales
 COPY webapps/tenant/public webapps/tenant/public
 COPY webapps/tenant/src webapps/tenant/src
-RUN  yarn workspace @microrealestate/tenant run build
+RUN yarn workspace @microrealestate/types run build && \
+    yarn workspace @microrealestate/tenant run build
 
 FROM base
 WORKDIR /usr/app

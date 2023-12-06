@@ -1,28 +1,18 @@
-// import {
-//   authOptions,
-//   getServerSession,
-// } from '@/mocks/session/server/getServerSession';
 import config from '@/config';
-import { headers } from 'next/headers';
-import { LogoutNav } from '@/components/bars/logout-nav';
+import getServerSession from '@/utils/session/server/getsession';
 import { MainNav } from '@/components/bars/main-nav';
-
-function isSigninPage() {
-  console.log(headers().get('x-path'));
-  const pathname = headers().get('x-path');
-  if (pathname) {
-    return pathname.endsWith('/signin');
-  }
-  return false;
-}
+import { SignOutNav } from '@/components/bars/signout-nav';
 
 export default async function ApplicationBar() {
-  // const session = await getServerSession(authOptions);
-  const session = !isSigninPage();
-  return session ? (
-    <div className="container flex h-16 items-center space-x-4 sm:justify-between sm:space-x-0">
+  const session = await getServerSession();
+  if (!session) {
+    return null;
+  }
+
+  return (
+    <div className="container flex h-16 items-center justify-between">
       <MainNav appName={config.APP_NAME} />
-      <LogoutNav />
+      <SignOutNav />
     </div>
-  ) : null;
+  );
 }

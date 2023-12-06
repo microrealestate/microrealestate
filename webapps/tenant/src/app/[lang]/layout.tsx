@@ -1,12 +1,13 @@
 import '@/app/globals.css';
 import config from '@/config';
-import { Inter } from 'next/font/google';
-import type { Locale } from '@/types';
+import { Roboto } from 'next/font/google';
 import type { Metadata } from 'next';
 import Providers from '@/components/providers';
 import type { ReactNode } from 'react';
 import { cn } from '@/utils';
 import { AppHeader } from '@/components/bars/app-header';
+import { Toaster } from '@/components/ui/toaster';
+import { Locale } from '@microrealestate/types';
 
 const APP_TITLE = [config.APP_NAME, 'Tenant'];
 if (config.NODE_ENV === 'development') {
@@ -22,7 +23,11 @@ export const metadata: Metadata = {
     'real estate, landlord, property, rental, property management platform, property management software, property management system',
 };
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
+const roboto = Roboto({
+  weight: ['300', '400', '500', '700'],
+  display: 'swap',
+  subsets: ['latin', 'latin-ext'],
+});
 
 export default async function RootLayout({
   params: { lang },
@@ -36,17 +41,13 @@ export default async function RootLayout({
       <head>
         <link rel="icon" href={`${config.BASE_PATH}/favicon.svg`} />
       </head>
-      <body
-        className={cn(
-          'min-h-screen bg-background font-sans antialiased',
-          inter.variable
-        )}
-      >
+      <body className={cn('min-h-screen', roboto.className)}>
         <Providers>
-          <div className="flex flex-col items-center min-h-screen bg-slate-100">
+          <div className="flex flex-col items-center min-h-screen">
             <AppHeader />
-            <div className="w-full max-w-3xl my-5">{children}</div>
+            <div className="w-full max-w-4xl my-5">{children}</div>
           </div>
+          <Toaster />
         </Providers>
       </body>
     </html>

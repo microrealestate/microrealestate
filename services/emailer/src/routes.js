@@ -11,15 +11,23 @@ const config = require('./config');
 const _send = async (req, res) => {
   try {
     const { templateName, recordId, params } = req.body;
-    const allowedTemplates =
-      req.path === '/emailer/resetpassword'
-        ? ['reset_password']
-        : [
-            'invoice',
-            'rentcall',
-            'rentcall_last_reminder',
-            'rentcall_reminder',
-          ];
+    let allowedTemplates;
+    switch (req.path) {
+      case '/emailer/resetpassword':
+        allowedTemplates = ['reset_password'];
+        break;
+      case '/emailer/magiclink':
+        allowedTemplates = ['magic_link'];
+        break;
+      default:
+        allowedTemplates = [
+          'invoice',
+          'rentcall',
+          'rentcall_last_reminder',
+          'rentcall_reminder',
+        ];
+        break;
+    }
     if (!allowedTemplates.includes(templateName)) {
       logger.warn(`template not found ${templateName}`);
       return res.sendStatus(404);
@@ -62,6 +70,7 @@ const apiRouter = express.Router();
 // parse locale
 apiRouter.use(locale(['fr-FR', 'en', 'pt-BR', 'de-DE'], 'en')); // used when organization is not set
 apiRouter.post('/emailer/resetpassword', _send); // allow this route even there is no access token
+apiRouter.post('/emailer/magiclink', _send); // allow this route even there is no access token
 apiRouter.use(needAccessToken(config.ACCESS_TOKEN_SECRET));
 apiRouter.use(checkOrganization());
 

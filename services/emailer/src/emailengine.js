@@ -21,7 +21,7 @@ async function _sendWithSmtp(config, email) {
     auth = {
       user: config.username,
       pass: config.password,
-    }
+    };
   }
 
   const transporter = nodemailer.createTransport({
@@ -52,34 +52,35 @@ async function _sendWithSmtp(config, email) {
 }
 
 function sendEmail(email, data) {
-  // default config from env file
   let emailDeliveryServiceConfig;
-  if (config.GMAIL) {
-    emailDeliveryServiceConfig = {
-      name: 'gmail',
-      server: 'smtp.gmail.com',
-      port: 587,
-      secure: false, // if true then port is 465, false for other ports
-      authentication: true,
-      username: config.GMAIL.email,
-      password: config.GMAIL.appPassword,
-    };
+  // email service config from env file
+  if (data.useAppEmailService) {
+    if (config.GMAIL) {
+      emailDeliveryServiceConfig = {
+        name: 'gmail',
+        server: 'smtp.gmail.com',
+        port: 587,
+        secure: false, // if true then port is 465, false for other ports
+        authentication: true,
+        username: config.GMAIL.email,
+        password: config.GMAIL.appPassword,
+      };
+    }
+    if (config.SMTP) {
+      emailDeliveryServiceConfig = {
+        name: 'smtp',
+        ...config.SMTP,
+      };
+    }
+    if (config.MAILGUN) {
+      emailDeliveryServiceConfig = {
+        name: 'mailgun',
+        ...config.MAILGUN,
+      };
+    }
   }
-  if (config.SMTP) {
-    emailDeliveryServiceConfig = {
-      name: 'smtp',
-      ...config.SMTP,
-    };
-  }
-  if (config.MAILGUN) {
-    emailDeliveryServiceConfig = {
-      name: 'mailgun',
-      ...config.MAILGUN,
-    };
-  }
-
-  // config from organization
-  if (data.landlord) {
+  // email service config from organization
+  else if (data.landlord) {
     if (data.landlord.thirdParties?.gmail?.selected) {
       emailDeliveryServiceConfig = {
         name: 'gmail',
@@ -88,9 +89,7 @@ function sendEmail(email, data) {
         secure: false, // if true then port is 465, false for other ports
         authentication: true,
         username: data.landlord.thirdParties.gmail.email,
-        password: crypto.decrypt(
-          data.landlord.thirdParties.gmail.appPassword
-        ),
+        password: crypto.decrypt(data.landlord.thirdParties.gmail.appPassword),
       };
     }
     if (data.landlord.thirdParties?.smtp?.selected) {
@@ -100,11 +99,11 @@ function sendEmail(email, data) {
         port: data.landlord.thirdParties.smtp.port,
         secure: data.landlord.thirdParties.smtp.secure,
         authentication: data.landlord.thirdParties.smtp.authentication,
-        username:  data.landlord.thirdParties.smtp.authentication ?
-          data.landlord.thirdParties.smtp.username
+        username: data.landlord.thirdParties.smtp.authentication
+          ? data.landlord.thirdParties.smtp.username
           : null,
-        password: data.landlord.thirdParties.smtp.authentication ?
-          crypto.decrypt(data.landlord.thirdParties.smtp.password)
+        password: data.landlord.thirdParties.smtp.authentication
+          ? crypto.decrypt(data.landlord.thirdParties.smtp.password)
           : null,
       };
     }
@@ -118,7 +117,11 @@ function sendEmail(email, data) {
   }
 
   if (!emailDeliveryServiceConfig) {
-    throw new Error('landlord has not configured the email delivery service');
+    if (data.useAppEmailService) {
+      throw new Error('the app email service has not been configured');
+    } else {
+      throw new Error('the landlord email service has not been configured');
+    }
   }
 
   switch (emailDeliveryServiceConfig.name) {

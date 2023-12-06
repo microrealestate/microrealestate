@@ -93,6 +93,21 @@ services:
     # depends_on:
     #   - kibana
   ###############################################################################
+  # tenantapi
+  ###############################################################################
+  tenantapi:
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: services/tenantapi/Dockerfile
+    # logging:
+    #   driver: syslog
+    #   options:
+    #     syslog-address: 'udp://localhost:$LOGSTASH_UDP_PORT'
+    #     tag: '{{.Name}}/{{.ID}}'
+    # depends_on:
+    #   - kibana
+  ###############################################################################
   # Landlord frontend
   ###############################################################################
   landlord-frontend:

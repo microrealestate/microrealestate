@@ -14,10 +14,12 @@ COPY .yarnrc.yml .
 COPY yarn.lock .
 COPY .yarn/plugins .yarn/plugins
 COPY .yarn/releases .yarn/releases
+COPY types types
 COPY webapps/commonui webapps/commonui
 COPY webapps/tenant webapps/tenant
 RUN --mount=type=cache,id=node_modules,target=/root/.yarn YARN_CACHE_FOLDER=/root/.yarn \
-    yarn workspaces focus @microrealestate/tenant 
+    yarn workspaces focus @microrealestate/tenant && \
+    yarn workspace @microrealestate/types run build 
 
 FROM base
 ENV NEXT_TELEMETRY_DISABLED=1

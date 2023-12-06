@@ -11,12 +11,13 @@ const {
   displayHelp,
   displayHeader,
   askRunMode,
-  config,
+  showConfig,
   askForEnvironmentVariables,
   writeDotEnv,
   restoreDB,
   dumpDB,
   askBackupFile,
+  displayConfigWarningsAndErrors,
 } = require('./commands');
 const { loadEnv } = require('./utils');
 
@@ -41,7 +42,8 @@ function getArgs() {
       'stop',
       'dev',
       'status',
-      'config',
+      'showconfig',
+      'configure',
       'restoredb',
       'dumpdb',
     ].includes(command)
@@ -78,6 +80,10 @@ function migrateEnvConfig(envConfig) {
     delete envConfig.NGINX_PORT;
   }
 
+  if (envConfig?.GATEWAY_URL) {
+    envConfig.GATEWAY_URL = envConfig.GATEWAY_URL.replace(/\/api\/v2$/, '');
+  }
+
   return envConfig;
 }
 
@@ -101,8 +107,17 @@ async function main() {
       loadEnv({ ignoreBaseEnv: true, ignoreProcessEnv: true })
     );
   }
-  const promptsConfig = await askForEnvironmentVariables(envConfig);
+  const promptsConfig = await askForEnvironmentVariables(
+    envConfig,
+    command === 'configure'
+  );
   writeDotEnv(promptsConfig, envConfig);
+
+  if (command === 'configure') {
+    // as the env file has been updated, nothing else to do
+    displayConfigWarningsAndErrors();
+    return process.exit(0);
+  }
 
   try {
     switch (command) {
@@ -122,9 +137,9 @@ async function main() {
       case 'status':
         await status();
         break;
-      case 'config': {
+      case 'showconfig': {
         const { runMode = 'prod' } = await askRunMode();
-        await config(runMode);
+        await showConfig(runMode);
         break;
       }
       case 'restoredb': {

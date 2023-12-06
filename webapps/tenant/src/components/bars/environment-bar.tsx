@@ -5,11 +5,11 @@ export async function EnvironmentBar() {
   const { t } = await getTranslation();
 
   return config.DEMO_MODE || config.NODE_ENV === 'development' ? (
-    <div className={config.DEMO_MODE ? 'bg-green-600' : 'bg-slate-300'}>
+    <div className={config.DEMO_MODE ? 'bg-success' : 'bg-neutral-500'}>
       <div
-        className={`container h-6 flex items-center justify-center text-sm ${
-          config.DEMO_MODE ? 'text-white' : 'text-gray-800'
-        } tracking-wider`}
+        className={
+          'container h-6 flex items-center justify-center text-sm text-success-foreground tracking-wider'
+        }
       >
         {config.DEMO_MODE ? t('Demonstration mode') : t('Development mode')}
       </div>

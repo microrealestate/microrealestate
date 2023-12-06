@@ -1,7 +1,7 @@
 const logger = require('winston');
 const server = require('@microrealestate/common/utils/server');
 const routes = require('./routes');
-const config = require('./config');
+const { config } = require('./config');
 
 async function onStartUp(express) {
   express.use(routes);

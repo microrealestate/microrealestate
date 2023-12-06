@@ -47,6 +47,7 @@ services:
       - TENANT_BASE_PATH=$TENANT_BASE_PATH
       - DOMAIN_URL=$DOMAIN_URL
       - CORS_ENABLED=$CORS_ENABLED
+      - TENANTAPI_URL=$TENANTAPI_URL
     ports:
       - '$GATEWAY_PORT:8080'
     networks:
@@ -119,8 +120,15 @@ services:
       - CIPHER_KEY=$CIPHER_KEY
       - CIPHER_IV_KEY=$CIPHER_IV_KEY
       - PDFGENERATOR_URL=$PDFGENERATOR_URL
+      - GMAIL_EMAIL=$GMAIL_EMAIL
+      - GMAIL_APP_PASSWORD=$GMAIL_APP_PASSWORD
       - MAILGUN_API_KEY=$MAILGUN_API_KEY
       - MAILGUN_DOMAIN=$MAILGUN_DOMAIN
+      - SMTP_SERVER=$SMTP_SERVER
+      - SMTP_PORT=$SMTP_PORT
+      - SMTP_SECURE=$SMTP_SECURE
+      - SMTP_USERNAME=$SMTP_USERNAME
+      - SMTP_PASSWORD=$SMTP_PASSWORD
       - EMAIL_FROM=$EMAIL_FROM
       - EMAIL_REPLY_TO=$EMAIL_REPLY_TO
       - EMAIL_BCC=$EMAIL_BCC
@@ -158,6 +166,24 @@ services:
       - mongo
       - emailer
       - pdfgenerator
+  ###############################################################################
+  # tenant api
+  ###############################################################################
+  tenantapi:
+    image: mre/tenantapi:latest
+    environment:
+      - NODE_ENV
+      - PORT=$TENANTAPI_PORT
+      - LOGGER_LEVEL=$LOGGER_LEVEL
+      - MONGO_URL=$MONGO_URL
+      - DEMO_MODE=$DEMO_MODE
+      - ACCESS_TOKEN_SECRET=$AUTHENTICATOR_ACCESS_TOKEN_SECRET
+    expose:
+      - "$TENANTAPI_PORT"
+    networks:
+      - net
+    depends_on:
+      - mongo
   ###############################################################################
   # Landlord frontend
   ###############################################################################
@@ -199,7 +225,9 @@ services:
       - DOCKER_GATEWAY_URL=$DOCKER_GATEWAY_URL
       - NEXT_PUBLIC_APP_NAME=$APP_NAME
       - NEXT_PUBLIC_BASE_PATH=$TENANT_BASE_PATH
+      - NEXT_PUBLIC_CORS_ENABLED=$CORS_ENABLED
       - NEXT_PUBLIC_DEMO_MODE=$DEMO_MODE
+      - NEXT_PUBLIC_GATEWAY_URL=$GATEWAY_URL
       - NEXT_PUBLIC_NODE_ENV=$NODE_ENV
     expose:
       - '$TENANT_FRONTEND_PORT'

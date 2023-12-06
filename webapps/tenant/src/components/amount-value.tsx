@@ -1,34 +1,29 @@
-import {} from '@/mocks/session/server/getServerSession';
 import { cn } from '@/utils';
-import { getFormatNumber } from '@/utils/formatnumber/server/getFormatNumber';
 import { Label } from '@/components/ui/label';
 
 export async function AmountValue({
-  className,
   label,
-  amount,
+  value,
   variant,
+  className,
 }: {
-  className?: string;
   label: string;
-  amount: number;
-  variant?: 'colored';
+  value: string;
+  variant?: 'destructive' | 'success';
+  className?: string;
 }) {
-  const formatNumber = await getFormatNumber();
-
   let amountClass = 'text-2xl font-semibold';
-  if (variant === 'colored') {
-    if (amount > 0) {
-      amountClass += ' text-green-600';
-    } else if (amount < 0) {
-      amountClass += ' text-red-600';
-    }
+
+  if (variant === 'success') {
+    amountClass += ' text-green-600';
+  } else if (variant === 'destructive') {
+    amountClass += ' text-red-600';
   }
 
   return (
     <div className={cn(`flex flex-col gap-2 ${className}`)}>
       <Label>{label}</Label>
-      <div className={cn(amountClass)}>{formatNumber({ value: amount })}</div>
+      <div className={cn(amountClass)}>{value}</div>
     </div>
   );
 }

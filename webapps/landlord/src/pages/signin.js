@@ -107,11 +107,10 @@ export default function SignIn() {
         <Box align="center">
           <LocationCityIcon fontSize="large" />
         </Box>
-        <Typography component="h1" variant="h5" align="center">
-          {t('Sign in to {{APP_NAME}}', {
-            APP_NAME: config.APP_NAME,
-          })}
+        <Typography component="h1" variant="h4" align="center">
+          {config.APP_NAME}
         </Typography>
+        <Box align="center">{t('for landlords')}</Box>
       </Box>
       <Paper>
         <Box px={4} pb={4} pt={2}>

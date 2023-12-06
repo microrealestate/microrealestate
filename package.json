@@ -25,7 +25,8 @@
     "cli",
     "e2e",
     "services/*",
-    "webapps/*"
+    "webapps/*",
+    "types"
   ],
   "scripts": {
     "e2e:ci": "yarn workspace @microrealestate/e2e run cypress:ci",
