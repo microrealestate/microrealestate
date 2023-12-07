@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented here.
 
+## [Unreleased]
+
+### Changed
+
+- Upgrade `redis` and `mongo` containers to newer versions. Old Mongo databases are not compatible with the new version. Before upgrade, do a backup with `mre dumpdb`, remove old database in `data/mongodb`. After upgrade, restore database with `mre restoredb`.
+
+### Contributors
+
+- @zeronounours
+
 ## 2023-12-07
 
 ### Added
