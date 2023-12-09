@@ -15,14 +15,14 @@
   "license": "MIT",
   "dependencies": {
     "@microrealestate/common": "*",
-    "axios": "0.27.2",
+    "axios": "1.6.2",
     "i18n": "0.13.3",
     "json2csv": "5.0.6",
     "jsonwebtoken": "9.0.0",
     "moment": "2.29.4",
     "mongobackup": "0.3.5",
     "mongojs": "3.1.0",
-    "mongoose": "6.5.2",
+    "mongoose": "6.11.3",
     "nanoid": "3.2.0",
     "sugar": "2.0.6",
     "winston": "2.4.4"

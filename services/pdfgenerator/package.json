@@ -30,7 +30,6 @@
     "jsonwebtoken": "9.0.0",
     "locale": "0.1.0",
     "moment": "2.29.4",
-    "mongodb": "3.6.6",
     "multer": "1.4.4",
     "puppeteer": "21.3.8",
     "sanitize-filename": "1.6.3",
