@@ -1,4 +1,4 @@
-import axios from 'axios';
+import * as axios from 'axios';
 import logger from 'winston';
 
 export default function httpInterceptors() {
