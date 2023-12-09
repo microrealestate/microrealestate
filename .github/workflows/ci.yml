@@ -4,9 +4,9 @@ on:
   push:
     branches:
       - master
-  pull_request:
-    branches:
-      - master
+  # pull_request:
+  #   branches:
+  #     - master
   workflow_dispatch:
 
 jobs:
@@ -21,6 +21,9 @@ jobs:
           - appname: api
             image: ghcr.io/${{ github.repository }}/api
             dockerfile: services/api/Dockerfile
+          - appname: tenantapi
+            image: ghcr.io/${{ github.repository }}/tenantapi
+            dockerfile: services/tenantapi/Dockerfile
           - appname: authenticator
             image: ghcr.io/${{ github.repository }}/authenticator
             dockerfile: services/authenticator/Dockerfile
@@ -159,9 +162,23 @@ jobs:
           ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
           deploy_docker_image: ghcr.io/${{ github.repository }}/resetservice:${{ github.sha }}
 
-  deploy_landlord_frontend:
+  deploy_tenantapi:
     runs-on: ubuntu-latest
     needs: build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Push to dokku
+        uses: dokku/github-action@master
+        with:
+          git_remote_url: '${{ secrets.DOKKU_URL}}/tenantapi-stage'
+          ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
+          deploy_docker_image: ghcr.io/${{ github.repository }}/tenantapi:${{ github.sha }}
+
+  deploy_landlord_frontend:
+    runs-on: ubuntu-latest
+    needs: [build, deploy_tenantapi]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -194,6 +211,7 @@ jobs:
         deploy_gateway,
         deploy_authenticator,
         deploy_api,
+        deploy_tenantapi,
         deploy_pdfgenerator,
         deploy_emailer,
         deploy_resetservice,

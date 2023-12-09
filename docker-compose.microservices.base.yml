@@ -229,6 +229,7 @@ services:
       - NEXT_PUBLIC_DEMO_MODE=$DEMO_MODE
       - NEXT_PUBLIC_GATEWAY_URL=$GATEWAY_URL
       - NEXT_PUBLIC_NODE_ENV=$NODE_ENV
+      - DOMAIN_URL=$DOMAIN_URL
     expose:
       - '$TENANT_FRONTEND_PORT'
     networks:
