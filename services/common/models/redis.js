@@ -7,40 +7,71 @@ class RedisClient {
   connect(url, options) {
     return new Promise((resolve, reject) => {
       this.client = redis.createClient(url, options);
-      this.client.on('monitor', (time, args /*, rawReply*/) => {
-        if (args && args.length && args[0] === 'auth') {
-          args[1] = '****';
-        }
-        logger.debug(args.join(', '));
-      });
+      this.connectOptions = [url, options];
 
       //this.flushdb = promisify(this.client.flushdb).bind(this.client);
       this.get = promisify(this.client.get).bind(this.client);
       this.set = promisify(this.client.set).bind(this.client);
       this.del = promisify(this.client.del).bind(this.client);
       this.keys = promisify(this.client.keys).bind(this.client);
-      this.monitor = promisify(this.client.monitor).bind(this.client);
 
       this.client.on('error', reject);
       this.client.on('ready', resolve);
     });
   }
 
-  quit() {
+  monitor() {
     return new Promise((resolve, reject) => {
-      if (!this.client) {
-        reject('cannot quit, connection not established');
-        return;
-      }
+      // Newer versions of REDIS do not support parralel commands with MONITOR
+      this.monitor_client = redis.createClient(...this.connectOptions);
+      this.monitor_client.on('monitor', (time, args /*, rawReply*/) => {
+        if (args && args.length && args[0] === 'auth') {
+          args[1] = '****';
+        }
+        logger.debug(args.join(', '));
+      });
 
-      this.client.quit((err, res) => {
-        if (err) {
-          reject(err);
+      this.monitor_client.on('error', reject);
+      this.monitor_client.on('ready', () => {
+        promisify(this.monitor_client.monitor).bind(this.monitor_client)()
+          .then(resolve, reject);
+      });
+    })
+  }
+
+  quit() {
+    return Promise.all([
+      // Quit base client
+      new Promise((resolve, reject) => {
+        if (!this.client) {
+          reject('cannot quit, connection not established');
           return;
         }
-        resolve(res);
-      });
-    });
+
+        this.client.quit((err, res) => {
+          if (err) {
+            reject(err);
+            return;
+          }
+          resolve(res);
+        });
+      }),
+      // Quit monitor client
+      new Promise((resolve, reject) => {
+        if (!this.monitor_client) {
+          resolve('no monitor client to quit');
+          return;
+        }
+
+        this.monitor_client.quit((err, res) => {
+          if (err) {
+            reject(err);
+            return;
+          }
+          resolve(res);
+        });
+      }),
+    ]);
   }
 }
 

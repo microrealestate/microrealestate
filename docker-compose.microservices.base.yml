@@ -4,7 +4,7 @@ services:
   # Redis
   ###############################################################################
   redis:
-    image: redis:5
+    image: redis:7
     expose:
       - '$REDIS_PORT'
     volumes:
@@ -19,7 +19,7 @@ services:
   # Mongo
   ###############################################################################
   mongo:
-    image: mongo:4.4
+    image: mongo:7
     command: --quiet
     expose:
       - '$MONGO_PORT'
