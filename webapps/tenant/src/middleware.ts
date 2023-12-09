@@ -10,7 +10,7 @@ import { NextResponse } from 'next/server';
 import appConfig from '@/config';
 import { Locale } from '@microrealestate/types';
 
-const DOMAIN_URL = new URL(appConfig.GATEWAY_URL || 'http://localhost');
+const DOMAIN_URL = new URL(appConfig.DOMAIN_URL);
 const GATEWAY_URL = appConfig.DOCKER_GATEWAY_URL || appConfig.GATEWAY_URL;
 
 export async function middleware(request: NextRequest) {
