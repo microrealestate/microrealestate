@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
 
 const RealmSchema = mongoose.Schema({
   name: String,
@@ -8,6 +9,16 @@ const RealmSchema = mongoose.Schema({
       email: String,
       role: String,
       registered: Boolean,
+    },
+  ],
+  applications: [
+    {
+      name: String,
+      role: String,
+      clientId: String,
+      clientSecret: String,
+      createdDate: Date,
+      expiryDate: Date,
     },
   ],
   addresses: [
@@ -77,6 +88,18 @@ const RealmSchema = mongoose.Schema({
   },
   locale: String,
   currency: String,
+});
+
+// hash application secrets before saving into database
+RealmSchema.pre('save', function (next) {
+  for (const app of this.applications) {
+    // check if first save to hash secret
+    if (!app.createdDate) {
+      app.createdDate = new Date();
+      app.clientSecret = bcrypt.hashSync(app.clientSecret, 10);
+    }
+  }
+  next();
 });
 
 module.exports = mongoose.model('Realm', RealmSchema);

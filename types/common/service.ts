@@ -19,7 +19,9 @@ export type ResponseError = {
 export type ServiceResponse = Express.Response;
 
 export type ServiceRequest = Express.Request & {
-  user: CollectionTypes.Account;
+  user?: CollectionTypes.Account;
+  application?: CollectionTypes.ApplicationCredentials;
+  role: string;
   realm?: CollectionTypes.Realm | null;
   realms: CollectionTypes.Realm[];
 };

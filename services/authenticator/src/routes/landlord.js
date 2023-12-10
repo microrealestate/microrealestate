@@ -1,12 +1,14 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+const crypto = require('crypto');
 const axios = require('axios');
 const locale = require('locale');
 const logger = require('winston');
 const { config, TOKEN_COOKIE_ATTRIBUTES } = require('../config');
 const redis = require('@microrealestate/common/models/redis');
 const AccountModel = require('@microrealestate/common/models/account');
+const RealmModel = require('@microrealestate/common/models/realm');
 
 const _generateTokens = async (dbAccount) => {
   const { _id, password, ...account } = dbAccount;
@@ -85,7 +87,98 @@ if (config.SIGNUP) {
   });
 }
 
-landlordRouter.post('/signin', async (req, res) => {
+const applicationSignIn = async (req, res) => {
+  try {
+    const { clientId, clientSecret } = req.body;
+    if (
+      [clientId, clientSecret]
+        .map((el) => el.trim())
+        .some((el) => !!el === false)
+    ) {
+      logger.info('M2M login failed some fields are missing');
+      return res.status(422).json({ error: 'missing fields' });
+    }
+
+    // clientSecret is a JWT which contains the organizationId & clientId
+    let organizationId;
+    let keyId;
+    try {
+      const payload = jwt.verify(clientSecret, config.APPCREDZ_TOKEN_SECRET);
+      if (payload && payload.organizationId && payload.jti) {
+        organizationId = payload.organizationId;
+        keyId = payload.jti;
+      }
+    } catch (exc) {
+      if (exc instanceof jwt.TokenExpiredError) {
+        logger.info(
+          `login failed for application ${clientId}@${organizationId}: expired token`
+        );
+        return res.status(401).json({ error: 'expired clientId' });
+      } else {
+        logger.error(exc);
+        return res.status(401).json({ error: 'invalid credentials' });
+      }
+    }
+
+    // ensure keyId & clientId matches
+    if (clientId !== keyId) {
+      logger.info(
+        `login failed for application ${clientId}@${organizationId}: clientId & clientSecret not matching`
+      );
+      return res.status(401).json({ error: 'invalid credentials' });
+    }
+
+    // find the client details within the realm
+    let realm = (await RealmModel.findOne({ _id: organizationId }))?.toObject();
+    if (!realm) {
+      logger.info(
+        `login failed for application ${clientId}@${organizationId}: realm not found`
+      );
+      return res.status(401).json({ error: 'invalid credentials' });
+    }
+    let application;
+    for (const app of realm.applications) {
+      if (app.clientId == clientId) {
+        application = app;
+        break;
+      }
+    }
+    if (!application) {
+      logger.info(
+        `login failed for application ${clientId}@${organizationId}: appplication revoked`
+      );
+      return res.status(401).json({ error: 'revoked clientId' });
+    }
+
+    // check clientSecret
+    const validSecret = await bcrypt.compare(
+      clientSecret,
+      application.clientSecret
+    );
+    if (!validSecret) {
+      logger.info(
+        `login failed for application ${clientId}@${organizationId}: bad secret`
+      );
+      return res.status(401).json({ error: 'invalid credentials' });
+    }
+
+    // Generate only an accessToken, but no refreshToken
+    delete application.clientSecret;
+    const accessToken = jwt.sign({ application }, config.ACCESS_TOKEN_SECRET, {
+      expiresIn: '300s',
+    });
+
+    res.json({
+      accessToken,
+      organizationId,
+    });
+  } catch (exc) {
+    logger.error(exc);
+    res.sendStatus(500);
+  }
+};
+
+const userSignIn = async (req, res) => {
   try {
     const { email, password } = req.body;
     if ([email, password].map((el) => el.trim()).some((el) => !!el === false)) {
@@ -115,6 +208,52 @@ landlordRouter.post('/signin', async (req, res) => {
     res.cookie('refreshToken', refreshToken, TOKEN_COOKIE_ATTRIBUTES);
     res.json({
       accessToken,
+    });
+  } catch (exc) {
+    logger.error(exc);
+    res.sendStatus(500);
+  }
+};
+
+landlordRouter.post('/signin', async (req, res) => {
+  if (req.body.email) {
+    return await userSignIn(req, res);
+  } else if (req.body.clientId) {
+    return await applicationSignIn(req, res);
+  } else {
+    logger.info('login failed some fields are missing');
+    return res.status(422).json({ error: 'missing fields' });
+  }
+});
+
+landlordRouter.post('/appcredz', async (req, res) => {
+  // TODO: restrict to admin role?
+  try {
+    const { expiry, organizationId } = req.body;
+    if (
+      [expiry, organizationId]
+        .map((el) => el.trim())
+        .some((el) => !!el === false)
+    ) {
+      logger.info('AppCredz creation failed some fields are missing');
+      return res.status(422).json({ error: 'missing fields' });
+    }
+    const expiryDate = new Date(expiry);
+
+    // Create clientId & clientSecret
+    const clientId = crypto.randomUUID();
+    const clientSecret = jwt.sign(
+      {
+        organizationId,
+        jti: clientId,
+        exp: expiryDate.getTime() / 1000,
+      },
+      config.APPCREDZ_TOKEN_SECRET
+    );
+
+    res.json({
+      clientId,
+      clientSecret,
     });
   } catch (exc) {
     logger.error(exc);

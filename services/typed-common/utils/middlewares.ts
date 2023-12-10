@@ -47,11 +47,14 @@ export function needAccessToken(
         accessToken,
         accessTokenSecret
       ) as JWT.JwtPayload;
-      if (!decoded.account) {
+      if (decoded.account) {
+        (req as ServiceRequest).user = decoded.account;
+      } else if (decoded.application) {
+        (req as ServiceRequest).application = decoded.application;
+      } else {
         logger.warn('accessToken is invalid');
         return res.sendStatus(401);
       }
-      (req as ServiceRequest).user = decoded.account;
     } catch (error) {
       logger.warn(String(error));
       return res.sendStatus(401);
@@ -72,12 +75,29 @@ export function checkOrganization() {
       return next();
     }
 
-    // for the currennt user, add all subscribed organizations in request object
-    req.realms = (
-      await Realm.find<MongooseDocument<CollectionTypes.Realm>>({
-        members: { $elemMatch: { email: req.user.email } },
-      })
-    ).map((realm) => realm.toObject());
+    if (req.user) {
+      // for the current user, add all subscribed organizations in request object
+      req.realms = (
+        await Realm.find<MongooseDocument<CollectionTypes.Realm>>({
+          members: { $elemMatch: { email: req.user.email } },
+        })
+      ).map((realm) => realm.toObject());
+    } else if (req.application) {
+      // for the current application access, add only the associated realm
+      let realm = (
+        await Realm.findOne<MongooseDocument<CollectionTypes.Realm>>({
+          applications: { $elemMatch: { clientId: req.application.clientId } },
+        })
+      )?.toObject();
+      if (realm) {
+        req.realms = [realm];
+      }
+    } else {
+      logger.error(
+        'checkOrganization: Invalid request received: neither user nor application'
+      );
+      return res.sendStatus(500);
+    }
 
     // skip organization checks when fetching them
     if (req.path === '/realms') {
@@ -108,6 +128,28 @@ export function checkOrganization() {
     // current user is not a member of the organization
     if (!req.realms.find(({ _id }) => _id === req.realm?._id)) {
       logger.warn('current user is not a member of the organization');
+      return res.sendStatus(404);
+    }
+
+    // resolve the role for the current realm
+    if (req.user) {
+      const currentMember = req.realm.members.find(
+        ({ email }) => email === (req as ServiceRequest).user?.email
+      );
+      if (currentMember?.role) {
+        req.role = currentMember.role;
+      }
+    } else if (req.application) {
+      const currentApp = req.realm.applications.find(
+        ({ clientId }) =>
+          clientId === (req as ServiceRequest).application?.clientId
+      );
+      if (currentApp?.role) {
+        req.role = currentApp.role;
+      }
+    }
+    if (!req.role) {
+      logger.warn('current user could no be found within realm');
       return res.sendStatus(404);
     }
 

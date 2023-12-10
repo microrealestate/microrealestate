@@ -1,3 +1,4 @@
+const bcrypt = require('bcrypt');
 const logger = require('winston');
 const realmModel = require('../models/realm');
 const accountModel = require('../models/account');
@@ -36,6 +37,9 @@ const _escapeSecrets = (realm) => {
   }
   if (realm.thirdParties?.b2?.applicationKey) {
     realm.thirdParties.b2.applicationKey = SECRET_PLACEHOLDER;
+  }
+  for (const app of realm.applications) {
+    app.clientSecret = SECRET_PLACEHOLDER;
   }
   return realm;
 };
@@ -90,6 +94,12 @@ module.exports = {
       );
     }
 
+    // Hash all applications' clientSecret
+    for (const app of newRealm.applications) {
+      app.createdDate = new Date();
+      app.clientSecret = bcrypt.hashSync(app.clientSecret, 10);
+    }
+
     realmModel.add(newRealm, (errors, realm) => {
       if (errors) {
         return res.status(500).json({
@@ -122,16 +132,27 @@ module.exports = {
         .json({ error: 'only current selected organization can be updated' });
     }
 
-    const currentMember = req.realm.members.find(
-      ({ email }) => email === req.user.email
-    );
+    let currentMember;
+    if (req.user) {
+      currentMember = req.realm.members.find(
+        ({ email }) => email === req.user.email
+      );
+    } else if (req.application) {
+      currentMember = req.realm.applications.find(
+        ({ clientId }) => clientId === req.application.clientId
+      );
+    } else {
+      logger.error('updating organization with unknown user type');
+      return res.sendStatus(500);
+    }
+
     if (!currentMember) {
       return res
         .status(403)
         .json({ error: 'current user is not a member of the organization' });
     }
 
-    if (currentMember.role !== 'administrator') {
+    if (req.role !== 'administrator') {
       return res.status(403).json({
         error: 'only administrator member can update the organization',
       });
@@ -229,6 +250,23 @@ module.exports = {
       const name = usernameMap[member.email];
       member.name = name || '';
       member.registered = !!name;
+    });
+
+    // Prevent AppCredz updates: only creation & deletion is permitted
+    const prevAppcredzMap = {};
+    req.realm.applications.reduce((acc, app) => {
+      acc[app.clientId] = app;
+      return acc;
+    }, prevAppcredzMap);
+
+    updatedRealm.applications = updatedRealm.applications.map((app) => {
+      if (prevAppcredzMap[app.clientId]) {
+        return prevAppcredzMap[app.clientId];
+      }
+      // for new entries initialize date & hash secret
+      app.createdDate = new Date();
+      app.clientSecret = bcrypt.hashSync(app.clientSecret, 10);
+      return app;
     });
 
     realmModel.update(updatedRealm, (errors, realm) => {
