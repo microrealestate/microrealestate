@@ -29,6 +29,7 @@ import { memo, useCallback, useContext, useMemo, useState } from 'react';
 import { RestrictButton, RestrictIconButton } from '../RestrictedComponents';
 import AddIcon from '@material-ui/icons/Add';
 import DeleteIcon from '@material-ui/icons/Delete';
+import KeyIcon from '@material-ui/icons/VpnKey';
 import moment from 'moment';
 import { observer } from 'mobx-react-lite';
 import PersonIcon from '@material-ui/icons/Person';
@@ -189,9 +190,15 @@ const ApplicationFormDialog = memo(function ApplicationFormDialog({
           .required(),
         expiryDate: Yup.mixed()
           .required()
-          .test('expiryDate', 'Date is invalid', (value) => {
+          .test('expiryDate_invalid', 'Date is invalid', (value) => {
             if (value) {
               return moment(value).isValid();
+            }
+            return true;
+          })
+          .test('expiryDate_past', 'Date must be in the future', (value) => {
+            if (value) {
+              return moment(value).isAfter(moment(), 'days');
             }
             return true;
           }),
@@ -245,7 +252,11 @@ const ApplicationFormDialog = memo(function ApplicationFormDialog({
                         />
                       </Grid>
                       <Grid item xs={12}>
-                        <DateField label={t('Expiry date')} name="expiryDate" />
+                        <DateField
+                          label={t('Expiry date')}
+                          name="expiryDate"
+                          minDate={moment().add(1, 'days').toISOString()}
+                        />
                       </Grid>
                     </Grid>
                   </Box>
@@ -297,26 +308,37 @@ const ApplicationShowDialog = memo(function ApplicationShowDialog({
             <DialogTitle id="form-dialog-title">
               {t('Created credentials')}
             </DialogTitle>
-            <DialogContent>
-              <DialogContentText>
-                {t(
-                  "Copy the credentials below and keep them safe. You won't be able to retrieve them again."
-                )}
-              </DialogContentText>
-              <Box minHeight={100} minWidth={500}>
-                <Grid container spacing={1}>
-                  <Grid item xs={12}>
-                    <TextField label={t('clientId')} name="clientId" />
+            <Box p={1}>
+              <DialogContent>
+                <DialogContentText>
+                  {t(
+                    "Copy the credentials below and keep them safe. You won't be able to retrieve them again."
+                  )}
+                </DialogContentText>
+                <Box minHeight={100} minWidth={500}>
+                  <Grid container spacing={1}>
+                    <Grid item xs={12}>
+                      <TextField label={t('clientId')} name="clientId" />
+                    </Grid>
+                    <Grid item xs={12}>
+                      <TextField
+                        label={t('clientSecret')}
+                        name="clientSecret"
+                      />
+                    </Grid>
                   </Grid>
-                  <Grid item xs={12}>
-                    <TextField label={t('clientSecret')} name="clientSecret" />
-                  </Grid>
-                </Grid>
-              </Box>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={handleClose}>{t('Close')}</Button>
-            </DialogActions>
+                </Box>
+              </DialogContent>
+              <DialogActions>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={handleClose}
+                >
+                  {t('Close')}
+                </Button>
+              </DialogActions>
+            </Box>
           </Form>
         </Formik>
       </Dialog>
@@ -477,7 +499,9 @@ const Members = observer(({ onSubmit }) => {
                           display="flex"
                           alignItems="center"
                         >
-                          <WarningIcon fontSize="small" />
+                          <div>
+                            <WarningIcon fontSize="small" />
+                          </div>
                           <Box pl={1}>
                             <Typography noWrap>
                               {t('User not registered')}
@@ -562,7 +586,6 @@ const Members = observer(({ onSubmit }) => {
             </TableHead>
             <TableBody>
               {(store.organization.selected?.applications || []).map((app) => {
-                const isAdministrator = app.role === ADMIN_ROLE;
                 const expiryMoment = moment(app.expiryDate);
                 const dateFormat = moment.localeData().longDateFormat('L');
                 const isExpired = moment().isSameOrAfter(expiryMoment);
@@ -571,32 +594,32 @@ const Members = observer(({ onSubmit }) => {
                     <TableCell align="center">
                       {updating === app ? (
                         <CircularProgress size={20} />
-                      ) : isAdministrator ? (
-                        <SupervisorAccountIcon />
                       ) : (
-                        <PersonIcon />
+                        <KeyIcon />
                       )}
                     </TableCell>
                     <TableCell>
                       <Typography noWrap>{app.name}</Typography>
+                      {isExpired ? (
+                        <Box
+                          color="warning.dark"
+                          display="flex"
+                          alignItems="center"
+                        >
+                          <div>
+                            <WarningIcon fontSize="small" />
+                          </div>
+                          <Box pl={1}>
+                            <Typography noWrap>
+                              {t('Token is expired')}
+                            </Typography>
+                          </Box>
+                        </Box>
+                      ) : null}
                     </TableCell>
                     <TableCell>
                       <Typography noWrap>
                         {expiryMoment.format(dateFormat)}
-                        {isExpired ? (
-                          <Box
-                            color="warning.dark"
-                            display="flex"
-                            alignItems="center"
-                          >
-                            <WarningIcon fontSize="small" />
-                            <Box pl={1}>
-                              <Typography noWrap>
-                                {t('Token is expired')}
-                              </Typography>
-                            </Box>
-                          </Box>
-                        ) : null}
                       </Typography>
                     </TableCell>
                     <TableCell align="center">
