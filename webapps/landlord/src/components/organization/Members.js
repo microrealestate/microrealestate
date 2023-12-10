@@ -29,7 +29,8 @@ import { memo, useCallback, useContext, useMemo, useState } from 'react';
 import { RestrictButton, RestrictIconButton } from '../RestrictedComponents';
 import AddIcon from '@material-ui/icons/Add';
 import DeleteIcon from '@material-ui/icons/Delete';
-import KeyIcon from '@material-ui/icons/VpnKey';
+import LinkIcon from '@material-ui/icons/Link';
+import LinkOffIcon from '@material-ui/icons/LinkOff';
 import moment from 'moment';
 import { observer } from 'mobx-react-lite';
 import PersonIcon from '@material-ui/icons/Person';
@@ -324,6 +325,8 @@ const ApplicationShowDialog = memo(function ApplicationShowDialog({
                       <TextField
                         label={t('clientSecret')}
                         name="clientSecret"
+                        multiline
+                        maxRows={5}
                       />
                     </Grid>
                   </Grid>
@@ -594,8 +597,10 @@ const Members = observer(({ onSubmit }) => {
                     <TableCell align="center">
                       {updating === app ? (
                         <CircularProgress size={20} />
+                      ) : isExpired ? (
+                        <LinkOffIcon />
                       ) : (
-                        <KeyIcon />
+                        <LinkIcon />
                       )}
                     </TableCell>
                     <TableCell>
