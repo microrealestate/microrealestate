@@ -4,6 +4,7 @@ import {
   MongooseDocument,
   ServiceRequest,
   TenantAPI,
+  UserServicePrincipal,
 } from '@microrealestate/types';
 import { Collections } from '@microrealestate/typed-common';
 import moment from 'moment';
@@ -15,7 +16,12 @@ routes.get(
     req: Express.Request<TenantAPI.GetTenants.Request>,
     res: Express.Response<TenantAPI.GetTenants.Response>
   ) => {
-    const email = (req as ServiceRequest).user.email;
+    // tenant API can only be accessed with UserServicePrincipal
+    if ((req as ServiceRequest).user.type !== 'user') {
+      return res.sendStatus(403);
+    }
+
+    const email = ((req as ServiceRequest).user as UserServicePrincipal).email;
     if (!email) {
       return res.status(400).json({
         error: 'email is required',

@@ -23,9 +23,17 @@ const needAccessToken = (accessTokenSecret) => {
     try {
       const decoded = jwt.verify(accessToken, accessTokenSecret);
       if (decoded.account) {
-        req.user = decoded.account;
+        // user type UserServicePrincipal
+        req.user = {
+          type: 'user',
+          email: decoded.account.email,
+        };
       } else if (decoded.application) {
-        req.application = decoded.application;
+        // user type ApplicationServicePrincipal
+        req.user = {
+          type: 'application',
+          clientId: decoded.application.clientId,
+        };
       } else {
         logger.warn('accessToken is invalid');
         return res.sendStatus(401);
@@ -47,23 +55,25 @@ const checkOrganization = () => {
     }
 
     let realms;
-    if (req.user) {
-      // for the current user, add all subscribed organizations in request object
-      realms = await Realm.find({
-        members: { $elemMatch: { email: req.user.email } },
-      });
-    } else if (req.application) {
-      // for the current application access, add only the associated realm
-      realms = [
-        await Realm.findOne({
-          applications: { $elemMatch: { clientId: req.application.clientId } },
-        }),
-      ];
-    } else {
-      logger.error(
-        'checkOrganization: Invalid request received: neither user nor application'
-      );
-      return res.sendStatus(500);
+    switch (req.user.type) {
+      case 'user':
+        // for the current user, add all subscribed organizations in request object
+        realms = await Realm.find({
+          members: { $elemMatch: { email: req.user.email } },
+        });
+        break;
+      case 'application':
+        // for the current application access, add only the associated realm
+        const realm = await Realm.findOne({
+          applications: { $elemMatch: { clientId: req.user.clientId } },
+        });
+        realms = realm ? [realm] : [];
+        break;
+      default:
+        logger.error(
+          'checkOrganization: Invalid request received: neither user nor application'
+        );
+        return res.sendStatus(500);
     }
     // transform realms to objects
     req.realms = realms.map((realm) => {
@@ -103,22 +113,19 @@ const checkOrganization = () => {
     }
 
     // resolve the role for the current realm
-    if (req.user) {
-      const currentMember = req.realm.members.find(
-        ({ email }) => email === req.user?.email
-      );
-      if (currentMember?.role) {
-        req.role = currentMember.role;
-      }
-    } else if (req.application) {
-      const currentApp = req.realm.applications.find(
-        ({ clientId }) => clientId === req.application?.clientId
-      );
-      if (currentApp?.role) {
-        req.role = currentApp.role;
-      }
+    switch (req.user.type) {
+      case 'user':
+        req.user.role = req.realm.members.find(
+          ({ email }) => email === req.user.email
+        )?.role;
+        break;
+      case 'application':
+        req.user.role = req.realm.applications.find(
+          ({ clientId }) => clientId === req.user.clientId
+        )?.role;
+        break;
     }
-    if (!req.role) {
+    if (!req.user.role) {
       logger.warn('current user could no be found within realm');
       return res.sendStatus(404);
     }

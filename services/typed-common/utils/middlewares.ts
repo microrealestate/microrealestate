@@ -1,10 +1,12 @@
 import * as Express from 'express';
 import * as JWT from 'jsonwebtoken';
 import {
+  ApplicationServicePrincipal,
   CollectionTypes,
   MongooseDocument,
   ServiceRequest,
   ServiceResponse,
+  UserServicePrincipal,
 } from '@microrealestate/types';
 import logger from 'winston';
 import Realm from '../collections/realm.js';
@@ -48,9 +50,17 @@ export function needAccessToken(
         accessTokenSecret
       ) as JWT.JwtPayload;
       if (decoded.account) {
-        (req as ServiceRequest).user = decoded.account;
+        // user type UserServicePrincipal
+        (req as ServiceRequest).user = {
+          type: 'user',
+          email: decoded.account.email,
+        };
       } else if (decoded.application) {
-        (req as ServiceRequest).application = decoded.application;
+        // user type ApplicationServicePrincipal
+        (req as ServiceRequest).user = {
+          type: 'application',
+          clientId: decoded.application.clientId,
+        };
       } else {
         logger.warn('accessToken is invalid');
         return res.sendStatus(401);
@@ -75,28 +85,29 @@ export function checkOrganization() {
       return next();
     }
 
-    if (req.user) {
-      // for the current user, add all subscribed organizations in request object
-      req.realms = (
-        await Realm.find<MongooseDocument<CollectionTypes.Realm>>({
-          members: { $elemMatch: { email: req.user.email } },
-        })
-      ).map((realm) => realm.toObject());
-    } else if (req.application) {
-      // for the current application access, add only the associated realm
-      let realm = (
-        await Realm.findOne<MongooseDocument<CollectionTypes.Realm>>({
-          applications: { $elemMatch: { clientId: req.application.clientId } },
-        })
-      )?.toObject();
-      if (realm) {
-        req.realms = [realm];
-      }
-    } else {
-      logger.error(
-        'checkOrganization: Invalid request received: neither user nor application'
-      );
-      return res.sendStatus(500);
+    switch (req.user.type) {
+      case 'user':
+        // for the current user, add all subscribed organizations in request object
+        req.realms = (
+          await Realm.find<MongooseDocument<CollectionTypes.Realm>>({
+            members: { $elemMatch: { email: req.user.email } },
+          })
+        ).map((realm) => realm.toObject());
+        break;
+      case 'application':
+        // for the current application access, add only the associated realm
+        let realm = (
+          await Realm.findOne<MongooseDocument<CollectionTypes.Realm>>({
+            applications: { $elemMatch: { clientId: req.user.clientId } },
+          })
+        )?.toObject();
+        req.realms = realm ? [realm] : [];
+        break;
+      default:
+        logger.error(
+          'checkOrganization: Invalid request received: neither user nor application'
+        );
+        return res.sendStatus(500);
     }
 
     // skip organization checks when fetching them
@@ -132,23 +143,20 @@ export function checkOrganization() {
     }
 
     // resolve the role for the current realm
-    if (req.user) {
-      const currentMember = req.realm.members.find(
-        ({ email }) => email === (req as ServiceRequest).user?.email
-      );
-      if (currentMember?.role) {
-        req.role = currentMember.role;
-      }
-    } else if (req.application) {
-      const currentApp = req.realm.applications.find(
-        ({ clientId }) =>
-          clientId === (req as ServiceRequest).application?.clientId
-      );
-      if (currentApp?.role) {
-        req.role = currentApp.role;
-      }
+    switch (req.user.type) {
+      case 'user':
+        req.user.role = req.realm.members.find(
+          ({ email }) => email === (req.user as UserServicePrincipal).email
+        )?.role;
+        break;
+      case 'application':
+        req.user.role = req.realm.applications.find(
+          ({ clientId }) =>
+            clientId === (req.user as ApplicationServicePrincipal).clientId
+        )?.role;
+        break;
     }
-    if (!req.role) {
+    if (!req.user.role) {
       logger.warn('current user could no be found within realm');
       return res.sendStatus(404);
     }

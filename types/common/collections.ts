@@ -25,15 +25,6 @@ export namespace CollectionTypes {
     createdDate?: Date;
   };
 
-  export type ApplicationCredentials = {
-    name: string;
-    role: string;
-    clientId: string;
-    clientSecret: string;
-    createdDate: Date;
-    expiryDate: Date;
-  };
-
   export type Realm = {
     _id: string;
     name: string;
@@ -43,7 +34,14 @@ export namespace CollectionTypes {
       role: string;
       registered: boolean;
     }[];
-    applications: CollectionTypes.ApplicationCredentials[];
+    applications: {
+      name: string;
+      role: string;
+      clientId: string;
+      clientSecret: string;
+      createdDate: Date;
+      expiryDate: Date;
+    }[];
     addresses: CollectionTypes.PartAddress[];
     bankInfo: {
       name: string;

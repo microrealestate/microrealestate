@@ -132,27 +132,9 @@ module.exports = {
         .json({ error: 'only current selected organization can be updated' });
     }
 
-    let currentMember;
-    if (req.user) {
-      currentMember = req.realm.members.find(
-        ({ email }) => email === req.user.email
-      );
-    } else if (req.application) {
-      currentMember = req.realm.applications.find(
-        ({ clientId }) => clientId === req.application.clientId
-      );
-    } else {
-      logger.error('updating organization with unknown user type');
-      return res.sendStatus(500);
-    }
-
-    if (!currentMember) {
-      return res
-        .status(403)
-        .json({ error: 'current user is not a member of the organization' });
-    }
-
-    if (req.role !== 'administrator') {
+    // No need to check wether user is part of org as it is already done by
+    // the middleware
+    if (req.user.role !== 'administrator') {
       return res.status(403).json({
         error: 'only administrator member can update the organization',
       });

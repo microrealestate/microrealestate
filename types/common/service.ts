@@ -18,10 +18,22 @@ export type ResponseError = {
 
 export type ServiceResponse = Express.Response;
 
+export type UserServicePrincipal = {
+  type: 'user';
+  email: string;
+  role?: string;
+};
+export type ApplicationServicePrincipal = {
+  type: 'application';
+  clientId: string;
+  role?: string;
+};
+export type ServicePrincipal =
+  | UserServicePrincipal
+  | ApplicationServicePrincipal;
+
 export type ServiceRequest = Express.Request & {
-  user?: CollectionTypes.Account;
-  application?: CollectionTypes.ApplicationCredentials;
-  role: string;
+  user: ServicePrincipal;
   realm?: CollectionTypes.Realm | null;
   realms: CollectionTypes.Realm[];
 };
