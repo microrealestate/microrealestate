@@ -3,11 +3,19 @@ import getServerSession from '@/utils/session/server/getsession';
 import { TenantAPI } from '@microrealestate/types';
 import { Lease } from '@/types';
 import getApiFetcher from '@/utils/fetch/server';
+import * as Mocks from '@/mocks/api';
+import config from '@/config';
 
 async function fetchData(): Promise<Lease[]> {
-  const { data } = await getApiFetcher().get<TenantAPI.GetTenants.Response>(
-    `/tenantapi/tenants`
-  );
+  let data;
+  if (config.DEMO_MODE) {
+    data = Mocks.getTenants;
+  } else {
+    const response = await getApiFetcher().get<TenantAPI.GetTenants.Response>(
+      `/tenantapi/tenants`
+    );
+    data = response.data;
+  }
 
   if (data.error) {
     console.error(data.error);

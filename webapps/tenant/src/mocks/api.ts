@@ -1,6 +1,11 @@
-import { TenantAPI } from '@microrealestate/types';
+import {
+  PaymentMethod,
+  PaymentStatus,
+  TenantAPI,
+} from '@microrealestate/types';
+import moment from 'moment';
 
-const tenant: TenantAPI.GetTenants.Response = {
+export const getTenants: TenantAPI.GetTenants.Response = {
   results: [
     {
       tenant: {
@@ -46,8 +51,7 @@ const tenant: TenantAPI.GetTenants.Response = {
       lease: {
         name: 'Bail commercial 369',
         beginDate: new Date('2021-01-01'),
-        endDate: new Date('2021-12-31'),
-        terminationDate: new Date('2021-12-31'),
+        endDate: new Date('2030-12-31'),
         timeRange: 'months',
         status: 'active',
         properties: [
@@ -58,42 +62,41 @@ const tenant: TenantAPI.GetTenants.Response = {
             type: 'office',
           },
           {
-            id: '2',
-            name: 'Apartment',
-            description: 'Home sweet home',
-            type: 'apartment',
-          },
-          {
             id: '3',
             name: 'Car Park',
             description: 'Parking space',
             type: 'parking',
           },
         ],
-        // loop to build an array of 12 invoices
-        invoices: Array.from({ length: 12 }, (_, i) => {
-          const month = i + 1;
-          const term = Number(`2021${month.toString().padStart(2, '0')}0100`);
+        // loop to build an array of 120 invoices
+        invoices: Array.from({ length: 120 }, (_, i) => {
+          const momentTerm = moment('2021-01-01').add(i, 'month');
+          const isAfterNow = momentTerm.isSameOrAfter(moment(), 'month');
+          const countAfterNow = momentTerm.diff(moment(), 'month');
+          const term = Number(momentTerm.format('YYYYMMDDHH'));
           const methods = ['transfer', 'credit-card', 'cash', 'check'];
           return {
-            id: `${i + 1}`,
             term,
-            balance: 4000,
-            payment: 1000,
-            grandTotal: 4000,
-            payments: Array.from({ length: 3 }, (_, j) => {
-              const date = new Date(`2021-${month}-${j + 1}`);
-              return {
-                date,
-                method: methods[j % methods.length],
-                reference: `${i + 1}-${j + 1}`,
-                amount: 1000,
-              };
-            }),
-            status: 'paid',
-            methods: ['transfer'],
+            balance: isAfterNow ? 1000 * countAfterNow : 1000,
+            payment: isAfterNow ? 0 : 1000,
+            grandTotal: 1000,
+            payments: momentTerm.isSameOrAfter(moment())
+              ? []
+              : Array.from({ length: 3 }, (_, j) => {
+                  const date = momentTerm.add(j, 'day').toDate();
+                  return {
+                    date,
+                    method: methods[j % methods.length],
+                    reference: `${i + 1}-${j + 1}`,
+                    amount: 1000,
+                  };
+                }),
+            status: (isAfterNow ? 'unpaid' : 'paid') as PaymentStatus,
+            methods: isAfterNow
+              ? []
+              : (['transfer', 'credit-card', 'cash'] as PaymentMethod[]),
           };
-        }),
+        }).sort((a, b) => b.term - a.term),
         // loop to build an array of 12 scanned documents
         documents: Array.from({ length: 5 }, (_, i) => {
           // build a random document name and description
@@ -105,17 +108,9 @@ const tenant: TenantAPI.GetTenants.Response = {
             description,
           };
         }),
-        balance: 4000,
+        balance: 1000,
         deposit: 900,
       },
     },
   ],
-};
-
-export const request = {
-  async get<T>(url: string) {
-    if (url === '/api/contract') {
-      return tenant as T;
-    }
-  },
 };
