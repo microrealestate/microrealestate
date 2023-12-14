@@ -1,3 +1,5 @@
+import config from '@/config';
+import mockedSession from '@/mocks/session';
 import type { SessionStatus, Session } from '@/types';
 import useApiFetcher from '@/utils/fetch/client';
 import { useEffect, useState } from 'react';
@@ -26,7 +28,12 @@ export default function useSession(): {
         setStatus(session?.email ? 'authenticated' : 'unauthenticated');
       }
     }
-    fetch();
+    if (config.DEMO_MODE) {
+      setSession(mockedSession);
+      setStatus(mockedSession.status);
+    } else {
+      fetch();
+    }
   });
 
   return { status, session };

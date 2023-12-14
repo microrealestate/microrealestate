@@ -21,6 +21,7 @@ import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
 import useApiFetcher from '@/utils/fetch/client';
+import mockedSession from '@/mocks/session';
 
 const signInFormSchema = z.object({
   email: z.string().email(),
@@ -35,31 +36,36 @@ export default function Signin() {
   const [showMagicLinkSent, setShowMagicLinkSent] = useState(false);
   const form = useForm<SignInFormValues>({
     resolver: zodResolver(signInFormSchema),
-    // defaultValues: {
-    //   email: 'john.doe@demo.com',
-    // },
+    defaultValues: config.DEMO_MODE
+      ? {
+          email: mockedSession.email,
+        }
+      : undefined,
   });
 
   async function onSubmit(values: SignInFormValues) {
-    // window.location.href = `${config.BASE_PATH}/en/dashboard`;
-    try {
-      const response = await apiFetcher.post(
-        '/api/v2/authenticator/tenant/signin',
-        {
-          email: values.email,
+    if (config.DEMO_MODE) {
+      window.location.href = `${config.BASE_PATH}/en/dashboard`;
+    } else {
+      try {
+        const response = await apiFetcher.post(
+          '/api/v2/authenticator/tenant/signin',
+          {
+            email: values.email,
+          }
+        );
+        if (response.status >= 200 && response.status < 300) {
+          return setShowMagicLinkSent(true);
         }
-      );
-      if (response.status >= 200 && response.status < 300) {
-        return setShowMagicLinkSent(true);
+      } catch (error) {
+        console.error(error);
       }
-    } catch (error) {
-      console.error(error);
+      toast({
+        variant: 'destructive',
+        title: t('Something went wrong'),
+        description: t('There was an error while signing in.'),
+      });
     }
-    toast({
-      variant: 'destructive',
-      title: t('Something went wrong'),
-      description: t('There was an error while signing in.'),
-    });
   }
 
   return (
@@ -112,10 +118,7 @@ export default function Signin() {
                     <FormItem>
                       <FormLabel>{t('Your email')}</FormLabel>
                       <FormControl>
-                        <Input
-                          {...field}
-                          // disabled
-                        />
+                        <Input {...field} disabled={config.DEMO_MODE} />
                       </FormControl>
                       {/* <FormDescription></FormDescription> */}
                       <FormMessage />

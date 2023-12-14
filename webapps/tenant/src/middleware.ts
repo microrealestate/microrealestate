@@ -14,9 +14,12 @@ const DOMAIN_URL = new URL(appConfig.DOMAIN_URL);
 const GATEWAY_URL = appConfig.DOCKER_GATEWAY_URL || appConfig.GATEWAY_URL;
 
 export async function middleware(request: NextRequest) {
-  let nextResponse = await injectSessionToken(request);
-  if (nextResponse) {
-    return nextResponse;
+  let nextResponse;
+  if (!appConfig.DEMO_MODE) {
+    nextResponse = await injectSessionToken(request);
+    if (nextResponse) {
+      return nextResponse;
+    }
   }
 
   nextResponse = injectLocale(request);
@@ -24,9 +27,11 @@ export async function middleware(request: NextRequest) {
     return nextResponse;
   }
 
-  nextResponse = await redirectSignIn(request);
-  if (nextResponse) {
-    return nextResponse;
+  if (!appConfig.DEMO_MODE) {
+    nextResponse = await redirectSignIn(request);
+    if (nextResponse) {
+      return nextResponse;
+    }
   }
 
   nextResponse = redirectDashboard(request);
@@ -40,7 +45,7 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     // Skip all paths which do not need to be localized
-    '/((?!api|_next/static|_next/image|favicon.svg|undraw_qa_engineers_dg-5-p.svg).*)',
+    '/((?!api|_next/static|_next/image|favicon.svg).*)',
     '/',
   ],
 };
@@ -89,7 +94,7 @@ function injectLocale(request: NextRequest) {
   const pathnameLocale = getLocaleFromPathname(pathname);
   const locale = pathnameLocale || requestLocale;
 
-  if (!pathnameLocale && pathname !== '/underconstruction') {
+  if (!pathnameLocale) {
     request.nextUrl.pathname = `/${locale}${pathname}`;
     console.debug('====>', pathname, 'redirected to', request.nextUrl.pathname);
     return NextResponse.redirect(request.nextUrl);
@@ -100,7 +105,7 @@ async function redirectSignIn(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const locale = getLocaleFromPathname(pathname);
 
-  if (['/underconstruction', `/${locale}/signin`].includes(pathname)) {
+  if ([`/${locale}/signin`].includes(pathname)) {
     return;
   }
 
@@ -139,6 +144,7 @@ function redirectDashboard(request: NextRequest) {
 }
 
 function injectXPathHeader(request: NextRequest) {
+  // The x-path header is used to determine the current locale from the server side components
   const { pathname } = request.nextUrl;
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-path', pathname);

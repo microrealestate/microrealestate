@@ -18,6 +18,14 @@ import { getFormatTimeRange } from '@/utils';
 import TermPicker from './term-picker';
 import { DateRange } from 'react-day-picker';
 import moment from 'moment';
+import config from '@/config';
+import { Download } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from './ui/tooltip';
 
 const MIN_VISIBLE_INVOICES = 3;
 
@@ -152,7 +160,20 @@ export function InvoiceTable({ lease }: { lease: Lease }) {
                   {formatNumber({ value: invoice.payment })}
                 </TableCell>
                 <TableCell className="w-5">
-                  {isNowTerm && invoice.status === 'unpaid' ? null : (
+                  {config.DEMO_MODE ? (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <Download className="h-4 w-4 text-ring" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>
+                            {t('Download only available in production mode')}
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  ) : isNowTerm && invoice.status === 'unpaid' ? null : (
                     <DownLoadButton tenant={lease.tenant} invoice={invoice} />
                   )}
                 </TableCell>
