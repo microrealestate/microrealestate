@@ -11,7 +11,7 @@ import type { Lease } from '@/types';
 import { Label } from '@/components/ui/label';
 import { StatusBadge } from '@/components/ui/status-badge';
 import useTranslation from '@/utils/i18n/client/useTranslation';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Button } from './ui/button';
 import { getFormatNumber } from '@/utils/formatnumber';
 import { getFormatTimeRange } from '@/utils';
@@ -87,28 +87,29 @@ export function InvoiceTable({ lease }: { lease: Lease }) {
   const formatNumber = getFormatNumber(locale, lease.landlord.currency);
   const formatTimeRange = getFormatTimeRange(locale, lease.timeRange);
 
-  const onTermChange = (
-    filter: DateRange | { month?: number; year: number } | undefined
-  ) => {
-    if (!filter) {
-      return setFilter(null);
-    }
+  const onTermChange = useCallback(
+    (filter: DateRange | { month?: number; year: number } | undefined) => {
+      if (!filter) {
+        return setFilter(null);
+      }
 
-    if ('year' in filter) {
-      return setFilter(filter);
-    }
+      if ('year' in filter) {
+        return setFilter(filter);
+      }
 
-    if ('from' in filter) {
-      return setFilter(filter);
-    }
+      if ('from' in filter) {
+        return setFilter(filter);
+      }
 
-    setFilter(null);
-  };
+      setFilter(null);
+    },
+    []
+  );
 
   return (
     <div className="flex flex-col gap-2">
       {lease.beginDate ? (
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col gap-1 sm:flex-row sm:justify-between sm:items-center">
           <Label>{t('Invoices')}</Label>
           <TermPicker
             timeRange={lease.timeRange}
@@ -123,10 +124,16 @@ export function InvoiceTable({ lease }: { lease: Lease }) {
         <TableHeader>
           <TableRow>
             <TableCell>{t('Term')}</TableCell>
-            <TableCell className="text-right">{t('Rent')}</TableCell>
+            <TableCell className="text-right hidden sm:table-cell">
+              {t('Rent')}
+            </TableCell>
             <TableCell>{t('Status')}</TableCell>
-            <TableCell className="text-center">{t('Method')}</TableCell>
-            <TableCell className="text-right">{t('Settlement')}</TableCell>
+            <TableCell className="text-center hidden md:table-cell">
+              {t('Method')}
+            </TableCell>
+            <TableCell className="text-right hidden sm:table-cell">
+              {t('Settlement')}
+            </TableCell>
             <TableCell></TableCell>
           </TableRow>
         </TableHeader>
@@ -136,10 +143,10 @@ export function InvoiceTable({ lease }: { lease: Lease }) {
             const isNowTerm = mTerm.isSame(moment(), lease.timeRange);
             return (
               <TableRow key={invoice.id} className="hover:bg-inherit">
-                <TableCell className="uppercase">
+                <TableCell className="sm:uppercase">
                   {formatTimeRange(invoice.term)}
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell className="text-right hidden sm:table-cell">
                   {formatNumber({ value: invoice.grandTotal })}
                 </TableCell>
                 <TableCell>
@@ -153,10 +160,10 @@ export function InvoiceTable({ lease }: { lease: Lease }) {
                     </StatusBadge>
                   )}
                 </TableCell>
-                <TableCell className="text-center">
+                <TableCell className="text-center hidden md:table-cell">
                   {t(invoice.methods.map((method) => t(method)).join(', '))}
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell className="text-right hidden sm:table-cell">
                   {formatNumber({ value: invoice.payment })}
                 </TableCell>
                 <TableCell className="w-5">

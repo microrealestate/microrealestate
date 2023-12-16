@@ -34,7 +34,7 @@ export default function useSession(): {
     } else {
       fetch();
     }
-  });
+  }, [apiFetcher]);
 
   return { status, session };
 }

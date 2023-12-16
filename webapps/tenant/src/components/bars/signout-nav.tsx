@@ -27,13 +27,11 @@ export function SignOutNav() {
   };
 
   return (
-    <div className="flex flex-1 items-center justify-end space-x-4">
-      <nav className="flex items-center justify-center space-x-2">
-        <Button variant="ghost" onClick={handleSignOut}>
-          {t('Sign out')}
-          <LogOut className="ml-2 h-4 w-4" />
-        </Button>
-      </nav>
+    <div className="flex items-center justify-center -mr-4">
+      <Button variant="ghost" onClick={handleSignOut}>
+        {t('Sign out')}
+        <LogOut className="ml-2 h-4 w-4" />
+      </Button>
     </div>
   );
 }

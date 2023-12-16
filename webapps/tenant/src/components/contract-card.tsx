@@ -22,10 +22,10 @@ export async function ContractCard({ lease }: { lease: Lease }) {
   const formatNumber = getFormatNumber(locale, lease.landlord.currency);
 
   return (
-    <Card className="p-6">
+    <Card className="sm:p-6">
       <CardHeader>
         <CardTitle>
-          <div className="flex justify-between">
+          <div className="flex flex-col sm:flex-row sm:justify-between">
             <div className="flex items-center">
               <div className="uppercase">{lease.tenant.name}</div>
               <div className="font-normal">
@@ -52,7 +52,7 @@ export async function ContractCard({ lease }: { lease: Lease }) {
       </CardHeader>
 
       <CardContent>
-        <div className="flex items-center gap-6 mb-6">
+        <div className="flex flex-col gap-6 mb-6 sm:flex-row sm:items-center">
           <div className="flex flex-col grow">
             <div className="grow text-2xl">{lease.name}</div>
             <div className="flex content-center items-center">
@@ -79,8 +79,8 @@ export async function ContractCard({ lease }: { lease: Lease }) {
               </div>
             </div>
           </div>
-          <div className="flex gap-6">
-            <Card className="shadow w-44">
+          <div className="flex flex-col gap-6 sm:flex-row">
+            <Card className="shadow w-full sm:w-44">
               <CardContent>
                 <AmountValue
                   className="mt-6"
@@ -89,7 +89,7 @@ export async function ContractCard({ lease }: { lease: Lease }) {
                 />
               </CardContent>
             </Card>
-            <Card className="shadow w-44">
+            <Card className="shadow w-full sm:w-44">
               <CardContent>
                 <AmountValue
                   className="mt-6"
@@ -102,8 +102,8 @@ export async function ContractCard({ lease }: { lease: Lease }) {
           </div>
         </div>
 
-        <div className="flex content-center gap-6 mb-6">
-          <Card className="shadow w-1/3">
+        <div className="flex flex-col content-center gap-6 mb-6 sm:flex-row">
+          <Card className="shadow sm:w-1/3">
             <CardContent className="flex flex-col gap-3 mt-6 ">
               <LabelValue
                 label={t('Start date')}
@@ -126,7 +126,7 @@ export async function ContractCard({ lease }: { lease: Lease }) {
               )}
             </CardContent>
           </Card>
-          <Card className="shadow w-2/3">
+          <Card className="shadow sm:w-2/3">
             <CardContent className="mt-6">
               <LabelValue
                 label={t('Properties')}
