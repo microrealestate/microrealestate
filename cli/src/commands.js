@@ -496,16 +496,20 @@ function askForEnvironmentVariables(envConfig, ignorePreviousAnswers = false) {
     ignorePreviousAnswers
       ? {}
       : {
-          dbData: envConfig?.DEMO_MODE === 'true' ? 'demo_data' : 'empty_data',
+          dbData: envConfig?.DEMO_MODE === undefined 
+            ? undefined
+            : envConfig?.DEMO_MODE === 'true' 
+              ? 'demo_data' 
+              : 'empty_data',
           emailConfig: envConfig?.GMAIL_EMAIL
             ? 'gmail'
             : envConfig?.SMTP_SERVER
-            ? 'smtp'
-            : envConfig?.MAILGUN_API_KEY
-            ? 'mailgun'
-            : envConfig?.ALLOW_SENDING_EMAILS === 'false'
-            ? 'none'
-            : undefined,
+              ? 'smtp'
+              : envConfig?.MAILGUN_API_KEY
+                ? 'mailgun'
+                : envConfig?.ALLOW_SENDING_EMAILS === 'false'
+                  ? 'none'
+                  : undefined,
           gmailEmail: envConfig?.GMAIL_EMAIL,
           gmailAppPassword: envConfig?.GMAIL_APP_PASSWORD,
           mailgunApiKey: envConfig?.MAILGUN_API_KEY,
@@ -683,8 +687,8 @@ function writeDotEnv(promptsConfig, envConfig) {
   const others = listCustomEnvVariables.length
     ? `## others
 ${Object.entries(envConfig)
-  .map(([key, value]) => `${key}=${value}`)
-  .join('\n')}`
+    .map(([key, value]) => `${key}=${value}`)
+    .join('\n')}`
     : '';
 
   // email delivery configuration
