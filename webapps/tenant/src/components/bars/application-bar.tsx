@@ -10,9 +10,9 @@ export default async function ApplicationBar() {
   }
 
   return (
-    <div className="container flex h-16 items-center justify-between">
+    <nav className="container flex h-16 items-center justify-between">
       <MainNav appName={config.APP_NAME} />
       <SignOutNav />
-    </div>
+    </nav>
   );
 }

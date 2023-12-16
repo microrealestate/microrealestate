@@ -1,5 +1,5 @@
 'use client';
-import { Button } from '@/components/ui/button';
+import { Button, ButtonProps } from '@/components/ui/button';
 import { Invoice } from '@/types';
 import { Download } from 'lucide-react';
 import fileDownload from 'js-file-download';
@@ -9,10 +9,11 @@ import useApiFetcher from '@/utils/fetch/client';
 export function DownLoadButton({
   tenant,
   invoice,
+  ...props
 }: {
   tenant: { id: string; name: string };
   invoice: Invoice;
-}) {
+} & ButtonProps) {
   const apiFetcher = useApiFetcher();
   const { t } = useTranslation();
 
@@ -30,7 +31,7 @@ export function DownLoadButton({
   };
 
   return (
-    <Button variant="ghost" onClick={handleClick}>
+    <Button variant="ghost" onClick={handleClick} {...props}>
       <Download className="h-4 w-4" />
     </Button>
   );

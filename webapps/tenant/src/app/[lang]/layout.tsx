@@ -45,7 +45,7 @@ export default async function RootLayout({
         <Providers>
           <div className="flex flex-col items-center min-h-screen">
             <AppHeader />
-            <div className="w-full max-w-4xl my-5">{children}</div>
+            <div className="w-full my-5 max-w-sm sm:max-w-4xl">{children}</div>
           </div>
           <Toaster />
         </Providers>

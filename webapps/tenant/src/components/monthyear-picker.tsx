@@ -46,7 +46,7 @@ export default function MonthYearPicker({
     onValueChange?.({
       year: moment().year(),
     });
-  }, []);
+  }, [onValueChange]);
 
   const handleMonthChange = (value: string) => {
     setMonth(Number(value));
@@ -65,10 +65,10 @@ export default function MonthYearPicker({
   };
 
   return (
-    <div className="flex gap-2">
+    <div className="flex gap-2 sm:w-60">
       {variant === 'monthyear' ? (
         <Select defaultValue={String(-1)} onValueChange={handleMonthChange}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-2/3">
             <SelectValue placeholder={t('Pick a month')} />
           </SelectTrigger>
           <SelectContent>
@@ -85,7 +85,7 @@ export default function MonthYearPicker({
         defaultValue={String(currentYear)}
         onValueChange={handleYearChange}
       >
-        <SelectTrigger className="w-[180px]">
+        <SelectTrigger className="w-1/3">
           <SelectValue placeholder={t('Pick a year')} />
         </SelectTrigger>
         <SelectContent>
