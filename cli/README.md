@@ -13,7 +13,7 @@ npm install -g pkg
 Install the packages
 
 ```shell
-yarn
+yarn workspaces focus  @microrealestate/cli
 ```
 
 Run the `pkg` tool to create the mre executables
