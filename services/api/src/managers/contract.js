@@ -47,7 +47,9 @@ const create = (contract) => {
 
   const current = moment(momentBegin);
   let previousRent;
-  while (current.isSameOrBefore(momentTermination || momentEnd)) {
+  while (
+    current.isSameOrBefore(momentTermination || momentEnd, contract.frequency)
+  ) {
     const rent = BL.computeRent(
       contract,
       current.format('DD/MM/YYYY HH:mm'),
