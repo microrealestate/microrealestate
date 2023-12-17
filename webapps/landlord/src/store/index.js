@@ -3,7 +3,6 @@ import { isClient, isServer } from '@microrealestate/commonui/utils';
 
 import config from '../config';
 import { enableStaticRendering } from 'mobx-react-lite';
-import moment from 'moment';
 import { setOrganizationId } from '../utils/fetch';
 import Store from './Store';
 
@@ -38,7 +37,6 @@ export function InjectStoreContext({ children, initialData }) {
   }, [initialData]);
 
   useEffect(() => {
-    moment.locale(store?.organization?.selected?.locale ?? 'en');
     if (isClient() && config.NODE_ENV === 'development') {
       window.__store = store;
     }
