@@ -143,8 +143,8 @@ const ThirdPartiesForm = observer(({ onSubmit }) => {
         !!store.organization.selected.thirdParties?.smtp?.secure,
       smtp_authentication:
         store.organization.selected.thirdParties?.smtp?.authentication === undefined ?
-        true :
-        store.organization.selected.thirdParties.smtp.authentication,
+          true :
+          store.organization.selected.thirdParties.smtp.authentication,
       smtp_username:
         store.organization.selected.thirdParties?.smtp?.username || '',
       smtp_password:

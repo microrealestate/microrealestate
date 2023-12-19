@@ -1,7 +1,7 @@
 import * as React from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
 import config from '@/config';
+import Image from 'next/image';
+import Link from 'next/link';
 
 export function MainNav({ appName }: { appName: string }) {
   return (

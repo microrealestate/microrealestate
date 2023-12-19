@@ -1,4 +1,3 @@
-import { Info } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   HoverCard,
@@ -7,14 +6,15 @@ import {
 } from '@/components/ui/hover-card';
 import { AmountValue } from '@/components/amount-value';
 import { Button } from './ui/button';
+import ContactCard from './contact-card';
 import { getFormatNumber } from '@/utils/formatnumber';
 import { getMoment } from '@/utils';
 import getTranslation from '@/utils/i18n/server/getTranslation';
+import { Info } from 'lucide-react';
 import { InvoiceTable } from '@/components/invoice-table';
 import { LabelValue } from '@/components/label-value';
 import type { Lease } from '@/types';
 import { StatusBadge } from '@/components/ui/status-badge';
-import ContactCard from './contact-card';
 
 export async function ContractCard({ lease }: { lease: Lease }) {
   const { locale, t } = await getTranslation();

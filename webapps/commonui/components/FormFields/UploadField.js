@@ -16,7 +16,7 @@ const HiddenInput = withStyles({
   root: { display: 'none' },
 })(Input);
 
-export function UploadField({ label, description, disabled, ...props }) {
+export function UploadField({ label, disabled, ...props }) {
   const { isSubmitting, setFieldValue } = useFormikContext();
   const [field, meta] = useField(props);
   const hasError = !!(meta.touched && meta.error);

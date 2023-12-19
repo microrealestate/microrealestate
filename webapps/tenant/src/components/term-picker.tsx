@@ -1,7 +1,7 @@
-import { LeaseTimeRange } from '@microrealestate/types';
 import { DateRange } from 'react-day-picker';
-import MonthYearPicker from './monthyear-picker';
 import { DateRangePicker } from './daterange-picker';
+import { LeaseTimeRange } from '@microrealestate/types';
+import MonthYearPicker from './monthyear-picker';
 
 export default function TermPicker({
   timeRange,

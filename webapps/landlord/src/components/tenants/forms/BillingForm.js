@@ -76,20 +76,20 @@ const Billing = observer(({ readOnly, onSubmit }) => {
               />
               {store.organization.selected &&
                 store.organization.selected.isCompany && (
-                  <Box display="flex" direction="row" alignItems="flex-end">
-                    <CheckboxField
-                      name="isVat"
-                      //label={t('Subject to VAT')}
-                      aria-label={t('Subject to VAT')}
-                      disabled={readOnly}
-                    />
-                    <NumberField
-                      label={t('VAT percentage')}
-                      name="vatRatio"
-                      disabled={readOnly || !values.isVat}
-                    />
-                  </Box>
-                )}
+                <Box display="flex" direction="row" alignItems="flex-end">
+                  <CheckboxField
+                    name="isVat"
+                    //label={t('Subject to VAT')}
+                    aria-label={t('Subject to VAT')}
+                    disabled={readOnly}
+                  />
+                  <NumberField
+                    label={t('VAT percentage')}
+                    name="vatRatio"
+                    disabled={readOnly || !values.isVat}
+                  />
+                </Box>
+              )}
               {values.discount > 0 ? (
                 <NumberField
                   label={t('Discount')}

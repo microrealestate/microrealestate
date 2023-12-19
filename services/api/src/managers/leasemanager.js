@@ -213,20 +213,20 @@ async function remove(req, res) {
         : []),
       ...(templatesToUpdate.length
         ? templatesToUpdate.map((template) => {
-            template.linkedResourceIds = template.linkedResourceIds.filter(
-              (_id) => !leaseIds.includes(_id)
-            );
-            return new Promise((resolve, reject) => {
-              templateModel.update(realm, template, (errors) => {
-                if (errors) {
-                  return reject({
-                    errors,
-                  });
-                }
-                resolve();
-              });
+          template.linkedResourceIds = template.linkedResourceIds.filter(
+            (_id) => !leaseIds.includes(_id)
+          );
+          return new Promise((resolve, reject) => {
+            templateModel.update(realm, template, (errors) => {
+              if (errors) {
+                return reject({
+                  errors,
+                });
+              }
+              resolve();
             });
-          })
+          });
+        })
         : []),
     ]);
     res.sendStatus(200);

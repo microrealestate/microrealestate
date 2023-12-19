@@ -45,8 +45,8 @@ function FileDescriptorDialog({ open, setOpen, onSave }) {
       required: open.required
         ? 'required'
         : open.requiredOnceContractTerminated
-        ? 'requiredOnceContractTerminated'
-        : 'notRequired',
+          ? 'requiredOnceContractTerminated'
+          : 'notRequired',
     };
   }, [open]);
 

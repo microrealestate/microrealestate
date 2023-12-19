@@ -1,13 +1,13 @@
-import logger from 'winston';
-import Express from 'express';
-import methodOverride from 'method-override';
 import cookieParser from 'cookie-parser';
+import EnvironmentConfig from './environmentconfig.js';
+import Express from 'express';
 /* @ts-ignore */
 import expressWinston from 'express-winston'; // TODO bump to version 4
+import httpInterceptors from './httpinterceptors.js';
+import logger from 'winston';
+import methodOverride from 'method-override';
 import MongoClient from './mongoclient.js';
 import RedisClient from './redisclient.js';
-import httpInterceptors from './httpinterceptors.js';
-import EnvironmentConfig from './environmentconfig.js';
 import { ServiceOptions } from '@microrealestate/types';
 
 process.on('SIGINT', async () => {

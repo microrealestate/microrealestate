@@ -62,10 +62,10 @@ async function _getTemplateValues(organization, tenantId, leaseId) {
         ...organization.companyInfo,
         capital: organization.companyInfo.capital
           ? Format.formatCurrency(
-              organization.locale,
-              organization.currency,
-              organization.companyInfo.capital
-            )
+            organization.locale,
+            organization.currency,
+            organization.companyInfo.capital
+          )
           : '',
       }
     : null;
@@ -93,10 +93,10 @@ async function _getTemplateValues(organization, tenantId, leaseId) {
         legalStructure: tenant?.legalForm,
         capital: tenant?.capital
           ? Format.formatCurrency(
-              organization.locale,
-              organization.currency,
-              tenant.capital
-            )
+            organization.locale,
+            organization.currency,
+            tenant.capital
+          )
           : '',
         ein: tenant?.siret,
         dos: tenant?.rcs,
@@ -193,7 +193,7 @@ function _resolveTemplates(element, templateValues) {
     element.type = 'text';
     element.text = Handlebars.compile(element.attrs.id)(templateValues) || ' '; // empty text node are not allowed in tiptap editor
     // TODO check if this doesn't open XSS issues
-    element.text = element.text.replace(/&#x27;/g, "'");
+    element.text = element.text.replace(/&#x27;/g, '\'');
     delete element.attrs;
   }
   return element;

@@ -36,7 +36,7 @@ class RedisClient {
         promisify(this.monitor_client.monitor).bind(this.monitor_client)()
           .then(resolve, reject);
       });
-    })
+    });
   }
 
   quit() {

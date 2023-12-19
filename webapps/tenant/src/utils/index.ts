@@ -3,8 +3,8 @@
 import 'moment/locale/fr';
 import 'moment/locale/pt';
 import 'moment/locale/de';
-import { LeaseTimeRange, Locale } from '@microrealestate/types';
 import { type ClassValue, clsx } from 'clsx';
+import { LeaseTimeRange, Locale } from '@microrealestate/types';
 import moment from 'moment';
 import { twMerge } from 'tailwind-merge';
 

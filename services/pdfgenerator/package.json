@@ -36,6 +36,9 @@
     "winston": "2.4.4"
   },
   "devDependencies": {
+    "eslint": "8.55.0",
+    "eslint-config-prettier": "9.1.0",
+    "eslint-plugin-import": "2.29.1",
     "nodemon": "2.0.19"
   }
 }

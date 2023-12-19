@@ -83,14 +83,14 @@ export const getTenants: TenantAPI.GetTenants.Response = {
             payments: momentTerm.isSameOrAfter(moment())
               ? []
               : Array.from({ length: 3 }, (_, j) => {
-                  const date = momentTerm.add(j, 'day').toDate();
-                  return {
-                    date,
-                    method: methods[j % methods.length],
-                    reference: `${i + 1}-${j + 1}`,
-                    amount: 1000,
-                  };
-                }),
+                const date = momentTerm.add(j, 'day').toDate();
+                return {
+                  date,
+                  method: methods[j % methods.length],
+                  reference: `${i + 1}-${j + 1}`,
+                  amount: 1000,
+                };
+              }),
             status: (isAfterNow ? 'unpaid' : 'paid') as PaymentStatus,
             methods: isAfterNow
               ? []

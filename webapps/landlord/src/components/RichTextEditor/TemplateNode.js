@@ -83,21 +83,21 @@ const TemplateNode = Node.create({
     return {
       addTemplate:
         (id, label) =>
-        ({ commands }) => {
-          return commands.insertContent([
-            {
-              type: this.name,
-              attrs: {
-                id,
-                label,
+          ({ commands }) => {
+            return commands.insertContent([
+              {
+                type: this.name,
+                attrs: {
+                  id,
+                  label,
+                },
               },
-            },
-            {
-              type: 'text',
-              text: ' ',
-            },
-          ]);
-        },
+              {
+                type: 'text',
+                text: ' ',
+              },
+            ]);
+          },
     };
   },
 });

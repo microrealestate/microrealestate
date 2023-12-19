@@ -146,23 +146,23 @@ const SettlementList = ({ month, tenantId, settlements }) => {
 
   return settlements
     ? settlements.map((settlement, index) => {
-        const { date, amount, type } = settlement;
-        return amount > 0 ? (
-          <Box
-            key={`${tenantId}_${month}_${index}`}
-            alignItems="center"
-            mb={1}
-            fontSize="caption.fontSize"
-            color="text.secondary"
-          >
-            <Box whiteSpace="nowrap">{moment(date).format('L')}</Box>
-            <Box whiteSpace="nowrap">
-              {t(type[0].toUpperCase() + type.slice(1))}
-            </Box>
-            <NumberFormat value={amount} withColor fontSize="body2.fontSize" />
+      const { date, amount, type } = settlement;
+      return amount > 0 ? (
+        <Box
+          key={`${tenantId}_${month}_${index}`}
+          alignItems="center"
+          mb={1}
+          fontSize="caption.fontSize"
+          color="text.secondary"
+        >
+          <Box whiteSpace="nowrap">{moment(date).format('L')}</Box>
+          <Box whiteSpace="nowrap">
+            {t(type[0].toUpperCase() + type.slice(1))}
           </Box>
-        ) : null;
-      })
+          <NumberFormat value={amount} withColor fontSize="body2.fontSize" />
+        </Box>
+      ) : null;
+    })
     : null;
 };
 
@@ -510,25 +510,25 @@ const Accounting = observer(() => {
       {store.accounting?.data?.incomingTenants?.length ||
       store.accounting?.data?.outgoingTenants?.length ||
       store.accounting?.data?.settlements?.length ? (
-        <>
-          <IncomingTenants
-            id="incoming-tenants"
-            defaultExpanded={true}
-            onCSVClick={getIncomingTenantsAsCsv}
-          />
-          <OutgoingTenants
-            id="outgoing-tenants"
-            onCSVClick={getOutgoingTenantsAsCsv}
-          />
-          <Settlements
-            id="settlements"
-            onCSVClick={getSettlementsAsCsv}
-            onDownloadYearInvoices={getYearInvoices}
-          />
-        </>
-      ) : (
-        <EmptyIllustration label={t('No data found')} />
-      )}
+            <>
+              <IncomingTenants
+                id="incoming-tenants"
+                defaultExpanded={true}
+                onCSVClick={getIncomingTenantsAsCsv}
+              />
+              <OutgoingTenants
+                id="outgoing-tenants"
+                onCSVClick={getOutgoingTenantsAsCsv}
+              />
+              <Settlements
+                id="settlements"
+                onCSVClick={getSettlementsAsCsv}
+                onDownloadYearInvoices={getYearInvoices}
+              />
+            </>
+          ) : (
+            <EmptyIllustration label={t('No data found')} />
+          )}
     </Page>
   );
 });

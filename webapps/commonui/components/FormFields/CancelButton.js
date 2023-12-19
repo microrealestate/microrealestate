@@ -8,7 +8,7 @@ export function CancelButton({ label, disabled, onClick, ...props }) {
   const handleClick = useCallback(
     (e) => {
       resetForm();
-      onClick && onClick(e);
+      onClick?.(e);
     },
     [onClick, resetForm]
   );

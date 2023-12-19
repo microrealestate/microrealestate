@@ -412,11 +412,11 @@ const Tenant = observer(() => {
             title={
               store.tenant.selected.terminated
                 ? t('Lease terminated on {{terminationDate}}', {
-                    terminationDate: moment(
-                      store.tenant.selected.terminationDate,
-                      'DD/MM/YYYY'
-                    ).format('LL'),
-                  })
+                  terminationDate: moment(
+                    store.tenant.selected.terminationDate,
+                    'DD/MM/YYYY'
+                  ).format('LL'),
+                })
                 : t('Lease running')
             }
             subTitle={t(
@@ -437,17 +437,17 @@ const Tenant = observer(() => {
         subTitle={
           store.tenant.selected.hasPayments
             ? t(
-                "Deleting {{tenant}}'s contract is not allowed because some rent settlements have been recorded",
-                {
-                  tenant: store.tenant.selected.name,
-                }
-              )
+              'Deleting {{tenant}}\'s contract is not allowed because some rent settlements have been recorded',
+              {
+                tenant: store.tenant.selected.name,
+              }
+            )
             : t(
-                "Do you confirm the permanent deletion of {{tenant}}'s contract?",
-                {
-                  tenant: store.tenant.selected.name,
-                }
-              )
+              'Do you confirm the permanent deletion of {{tenant}}\'s contract?',
+              {
+                tenant: store.tenant.selected.name,
+              }
+            )
         }
         justOkButton={store.tenant.selected.hasPayments}
         onConfirm={!store.tenant.selected.hasPayments ? onDeleteTenant : null}

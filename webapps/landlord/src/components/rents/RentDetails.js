@@ -75,8 +75,8 @@ export default function RentDetails({ rent }) {
         {rentAmounts.balance === 0
           ? t('Previous balance')
           : rentAmounts.isDebitBalance
-          ? t('Previous debit balance')
-          : t('Previous credit balance')}
+            ? t('Previous debit balance')
+            : t('Previous credit balance')}
         <NumberFormat
           value={rentAmounts.balance}
           debitColor={rentAmounts.isDebitBalance}
@@ -109,8 +109,8 @@ export default function RentDetails({ rent }) {
         {rentAmounts.newBalance === 0
           ? t('Balance')
           : rentAmounts.isDebitNewBalance
-          ? t('Debit balance')
-          : t('Credit balance')}
+            ? t('Debit balance')
+            : t('Credit balance')}
         <NumberFormat
           value={rentAmounts.newBalance}
           abs={true}

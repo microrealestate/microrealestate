@@ -391,11 +391,11 @@ function toOccupantData(inputOccupant) {
   occupant.contactEmails =
     occupant.contacts && occupant.contacts.length
       ? occupant.contacts.reduce((acc, { email }) => {
-          if (email) {
-            return [...acc, email.toLowerCase()];
-          }
-          return acc;
-        }, [])
+        if (email) {
+          return [...acc, email.toLowerCase()];
+        }
+        return acc;
+      }, [])
       : [];
 
   occupant.hasContactEmails = occupant.contactEmails.length > 0;
@@ -477,11 +477,11 @@ function toOccupantData(inputOccupant) {
 
   occupant.hasPayments = occupant.rents
     ? occupant.rents.some(
-        (rent) =>
-          (rent.payments &&
+      (rent) =>
+        (rent.payments &&
             rent.payments.some((payment) => payment.amount > 0)) ||
           rent.discounts.some((discount) => discount.origin === 'settlement')
-      )
+    )
     : false;
   delete occupant.rents;
   return occupant;

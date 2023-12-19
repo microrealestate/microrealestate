@@ -1,12 +1,12 @@
-import cors from 'cors';
-import { createProxyMiddleware } from 'http-proxy-middleware';
-import logger from 'winston';
 import * as Express from 'express';
 import {
   EnvironmentConfig,
   Service,
   URLUtils,
 } from '@microrealestate/typed-common';
+import cors from 'cors';
+import { createProxyMiddleware } from 'http-proxy-middleware';
+import logger from 'winston';
 
 Main();
 

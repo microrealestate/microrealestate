@@ -1,12 +1,11 @@
-import { Collections } from '@microrealestate/typed-common';
+import * as Express from 'express';
 import {
   CollectionTypes,
   MongooseDocument,
   ServiceRequest,
   TenantAPI,
 } from '@microrealestate/types';
-import * as Express from 'express';
-
+import { Collections } from '@microrealestate/typed-common';
 import moment from 'moment';
 
 const routes = Express.Router();
@@ -74,8 +73,8 @@ routes.get(
           status: tenant.terminationDate
             ? 'terminated'
             : moment(tenant.endDate, 'YYYY-MM-DD').isBefore(now)
-            ? 'ended'
-            : 'active',
+              ? 'ended'
+              : 'active',
           properties:
             tenant.properties?.map((property) => ({
               id: property.property._id,
@@ -104,8 +103,8 @@ routes.get(
                 rent.total.grandTotal - (rent.total.payment || 0) <= 0
                   ? 'paid'
                   : rent.total.payment > 0
-                  ? 'partially-paid'
-                  : 'unpaid',
+                    ? 'partially-paid'
+                    : 'unpaid',
               payments:
                 rent.payments.map((payment) => ({
                   date: payment.date,

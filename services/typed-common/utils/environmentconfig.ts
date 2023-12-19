@@ -1,6 +1,6 @@
 import _ from 'lodash';
-import logger from 'winston';
 import { EnvironmentValues } from '@microrealestate/types';
+import logger from 'winston';
 
 const baseEnvironmentValues = {
   LOGGER_LEVEL: process.env.LOGGER_LEVEL || 'debug',
@@ -51,7 +51,7 @@ export default class EnvironmentConfig {
     logger.debug('Environment variables set:');
     Object.entries(obfuscatedConfig)
       .sort(([key1], [key2]) => key1.localeCompare(key2))
-      .filter(([key, value]) => {
+      .filter(([, value]) => {
         return value !== undefined && value !== null;
       })
       .reduce((acc, [key, value]) => {

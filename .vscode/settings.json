@@ -12,11 +12,18 @@
   "[typescriptreact]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-  "editor.formatOnSave": true,
+  "editor.formatOnSave": false,
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit"
   },
-  "eslint.workingDirectories": [".", "webapps/*", "services/*", "cli", "e2e"],
+  "eslint.workingDirectories": [
+    ".",
+    "webapps/*",
+    "services/*",
+    "cli",
+    "e2e",
+    "types"
+  ],
   "files.associations": {
     "*_text.ejs": "plaintext"
   }

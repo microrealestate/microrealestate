@@ -124,10 +124,10 @@ function _properties(tenant, rawData = true) {
 function _incomingTenants(tenants, locale, currency, rawData = true) {
   const NumberFormat = !rawData
     ? Intl.NumberFormat(locale, {
-        style: 'currency',
-        currency,
-        minimumFractionDigits: 2,
-      })
+      style: 'currency',
+      currency,
+      minimumFractionDigits: 2,
+    })
     : { format: (value) => value };
 
   return tenants
@@ -142,8 +142,8 @@ function _incomingTenants(tenants, locale, currency, rawData = true) {
       const terminationDate = rawData
         ? tenant.terminationDate
         : tenant.terminationDate
-        ? moment(tenant.terminationDate).locale(locale).format('L')
-        : '';
+          ? moment(tenant.terminationDate).locale(locale).format('L')
+          : '';
 
       return {
         _id: tenant._id,
@@ -161,10 +161,10 @@ function _incomingTenants(tenants, locale, currency, rawData = true) {
 function _outgoingTenants(tenants, locale, currency, rawData = true) {
   const NumberFormat = !rawData
     ? Intl.NumberFormat(locale, {
-        style: 'currency',
-        currency,
-        minimumFractionDigits: 2,
-      })
+      style: 'currency',
+      currency,
+      minimumFractionDigits: 2,
+    })
     : { format: (value) => value };
 
   return tenants
@@ -179,8 +179,8 @@ function _outgoingTenants(tenants, locale, currency, rawData = true) {
       const terminationDate = rawData
         ? tenant.terminationDate
         : tenant.terminationDate
-        ? moment(tenant.terminationDate).locale(locale).format('L')
-        : '';
+          ? moment(tenant.terminationDate).locale(locale).format('L')
+          : '';
       const lastRent = tenant.rents?.length
         ? tenant.rents[tenant.rents.length - 1]
         : {
@@ -227,14 +227,14 @@ function _settlements(tenants, locale, currency, rawData = true) {
     const endDate = rawData
       ? tenant.terminationDate || tenant.endDate
       : moment(tenant.terminationDate || tenant.endDate)
-          .locale(locale)
-          .format('L');
+        .locale(locale)
+        .format('L');
     const settlements = rawData
       ? months.map(() => null)
       : months.reduce((acc, m) => {
-          acc[m] = '';
-          return acc;
-        }, {});
+        acc[m] = '';
+        return acc;
+      }, {});
 
     tenant.rents.forEach(({ month, payments }) => {
       if (rawData) {
@@ -270,10 +270,10 @@ function _settlements(tenants, locale, currency, rawData = true) {
           tenant: rawData
             ? tenant.name
             : `${tenant.name}\n${
-                tenant.reference
-              }\n${beginDate} - ${endDate}\n${i18n.__('Deposit: {{deposit}}', {
-                deposit: NumberFormat.format(tenant.guaranty),
-              })}\n${tenant.properties.map(({ name }) => name).join('\n')}`,
+              tenant.reference
+            }\n${beginDate} - ${endDate}\n${i18n.__('Deposit: {{deposit}}', {
+              deposit: NumberFormat.format(tenant.guaranty),
+            })}\n${tenant.properties.map(({ name }) => name).join('\n')}`,
           ...settlements,
         };
   });

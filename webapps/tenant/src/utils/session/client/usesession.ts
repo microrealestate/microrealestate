@@ -1,13 +1,13 @@
+import type { Session, SessionStatus } from '@/types';
+import { useEffect, useState } from 'react';
 import config from '@/config';
 import mockedSession from '@/mocks/session';
-import type { SessionStatus, Session } from '@/types';
 import useApiFetcher from '@/utils/fetch/client';
-import { useEffect, useState } from 'react';
 
 export default function useSession(): {
   status: SessionStatus;
   session: Session | null;
-} {
+  } {
   const apiFetcher = useApiFetcher();
   const [status, setStatus] = useState<SessionStatus>('loading');
   const [session, setSession] = useState<Session | null>(null);

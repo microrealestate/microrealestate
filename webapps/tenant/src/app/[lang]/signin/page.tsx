@@ -1,11 +1,5 @@
 'use client';
-import { zodResolver } from '@hookform/resolvers/zod';
-import Image from 'next/image';
-import { useForm } from 'react-hook-form';
-
 import * as z from 'zod';
-
-import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
@@ -14,14 +8,18 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import config from '@/config';
-import useTranslation from '@/utils/i18n/client/useTranslation';
-import { useState } from 'react';
+import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { useToast } from '@/components/ui/use-toast';
-import useApiFetcher from '@/utils/fetch/client';
+import config from '@/config';
+import Image from 'next/image';
+import { Input } from '@/components/ui/input';
 import mockedSession from '@/mocks/session';
+import useApiFetcher from '@/utils/fetch/client';
+import { useForm } from 'react-hook-form';
+import { useState } from 'react';
+import { useToast } from '@/components/ui/use-toast';
+import useTranslation from '@/utils/i18n/client/useTranslation';
+import { zodResolver } from '@hookform/resolvers/zod';
 
 const signInFormSchema = z.object({
   email: z.string().email(),

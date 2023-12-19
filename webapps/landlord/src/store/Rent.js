@@ -64,8 +64,8 @@ export default class Rent {
       this.filters.status?.length === 0
         ? this.items
         : this.items.filter(({ status }) =>
-            this.filters.status.includes(status)
-          );
+          this.filters.status.includes(status)
+        );
 
     if (this.filters.searchText) {
       const regExp = /\s|\.|-/gi;

@@ -1,10 +1,10 @@
 'use client';
 import { Button, ButtonProps } from '@/components/ui/button';
-import { Invoice } from '@/types';
 import { Download } from 'lucide-react';
 import fileDownload from 'js-file-download';
-import useTranslation from '@/utils/i18n/client/useTranslation';
+import { Invoice } from '@/types';
 import useApiFetcher from '@/utils/fetch/client';
+import useTranslation from '@/utils/i18n/client/useTranslation';
 
 export function DownLoadButton({
   tenant,

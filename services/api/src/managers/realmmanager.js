@@ -102,8 +102,7 @@ module.exports = {
   async update(req, res) {
     const gmailAppPasswordUpdated =
       !!req.body.thirdParties?.gmail?.appPasswordUpdated;
-    const smtpPasswordUpdated =
-      !!req.body.thirdParties?.smtp?.passwordUpdated;
+    const smtpPasswordUpdated = !!req.body.thirdParties?.smtp?.passwordUpdated;
     const mailgunApiKeyUpdated =
       !!req.body.thirdParties?.mailgun?.apiKeyUpdated;
     const b2KeyIdUpdated = !!req.body.thirdParties?.b2?.keyIdUpdated;
@@ -153,7 +152,7 @@ module.exports = {
     }
 
     if (updatedRealm.thirdParties?.gmail) {
-      logger.debug("realm update with Gmail third party emailer");
+      logger.debug('realm update with Gmail third party emailer');
       if (gmailAppPasswordUpdated) {
         updatedRealm.thirdParties.gmail.appPassword = crypto.encrypt(
           updatedRealm.thirdParties.gmail.appPassword
@@ -165,7 +164,7 @@ module.exports = {
     }
 
     if (updatedRealm.thirdParties?.smtp) {
-      logger.debug("realm update with SMTP third party emailer");
+      logger.debug('realm update with SMTP third party emailer');
       if (smtpPasswordUpdated) {
         updatedRealm.thirdParties.smtp.password = crypto.encrypt(
           updatedRealm.thirdParties.smtp.password
@@ -177,7 +176,7 @@ module.exports = {
     }
 
     if (updatedRealm.thirdParties?.mailgun) {
-      logger.debug("realm update with Mailgun third party emailer");
+      logger.debug('realm update with Mailgun third party emailer');
       if (mailgunApiKeyUpdated) {
         updatedRealm.thirdParties.mailgun.apiKey = crypto.encrypt(
           updatedRealm.thirdParties.mailgun.apiKey

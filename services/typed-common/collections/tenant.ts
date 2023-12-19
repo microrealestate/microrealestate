@@ -1,8 +1,8 @@
-import mongoose from 'mongoose';
-import Realm from './realm.js';
-import Property from './property.js';
-import Lease from './lease.js';
 import { CollectionTypes } from '@microrealestate/types';
+import Lease from './lease.js';
+import mongoose from 'mongoose';
+import Property from './property.js';
+import Realm from './realm.js';
 
 const TenantSchema = new mongoose.Schema<CollectionTypes.Tenant>({
   // Organization

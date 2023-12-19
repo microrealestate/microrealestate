@@ -204,13 +204,13 @@ function initialFormValues(rent) {
   return {
     payments: rent?.payments?.length
       ? rent.payments.map(({ amount, date, type, reference }) => {
-          return {
-            amount: amount === 0 ? '' : amount,
-            date: date ? moment(date, 'DD/MM/YYYY') : null,
-            type: type,
-            reference: reference || '',
-          };
-        })
+        return {
+          amount: amount === 0 ? '' : amount,
+          date: date ? moment(date, 'DD/MM/YYYY') : null,
+          type: type,
+          reference: reference || '',
+        };
+      })
       : [emptyPayment],
     description: rent?.description?.trimEnd() || '',
     extracharge: rent?.extracharge !== 0 ? rent.extracharge : '',
@@ -236,17 +236,17 @@ function PaymentTabs({ rent, onSubmit }, ref) {
 
   const handleChange =
     ({ note = false, discount = false, additionalCost = false }) =>
-    () => {
-      if (note) {
-        setExpandedNote((prev) => !prev);
-      }
-      if (discount) {
-        setExpandedDiscount((prev) => !prev);
-      }
-      if (additionalCost) {
-        setExpandedAdditionalCost((prev) => !prev);
-      }
-    };
+      () => {
+        if (note) {
+          setExpandedNote((prev) => !prev);
+        }
+        if (discount) {
+          setExpandedDiscount((prev) => !prev);
+        }
+        if (additionalCost) {
+          setExpandedAdditionalCost((prev) => !prev);
+        }
+      };
 
   useImperativeHandle(
     ref,

@@ -1,13 +1,13 @@
 import '@/app/globals.css';
+import { AppHeader } from '@/components/bars/app-header';
+import { cn } from '@/utils';
 import config from '@/config';
-import { Roboto } from 'next/font/google';
+import { Locale } from '@microrealestate/types';
 import type { Metadata } from 'next';
 import Providers from '@/components/providers';
 import type { ReactNode } from 'react';
-import { cn } from '@/utils';
-import { AppHeader } from '@/components/bars/app-header';
+import { Roboto } from 'next/font/google';
 import { Toaster } from '@/components/ui/toaster';
-import { Locale } from '@microrealestate/types';
 
 const APP_TITLE = [config.APP_NAME, 'Tenant'];
 if (config.NODE_ENV === 'development') {

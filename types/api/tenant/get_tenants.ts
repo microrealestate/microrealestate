@@ -8,6 +8,7 @@ import {
   ResponseError,
 } from '../../index.js';
 
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace GetTenants {
   export type Request = {
     email?: string;

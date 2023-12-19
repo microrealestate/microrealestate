@@ -103,9 +103,9 @@ function TerminateLeaseDialog({ open, setOpen, tenantList }) {
       <DialogTitle>
         {tenantList
           ? t('Terminate a lease')
-          : t("Terminate {{tenant}}'s lease", {
-              tenant: store.tenant.selected.name,
-            })}
+          : t('Terminate {{tenant}}\'s lease', {
+            tenant: store.tenant.selected.name,
+          })}
       </DialogTitle>
       <Box p={1}>
         {!!tenantList && (

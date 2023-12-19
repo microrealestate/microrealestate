@@ -1,6 +1,6 @@
 import * as crypto from 'crypto';
-import Service from './service.js';
 import { EnvironmentValues } from '@microrealestate/types';
+import Service from './service.js';
 
 function _buildIV(config: EnvironmentValues) {
   const key = config.CIPHER_KEY;

@@ -113,21 +113,21 @@ const initValues = (tenant) => {
       : null,
     properties: tenant?.properties?.length
       ? tenant.properties.map((property) => {
-          return {
-            key: property.property._id,
-            _id: property.property._id,
-            rent: property.rent || '',
-            expense: property.expenses?.[0] || {
-              ...emptyExpense(),
-            },
-            entryDate: property.entryDate
-              ? moment(property.entryDate, 'DD/MM/YYYY')
-              : moment(beginDate),
-            exitDate: property.exitDate
-              ? moment(property.exitDate, 'DD/MM/YYYY')
-              : moment(endDate),
-          };
-        })
+        return {
+          key: property.property._id,
+          _id: property.property._id,
+          rent: property.rent || '',
+          expense: property.expenses?.[0] || {
+            ...emptyExpense(),
+          },
+          entryDate: property.entryDate
+            ? moment(property.entryDate, 'DD/MM/YYYY')
+            : moment(beginDate),
+          exitDate: property.exitDate
+            ? moment(property.exitDate, 'DD/MM/YYYY')
+            : moment(endDate),
+        };
+      })
       : [{ ...emptyProperty(), entryDate: beginDate, exitDate: endDate }],
     guaranty: tenant?.guaranty || 0,
     guarantyPayback: tenant?.guarantyPayback || 0,
@@ -189,10 +189,10 @@ function LeaseContractForm({ readOnly, onSubmit }) {
           status:
             status === 'occupied'
               ? !currentProperties.includes(_id)
-                ? t('occupied by {{tenantName}}', {
+                  ? t('occupied by {{tenantName}}', {
                     tenantName: occupantLabel,
                   })
-                : t('occupied by current tenant')
+                  : t('occupied by current tenant')
               : t('vacant'),
         }),
       })),
