@@ -92,33 +92,33 @@ function all(req, res) {
       const topUnpaid =
         tenantCount || propertyCount
           ? activeTenants
-              .reduce((acc, tenant) => {
-                const currentRent = tenant.rents.find((rent) => {
-                  const termMoment =
+            .reduce((acc, tenant) => {
+              const currentRent = tenant.rents.find((rent) => {
+                const termMoment =
                     rent.term && moment(rent.term, 'YYYYMMDDHH');
-                  return (
-                    termMoment &&
+                return (
+                  termMoment &&
                     termMoment.isBetween(
                       beginOfTheMonth,
                       endOfTheMonth,
                       'day',
                       '[]'
                     )
-                  );
-                });
-                if (currentRent) {
-                  acc.push({
-                    tenant: tenant.toObject(),
-                    balance:
+                );
+              });
+              if (currentRent) {
+                acc.push({
+                  tenant: tenant.toObject(),
+                  balance:
                       currentRent.total.payment - currentRent.total.grandTotal,
-                    rent: currentRent,
-                  });
-                }
-                return acc;
-              }, [])
-              .sort((t1, t2) => t1.balance - t2.balance)
-              .filter((t) => t.balance < 0)
-              .slice(0, 5) // Top 5
+                  rent: currentRent,
+                });
+              }
+              return acc;
+            }, [])
+            .sort((t1, t2) => t1.balance - t2.balance)
+            .filter((t) => t.balance < 0)
+            .slice(0, 5) // Top 5
           : [];
 
       // compute rents of year splitted by month

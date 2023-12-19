@@ -1,21 +1,20 @@
 'use client';
-import { format } from 'date-fns';
-import { Calendar as CalendarIcon } from 'lucide-react';
 import { DateRange, SelectRangeEventHandler } from 'react-day-picker';
-
-import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
+// TODO: import only the locale needed
+// TODO: remove momentjs and use date-fns
+import { de, enUS, fr, ptBR } from 'date-fns/locale';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { useCallback, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { Calendar as CalendarIcon } from 'lucide-react';
 import { cn } from '@/utils';
+import { format } from 'date-fns';
 import useTranslation from '@/utils/i18n/client/useTranslation';
-// TODO: import only the locale needed
-// TODO: remove momentjs and use date-fns
-import { fr, de, enUS, ptBR } from 'date-fns/locale';
 
 export function DateRangePicker({
   className,

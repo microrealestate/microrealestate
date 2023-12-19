@@ -1,13 +1,13 @@
-import e, * as Express from 'express';
+import * as Express from 'express';
 import * as JWT from 'jsonwebtoken';
-import logger from 'winston';
-import Realm from '../collections/realm.js';
 import {
   CollectionTypes,
   MongooseDocument,
   ServiceRequest,
   ServiceResponse,
 } from '@microrealestate/types';
+import logger from 'winston';
+import Realm from '../collections/realm.js';
 
 export function needAccessToken(
   accessTokenSecret: string | undefined

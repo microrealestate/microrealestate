@@ -1,6 +1,6 @@
+import axios, { Cancel } from 'axios';
 import { isClient, isServer } from '@microrealestate/commonui/utils';
 
-import axios from 'axios';
 import config from '../config';
 import FileDownload from 'js-file-download';
 import { getStoreInstance } from '../store';
@@ -114,7 +114,7 @@ export const apiFetcher = () => {
           if (isClient()) {
             window.location.assign(`${config.BASE_PATH}`);
           }
-          throw new axios.Cancel('Operation canceled force login');
+          throw new Cancel('Operation canceled force login');
         }
         return Promise.reject(error);
       }

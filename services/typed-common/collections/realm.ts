@@ -1,5 +1,5 @@
-import mongoose from 'mongoose';
 import { CollectionTypes } from '@microrealestate/types';
+import mongoose from 'mongoose';
 
 const RealmSchema = new mongoose.Schema<CollectionTypes.Realm>({
   name: String,

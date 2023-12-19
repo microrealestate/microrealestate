@@ -1,9 +1,12 @@
 {
-  "extends": ["next/core-web-vitals", "plugin:@typescript-eslint/recommended"],
+  "root": true,
+  "extends": [
+    "next/core-web-vitals",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:import/typescript",
+    "prettier"
+  ],
   "settings": {
-    "next": {
-      "rootDir": ["webapps/tenant"]
-    },
     "import/resolver": {
       "typescript": {
         "project": "webapps/tenant/tsconfig.json"
@@ -12,6 +15,26 @@
   },
   "rules": {
     "@typescript-eslint/no-unused-vars": "error",
-    "no-unused-vars": "off"
+    "import/no-named-as-default": "off",
+    "indent": [
+      "error",
+      2,
+      {
+        "flatTernaryExpressions": false,
+        "offsetTernaryExpressions": true,
+        "SwitchCase": 1
+      }
+    ],
+    "no-unused-vars": "off",
+    "sort-imports": [
+      "error",
+      {
+        "allowSeparatedGroups": false,
+        "ignoreCase": true,
+        "ignoreDeclarationSort": false,
+        "ignoreMemberSort": false,
+        "memberSyntaxSortOrder": ["none", "all", "multiple", "single"]
+      }
+    ]
   }
 }

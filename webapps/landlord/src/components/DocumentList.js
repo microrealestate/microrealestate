@@ -60,8 +60,8 @@ const DocumentItem = ({ document, onEdit, onDelete, disabled }) => {
                   isExpired
                     ? t('expired document')
                     : t('expiry {{relativeDate}}', {
-                        relativeDate: expiryMoment.fromNow(),
-                      })
+                      relativeDate: expiryMoment.fromNow(),
+                    })
                 }
               />
             ) : (

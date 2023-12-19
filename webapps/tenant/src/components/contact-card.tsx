@@ -1,4 +1,4 @@
-import { Phone, AtSign, MapPin } from 'lucide-react';
+import { AtSign, MapPin, Phone } from 'lucide-react';
 import getTranslation from '@/utils/i18n/server/getTranslation';
 
 export default async function ContactCard({

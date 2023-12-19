@@ -1,9 +1,9 @@
+import { CollectionTypes } from '@microrealestate/types';
+import Lease from './lease.js';
 import mongoose from 'mongoose';
 import Realm from './realm.js';
-import Tenant from './tenant.js';
-import Lease from './lease.js';
 import Template from './template.js';
-import { CollectionTypes } from '@microrealestate/types';
+import Tenant from './tenant.js';
 
 const DocumentSchema = new mongoose.Schema<CollectionTypes.Document>({
   realmId: { type: String, ref: Realm },

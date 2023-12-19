@@ -1,23 +1,22 @@
 {
-  "extends": ["plugin:react/recommended"],
-  "plugins": ["react"],
   "env": {
-    "node": true,
-    "browser": true
+    "browser": true,
+    "node": true
   },
+  "extends": ["eslint:recommended", "plugin:react/recommended"],
   "parserOptions": {
-    "ecmaFeatures": {
-      "jsx": true
-    }
+    "ecmaVersion": "latest",
+    "sourceType": "module"
   },
+  "plugins": ["react"],
   "settings": {
     "react": {
       "version": "detect"
     }
   },
   "rules": {
-    "import/no-named-as-default": "off",
+    "react/prop-types": "off",
     "react/react-in-jsx-scope": "off",
-    "react/prop-types": "off"
+    "import/no-named-as-default": "off"
   }
 }

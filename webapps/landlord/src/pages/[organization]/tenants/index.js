@@ -149,12 +149,12 @@ function TenantItem({ tenant }) {
           <Box>
             {tenant.beginDate
               ? t('From {{startDate}} to {{endDate}}', {
-                  startDate: moment(tenant.beginDate, 'DD/MM/YYYY').format('L'),
-                  endDate: moment(
-                    tenant.terminationDate || tenant.endDate,
-                    'DD/MM/YYYY'
-                  ).format('L'),
-                })
+                startDate: moment(tenant.beginDate, 'DD/MM/YYYY').format('L'),
+                endDate: moment(
+                  tenant.terminationDate || tenant.endDate,
+                  'DD/MM/YYYY'
+                ).format('L'),
+              })
               : t('No associated contract')}
           </Box>
         </Box>

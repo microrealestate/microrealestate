@@ -1,8 +1,8 @@
 import * as Express from 'express';
-import logger from 'winston';
-import routes from './route.js';
 import { EnvironmentConfig, Service } from '@microrealestate/typed-common';
+import logger from 'winston';
 import { Middlewares } from '@microrealestate/typed-common';
+import routes from './route.js';
 
 Main();
 

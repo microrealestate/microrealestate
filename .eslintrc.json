@@ -1,24 +1,30 @@
 {
-  "extends": ["eslint:recommended", "plugin:import/recommended", "prettier"],
-  "plugins": ["import", "prettier", "jest"],
   "env": {
-    "jest": true,
     "es2021": true
   },
   "parserOptions": {
-    "ecmaVersion": 2021
+    "ecmaVersion": "latest"
   },
+  "extends": ["eslint:recommended", "plugin:import/recommended", "prettier"],
   "rules": {
-    "semi": "error",
-    "quotes": ["error", "single", { "avoidEscape": true }],
+    "indent": [
+      "error",
+      2,
+      {
+        "SwitchCase": 1,
+        "offsetTernaryExpressions": true,
+        "flatTernaryExpressions": false
+      }
+    ],
     "no-unused-vars": [
       "error",
       {
-        "vars": "all",
-        "args": "after-used",
         "ignoreRestSiblings": true
       }
     ],
+    "linebreak-style": ["error", "unix"],
+    "quotes": ["error", "single"],
+    "semi": ["error", "always"],
     "sort-imports": [
       "error",
       {

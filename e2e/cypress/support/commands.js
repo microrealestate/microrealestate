@@ -64,7 +64,8 @@ Cypress.Commands.add(
       if (type === 'text') {
         const { title, content } = template;
         cy.get('[data-cy=addTextDocument]').click();
-        cy.get('input[name=title]').clear().type(title);
+        cy.get('input[name=title]').clear();
+        cy.get('input[name=title]').type(title);
         cy.get('[data-cy="savingTextDocument"]').should('not.exist');
         cy.get('[data-cy="savedTextDocument"]').should('not.exist');
         cy.get('.ProseMirror').type(content);
@@ -165,7 +166,8 @@ Cypress.Commands.add(
     if (lease) {
       const { contract, beginDate, properties } = lease;
       cy.muiSelectText('leaseId', contract);
-      cy.get('input[name=beginDate]').clear().type(beginDate);
+      cy.get('input[name=beginDate]').clear();
+      cy.get('input[name=beginDate]').type(beginDate);
       properties.forEach(({ name, expense, entryDate, exitDate }, index) => {
         if (index > 0) {
           cy.get('[data-cy=addTenantProperty]').click();
@@ -175,14 +177,14 @@ Cypress.Commands.add(
           expense.title
         );
         cy.get(`input[name="properties[${index}].expense.amount"]`)
-          .clear()
-          .type(expense.amount);
+          .clear();
+        cy.get(`input[name="properties[${index}].expense.amount"]`).type(expense.amount);
         cy.get(`input[name="properties[${index}].entryDate"]`)
-          .clear()
-          .type(entryDate);
+          .clear();
+        cy.get(`input[name="properties[${index}].entryDate"]`).type(entryDate);
         cy.get(`input[name="properties[${index}].exitDate"]`)
-          .clear()
-          .type(exitDate);
+          .clear();
+        cy.get(`input[name="properties[${index}].exitDate"]`).type(exitDate);
       });
     }
     cy.get('[data-cy=submit]').click();
@@ -194,7 +196,8 @@ Cypress.Commands.add(
       } else {
         cy.get('input[name=isVat]').uncheck();
       }
-      cy.get('input[name=vatRatio]').clear().type(percentageVatRatio);
+      cy.get('input[name=vatRatio]').clear();
+      cy.get('input[name=vatRatio]').type(percentageVatRatio);
     }
     cy.get('[data-cy=submit]').click();
 
@@ -207,7 +210,8 @@ Cypress.Commands.add(
             `[data-cy=template-${templateName.replace(/\s/g, '')}]`
           ).click();
           if (title) {
-            cy.get('input[name=title]').clear().type(title);
+            cy.get('input[name=title]').clear();
+            cy.get('input[name=title]').type(title);
             cy.get('[data-cy="savingTextDocument"]').should('not.exist');
             cy.get('[data-cy="savedTextDocument"]').should('not.exist');
           }

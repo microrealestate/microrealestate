@@ -1,11 +1,11 @@
 'use client';
 
-import useTranslation from '@/utils/i18n/client/useTranslation';
-import { LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/components/ui/use-toast';
 import config from '@/config';
+import { LogOut } from 'lucide-react';
 import useApiFetcher from '@/utils/fetch/client';
+import { useToast } from '@/components/ui/use-toast';
+import useTranslation from '@/utils/i18n/client/useTranslation';
 
 export function SignOutNav() {
   const apiFetcher = useApiFetcher();

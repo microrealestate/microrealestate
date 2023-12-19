@@ -67,11 +67,11 @@ const initValues = (tenant) => {
     capital: tenant?.capital || '',
     contacts: tenant?.contacts?.length
       ? tenant.contacts.map(({ contact, email, phone, phone1, phone2 }) => ({
-          contact,
-          email,
-          phone1: phone1 || phone,
-          phone2: phone2 || '',
-        }))
+        contact,
+        email,
+        phone1: phone1 || phone,
+        phone2: phone2 || '',
+      }))
       : [emptyContact],
     address: {
       street1: tenant?.street1 || '',
@@ -195,7 +195,7 @@ const TenantForm = observer(({ readOnly, onSubmit }) => {
             <Section
               label={t('Contacts')}
               description={t(
-                "The contacts will receive the invoices and will be able to access the tenant's portal"
+                'The contacts will receive the invoices and will be able to access the tenant\'s portal'
               )}
             >
               <FieldArray

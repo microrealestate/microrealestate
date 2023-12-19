@@ -1,7 +1,7 @@
-import mongoose, { CallbackError } from 'mongoose';
 import * as bcrypt from 'bcrypt';
-import RealmModel from './realm.js';
+import mongoose, { CallbackError } from 'mongoose';
 import { CollectionTypes } from '@microrealestate/types';
+import RealmModel from './realm.js';
 
 const AccountSchema = new mongoose.Schema<CollectionTypes.Account>({
   firstname: {

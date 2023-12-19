@@ -1,10 +1,10 @@
-import { ContractCard } from '@/components/contract-card';
-import getServerSession from '@/utils/session/server/getsession';
-import { TenantAPI } from '@microrealestate/types';
-import { Lease } from '@/types';
-import getApiFetcher from '@/utils/fetch/server';
 import * as Mocks from '@/mocks/api';
 import config from '@/config';
+import { ContractCard } from '@/components/contract-card';
+import getApiFetcher from '@/utils/fetch/server';
+import getServerSession from '@/utils/session/server/getsession';
+import { Lease } from '@/types';
+import { TenantAPI } from '@microrealestate/types';
 
 async function fetchData(): Promise<Lease[]> {
   let data;

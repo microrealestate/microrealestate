@@ -3,12 +3,12 @@ import {
   getLocaleFromPathname,
   LOCALES,
 } from '@/utils/i18n/common';
+import appConfig from '@/config';
+import { Locale } from '@microrealestate/types';
 import { match } from '@formatjs/intl-localematcher';
 import Negotiator from 'negotiator';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import appConfig from '@/config';
-import { Locale } from '@microrealestate/types';
 
 const DOMAIN_URL = new URL(appConfig.DOMAIN_URL);
 const GATEWAY_URL = appConfig.DOCKER_GATEWAY_URL || appConfig.GATEWAY_URL;

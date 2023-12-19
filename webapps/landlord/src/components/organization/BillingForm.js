@@ -100,8 +100,8 @@ const BillingForm = observer(({ onSubmit }) => {
             <Section label={t('Billing information')}>
               {store.organization.selected &&
                 store.organization.selected.isCompany && (
-                  <TextField label={t('VAT number')} name="vatNumber" />
-                )}
+                <TextField label={t('VAT number')} name="vatNumber" />
+              )}
               <TextField label={t('Bank name')} name="bankName" />
               <TextField label={t('IBAN')} name="iban" />
             </Section>

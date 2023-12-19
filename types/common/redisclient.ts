@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-namespace */
 export namespace RedisClientTypes {
   export type GetFunction = (key: string) => Promise<string | null>;
   export type SetFunction = (

@@ -55,8 +55,8 @@ export default function UploadFileItem({
           state.message = isExpired
             ? t('This document has expired')
             : t('This document will expire {{relativeDate}}', {
-                relativeDate: expiryMoment.fromNow(),
-              });
+              relativeDate: expiryMoment.fromNow(),
+            });
         }
         state.hasLinkToDocument = true;
 
@@ -65,8 +65,8 @@ export default function UploadFileItem({
             ? 'error'
             : 'info'
           : remainingDays < minDayBeforeExpiry
-          ? 'warning'
-          : 'success';
+            ? 'warning'
+            : 'success';
 
         return state;
       }

@@ -5,6 +5,7 @@ export type MongooseDocument<T> = {
   toObject: () => T;
 } & T;
 
+/* eslint-disable @typescript-eslint/no-namespace */
 export namespace CollectionTypes {
   export type PartAddress = {
     street1: string;
@@ -91,7 +92,7 @@ export namespace CollectionTypes {
     description: string;
     mimeType?: string;
     expiryDate?: Date;
-    contents?: {};
+    contents?: Record<string, never>;
     html?: string;
     url?: string;
     versionId?: string;
@@ -103,7 +104,7 @@ export namespace CollectionTypes {
     _id: string;
     templateName: string;
     recordId: string;
-    params: {};
+    params: Record<string, never>;
     sentTo: string;
     sentDate: Date;
     status: string;
@@ -146,7 +147,7 @@ export namespace CollectionTypes {
     type: string;
     description: string;
     hasExpiryDate: boolean;
-    contents: {};
+    contents: Record<string, never>;
     html: string;
     linkedResourceIds: string[];
     required: boolean;
@@ -168,16 +169,13 @@ export namespace CollectionTypes {
           amount: number;
         }[]
       | [];
-
-    // TODO to specify
-    [key: string]: any;
   };
 
   export type Tenant = {
     _id: string;
     realmId: string | Realm;
     name: string;
-    isCompany: Boolean;
+    isCompany: boolean;
     company: string;
     manager: string;
     legalForm: string;
@@ -210,12 +208,12 @@ export namespace CollectionTypes {
         }[]
       | [];
     rents: PartRent[] | [];
-    isVat: Boolean;
+    isVat: boolean;
     vatRatio: number;
     discount: number;
     guaranty: number;
     guarantyPayback: number;
 
-    stepperMode: Boolean;
+    stepperMode: boolean;
   };
 }
