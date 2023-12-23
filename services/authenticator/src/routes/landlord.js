@@ -9,6 +9,10 @@ const { config, TOKEN_COOKIE_ATTRIBUTES } = require('../config');
 const redis = require('@microrealestate/common/models/redis');
 const AccountModel = require('@microrealestate/common/models/account');
 const RealmModel = require('@microrealestate/common/models/realm');
+const {
+  needAccessToken,
+  checkOrganization,
+} = require('@microrealestate/common/utils/middlewares');
 
 const _generateTokens = async (dbAccount) => {
   const { _id, password, ...account } = dbAccount;
@@ -104,7 +108,7 @@ const applicationSignIn = async (req, res) => {
     let keyId;
     try {
       const payload = jwt.verify(clientSecret, config.APPCREDZ_TOKEN_SECRET);
-      if (payload && payload.organizationId && payload.jti) {
+      if (payload?.organizationId && payload?.jti) {
         organizationId = payload.organizationId;
         keyId = payload.jti;
       }
@@ -129,20 +133,18 @@ const applicationSignIn = async (req, res) => {
     }
 
     // find the client details within the realm
-    let realm = (await RealmModel.findOne({ _id: organizationId }))?.toObject();
+    const realm = (
+      await RealmModel.findOne({ _id: organizationId })
+    )?.toObject();
     if (!realm) {
       logger.info(
         `login failed for application ${clientId}@${organizationId}: realm not found`
       );
       return res.status(401).json({ error: 'invalid credentials' });
     }
-    let application;
-    for (const app of realm.applications) {
-      if (app.clientId == clientId) {
-        application = app;
-        break;
-      }
-    }
+    const application = realm.applications?.find(
+      (app) => app?.clientId === clientId
+    );
     if (!application) {
       logger.info(
         `login failed for application ${clientId}@${organizationId}: appplication revoked`
@@ -226,8 +228,16 @@ landlordRouter.post('/signin', async (req, res) => {
   }
 });
 
+landlordRouter.use('/appcredz', needAccessToken(config.ACCESS_TOKEN_SECRET));
+landlordRouter.use('/appcredz', checkOrganization());
 landlordRouter.post('/appcredz', async (req, res) => {
-  // TODO: restrict to admin role?
+  // ensure the user is administrator
+  if (req.user.role !== 'administrator') {
+    return res.status(403).json({
+      error: 'only administrator member can generate application credentials',
+    });
+  }
+
   try {
     const { expiry, organizationId } = req.body;
     if (
