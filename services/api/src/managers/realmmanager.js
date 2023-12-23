@@ -1,6 +1,5 @@
-const bcrypt = require('bcrypt');
 const logger = require('winston');
-const realmModel = require('../models/realm');
+const Realm = require('@microrealestate/common/models/realm');
 const accountModel = require('../models/account');
 const crypto = require('@microrealestate/common/utils/crypto');
 
@@ -46,13 +45,7 @@ const _escapeSecrets = (realm) => {
 
 module.exports = {
   add(req, res) {
-    const newRealm = realmModel.schema.filter(req.body);
-
-    delete req.body.thirdParties?.gmail?.appPasswordUpdated;
-    delete req.body.thirdParties?.smtp?.passwordUpdated;
-    delete req.body.thirdParties?.mailgun?.apiKeyUpdated;
-    delete req.body.thirdParties?.b2?.keyIdUpdated;
-    delete req.body.thirdParties?.b2?.applicationKeyUpdated;
+    const newRealm = new Realm(req.body);
 
     if (!_hasRequiredFields(newRealm)) {
       return res.status(422).json({ error: 'missing fields' });
@@ -94,20 +87,14 @@ module.exports = {
       );
     }
 
-    // Hash all applications' clientSecret
-    for (const app of newRealm.applications) {
-      app.createdDate = new Date();
-      app.clientSecret = bcrypt.hashSync(app.clientSecret, 10);
-    }
-
-    realmModel.add(newRealm, (errors, realm) => {
-      if (errors) {
-        return res.status(500).json({
-          errors: errors,
-        });
-      }
-      res.status(201).json(_escapeSecrets(realm));
-    });
+    newRealm
+      .save()
+      .then((realm) => {
+        res.status(201).json(_escapeSecrets(realm));
+      })
+      .catch((err) => {
+        res.status(500).json({ errors: err });
+      });
   },
   async update(req, res) {
     const gmailAppPasswordUpdated =
@@ -118,15 +105,8 @@ module.exports = {
     const b2KeyIdUpdated = !!req.body.thirdParties?.b2?.keyIdUpdated;
     const b2ApplicationKeyUpdated =
       !!req.body.thirdParties?.b2?.applicationKeyUpdated;
-    const updatedRealm = realmModel.schema.filter(req.body);
 
-    delete req.body.thirdParties?.gmail?.appPasswordUpdated;
-    delete req.body.thirdParties?.smtp?.passwordUpdated;
-    delete req.body.thirdParties?.mailgun?.apiKeyUpdated;
-    delete req.body.thirdParties?.b2?.keyIdUpdated;
-    delete req.body.thirdParties?.b2?.applicationKeyUpdated;
-
-    if (req.realm._id !== updatedRealm._id) {
+    if (req.realm._id !== req.body?._id) {
       return res
         .status(403)
         .json({ error: 'only current selected organization can be updated' });
@@ -139,6 +119,10 @@ module.exports = {
         error: 'only administrator member can update the organization',
       });
     }
+
+    // retrieve the document from mongo & update it
+    const updatedRealm = await Realm.findOne({ _id: req.body._id }).exec();
+    updatedRealm.set(req.body);
 
     if (!_hasRequiredFields(updatedRealm)) {
       return res.status(422).json({ error: 'missing fields' });
@@ -245,20 +229,17 @@ module.exports = {
       if (prevAppcredzMap[app.clientId]) {
         return prevAppcredzMap[app.clientId];
       }
-      // for new entries initialize date & hash secret
-      app.createdDate = new Date();
-      app.clientSecret = bcrypt.hashSync(app.clientSecret, 10);
       return app;
     });
 
-    realmModel.update(updatedRealm, (errors, realm) => {
-      if (errors) {
-        return res.status(500).json({
-          errors: errors,
-        });
-      }
-      res.status(200).json(_escapeSecrets(realm));
-    });
+    updatedRealm
+      .save()
+      .then((realm) => {
+        res.status(201).json(_escapeSecrets(realm));
+      })
+      .catch((err) => {
+        res.status(500).json({ errors: err });
+      });
   },
   remove(/*req, res*/) {},
   one(req, res) {
