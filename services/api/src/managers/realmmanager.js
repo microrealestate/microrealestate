@@ -44,7 +44,7 @@ const _escapeSecrets = (realm) => {
 };
 
 module.exports = {
-  add(req, res) {
+  async add(req, res) {
     const newRealm = new Realm(req.body);
 
     if (!_hasRequiredFields(newRealm)) {
@@ -87,14 +87,12 @@ module.exports = {
       );
     }
 
-    newRealm
-      .save()
-      .then((realm) => {
-        res.status(201).json(_escapeSecrets(realm));
-      })
-      .catch((err) => {
-        res.status(500).json({ errors: err });
-      });
+    try {
+      res.status(201).json(_escapeSecrets(await newRealm.save()));
+    } catch (error) {
+      logger.error(error);
+      res.sendStatus(500).json({ errors: error });
+    }
   },
   async update(req, res) {
     const gmailAppPasswordUpdated =
@@ -232,14 +230,12 @@ module.exports = {
       return app;
     });
 
-    updatedRealm
-      .save()
-      .then((realm) => {
-        res.status(201).json(_escapeSecrets(realm));
-      })
-      .catch((err) => {
-        res.status(500).json({ errors: err });
-      });
+    try {
+      res.status(201).json(_escapeSecrets(await updatedRealm.save()));
+    } catch (error) {
+      logger.error(error);
+      res.sendStatus(500).json({ errors: error });
+    }
   },
   remove(/*req, res*/) {},
   one(req, res) {

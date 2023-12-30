@@ -111,6 +111,11 @@ const applicationSignIn = async (req, res) => {
       if (payload?.organizationId && payload?.jti) {
         organizationId = payload.organizationId;
         keyId = payload.jti;
+      } else {
+        logger.error(
+          'Provided clientSecret is valid but does not have required fields'
+        );
+        return res.status(401).json({ error: 'invalid credentials' });
       }
     } catch (exc) {
       if (exc instanceof jwt.TokenExpiredError) {
