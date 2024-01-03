@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import config from '@/config';
+import getEnv from '@/utils/env/client';
 import Image from 'next/image';
 import { Input } from '@/components/ui/input';
 import mockedSession from '@/mocks/session';
@@ -34,16 +34,17 @@ export default function Signin() {
   const [showMagicLinkSent, setShowMagicLinkSent] = useState(false);
   const form = useForm<SignInFormValues>({
     resolver: zodResolver(signInFormSchema),
-    defaultValues: config.DEMO_MODE
+    defaultValues: getEnv('DEMO_MODE') === 'true'
       ? {
           email: mockedSession.email,
         }
       : undefined,
   });
+  const BASE_PATH = getEnv('BASE_PATH') || '';
 
   async function onSubmit(values: SignInFormValues) {
-    if (config.DEMO_MODE) {
-      window.location.href = `${config.BASE_PATH}/en/dashboard`;
+    if (getEnv('DEMO_MODE') === 'true') {
+      window.location.href = `${BASE_PATH}/en/dashboard`;
     } else {
       try {
         const response = await apiFetcher.post(
@@ -69,13 +70,13 @@ export default function Signin() {
   return (
     <div className="flex flex-col items-center justify-center mt-16">
       <Image
-        src={`${config.BASE_PATH}/favicon.svg`}
+        src={`${BASE_PATH}/favicon.svg`}
         alt="Logo"
         width={40}
         height={40}
         className="mr-2"
       />
-      <h1 className="flex items-center text-3xl">{config.APP_NAME}</h1>
+      <h1 className="flex items-center text-3xl">{getEnv('APP_NAME') || ''}</h1>
       <p className="text-sm mt-1 mb-8">{t('for tenants')}</p>
 
       <Card className="p-6 sm:p-8 w-[32rem]">
@@ -116,7 +117,7 @@ export default function Signin() {
                     <FormItem>
                       <FormLabel>{t('Your email')}</FormLabel>
                       <FormControl>
-                        <Input {...field} disabled={config.DEMO_MODE} />
+                        <Input {...field} disabled={getEnv('DEMO_MODE') === 'true'} />
                       </FormControl>
                       {/* <FormDescription></FormDescription> */}
                       <FormMessage />

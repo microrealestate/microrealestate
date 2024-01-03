@@ -1,6 +1,6 @@
 import type { Session, SessionStatus } from '@/types';
 import { useEffect, useState } from 'react';
-import config from '@/config';
+import getServerEnv from '@/utils/env/server';
 import mockedSession from '@/mocks/session';
 import useApiFetcher from '@/utils/fetch/client';
 
@@ -28,7 +28,7 @@ export default function useSession(): {
         setStatus(session?.email ? 'authenticated' : 'unauthenticated');
       }
     }
-    if (config.DEMO_MODE) {
+    if (getServerEnv('DEMO_MODE') === 'true') {
       setSession(mockedSession);
       setStatus(mockedSession.status);
     } else {

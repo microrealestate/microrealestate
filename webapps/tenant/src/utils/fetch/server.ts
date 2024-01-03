@@ -1,9 +1,9 @@
 import axios from 'axios';
-import config from '../../config';
 import { cookies } from 'next/headers';
+import getServerEnv from '../env/server';
 
-const withCredentials = config.CORS_ENABLED;
-const baseURL = config.DOCKER_GATEWAY_URL || config.GATEWAY_URL;
+const withCredentials = getServerEnv('CORS_ENABLED') === 'true';
+const baseURL = getServerEnv('DOCKER_GATEWAY_URL') || getServerEnv('GATEWAY_URL') || 'http://localhost';
 
 export default function getApiFetcher() {
   const sessionToken = cookies().get('sessionToken')?.value;

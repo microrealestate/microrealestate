@@ -5,7 +5,6 @@ module.exports = nextTranslate({
   output: 'standalone',
   experimental: {
     externalDir: true,
-    appDir: false,
   },
   webpack: (
     config /*,

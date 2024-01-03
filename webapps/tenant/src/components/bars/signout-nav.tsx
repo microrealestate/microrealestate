@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import config from '@/config';
+import getEnv from '@/utils/env/client';
 import { LogOut } from 'lucide-react';
 import useApiFetcher from '@/utils/fetch/client';
 import { useToast } from '@/components/ui/use-toast';
@@ -23,7 +23,7 @@ export function SignOutNav() {
         description: t('Please try again later.'),
       });
     }
-    window.location.href = `${config.BASE_PATH}/signin`;
+    window.location.href = `${getEnv('BASE_PATH') || ''}/signin`;
   };
 
   return (

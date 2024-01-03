@@ -17,9 +17,7 @@ RUN --mount=type=cache,id=node_modules,target=/root/.yarn YARN_CACHE_FOLDER=/roo
 
 FROM base AS build
 WORKDIR /usr/app
-ARG LANDLORD_BASE_PATH
-ENV BASE_PATH=$LANDLORD_BASE_PATH
-ENV NEXT_PUBLIC_BASE_PATH=$LANDLORD_BASE_PATH
+ENV BASE_PATH=/__MRE_BASE_PATH__
 ENV NEXT_TELEMETRY_DISABLED=1
 COPY --from=deps /usr/app ./
 COPY webapps/commonui/.eslintrc.json webapps/commonui
@@ -38,22 +36,11 @@ RUN  yarn workspace @microrealestate/landlord run build
 
 FROM base
 WORKDIR /usr/app
-ARG LANDLORD_BASE_PATH
-ENV BASE_PATH=$LANDLORD_BASE_PATH
-ENV NEXT_PUBLIC_BASE_PATH=$LANDLORD_BASE_PATH
-ENV DOCKER_GATEWAY_URL=$DOCKER_GATEWAY_URL
-ENV NEXT_PUBLIC_APP_NAME=$NEXT_PUBLIC_APP_NAME
-ENV NEXT_PUBLIC_BASE_PATH=$NEXT_PUBLIC_BASE_PATH
-ENV NEXT_PUBLIC_CORS_ENABLED=$NEXT_PUBLIC_CORS_ENABLED
-ENV NEXT_PUBLIC_DEMO_MODE=$NEXT_PUBLIC_DEMO_MODE
-ENV NEXT_PUBLIC_GATEWAY_URL=$NEXT_PUBLIC_GATEWAY_URL
-ENV NEXT_PUBLIC_NODE_ENV=$NEXT_PUBLIC_NODE_ENV
-ENV NEXT_PUBLIC_SIGNUP=$NEXT_PUBLIC_SIGNUP
-ENV PORT=$PORT
 ENV NEXT_TELEMETRY_DISABLED=1
 COPY --from=build /usr/app/webapps/landlord/public ./public
 COPY --from=build /usr/app/webapps/landlord/.next/standalone/node_modules ./node_modules
 COPY --from=build /usr/app/webapps/landlord/.next/standalone/webapps/landlord ./
 COPY --from=build /usr/app/webapps/landlord/.next/static ./.next/static
 COPY --from=build /usr/app/webapps/commonui/scripts/generateruntimeenvfile.js ./generateruntimeenvfile.js
-CMD ["/bin/sh", "-c", "node generateruntimeenvfile.js;node server.js"]
+COPY --from=build /usr/app/webapps/commonui/scripts/replacebasepath.js ./replacebasepath.js
+CMD ["/bin/sh", "-c", "node replacebasepath;node generateruntimeenvfile.js;node server.js"]
