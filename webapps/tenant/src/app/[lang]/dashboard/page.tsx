@@ -1,14 +1,14 @@
 import * as Mocks from '@/mocks/api';
-import config from '@/config';
 import { ContractCard } from '@/components/contract-card';
 import getApiFetcher from '@/utils/fetch/server';
+import getServerEnv from '@/utils/env/server';
 import getServerSession from '@/utils/session/server/getsession';
 import { Lease } from '@/types';
 import { TenantAPI } from '@microrealestate/types';
 
 async function fetchData(): Promise<Lease[]> {
   let data;
-  if (config.DEMO_MODE) {
+  if (getServerEnv('DEMO_MODE') === 'true') {
     data = Mocks.getTenants;
   } else {
     const response = await getApiFetcher().get<TenantAPI.GetTenants.Response>(

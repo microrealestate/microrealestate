@@ -8,7 +8,6 @@
     "start": "next start",
     "lint": "next lint --no-cache",
     "format": "prettier --write '**/*.{js,jsx,ts,tsx,json,css}'",
-    "generateRuntimeEnvFile": "node ../commonui/scripts/generateruntimeenvfile.js",
     "generateStrings": "node scripts/extractlocalizedstrings.js",
     "storybook": "start-storybook -p 6007",
     "build-storybook": "build-storybook"

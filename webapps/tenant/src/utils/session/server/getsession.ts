@@ -1,11 +1,11 @@
-import config from '@/config';
 import getApiFetcher from '@/utils/fetch/server';
+import getServerEnv from '@/utils/env/server';
 import mockedSession from '@/mocks/session';
 import type { Session } from '@/types';
 
 export default async function getServerSession(): Promise<Session | null> {
   let session = null;
-  if (config.DEMO_MODE) {
+  if (getServerEnv('DEMO_MODE') === 'true') {
     session = mockedSession;
   } else {
     try {

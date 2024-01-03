@@ -3853,6 +3853,7 @@ __metadata:
     moment: 2.29.4
     negotiator: 0.6.3
     next: 14.0.4
+    next-runtime-env: 3.2.0
     postcss: 8.4.31
     react: 18.2.0
     react-day-picker: 8.9.1
@@ -19876,6 +19877,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"next-runtime-env@npm:3.2.0":
+  version: 3.2.0
+  resolution: "next-runtime-env@npm:3.2.0"
+  dependencies:
+    next: ^14
+    react: ^18
+  peerDependencies:
+    next: ^14
+    react: ^18
+  checksum: a051aee382c4c5c79c7722eed1a96eff8ad751a779b508e1c9323b61f61fc63b0194f72550a96d0c8fa67367421a657510871deaa713b6d12995e5415dad2dc4
+  languageName: node
+  linkType: hard
+
 "next-tick@npm:1, next-tick@npm:^1.1.0":
   version: 1.1.0
   resolution: "next-tick@npm:1.1.0"
@@ -19911,7 +19925,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"next@npm:14.0.4":
+"next@npm:14.0.4, next@npm:^14":
   version: 14.0.4
   resolution: "next@npm:14.0.4"
   dependencies:
@@ -22491,7 +22505,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react@npm:18.2.0":
+"react@npm:18.2.0, react@npm:^18":
   version: 18.2.0
   resolution: "react@npm:18.2.0"
   dependencies:

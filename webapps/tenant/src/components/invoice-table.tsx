@@ -14,10 +14,10 @@ import {
 } from './ui/tooltip';
 import { useCallback, useMemo, useState } from 'react';
 import { Button } from './ui/button';
-import config from '@/config';
 import { DateRange } from 'react-day-picker';
 import { Download } from 'lucide-react';
 import { DownLoadButton } from '@/components/download-button';
+import getEnv from '@/utils/env/client';
 import { getFormatNumber } from '@/utils/formatnumber';
 import { getFormatTimeRange } from '@/utils';
 import { Label } from '@/components/ui/label';
@@ -167,7 +167,7 @@ export function InvoiceTable({ lease }: { lease: Lease }) {
                   {formatNumber({ value: invoice.payment })}
                 </TableCell>
                 <TableCell className="w-5">
-                  {config.DEMO_MODE ? (
+                  {getEnv('DEMO_MODE') === 'true' ? (
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger>

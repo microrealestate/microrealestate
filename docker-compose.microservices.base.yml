@@ -191,19 +191,18 @@ services:
     # base path cannot be set at runtime: https://github.com/vercel/next.js/discussions/41769
     build:
       args:
-        - LANDLORD_BASE_PATH=$LANDLORD_BASE_PATH
+        - BASE_PATH=$LANDLORD_BASE_PATH
     image: mre/landlord-frontend:latest
     environment:
       - BASE_PATH=$LANDLORD_BASE_PATH
       - PORT=$LANDLORD_FRONTEND_PORT
-      - DOCKER_GATEWAY_URL=$DOCKER_GATEWAY_URL
-      - NEXT_PUBLIC_APP_NAME=$APP_NAME
-      - NEXT_PUBLIC_BASE_PATH=$LANDLORD_BASE_PATH
-      - NEXT_PUBLIC_CORS_ENABLED=$CORS_ENABLED
-      - NEXT_PUBLIC_DEMO_MODE=$DEMO_MODE
-      - NEXT_PUBLIC_GATEWAY_URL=$GATEWAY_URL
-      - NEXT_PUBLIC_NODE_ENV=$NODE_ENV
-      - NEXT_PUBLIC_SIGNUP=$SIGNUP
+      - DOCKER_GATEWAY_URL
+      - APP_NAME
+      - CORS_ENABLED
+      - DEMO_MODE
+      - GATEWAY_URL
+      - NODE_ENV
+      - SIGNUP
     expose:
       - '$LANDLORD_FRONTEND_PORT'
     networks:
@@ -217,19 +216,18 @@ services:
     # base path cannot be set at runtime: https://github.com/vercel/next.js/discussions/41769
     build:
       args:
-        - TENANT_BASE_PATH=$TENANT_BASE_PATH
+        - BASE_PATH=$TENANT_BASE_PATH
     image: mre/tenant-frontend:latest
     environment:
       - BASE_PATH=$TENANT_BASE_PATH
       - PORT=$TENANT_FRONTEND_PORT
-      - DOCKER_GATEWAY_URL=$DOCKER_GATEWAY_URL
-      - NEXT_PUBLIC_APP_NAME=$APP_NAME
-      - NEXT_PUBLIC_BASE_PATH=$TENANT_BASE_PATH
-      - NEXT_PUBLIC_CORS_ENABLED=$CORS_ENABLED
-      - NEXT_PUBLIC_DEMO_MODE=$DEMO_MODE
-      - NEXT_PUBLIC_GATEWAY_URL=$GATEWAY_URL
-      - NEXT_PUBLIC_NODE_ENV=$NODE_ENV
-      - DOMAIN_URL=$DOMAIN_URL
+      - DOCKER_GATEWAY_URL
+      - APP_NAME
+      - CORS_ENABLED
+      - DEMO_MODE
+      - GATEWAY_URL
+      - NODE_ENV
+      - DOMAIN_URL
     expose:
       - '$TENANT_FRONTEND_PORT'
     networks:

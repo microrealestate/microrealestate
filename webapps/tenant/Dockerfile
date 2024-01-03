@@ -17,12 +17,11 @@ RUN --mount=type=cache,id=node_modules,target=/root/.yarn YARN_CACHE_FOLDER=/roo
 
 FROM base AS build
 WORKDIR /usr/app
-ARG TENANT_BASE_PATH
-ENV BASE_PATH=$TENANT_BASE_PATH
-ENV NEXT_PUBLIC_BASE_PATH=$TENANT_BASE_PATH
+ENV BASE_PATH=/__MRE_BASE_PATH__
 ENV NEXT_TELEMETRY_DISABLED=1
 COPY --from=deps /usr/app ./
 COPY types types
+COPY webapps/commonui/scripts webapps/commonui/scripts
 COPY webapps/tenant/.eslintrc.json webapps/tenant
 COPY webapps/tenant/components.json webapps/tenant
 COPY webapps/tenant/next.config.js webapps/tenant
@@ -38,18 +37,10 @@ RUN yarn workspace @microrealestate/types run build && \
 
 FROM base
 WORKDIR /usr/app
-ARG TENANT_BASE_PATH
-ENV BASE_PATH=$TENANT_BASE_PATH
-ENV NEXT_PUBLIC_BASE_PATH=$TENANT_BASE_PATH
-ENV DOCKER_GATEWAY_URL=$DOCKER_GATEWAY_URL
-ENV NEXT_PUBLIC_APP_NAME=$NEXT_PUBLIC_APP_NAME
-ENV NEXT_PUBLIC_BASE_PATH=$NEXT_PUBLIC_BASE_PATH
-ENV NEXT_PUBLIC_DEMO_MODE=$NEXT_PUBLIC_DEMO_MODE
-ENV NEXT_PUBLIC_NODE_ENV=$NEXT_PUBLIC_NODE_ENV
-ENV PORT=$PORT
 ENV NEXT_TELEMETRY_DISABLED=1
 COPY --from=build /usr/app/webapps/tenant/public ./public
 COPY --from=build /usr/app/webapps/tenant/.next/standalone/node_modules ./node_modules
 COPY --from=build /usr/app/webapps/tenant/.next/standalone/webapps/tenant ./
 COPY --from=build /usr/app/webapps/tenant/.next/static ./.next/static
-CMD ["node", "server.js"]
+COPY --from=build /usr/app/webapps/commonui/scripts/replacebasepath.js ./
+CMD ["/bin/sh", "-c", "node replacebasepath.js;node server.js"]

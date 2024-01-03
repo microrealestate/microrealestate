@@ -3,19 +3,19 @@ import {
   getLocaleFromPathname,
   LOCALES,
 } from '@/utils/i18n/common';
-import appConfig from '@/config';
+import getServerEnv from './utils/env/server';
 import { Locale } from '@microrealestate/types';
 import { match } from '@formatjs/intl-localematcher';
 import Negotiator from 'negotiator';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-const DOMAIN_URL = new URL(appConfig.DOMAIN_URL);
-const GATEWAY_URL = appConfig.DOCKER_GATEWAY_URL || appConfig.GATEWAY_URL;
+const DOMAIN_URL = new URL(getServerEnv('DOMAIN_URL') || 'http://localhost');
+const GATEWAY_URL = getServerEnv('DOCKER_GATEWAY_URL') || getServerEnv('GATEWAY_URL') || 'http://localhost';
 
 export async function middleware(request: NextRequest) {
   let nextResponse;
-  if (!appConfig.DEMO_MODE) {
+  if (getServerEnv('DEMO_MODE') !== 'true') {
     nextResponse = await injectSessionToken(request);
     if (nextResponse) {
       return nextResponse;
@@ -27,7 +27,7 @@ export async function middleware(request: NextRequest) {
     return nextResponse;
   }
 
-  if (!appConfig.DEMO_MODE) {
+  if (getServerEnv('DEMO_MODE') !== 'true') {
     nextResponse = await redirectSignIn(request);
     if (nextResponse) {
       return nextResponse;
