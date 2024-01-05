@@ -10,6 +10,18 @@ on:
   workflow_dispatch:
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: yarn
+
+      - name: Lint
+        run: yarn lint
+
   build:
     runs-on: ubuntu-latest
     strategy:
@@ -62,142 +74,84 @@ jobs:
 
       - name: Build and push to GitHub Container Registry
         uses: docker/build-push-action@v4
-        # base path cannot be set at runtime: https://github.com/vercel/next.js/discussions/41769
-        # only for landlord-fronted and tenant-frontend
-        env:
-          LANDLORD_BASE_PATH: /landlord
-          TENANT_BASE_PATH: /tenant
         with:
           context: .
           file: ${{ matrix.dockerfile }}
           push: true
           tags: '${{ matrix.image }}:${{ github.sha }}'
           labels: ${{ steps.meta.outputs.labels }}
-          # base path cannot be set at runtime: https://github.com/vercel/next.js/discussions/41769
-          build-args: |
-            LANDLORD_BASE_PATH=${{ env.LANDLORD_BASE_PATH }}
-            TENANT_BASE_PATH=${{ env.TENANT_BASE_PATH }}
 
-  deploy_gateway:
+  deploy_backend:
     runs-on: ubuntu-latest
     needs: build
     steps:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Push to dokku
+      - name: Push gateway to dokku
         uses: dokku/github-action@master
         with:
           git_remote_url: '${{ secrets.DOKKU_URL}}/gateway-stage'
           ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
           deploy_docker_image: ghcr.io/${{ github.repository }}/gateway:${{ github.sha }}
 
-  deploy_authenticator:
-    runs-on: ubuntu-latest
-    needs: [build, deploy_gateway]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Push to dokku
+      - name: Push authenticator to dokku
         uses: dokku/github-action@master
         with:
           git_remote_url: '${{ secrets.DOKKU_URL}}/authenticator-stage'
           ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
           deploy_docker_image: ghcr.io/${{ github.repository }}/authenticator:${{ github.sha }}
 
-  deploy_api:
-    runs-on: ubuntu-latest
-    needs: [build, deploy_authenticator]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Push to dokku
+      - name: Push api to dokku
         uses: dokku/github-action@master
         with:
           git_remote_url: '${{ secrets.DOKKU_URL}}/api-stage'
           ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
           deploy_docker_image: ghcr.io/${{ github.repository }}/api:${{ github.sha }}
 
-  deploy_pdfgenerator:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Push to dokku
+      - name: Push pdfgenerator to dokku
         uses: dokku/github-action@master
         with:
           git_remote_url: '${{ secrets.DOKKU_URL}}/pdfgenerator-stage'
           ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
           deploy_docker_image: ghcr.io/${{ github.repository }}/pdfgenerator:${{ github.sha }}
 
-  deploy_emailer:
-    runs-on: ubuntu-latest
-    needs: [build, deploy_pdfgenerator]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Push to dokku
+      - name: Push emailer to dokku
         uses: dokku/github-action@master
         with:
           git_remote_url: '${{ secrets.DOKKU_URL}}/emailer-stage'
           ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
           deploy_docker_image: ghcr.io/${{ github.repository }}/emailer:${{ github.sha }}
 
-  deploy_resetservice:
-    runs-on: ubuntu-latest
-    needs: [build, deploy_emailer]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Push to dokku
+      - name: Push resetservice to dokku
         uses: dokku/github-action@master
         with:
           git_remote_url: '${{ secrets.DOKKU_URL}}/resetservice-stage'
           ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
           deploy_docker_image: ghcr.io/${{ github.repository }}/resetservice:${{ github.sha }}
 
-  deploy_tenantapi:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Push to dokku
+      - name: Push tenantapi to dokku
         uses: dokku/github-action@master
         with:
           git_remote_url: '${{ secrets.DOKKU_URL}}/tenantapi-stage'
           ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
           deploy_docker_image: ghcr.io/${{ github.repository }}/tenantapi:${{ github.sha }}
 
-  deploy_landlord_frontend:
+  deploy_frontend:
     runs-on: ubuntu-latest
-    needs: [build, deploy_tenantapi]
+    needs: build
     steps:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Push to dokku
+      - name: Push landlord-frontend to dokku
         uses: dokku/github-action@master
         with:
           git_remote_url: '${{ secrets.DOKKU_URL}}/landlord-stage'
           ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
           deploy_docker_image: ghcr.io/${{ github.repository }}/landlord-frontend:${{ github.sha }}
 
-  deploy_tenant_frontend:
-    runs-on: ubuntu-latest
-    needs: [build, deploy_landlord_frontend]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Push to dokku
+      - name: Push tenant-frontend to dokku
         uses: dokku/github-action@master
         with:
           git_remote_url: '${{ secrets.DOKKU_URL}}/tenant-stage'
@@ -208,15 +162,8 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       [
-        deploy_gateway,
-        deploy_authenticator,
-        deploy_api,
-        deploy_tenantapi,
-        deploy_pdfgenerator,
-        deploy_emailer,
-        deploy_resetservice,
-        deploy_landlord_frontend,
-        deploy_tenant_frontend,
+        deploy_backend,
+        deploy_frontend,
       ]
 
     steps:
