@@ -1,0 +1,111 @@
+name: Release
+
+on: 
+  release:
+    types: [published]
+
+jobs:
+  
+  build-upload-commands:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Get tag
+        run: |
+         TAG=${{ github.event.release.tag_name }}
+         echo "RELEASE_TAG=${TAG#v}" >> $GITHUB_ENV
+    
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Build
+        run: |
+         npm install -g pkg
+         yarn workspaces focus @microrealestate/cli
+         pkg cli/package.json --compress Brotli --output mre
+         mv mre-linux mre
+         mv mre-win.exe mre.exe
+
+      - name: Compress
+        run: |
+         tar -czf mre-linux-x64.tar.gz mre
+         tar -czf mre-macos-x64.tar.gz mre-macos
+         zip mre-win-x64.zip mre.exe 
+    
+      - name: Upload commands in release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ env.RELEASE_TAG }}
+          name: v${{ env.RELEASE_TAG }}
+          files: |
+           ./bin/mre-linux-x64.tar.gz
+           ./bin/mre-macos-x64.tar.gz
+           ./bin/mre-win-x64.zip
+
+
+  build-push-images:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+            - appname: gateway
+              image: ghcr.io/${{ github.repository }}/gateway
+              dockerfile: services/gateway/Dockerfile
+            - appname: api
+              image: ghcr.io/${{ github.repository }}/api
+              dockerfile: services/api/Dockerfile
+            - appname: tenantapi
+              image: ghcr.io/${{ github.repository }}/tenantapi
+              dockerfile: services/tenantapi/Dockerfile
+            - appname: authenticator
+              image: ghcr.io/${{ github.repository }}/authenticator
+              dockerfile: services/authenticator/Dockerfile
+            - appname: pdfgenerator
+              image: ghcr.io/${{ github.repository }}/pdfgenerator
+              dockerfile: services/pdfgenerator/Dockerfile
+            - appname: emailer
+              image: ghcr.io/${{ github.repository }}/emailer
+              dockerfile: services/emailer/Dockerfile
+            - appname: resetservice
+              image: ghcr.io/${{ github.repository }}/resetservice
+              dockerfile: services/resetservice/Dockerfile
+            - appname: landlord-frontend
+              image: ghcr.io/${{ github.repository }}/landlord-frontend
+              dockerfile: webapps/landlord/Dockerfile
+            - appname: tenant-frontend
+              image: ghcr.io/${{ github.repository }}/tenant-frontend
+              dockerfile: webapps/tenant/Dockerfile
+
+    steps:
+        - name: Get tag
+          run: |
+           TAG=${{ github.event.release.tag_name }}
+           echo "RELEASE_TAG=${TAG#v}" >> $GITHUB_ENV
+
+        - name: Checkout
+          uses: actions/checkout@v3
+
+        - name: Login to GitHub Container Registry
+          uses: docker/login-action@v2
+          with:
+            registry: ghcr.io
+            username: ${{ github.actor }}
+            password: ${{ secrets.GITHUB_TOKEN }}
+
+        - name: Extract metadata (tags, labels) for Docker
+          id: meta
+          uses: docker/metadata-action@v4
+          with:
+            images: ${{ matrix.image }}
+
+        - name: Build and push to GitHub Container Registry
+          uses: docker/build-push-action@v4
+          with:
+            context: .
+            file: ${{ matrix.dockerfile }}
+            push: true
+            tags: '${{ matrix.image }}:${{ env.RELEASE_TAG }}'
+            labels: ${{ steps.meta.outputs.labels }}
+
+     
