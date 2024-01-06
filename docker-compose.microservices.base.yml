@@ -32,7 +32,7 @@ services:
   # Gateway
   ###############################################################################
   gateway:
-    image: mre/gateway:latest
+    image: ghcr.io/microrealestate/microrealestate/gateway:latest
     environment:
       - NODE_ENV
       - LOGGER_LEVEL=$LOGGER_LEVEL
@@ -60,7 +60,7 @@ services:
   # Authenticator
   ###############################################################################
   authenticator:
-    image: mre/authenticator:latest
+    image: ghcr.io/microrealestate/microrealestate/authenticator:latest
     environment:
       - NODE_ENV
       - PORT=$AUTHENTICATOR_PORT
@@ -86,7 +86,7 @@ services:
   # PDFGenerator
   ###############################################################################
   pdfgenerator:
-    image: mre/pdfgenerator:latest
+    image: ghcr.io/microrealestate/microrealestate/pdfgenerator:latest
     environment:
       - NODE_ENV
       - PORT=$PDFGENERATOR_PORT
@@ -106,7 +106,7 @@ services:
   # Emailer
   ###############################################################################
   emailer:
-    image: mre/emailer:latest
+    image: ghcr.io/microrealestate/microrealestate/emailer:latest
     environment:
       - NODE_ENV
       - ALLOW_SENDING_EMAILS=$ALLOW_SENDING_EMAILS
@@ -143,7 +143,7 @@ services:
   # api
   ###############################################################################
   api:
-    image: mre/api:latest
+    image: ghcr.io/microrealestate/microrealestate/api:latest
     volumes:
       - ./backup:/usr/app/backup
     environment:
@@ -170,7 +170,7 @@ services:
   # tenant api
   ###############################################################################
   tenantapi:
-    image: mre/tenantapi:latest
+    image: ghcr.io/microrealestate/microrealestate/tenantapi:latest
     environment:
       - NODE_ENV
       - PORT=$TENANTAPI_PORT
@@ -192,7 +192,7 @@ services:
     build:
       args:
         - BASE_PATH=$LANDLORD_BASE_PATH
-    image: mre/landlord-frontend:latest
+    image: ghcr.io/microrealestate/microrealestate/landlord-frontend:latest
     environment:
       - BASE_PATH=$LANDLORD_BASE_PATH
       - PORT=$LANDLORD_FRONTEND_PORT
@@ -217,7 +217,7 @@ services:
     build:
       args:
         - BASE_PATH=$TENANT_BASE_PATH
-    image: mre/tenant-frontend:latest
+    image: ghcr.io/microrealestate/microrealestate/tenant-frontend:latest
     environment:
       - BASE_PATH=$TENANT_BASE_PATH
       - PORT=$TENANT_FRONTEND_PORT
