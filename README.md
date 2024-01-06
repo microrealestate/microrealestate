@@ -35,46 +35,55 @@ Explore the application through these screenshots:
 
 ## Getting started
 
-Get started with the application by following the installation steps.
+Get started with the application by following these installation steps.
 
 > Prerequisite
 >
 > - [Docker and docker-compose installed](https://docs.docker.com/compose/install/)
 
-### 1. Clone the GitHub repository
+### 1. Install the application
 
-```shell
-$ git clone https://github.com/microrealestate/microrealestate.git
+Download the latest release from github. Copy paste and exectute this command in a terminal:
+
+#### On Linux
+
+``` shell
+mkdir -p microrealestate; curl -L https://github.com/microrealestate/microrealestate/releases/latest/download/mre-linux-x64.tar.gz | tar -xz -C microrealestate
 ```
 
-### 2. Build an Start the application
+#### On Mac
 
-To effectively build and run the application, make use of the `mre` executable on Linux. If you are using Windows, utilize `mre.exe`, whereas on Mac, opt for `mre-macos`.
+``` shell
+mkdir -p microrealestate; curl -L https://github.com/microrealestate/microrealestate/releases/latest/download/mre-macos-x64.tar.gz | tar -xz -C microrealestate
+```
+
+#### On Windows PowerShell
+
+``` shell
+wget https://github.com/microrealestate/microrealestate/releases/latest/download/mre-win-x64.zip -Outfile microrealestate.zip; Expand-Archive microrealestate.zip -DestinationPath microrealestate; Remove-Item microrealestate.zip
+```
+
+### 2. Start the application
+
+Go in the microrealestate directory and launch the application:
 
 ```shell
 $ cd microrealestate
-$ ./mre build
-```
-
-When building the first time, you can expect a series of questions to configure the application. Answer the questions as prompted to tailor the application to your specific needs. Once you've completed this interactive configuration, a `.env` file will be generated, containing your settings.
-
-```
-? Have you created a mailgun account for sending emails (https://www.mailgun.com/)? No
-
-? Enter the URL to access the landlord front-end: http://localhost:8080/landlord
-
-? Enter the URL to access the tenant front-end (it should share the same domain and port as the landlord front-end URL): http://localhost:8080/tenant
-```
-
-Once the build process has been completed, execute the following command to launch the application:
-
-```shell
 $ ./mre start
 ```
 
-Once the application has started successfully, you will find a link displayed in the console to access the application.
+The first time, you can expect a series of questions to configure the application. Answer the questions as prompted to tailor the application to your specific needs. Once you've completed this interactive configuration, a `.env` file will be generated, containing your settings.
 
-Simply copy the link and paste into your preferred web browser to access the application's interface.
+```
+? Do you want the database to be populated with? demonstration data
+? Select your email delivery service? (required for password reset and tenant sign in) None
+? Enter the URL to access the landlord front-end: http://localhost:8080/landlord
+? Enter the URL to access the tenant front-end (it should share the same domain and port as the landlord front-end URL): http://localhost:8080/tenant
+```
+
+Once the application has started successfully, you will find several links displayed in the console to access the landlord and tenant applications.
+
+Copy the link and paste into your preferred web browser to access the applications.
 
 ## Community
 
