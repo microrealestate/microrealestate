@@ -29,9 +29,9 @@ jobs:
 
       - name: Compress
         run: |
-         tar -czf mre-linux-x64.tar.gz mre
-         tar -czf mre-macos-x64.tar.gz mre-macos
-         zip mre-win-x64.zip mre.exe 
+         tar -zczf mre-linux-x64.tar.gz backup base.env docker-compose.microservices.base.yml docker-compose.microservices.prod.yml mre
+         tar -zczf mre-macos-x64.tar.gz backup base.env docker-compose.microservices.base.yml docker-compose.microservices.prod.yml mre-macos
+         zip mre-win-x64.zip backup base.env docker-compose.microservices.base.yml docker-compose.microservices.prod.yml mre.exe
     
       - name: Upload commands in release
         uses: softprops/action-gh-release@v1
