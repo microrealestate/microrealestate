@@ -30,4 +30,7 @@ backup/*
 !backup/demodb.dump
 
 webapps/*/public/__ENV.js
+mre
+mre.exe
+mre-macos
 

@@ -2,17 +2,38 @@
 
 All notable changes to this project will be documented here.
 
-## 2023-12-09
+## Unreleased
+
+### Added
+
+- Added new environment variable `MRE_VERSION` used by the `mre` command to run a specific version of the application.
 
 ### Changed
 
-- Upgrade `redis` and `mongo` containers to newer versions. Old Mongo databases are not compatible with the new version. Before upgrade, do a backup with `mre dumpdb`, remove old database in `data/mongodb`. After upgrade, restore database with `mre restoredb`.
+- ...
 
-### Contributors
+### Deprecated
 
-- @zeronounours
+- ...
 
-## 2023-12-07
+### Removed
+
+- Omitted `mre`, `mre-macos`, and `mre.exe` from the repository, as they are now available for download in the release.
+
+### Fixed
+
+- ...
+
+### Security
+
+- ...
+
+## Contributors
+
+- [@camelaissani](https://github.com/camelaissani)
+
+
+## 1.0.0-alpha.1
 
 ### Added
 
@@ -28,10 +49,14 @@ All notable changes to this project will be documented here.
 
 ### Changed
 
+- Upgrade `redis` and `mongo` containers to newer versions. Old Mongo databases are not compatible with the new version. Before upgrade, do a backup with `mre dumpdb`, remove old database in `data/mongodb`. After upgrade, restore database with `mre restoredb`.
+
 - `GATEWAY_URL` and `DOCKER_GATEWAY_URL` environment variables are not ending with `/api/v2` anymore. The .env file will be updated automatically by the cli when restarting the app.
 
 - Forgot password email is now sent using the email delivery service configured in the .env file and not the one from the landlord app settings.
 
-### Contributors
+## Contributors
 
-- @camelaissani
+- [@zeronounours](https://github.com/zeronounours)
+
+- [@camelaissani](https://github.com/camelaissani)
