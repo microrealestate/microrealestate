@@ -33,7 +33,10 @@
     "e2e:run": "yarn workspace @microrealestate/e2e run cypress:run",
     "e2e:open": "yarn workspace @microrealestate/e2e run cypress:open",
     "format": "yarn workspaces foreach run format",
-    "lint": "yarn workspaces foreach run lint"
+    "lint": "yarn workspaces foreach run lint",
+    "dev": "node cli/src/index.js dev",
+    "build": "node cli/src/index.js build",
+    "start": "node cli/src/index.js start"
   },
   "lint-staged": {
     "*.{js,ts,tsx, jsx}": [
