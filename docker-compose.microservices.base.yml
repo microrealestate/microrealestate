@@ -32,7 +32,7 @@ services:
   # Gateway
   ###############################################################################
   gateway:
-    image: 'ghcr.io/microrealestate/microrealestate/gateway:${MRE_VERSION:-latest}}'
+    image: 'ghcr.io/microrealestate/microrealestate/gateway:${MRE_VERSION:-latest}'
     environment:
       - NODE_ENV
       - LOGGER_LEVEL=$LOGGER_LEVEL
