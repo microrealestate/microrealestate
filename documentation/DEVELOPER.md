@@ -9,10 +9,11 @@ This diagram serves as a helpful guide to understand the overall structure and f
 | Applications and Services                  | Description                                                                    | Development Status |
 | :----------------------------------------- | :----------------------------------------------------------------------------- | :----------------: |
 | [Landlord UI](../webapps/landlord)         | Landlord web application                                                       |     Available      |
-| [Tenant UI](../webapps/tenant)             | Tenant web application                                                         |  Dev in progress   |
+| [Tenant UI](../webapps/tenant)             | Tenant web application                                                         |     Available      |
 | [Gateway](../services/gateway)             | Exposes UI and services, handles CORS and reverse proxies                      |     Available      |
 | [Authenticator](../services/authenticator) | Handles login/logout and tokens management                                     |     Available      |
-| [API](../services/api)                     | Core engine                                                                    |     Available      |
+| [API](../services/api)                     | Landlord REST API                                                              |     Available      |
+| [tenantApi](../services/tenantapi)         | Tenant REST API                                                                |     Available      |
 | [EMailer](../services/emailer)             | Generates and sends emails with [Gmail] or [mailgun](https://www.mailgun.com/) |     Available      |
 | [PDFGenerator](../services/pdfgenerator)   | Generates PDF documents (letters, contracts, invoices...)                      |     Available      |
 | [ResetService](../services/resetservice)   | Uses to erase all data, only active in DEV and CI environments                 |     Available      |
@@ -21,20 +22,28 @@ This diagram serves as a helpful guide to understand the overall structure and f
 
 ### Prerequisite
 
-- Docker and docker-compose installed
-- [VS Code](https://code.visualstudio.com/) installed.
+- [docker and docker-compose installed](https://docs.docker.com/compose/install/)
+- [node.js installed](https://nodejs.org/en/download/package-manager)
+- [VS Code installed](https://code.visualstudio.com/)
+- [git installed](https://git-scm.com/downloads)
 
 ### Clone the GitHub repository
 
 ```shell
-$ git clone https://github.com/microrealestate/microrealestate.git
+git clone https://github.com/microrealestate/microrealestate.git
+cd microrealestate
 ```
 
-### Launch the application in development mode:
+### Install de application dependencies
 
 ```shell
-$ cd microrealestate
-$ ./mre dev
+yarn
+```
+
+### Run the application in dev mode
+
+```shell
+yarn run dev
 ```
 
 ## Debug
@@ -52,4 +61,4 @@ Next, attach the debugger to the service you wish to debug. This will enable you
 - Docker: Attach to PdfGenerator
 - Docker: Attach to ResetService
 
-For more information about VS Code debugging go [here](https://code.visualstudio.com/Docs/editor/debugging#_debug-actions)
+[For more information about VS Code debugging](https://code.visualstudio.com/Docs/editor/debugging#_debug-actions)
