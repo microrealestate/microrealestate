@@ -65,10 +65,7 @@ async function start() {
   await runCompose(
     'start',
     [],
-    { runMode: 'prod' },
-    {
-      waitLog: 'starting the application...',
-    }
+    { runMode: 'prod' }
   );
 
   console.log(chalk.green('application started\n'));
@@ -115,10 +112,30 @@ async function dev() {
     [],
     {
       runMode: 'dev',
-    },
-    {
-      logErrorsDuringExecution: true,
     }
+  );
+}
+
+async function ci() {
+  loadEnv();
+
+  initDirectories();
+
+  await runCompose(
+    'ci',
+    [],
+    {
+      runMode: 'ci',
+    }
+  );
+
+  const landlordAppUrl = process.env.APP_URL || process.env.LANDLORD_APP_URL;
+  console.log('application started\n');
+  console.log(
+    `Landlord front-end ready and accessible on ${landlordAppUrl}`
+  );
+  console.log(
+    `Tenant front-end ready and accessible on ${process.env.TENANT_APP_URL}`
   );
 }
 
@@ -130,9 +147,6 @@ async function status() {
     [],
     {
       runMode: 'prod',
-    },
-    {
-      logErrorsDuringExecution: true,
     }
   );
 }
@@ -145,9 +159,6 @@ async function showConfig(runMode) {
     [],
     {
       runMode,
-    },
-    {
-      logErrorsDuringExecution: true,
     }
   );
 }
@@ -170,7 +181,6 @@ async function restoreDB(backupFile) {
     ],
     {},
     {
-      logErrorsDuringExecution: true,
       waitLog: 'restoring database...',
     }
   );
@@ -196,7 +206,6 @@ async function dumpDB() {
     ],
     {},
     {
-      logErrorsDuringExecution: true,
       waitLog: 'dumping database...',
     }
   );
@@ -264,6 +273,10 @@ function displayHelp() {
       name: 'start',
       description:
         'Start the application in production mode (build command has to be run first)',
+    },
+    {
+      name: 'ci',
+      description: 'Start the application in CI mode',
     },
     {
       name: 'stop',
@@ -788,6 +801,7 @@ module.exports = {
   build,
   dev,
   start,
+  ci,
   stop,
   displayHeader,
   displayHelp,

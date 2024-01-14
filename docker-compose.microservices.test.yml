@@ -5,33 +5,27 @@ services:
   ###############################################################################
   gateway:
     environment:
-      - RESETSERVICE_URL=$RESETSERVICE_URL
+      - RESETSERVICE_URL
     depends_on:
       - resetservice
   ###############################################################################
   # ResetService
   ###############################################################################
   resetservice:
+    restart: unless-stopped
+    image: 'ghcr.io/microrealestate/microrealestate/resetservice:${MRE_VERSION:-latest}'
     build:
       context: .
       dockerfile: services/resetservice/dev.Dockerfile
     environment:
       - NODE_ENV
       - PORT=$RESETSERVICE_PORT
-      - LOGGER_LEVEL=$LOGGER_LEVEL
-      - REDIS_URL=$REDIS_URL
-      - REDIS_PASSWORD=$REDIS_PASSWORD
-      - MONGO_URL=$MONGO_URL
-    volumes:
-      - ./services/common:/usr/app/services/common
-      - ./services/resetservice:/usr/app/services/resetservice
-      - /usr/app/node_modules
-      - /usr/app/services/resetservice/node_modules
-      - /usr/app/services/resetservice/dist
+      - LOGGER_LEVEL
+      - REDIS_URL
+      - REDIS_PASSWORD
+      - MONGO_URL
     expose:
       - "$RESETSERVICE_PORT"
-    ports:
-      - "$RESETSERVICE_DEBUG_PORT:9230"
     networks:
       - net
     depends_on:

@@ -1,13 +1,15 @@
-name: Continuous Integration (CI)
+name: Continuous Integration
 
 on:
   push:
     branches:
       - master
-  # pull_request:
-  #   branches:
-  #     - master
-  workflow_dispatch:
+  pull_request:
+    branches:
+      - master
+
+env:
+  IMAGE_TAG: ${{ github.event.pull_request.number && github.event.pull_request.number || github.sha }}
 
 jobs:
   lint:
@@ -79,93 +81,61 @@ jobs:
           context: .
           file: ${{ matrix.dockerfile }}
           push: true
-          tags: '${{ matrix.image }}:${{ github.sha }}'
+          tags: '${{ matrix.image }}:${{ env.IMAGE_TAG }}'
           labels: ${{ steps.meta.outputs.labels }}
 
-  deploy_backend:
+  deploy:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+    - name: Checkout
+      uses: actions/checkout@v3
 
-      - name: Push gateway to dokku
-        uses: dokku/github-action@master
-        with:
-          git_remote_url: '${{ secrets.DOKKU_URL}}/gateway-stage'
-          ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
-          deploy_docker_image: ghcr.io/${{ github.repository }}/gateway:${{ github.sha }}
+    - name: Build commands
+      run: |
+       npm install -g pkg
+       yarn workspaces focus @microrealestate/cli
+       pkg cli/package.json --compress Brotli --output mre
+       mv mre-linux mre
+       mv mre-win.exe mre.exe
 
-      - name: Push authenticator to dokku
-        uses: dokku/github-action@master
-        with:
-          git_remote_url: '${{ secrets.DOKKU_URL}}/authenticator-stage'
-          ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
-          deploy_docker_image: ghcr.io/${{ github.repository }}/authenticator:${{ github.sha }}
+    - name: Copy files to remote server
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.KEY }}
+        source: "base.env,docker-compose.microservices.base.yml,docker-compose.microservices.test.yml,mre"
+        target: microrealestate
+    
+    - name: Start mre on remote server
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}     
+          script: |
+            docker stop $(docker ps -a -q)
+            docker rm $(docker ps -a -q)
+            docker rmi $(docker images -q)
+            cd microrealestate
+            MRE_VERSION=${{ env.IMAGE_TAG }} ./mre ci
 
-      - name: Push api to dokku
-        uses: dokku/github-action@master
-        with:
-          git_remote_url: '${{ secrets.DOKKU_URL}}/api-stage'
-          ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
-          deploy_docker_image: ghcr.io/${{ github.repository }}/api:${{ github.sha }}
-
-      - name: Push pdfgenerator to dokku
-        uses: dokku/github-action@master
-        with:
-          git_remote_url: '${{ secrets.DOKKU_URL}}/pdfgenerator-stage'
-          ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
-          deploy_docker_image: ghcr.io/${{ github.repository }}/pdfgenerator:${{ github.sha }}
-
-      - name: Push emailer to dokku
-        uses: dokku/github-action@master
-        with:
-          git_remote_url: '${{ secrets.DOKKU_URL}}/emailer-stage'
-          ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
-          deploy_docker_image: ghcr.io/${{ github.repository }}/emailer:${{ github.sha }}
-
-      - name: Push resetservice to dokku
-        uses: dokku/github-action@master
-        with:
-          git_remote_url: '${{ secrets.DOKKU_URL}}/resetservice-stage'
-          ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
-          deploy_docker_image: ghcr.io/${{ github.repository }}/resetservice:${{ github.sha }}
-
-      - name: Push tenantapi to dokku
-        uses: dokku/github-action@master
-        with:
-          git_remote_url: '${{ secrets.DOKKU_URL}}/tenantapi-stage'
-          ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
-          deploy_docker_image: ghcr.io/${{ github.repository }}/tenantapi:${{ github.sha }}
-
-  deploy_frontend:
+  healthcheck:
     runs-on: ubuntu-latest
-    needs: build
+    needs: deploy
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Push landlord-frontend to dokku
-        uses: dokku/github-action@master
-        with:
-          git_remote_url: '${{ secrets.DOKKU_URL}}/landlord-stage'
-          ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
-          deploy_docker_image: ghcr.io/${{ github.repository }}/landlord-frontend:${{ github.sha }}
-
-      - name: Push tenant-frontend to dokku
-        uses: dokku/github-action@master
-        with:
-          git_remote_url: '${{ secrets.DOKKU_URL}}/tenant-stage'
-          ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
-          deploy_docker_image: ghcr.io/${{ github.repository }}/tenant-frontend:${{ github.sha }}
+    - name: Wait until landlord app is up
+      uses: jtalk/url-health-check-action@v3
+      with:
+        url: ${{ secrets.LANDLORD_APP_URL }}
+        follow-redirect: true
+        max-attempts: 3 
+        retry-delay: 5s 
 
   test:
     runs-on: ubuntu-latest
-    needs:
-      [
-        deploy_backend,
-        deploy_frontend,
-      ]
+    needs: healthcheck
 
     steps:
       - name: Checkout code

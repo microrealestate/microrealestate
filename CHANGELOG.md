@@ -8,6 +8,8 @@ All notable changes to this project will be documented here.
 
 - Added new environment variable `MRE_VERSION` used by the `mre` command to run a specific version of the application.
 
+- Added the `ci` option to the `mre` command to run it in the github CI workflow.
+
 ### Changed
 
 - ...
