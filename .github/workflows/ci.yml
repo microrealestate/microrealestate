@@ -128,7 +128,7 @@ jobs:
     - name: Wait until landlord app is up
       uses: jtalk/url-health-check-action@v3
       with:
-        url: ${{ secrets.LANDLORD_APP_URL }}
+        url: ${{ secrets.LANDLORD_APP_URL }}/en/signin
         follow-redirect: true
         max-attempts: 3 
         retry-delay: 5s 
