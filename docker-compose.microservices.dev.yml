@@ -7,12 +7,44 @@ services:
     ports:
       - "$MONGO_PORT:$MONGO_PORT"
   ###############################################################################
+  # ResetService
+  ###############################################################################
+  resetservice:
+    image: 'ghcr.io/microrealestate/microrealestate/resetservice:${MRE_VERSION:-latest}'
+    build:
+      context: .
+      dockerfile: services/resetservice/dev.Dockerfile
+    environment:
+      - NODE_ENV
+      - PORT=$RESETSERVICE_PORT
+      - LOGGER_LEVEL
+      - REDIS_URL
+      - REDIS_PASSWORD
+      - MONGO_URL
+    volumes:
+      - ./services/common:/usr/app/services/common
+      - ./services/resetservice:/usr/app/services/resetservice
+      - /usr/app/node_modules
+      - /usr/app/services/resetservice/node_modules
+      - /usr/app/services/resetservice/dist
+    expose:
+      - "$RESETSERVICE_PORT"
+    ports:
+      - "$RESETSERVICE_DEBUG_PORT:9230"
+    networks:
+      - net
+    depends_on:
+      - redis
+      - mongo
+  ###############################################################################
   # Gateway
   ###############################################################################
   gateway:
     build:
       context: .
       dockerfile: services/gateway/dev.Dockerfile
+    environment:
+      - RESETSERVICE_URL
     volumes:
       - ./types:/usr/app/types
       - ./services/typed-common:/usr/app/services/typed-common
@@ -22,6 +54,8 @@ services:
       - /usr/app/services/gateway/dist
     ports:
       - "$GATEWAY_DEBUG_PORT:9225"
+    depends_on:
+      - resetservice
   ###############################################################################
   # Authenticator
   ###############################################################################

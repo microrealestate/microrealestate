@@ -18,6 +18,7 @@ const {
   dumpDB,
   askBackupFile,
   displayConfigWarningsAndErrors,
+  ci,
 } = require('./commands');
 const { loadEnv } = require('./utils');
 
@@ -41,6 +42,7 @@ function getArgs() {
       'start',
       'stop',
       'dev',
+      'ci',
       'status',
       'showconfig',
       'configure',
@@ -133,6 +135,9 @@ async function main() {
       case 'dev':
         await stop({ runMode: 'dev' });
         await dev();
+        break;
+      case 'ci':
+        await ci();
         break;
       case 'status':
         await status();

@@ -36,8 +36,8 @@ jobs:
       - name: Upload commands in release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ env.RELEASE_TAG }}
-          name: v${{ env.RELEASE_TAG }}
+          tag_name: ${{ github.event.release.tag_name }}
+          name: ${{ github.event.release.tag_name }}
           files: |
            ./mre-linux-x64.tar.gz
            ./mre-macos-x64.tar.gz

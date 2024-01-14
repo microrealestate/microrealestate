@@ -43,7 +43,6 @@ async function runCommand(cmd, parameters = [], options = {}) {
     spinner.start();
   }
   return new Promise((resolve, reject) => {
-    const errors = [];
     try {
       const shellCommand = spawn(cmd, parameters, {});
 
@@ -53,32 +52,15 @@ async function runCommand(cmd, parameters = [], options = {}) {
         spinner?.start();
       });
       shellCommand.stderr.on('data', (data) => {
-        if (options.logErrorsDuringExecution) {
-          spinner?.stop();
-          // see https://github.com/docker/compose/issues/6078
-          // const noErrorsOnStdErr = true;
-          // if (noErrorsOnStdErr) {
-          console.log(removeEndLineBreak(data.toString()));
-          // } else {
-          //console.error(chalk.red(removeEndLineBreak(data.toString())));
-          // }
-          spinner?.start();
-        } else {
-          errors.push(removeEndLineBreak(data.toString()));
-        }
+        spinner?.stop();
+        console.log(removeEndLineBreak(data.toString()));
+        spinner?.start();
       });
       shellCommand.on('error', (data) => {
-        if (options.logErrorsDuringExecution) {
-          console.error(chalk.red(removeEndLineBreak(data.toString())));
-        } else {
-          errors.push(removeEndLineBreak(data.toString()));
-        }
+        console.error(chalk.red(removeEndLineBreak(data.toString())));
       });
       shellCommand.on('close', (exitCode) => {
         spinner?.stop();
-        if (exitCode !== 0 && errors.length) {
-          errors.forEach((error) => console.error(chalk.red(error)));
-        }
 
         if (exitCode !== 0) {
           reject(exitCode);
@@ -120,7 +102,8 @@ function getComposeActions(cri, action) {
     case 'docker':
     case 'docker-compose':
       return {
-        start: ['up', '-d', '--force-recreate', '--remove-orphans'],
+        start: ['up', '-d', '--force-recreate', '--remove-orphans', '--no-color', '--quiet-pull'],
+        ci: ['up', '-d', '--force-recreate', '--remove-orphans',  '--no-color', '--quiet-pull'],
         dev: [
           'up',
           '--build',
@@ -138,7 +121,8 @@ function getComposeActions(cri, action) {
     case 'podman':
     case 'podman-compose':
       return {
-        start: ['up', '-d', '--force-recreate', '--remove-orphans'],
+        start: ['up', '-d', '--force-recreate', '--remove-orphans', '--no-color', '--quiet-pull'],
+        ci: ['up', '-d', '--force-recreate', '--remove-orphans', '--no-color', '--quiet-pull'],
         dev: [
           'up',
           '--build',
@@ -159,7 +143,7 @@ async function runCompose(
   composeAction,
   composeArgs,
   composeOptions = { runMode: 'dev' },
-  commandOptions = { logErrorsDuringExecution: false }
+  commandOptions = {}
 ) {
   const prodComposeArgs = [
     '-f',
@@ -172,14 +156,29 @@ async function runCompose(
     'docker-compose.microservices.base.yml',
     '-f',
     'docker-compose.microservices.dev.yml',
+  ];
+  const ciComposeArgs = [
+    '-f',
+    'docker-compose.microservices.base.yml',
     '-f',
     'docker-compose.microservices.test.yml',
   ];
 
-  // set NODE_ENV environment variable according to runMode
-  process.env.NODE_ENV =
-    composeOptions.runMode === 'prod' ? 'production' : 'development';
+  let composeFilesArgs = devComposeArgs;
+  if (composeOptions.runMode === 'prod') {
+    composeFilesArgs = prodComposeArgs;
+  } else if (composeOptions.runMode === 'ci') {
+    composeFilesArgs = ciComposeArgs;
+  }
 
+  // set NODE_ENV environment variable according to runMode
+  process.env.NODE_ENV = 'development';
+  if (composeOptions.runMode === 'prod') {
+    process.env.NODE_ENV = 'production';
+  } else if (composeOptions.runMode === 'ci') {
+    process.env.NODE_ENV = 'test';
+  }
+   
   const baseCmd = await findCRI();
 
   const actionArgs = getComposeActions(baseCmd[0], composeAction);
@@ -191,7 +190,7 @@ async function runCompose(
     baseCmd[0],
     [
       ...baseCmd.slice(1),
-      ...(composeOptions.runMode === 'prod' ? prodComposeArgs : devComposeArgs),
+      ...composeFilesArgs,
       ...actionArgs,
       ...composeArgs,
     ],
