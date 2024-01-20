@@ -17,10 +17,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Queue workflow if already running
+        uses: ahmadnassri/action-workflow-queue@v1
+
       - name: Set image_tag value
         id: set
         run: echo "image_tag=$(if [ "$GITHUB_EVENT_NAME" == "pull_request" ]; then echo pr-$GITHUB_HEAD_REF; else echo $GITHUB_SHA; fi)" >> $GITHUB_OUTPUT
-        
+
   lint:
     runs-on: ubuntu-latest
     needs: setup
