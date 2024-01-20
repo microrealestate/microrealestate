@@ -15,12 +15,12 @@ jobs:
       image_tag: ${{ steps.set.outputs.image_tag }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
-      - name: Set IMAGE_TAG value
+      - name: Set image_tag value
         id: set
-        run: echo "::set-output name=image_tag::$(if [ "$GITHUB_EVENT_NAME" == "pull_request" ]; then echo pr-$GITHUB_HEAD_REF; else echo $GITHUB_SHA; fi)"
-
+        run: echo "image_tag=$(if [ "$GITHUB_EVENT_NAME" == "pull_request" ]; then echo pr-$GITHUB_HEAD_REF; else echo $GITHUB_SHA; fi)" >> $GITHUB_OUTPUT
+        
   lint:
     runs-on: ubuntu-latest
     needs: setup
