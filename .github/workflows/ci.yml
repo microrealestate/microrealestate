@@ -22,7 +22,7 @@ jobs:
 
       - name: Set image_tag value
         id: set
-        run: echo "image_tag=$(if [ "$GITHUB_EVENT_NAME" == "pull_request" ]; then echo pr-$GITHUB_HEAD_REF; else echo $GITHUB_SHA; fi)" >> $GITHUB_OUTPUT
+        run: echo "image_tag=$(if [ "$GITHUB_EVENT_NAME" == "pull_request" ]; then echo pr-$(echo $GITHUB_REF | awk 'BEGIN { FS = "/" } ; { print $3 }'); else echo $GITHUB_SHA; fi)" >> $GITHUB_OUTPUT
 
   lint:
     runs-on: ubuntu-latest
