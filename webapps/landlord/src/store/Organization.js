@@ -16,6 +16,7 @@ export default class Organization {
       canUploadDocumentsInCloud: computed,
       fetch: flow,
       create: flow,
+      createAppCredentials: flow,
       update: flow,
     });
   }
@@ -57,6 +58,22 @@ export default class Organization {
   *create(organization) {
     try {
       const response = yield apiFetcher().post('/realms', organization);
+      return { status: 200, data: response.data };
+    } catch (error) {
+      console.error(error);
+      return { status: error?.response?.status };
+    }
+  }
+
+  *createAppCredentials(app) {
+    try {
+      const response = yield apiFetcher().post(
+        '/authenticator/landlord/appcredz',
+        {
+          expiry: app.expiryDate,
+          organizationId: this.selected?._id,
+        }
+      );
       return { status: 200, data: response.data };
     } catch (error) {
       console.error(error);

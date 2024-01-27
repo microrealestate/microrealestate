@@ -10,9 +10,17 @@ All notable changes to this project will be documented here.
 
 - Added the `ci` option to the `mre` command to run it in the github CI workflow.
 
+- Added `applications` in realms to store per-organisation application credentials (for M2M authentication).
+
+- Added `authenticator/landlord/appcredz` API endpoint to generate new application credentials.
+
+- Added application credentials management to landlord frontend (Settings > Members).
+
+- Changed the cli to generate the key to sign application credentials.
+
 ### Changed
 
-- ...
+- Changed `authenticator/landlord/signin` API endpoint to support both user credentials (email/password) and application credentials (clientId/clientSecret).
 
 ### Deprecated
 
@@ -33,6 +41,8 @@ All notable changes to this project will be documented here.
 ## Contributors
 
 - [@camelaissani](https://github.com/camelaissani)
+
+- @zeronounours
 
 
 ## 1.0.0-alpha.1

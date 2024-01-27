@@ -18,6 +18,7 @@ module.exports = {
   ACCESS_TOKEN_SECRET: process.env.ACCESS_TOKEN_SECRET,
   REFRESH_TOKEN_SECRET: process.env.REFRESH_TOKEN_SECRET,
   RESET_TOKEN_SECRET: process.env.RESET_TOKEN_SECRET,
+  APPCREDZ_TOKEN_SECRET: process.env.APPCREDZ_TOKEN_SECRET,
   CIPHER_KEY: process.env.CIPHER_KEY,
   CIPHER_IV_KEY: process.env.CIPHER_IV_KEY,
 
@@ -28,6 +29,7 @@ module.exports = {
     escapedConfig.ACCESS_TOKEN_SECRET = '****';
     escapedConfig.REFRESH_TOKEN_SECRET = '****';
     escapedConfig.RESET_TOKEN_SECRET = '****';
+    escapedConfig.APPCREDZ_TOKEN_SECRET = '****';
     escapedConfig.CIPHER_KEY = '****';
     escapedConfig.CIPHER_IV_KEY = '****';
     if (escapedConfig.GMAIL?.appPassword) {
