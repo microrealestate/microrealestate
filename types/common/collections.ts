@@ -34,6 +34,14 @@ export namespace CollectionTypes {
       role: string;
       registered: boolean;
     }[];
+    applications: {
+      name: string;
+      role: string;
+      clientId: string;
+      clientSecret: string;
+      createdDate: Date;
+      expiryDate: Date;
+    }[];
     addresses: CollectionTypes.PartAddress[];
     bankInfo: {
       name: string;

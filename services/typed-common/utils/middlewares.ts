@@ -1,10 +1,12 @@
 import * as Express from 'express';
 import * as JWT from 'jsonwebtoken';
 import {
+  ApplicationServicePrincipal,
   CollectionTypes,
   MongooseDocument,
   ServiceRequest,
   ServiceResponse,
+  UserServicePrincipal,
 } from '@microrealestate/types';
 import logger from 'winston';
 import Realm from '../collections/realm.js';
@@ -47,11 +49,22 @@ export function needAccessToken(
         accessToken,
         accessTokenSecret
       ) as JWT.JwtPayload;
-      if (!decoded.account) {
+      if (decoded.account) {
+        // user type UserServicePrincipal
+        (req as ServiceRequest).user = {
+          type: 'user',
+          email: decoded.account.email,
+        };
+      } else if (decoded.application) {
+        // user type ApplicationServicePrincipal
+        (req as ServiceRequest).user = {
+          type: 'application',
+          clientId: decoded.application.clientId,
+        };
+      } else {
         logger.warn('accessToken is invalid');
         return res.sendStatus(401);
       }
-      (req as ServiceRequest).user = decoded.account;
     } catch (error) {
       logger.warn(String(error));
       return res.sendStatus(401);
@@ -72,12 +85,30 @@ export function checkOrganization() {
       return next();
     }
 
-    // for the currennt user, add all subscribed organizations in request object
-    req.realms = (
-      await Realm.find<MongooseDocument<CollectionTypes.Realm>>({
-        members: { $elemMatch: { email: req.user.email } },
-      })
-    ).map((realm) => realm.toObject());
+    switch (req.user.type) {
+      case 'user':
+        // for the current user, add all subscribed organizations in request object
+        req.realms = (
+          await Realm.find<MongooseDocument<CollectionTypes.Realm>>({
+            members: { $elemMatch: { email: req.user.email } },
+          })
+        ).map((realm) => realm.toObject());
+        break;
+      case 'application':
+        // for the current application access, add only the associated realm
+        let realm = (
+          await Realm.findOne<MongooseDocument<CollectionTypes.Realm>>({
+            applications: { $elemMatch: { clientId: req.user.clientId } },
+          })
+        )?.toObject();
+        req.realms = realm ? [realm] : [];
+        break;
+      default:
+        logger.error(
+          'checkOrganization: Invalid request received: neither user nor application'
+        );
+        return res.sendStatus(500);
+    }
 
     // skip organization checks when fetching them
     if (req.path === '/realms') {
@@ -108,6 +139,25 @@ export function checkOrganization() {
     // current user is not a member of the organization
     if (!req.realms.find(({ _id }) => _id === req.realm?._id)) {
       logger.warn('current user is not a member of the organization');
+      return res.sendStatus(404);
+    }
+
+    // resolve the role for the current realm
+    switch (req.user.type) {
+      case 'user':
+        req.user.role = req.realm.members.find(
+          ({ email }) => email === (req.user as UserServicePrincipal).email
+        )?.role;
+        break;
+      case 'application':
+        req.user.role = req.realm.applications.find(
+          ({ clientId }) =>
+            clientId === (req.user as ApplicationServicePrincipal).clientId
+        )?.role;
+        break;
+    }
+    if (!req.user.role) {
+      logger.warn('current user could no be found within realm');
       return res.sendStatus(404);
     }
 

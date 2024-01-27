@@ -601,6 +601,8 @@ function writeDotEnv(promptsConfig, envConfig) {
     envConfig?.AUTHENTICATOR_REFRESH_TOKEN_SECRET || generateRandomToken(64);
   const resetTokenSecret =
     envConfig?.AUTHENTICATOR_RESET_TOKEN_SECRET || generateRandomToken(64);
+  const appcrezTokenSecret =
+    envConfig?.AUTHENTICATOR_APPCREDZ_TOKEN_SECRET || generateRandomToken(64);
   const {
     protocol,
     domain,
@@ -668,6 +670,7 @@ function writeDotEnv(promptsConfig, envConfig) {
     delete envConfig.AUTHENTICATOR_ACCESS_TOKEN_SECRET;
     delete envConfig.AUTHENTICATOR_REFRESH_TOKEN_SECRET;
     delete envConfig.AUTHENTICATOR_RESET_TOKEN_SECRET;
+    delete envConfig.AUTHENTICATOR_APPCREDZ_TOKEN_SECRET;
     delete envConfig.ALLOW_SENDING_EMAILS;
     delete envConfig.GMAIL_EMAIL;
     delete envConfig.GMAIL_APP_PASSWORD;
@@ -768,6 +771,7 @@ GATEWAY_URL=${gatewayUrl}
 AUTHENTICATOR_ACCESS_TOKEN_SECRET=${accessTokenSecret}
 AUTHENTICATOR_REFRESH_TOKEN_SECRET=${refreshTokenSecret}
 AUTHENTICATOR_RESET_TOKEN_SECRET=${resetTokenSecret}
+AUTHENTICATOR_APPCREDZ_TOKEN_SECRET=${appcrezTokenSecret}
 
 ## emailer
 # General Mailgun configuration to send emails for forgot password, welcome, etc.

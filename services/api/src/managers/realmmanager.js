@@ -1,5 +1,5 @@
 const logger = require('winston');
-const realmModel = require('../models/realm');
+const Realm = require('@microrealestate/common/models/realm');
 const accountModel = require('../models/account');
 const crypto = require('@microrealestate/common/utils/crypto');
 
@@ -37,18 +37,15 @@ const _escapeSecrets = (realm) => {
   if (realm.thirdParties?.b2?.applicationKey) {
     realm.thirdParties.b2.applicationKey = SECRET_PLACEHOLDER;
   }
+  for (const app of realm.applications) {
+    app.clientSecret = SECRET_PLACEHOLDER;
+  }
   return realm;
 };
 
 module.exports = {
-  add(req, res) {
-    const newRealm = realmModel.schema.filter(req.body);
-
-    delete req.body.thirdParties?.gmail?.appPasswordUpdated;
-    delete req.body.thirdParties?.smtp?.passwordUpdated;
-    delete req.body.thirdParties?.mailgun?.apiKeyUpdated;
-    delete req.body.thirdParties?.b2?.keyIdUpdated;
-    delete req.body.thirdParties?.b2?.applicationKeyUpdated;
+  async add(req, res) {
+    const newRealm = new Realm(req.body);
 
     if (!_hasRequiredFields(newRealm)) {
       return res.status(422).json({ error: 'missing fields' });
@@ -90,14 +87,12 @@ module.exports = {
       );
     }
 
-    realmModel.add(newRealm, (errors, realm) => {
-      if (errors) {
-        return res.status(500).json({
-          errors: errors,
-        });
-      }
-      res.status(201).json(_escapeSecrets(realm));
-    });
+    try {
+      res.status(201).json(_escapeSecrets(await newRealm.save()));
+    } catch (error) {
+      logger.error(error);
+      res.sendStatus(500).json({ errors: error });
+    }
   },
   async update(req, res) {
     const gmailAppPasswordUpdated =
@@ -108,34 +103,24 @@ module.exports = {
     const b2KeyIdUpdated = !!req.body.thirdParties?.b2?.keyIdUpdated;
     const b2ApplicationKeyUpdated =
       !!req.body.thirdParties?.b2?.applicationKeyUpdated;
-    const updatedRealm = realmModel.schema.filter(req.body);
 
-    delete req.body.thirdParties?.gmail?.appPasswordUpdated;
-    delete req.body.thirdParties?.smtp?.passwordUpdated;
-    delete req.body.thirdParties?.mailgun?.apiKeyUpdated;
-    delete req.body.thirdParties?.b2?.keyIdUpdated;
-    delete req.body.thirdParties?.b2?.applicationKeyUpdated;
-
-    if (req.realm._id !== updatedRealm._id) {
+    if (req.realm._id !== req.body?._id) {
       return res
         .status(403)
         .json({ error: 'only current selected organization can be updated' });
     }
 
-    const currentMember = req.realm.members.find(
-      ({ email }) => email === req.user.email
-    );
-    if (!currentMember) {
-      return res
-        .status(403)
-        .json({ error: 'current user is not a member of the organization' });
-    }
-
-    if (currentMember.role !== 'administrator') {
+    // No need to check wether user is part of org as it is already done by
+    // the middleware
+    if (req.user.role !== 'administrator') {
       return res.status(403).json({
         error: 'only administrator member can update the organization',
       });
     }
+
+    // retrieve the document from mongo & update it
+    const updatedRealm = await Realm.findOne({ _id: req.body._id }).exec();
+    updatedRealm.set(req.body);
 
     if (!_hasRequiredFields(updatedRealm)) {
       return res.status(422).json({ error: 'missing fields' });
@@ -231,14 +216,26 @@ module.exports = {
       member.registered = !!name;
     });
 
-    realmModel.update(updatedRealm, (errors, realm) => {
-      if (errors) {
-        return res.status(500).json({
-          errors: errors,
-        });
+    // Prevent AppCredz updates: only creation & deletion is permitted
+    const prevAppcredzMap = {};
+    req.realm.applications.reduce((acc, app) => {
+      acc[app.clientId] = app;
+      return acc;
+    }, prevAppcredzMap);
+
+    updatedRealm.applications = updatedRealm.applications.map((app) => {
+      if (prevAppcredzMap[app.clientId]) {
+        return prevAppcredzMap[app.clientId];
       }
-      res.status(200).json(_escapeSecrets(realm));
+      return app;
     });
+
+    try {
+      res.status(201).json(_escapeSecrets(await updatedRealm.save()));
+    } catch (error) {
+      logger.error(error);
+      res.sendStatus(500).json({ errors: error });
+    }
   },
   remove(/*req, res*/) {},
   one(req, res) {

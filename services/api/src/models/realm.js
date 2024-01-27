@@ -9,6 +9,7 @@ class RealmModel extends Model {
       _id: String,
       name: String,
       members: Array, // [{ name, email, role, registered },]
+      applications: Array, // [{ name, role, clientId, createdDate, expiryDate },]
       addresses: Array, // [{ street1, street2, zipCode, city, state, country }, ]
       bankInfo: Object, // { name, iban }
       contacts: Array, // [{ name, email, phone1, phone2 }]
