@@ -4,25 +4,16 @@ on:
   push:
     branches:
       - master
-  pull_request:
-    branches:
-      - master
 
 jobs:
   setup:
     runs-on: ubuntu-latest
-    outputs:
-      image_tag: ${{ steps.set.outputs.image_tag }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Queue workflow if already running
         uses: ahmadnassri/action-workflow-queue@v1
-
-      - name: Set image_tag value
-        id: set
-        run: echo "image_tag=$(if [ "$GITHUB_EVENT_NAME" == "pull_request" ]; then echo pr-$(echo $GITHUB_REF | awk 'BEGIN { FS = "/" } ; { print $3 }'); else echo $GITHUB_SHA; fi)" >> $GITHUB_OUTPUT
 
   lint:
     runs-on: ubuntu-latest
@@ -42,7 +33,7 @@ jobs:
       contents: read
       packages: write
     runs-on: ubuntu-latest
-    needs: [setup, lint]
+    needs: lint
     strategy:
       matrix:
         include:
@@ -97,12 +88,12 @@ jobs:
           context: .
           file: ${{ matrix.dockerfile }}
           push: true
-          tags: '${{ matrix.image }}:${{ needs.setup.outputs.image_tag }}'
+          tags: '${{ matrix.image }}:${{ github.sha }}'
           labels: ${{ steps.meta.outputs.labels }}
 
   deploy:
     runs-on: ubuntu-latest
-    needs: [setup, build-push-images]
+    needs: build-push-images
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -120,7 +111,7 @@ jobs:
         username: ${{ secrets.USERNAME }}
         key: ${{ secrets.KEY }}
         source: "base.env,docker-compose.microservices.base.yml,docker-compose.microservices.test.yml,mre"
-        target: microrealestate
+        target: microrealestate_ci
     
     - name: Start mre on remote server
       uses: appleboy/ssh-action@v1.0.3
@@ -129,11 +120,11 @@ jobs:
         username: ${{ secrets.USERNAME }}
         key: ${{ secrets.KEY }}     
         script: |
-          docker stop $(docker ps -a -q)
-          docker rm $(docker ps -a -q)
-          docker rmi $(docker images -q)
-          cd microrealestate
-          MRE_VERSION=${{ needs.setup.outputs.image_tag }} ./mre ci
+          cd microrealestate_ci
+          docker stop $(docker ps -qf "network=microrealestate_ci_net")
+          docker rm $(docker ps -qf "network=microrealestate_ci_net") 
+          MRE_VERSION=${{ github.sha }} ./mre ci
+          docker rmi $(docker images --filter=reference="ghcr.io/microrealestate/microrealestate/*:${{ github.sha }}" -q)
 
   healthcheck:
     runs-on: ubuntu-latest
@@ -142,7 +133,7 @@ jobs:
     - name: Check if the app is up and running
       uses: gerdemann/http-status-code@1.0.0
       with:
-        url: ${{ secrets.LANDLORD_APP_URL }}/en/signin
+        url: ${{ secrets.CI_LANDLORD_APP_URL }}/en/signin
         code: 200
         interval: 5
         
@@ -155,8 +146,8 @@ jobs:
 
     - name: Run tests
       env:
-        GATEWAY_URL: ${{ secrets.GATEWAY_URL }}
-        LANDLORD_APP_URL: ${{ secrets.LANDLORD_APP_URL }}
+        GATEWAY_URL: ${{ secrets.CI_GATEWAY_URL }}
+        LANDLORD_APP_URL: ${{ secrets.CI_LANDLORD_APP_URL }}
       run: |
         corepack enable
         yarn
