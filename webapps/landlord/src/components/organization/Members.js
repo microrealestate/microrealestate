@@ -313,7 +313,7 @@ const ApplicationShowDialog = memo(function ApplicationShowDialog({
               <DialogContent>
                 <DialogContentText>
                   {t(
-                    "Copy the credentials below and keep them safe. You won't be able to retrieve them again."
+                    'Copy the credentials below and keep them safe. You won\'t be able to retrieve them again.'
                   )}
                 </DialogContentText>
                 <Box minHeight={100} minWidth={500}>

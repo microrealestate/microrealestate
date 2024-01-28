@@ -62,13 +62,14 @@ const checkOrganization = () => {
           members: { $elemMatch: { email: req.user.email } },
         });
         break;
-      case 'application':
+      case 'application': {
         // for the current application access, add only the associated realm
         const realm = await Realm.findOne({
           applications: { $elemMatch: { clientId: req.user.clientId } },
         });
         realms = realm ? [realm] : [];
         break;
+      }
       default:
         logger.error(
           'checkOrganization: Invalid request received: neither user nor application'
