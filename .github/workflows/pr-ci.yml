@@ -1,19 +1,25 @@
-name: Continuous Integration
+name: PR Continuous Integration
 
 on:
-  push:
+  pull_request_target:
     branches:
       - master
 
 jobs:
   setup:
     runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ steps.set.outputs.image_tag }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Queue workflow if already running
         uses: ahmadnassri/action-workflow-queue@v1
+
+      - name: Set image_tag value
+        id: set
+        run: echo "image_tag=$(echo pr-$(echo $GITHUB_REF | awk 'BEGIN { FS = "/" } ; { print $3 }'))" >> $GITHUB_OUTPUT
 
   lint:
     runs-on: ubuntu-latest
@@ -33,7 +39,7 @@ jobs:
       contents: read
       packages: write
     runs-on: ubuntu-latest
-    needs: lint
+    needs: [setup, lint]
     strategy:
       matrix:
         include:
@@ -69,12 +75,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
@@ -87,13 +89,22 @@ jobs:
         with:
           context: .
           file: ${{ matrix.dockerfile }}
-          push: true
-          tags: '${{ matrix.image }}:${{ github.sha }}'
+          tags: '${{ matrix.image }}:${{ needs.setup.outputs.image_tag }}'
           labels: ${{ steps.meta.outputs.labels }}
+          outputs: type=docker,dest=/tmp/${{ matrix.appname }}.tar
+      
+      - name: Copy images to remote server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          source: /tmp/${{ matrix.appname }}.tar
+          target: microrealestate_pr
 
   deploy:
     runs-on: ubuntu-latest
-    needs: build-push-images
+    needs: [setup, build-push-images]
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -111,7 +122,7 @@ jobs:
         username: ${{ secrets.USERNAME }}
         key: ${{ secrets.KEY }}
         source: "base.env,docker-compose.microservices.base.yml,docker-compose.microservices.test.yml,mre"
-        target: microrealestate_ci
+        target: microrealestate_pr
     
     - name: Start mre on remote server
       uses: appleboy/ssh-action@v1.0.3
@@ -120,11 +131,12 @@ jobs:
         username: ${{ secrets.USERNAME }}
         key: ${{ secrets.KEY }}     
         script: |
-          cd microrealestate_ci
-          docker stop $(docker ps -qf "network=microrealestate_ci_net")
-          docker rm $(docker ps -qf "network=microrealestate_ci_net") 
-          MRE_VERSION=${{ github.sha }} ./mre ci
-          docker rmi $(docker images --filter=reference="ghcr.io/microrealestate/microrealestate/*:${{ github.sha }}" -q)
+          cd microrealestate_pr
+          docker stop $(docker ps -qf "network=microrealestate_pr_net")
+          docker rm $(docker ps -qf "network=microrealestate_pr_net") 
+          docker load -i *.tar
+          MRE_VERSION=${{ needs.setup.outputs.image_tag }} ./mre ci
+          docker rmi $(docker images --filter=reference="ghcr.io/microrealestate/microrealestate/*:${{ needs.setup.outputs.image_tag }}" -q)
 
   healthcheck:
     runs-on: ubuntu-latest
@@ -133,7 +145,7 @@ jobs:
     - name: Check if the app is up and running
       uses: gerdemann/http-status-code@1.0.0
       with:
-        url: ${{ secrets.CI_LANDLORD_APP_URL }}/en/signin
+        url: ${{ secrets.PR_LANDLORD_APP_URL }}/en/signin
         code: 200
         interval: 5
         
@@ -146,8 +158,8 @@ jobs:
 
     - name: Run tests
       env:
-        GATEWAY_URL: ${{ secrets.CI_GATEWAY_URL }}
-        LANDLORD_APP_URL: ${{ secrets.CI_LANDLORD_APP_URL }}
+        GATEWAY_URL: ${{ secrets.PR_GATEWAY_URL }}
+        LANDLORD_APP_URL: ${{ secrets.PR_LANDLORD_APP_URL }}
       run: |
         corepack enable
         yarn
