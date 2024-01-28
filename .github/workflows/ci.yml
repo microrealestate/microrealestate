@@ -123,8 +123,8 @@ jobs:
           cd microrealestate_ci
           docker stop $(docker ps -qf "network=microrealestate_ci_net")
           docker rm $(docker ps -qf "network=microrealestate_ci_net") 
-          MRE_VERSION=${{ github.sha }} ./mre ci
           docker rmi $(docker images --filter=reference="ghcr.io/microrealestate/microrealestate/*:${{ github.sha }}" -q)
+          MRE_VERSION=${{ github.sha }} ./mre ci
 
   healthcheck:
     runs-on: ubuntu-latest
