@@ -22,6 +22,8 @@ All notable changes to this project will be documented here.
 
 - Changed `authenticator/landlord/signin` API endpoint to support both user credentials (email/password) and application credentials (clientId/clientSecret).
 
+- Updated the Docker images to run on Node.js version 20, now as the new minimum requirement for running the application.
+
 ### Deprecated
 
 - ...

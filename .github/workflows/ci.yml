@@ -22,7 +22,7 @@ jobs:
 
       - name: Set image_tag value
         id: set
-        run: echo "image_tag=$(if [ "$GITHUB_EVENT_NAME" == "pull_request" ]; then echo pr-$GITHUB_HEAD_REF; else echo $GITHUB_SHA; fi)" >> $GITHUB_OUTPUT
+        run: echo "image_tag=$(if [ "$GITHUB_EVENT_NAME" == "pull_request" ]; then echo pr-$(echo $GITHUB_REF | awk 'BEGIN { FS = "/" } ; { print $3 }'); else echo $GITHUB_SHA; fi)" >> $GITHUB_OUTPUT
 
   lint:
     runs-on: ubuntu-latest
@@ -38,6 +38,9 @@ jobs:
         run: yarn lint
 
   build-push-images:
+    permissions:
+      contents: read
+      packages: write
     runs-on: ubuntu-latest
     needs: [setup, lint]
     strategy:
@@ -108,7 +111,7 @@ jobs:
       run: |
        npm install -g pkg
        yarn workspaces focus @microrealestate/cli
-       pkg cli/package.json --targets node16-linux-x64 --compress Brotli --output mre
+       pkg cli/package.json --targets node18-linux-x64 --compress Brotli --output mre
 
     - name: Copy files to remote server
       uses: appleboy/scp-action@v0.1.7

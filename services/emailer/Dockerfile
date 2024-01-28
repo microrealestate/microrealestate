@@ -1,4 +1,4 @@
-FROM node:18-alpine AS base
+FROM node:20-alpine AS base
 
 FROM base AS deps
 RUN apk --no-cache add build-base python3
@@ -15,7 +15,7 @@ COPY services/emailer/package.json services/emailer/package.json
 RUN --mount=type=cache,id=node_modules,target=/root/.yarn YARN_CACHE_FOLDER=/root/.yarn \
     yarn workspaces focus --production @microrealestate/emailer
 
-FROM node:18-slim
+FROM node:20-slim
 ENV NODE_ENV production
 WORKDIR /usr/app
 COPY --from=deps /usr/app ./
