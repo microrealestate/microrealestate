@@ -11,6 +11,7 @@ const {
   runCompose,
   loadEnv,
   validEmail,
+  getBackupPath,
 } = require('./utils');
 
 function initDirectories() {
@@ -559,9 +560,7 @@ function askRunMode() {
 function askBackupFile() {
   const backupFiles = [];
   try {
-    const files = fs.readdirSync(
-      path.resolve(process.execPath, '..', 'backup')
-    );
+    const files = fs.readdirSync(getBackupPath());
     files
       .filter((file) => file.endsWith('.dump'))
       .forEach((file) => {

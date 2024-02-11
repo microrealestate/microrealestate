@@ -5,7 +5,10 @@ const dotenv = require('dotenv');
 const dotenvExpand = require('dotenv-expand');
 
 let env = {};
-const envFile = path.resolve(process.cwd(), '.env');
+let envFile = path.resolve(process.cwd(), '.env');
+if (envFile.endsWith('e2e/.env')) {
+  envFile = envFile.replace('e2e/.env', '.env');
+}
 if (fs.existsSync(envFile)) {
   env = dotenvExpand.expand({
     ignoreProcessEnv: true,

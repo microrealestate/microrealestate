@@ -97,6 +97,19 @@ async function findCRI() {
   throw new Error('Cannot find a valid runtime to run containers');
 }
 
+function getBackupPath() {
+  // Path when run from the mre binary
+  let backupPath = path.resolve(process.execPath, '..', 'backup');
+  if (!fs.existsSync(backupPath)) {
+    // Path when run from npm
+    backupPath = path.resolve(__dirname, '..', '..', 'backup');
+  }
+  if (!fs.existsSync(backupPath)) {
+    throw new Error('Cannot find backup path check if the backup folder exists. Ensure you are running the command from the root of the project.');
+  }
+  return backupPath;
+}
+
 function getComposeActions(cri, action) {
   switch (cri) {
     case 'docker':
@@ -208,4 +221,5 @@ module.exports = {
   loadEnv,
   runCompose,
   validEmail,
+  getBackupPath
 };
