@@ -42,7 +42,7 @@ export default class RedisClient {
     if (!config.REDIS_URL) {
       throw new Error('REDIS_URL is not set');
     }
-    this.client = await redis.createClient({
+    this.client = redis.createClient({
       url: config.REDIS_URL,
       password: config.REDIS_PASSWORD,
     });
@@ -64,6 +64,8 @@ export default class RedisClient {
     this.del = this.client.del.bind(this.client);
     this.keys = this.client.keys.bind(this.client);
     // this.monitor = this.client.monitor.bind(this.client);
+
+    await this.client.connect();
   }
 
   async disconnect() {
