@@ -38,4 +38,4 @@ FROM base
 ENV NODE_ENV production
 WORKDIR /usr/app
 COPY --from=deps /usr/app ./
-CMD ["node", "services/resetservice/src/index.js"]
+CMD ["node", "services/resetservice/dist/index.js"]
