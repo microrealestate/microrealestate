@@ -10,13 +10,11 @@ COPY .yarnrc.yml .
 COPY yarn.lock .
 COPY .yarn/plugins .yarn/plugins
 COPY .yarn/releases .yarn/releases
-COPY types types
-COPY services/typed-common services/typed-common
+COPY types/package.json types/package.json
+COPY services/typed-common/package.json services/typed-common/package.json
 COPY services/gateway/package.json services/gateway/package.json
 RUN --mount=type=cache,id=node_modules,target=/root/.yarn YARN_CACHE_FOLDER=/root/.yarn \
-    yarn workspaces focus @microrealestate/gateway && \
-    yarn workspace @microrealestate/types run build && \
-    yarn workspace @microrealestate/typed-common run build 
+    yarn workspaces focus @microrealestate/gateway
 
 FROM base
 WORKDIR /usr/app

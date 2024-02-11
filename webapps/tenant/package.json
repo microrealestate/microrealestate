@@ -3,8 +3,13 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build --no-lint",
+    "clean:types": "rimraf ../../types/dist",
+    "transpile:types": "tsc --build ../../types/tsconfig.json",
+    "transpile:app": "next build --no-lint",
+    "watch:types": "tsc --build ../../types/tsconfig.json --watch --preserveWatchOutput",
+    "watch:app": "next dev",
+    "dev": "npm-run-all clean:types transpile:types --parallel watch:types watch:app",
+    "build": "npm-run-all clean:types transpile:types transpile:app",
     "start": "next start",
     "lint": "next lint --no-cache",
     "format": "prettier --write '**/*.{js,jsx,ts,tsx,json,css}'"
@@ -51,7 +56,9 @@
     "eslint-config-prettier": "9.1.0",
     "eslint-import-resolver-typescript": "3.6.1",
     "eslint-plugin-import": "2.29.1",
+    "npm-run-all": "4.1.5",
     "postcss": "8.4.31",
+    "rimraf": "5.0.5",
     "tailwindcss": "3.3.5",
     "typescript": "5.3.2"
   }
