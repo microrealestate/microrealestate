@@ -14,7 +14,7 @@ COPY types types
 COPY services/typed-common services/typed-common
 COPY services/resetservice/package.json services/resetservice/package.json
 RUN --mount=type=cache,id=node_modules,target=/root/.yarn YARN_CACHE_FOLDER=/root/.yarn \
-    yarn workspaces focus --production @microrealestate/resetservice && \
+    yarn workspaces focus @microrealestate/resetservice && \
     yarn workspace @microrealestate/types run build && \
     yarn workspace @microrealestate/typed-common run build && \
     yarn workspace @microrealestate/resetservice run build
