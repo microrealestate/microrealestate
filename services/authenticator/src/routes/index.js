@@ -1,11 +1,12 @@
-const express = require('express');
-const locale = require('locale');
-const landlordRouter = require('./landlord');
-const tenantRouter = require('./tenant');
+import express from 'express';
+import landlordRouter from './landlord.js';
+import locale from 'locale';
+import tenantRouter from './tenant.js';
 
-const router = express.Router();
-router.use(locale(['fr-FR', 'en-US', 'pt-BR', 'de-DE'], 'en-US'));
-router.use('/landlord', landlordRouter);
-router.use('/tenant', tenantRouter);
-
-module.exports = router;
+export default function() {
+  const router = express.Router();
+  router.use(locale(['fr-FR', 'en-US', 'pt-BR', 'de-DE'], 'en-US'));
+  router.use('/landlord', landlordRouter());
+  router.use('/tenant', tenantRouter());
+  return router;
+};

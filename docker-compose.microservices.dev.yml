@@ -73,11 +73,15 @@ services:
       context: .
       dockerfile: services/authenticator/dev.Dockerfile
     volumes:
-      - ./services/common:/usr/app/services/common
-      - ./services/authenticator:/usr/app/services/authenticator
-      - /usr/app/node_modules
-      - /usr/app/services/authenticator/node_modules
-      - /usr/app/services/authenticator/dist
+      - ./package.json:/usr/app/package.json
+      - ./types/src:/usr/app/types/src
+      - ./types/package.json:/usr/app/types/package.json
+      - ./types/tsconfig.json:/usr/app/types/tsconfig.json
+      - ./services/typed-common/src:/usr/app/services/typed-common/src
+      - ./services/typed-common/package.json:/usr/app/services/typed-common/package.json
+      - ./services/typed-common/tsconfig.json:/usr/app/services/typed-common/tsconfig.json
+      - ./services/authenticator/src:/usr/app/services/authenticator/src
+      - ./services/authenticator/package.json:/usr/app/services/authenticator/package.json
     ports:
       - "$AUTHENTICATOR_DEBUG_PORT:9226"
   ###############################################################################
