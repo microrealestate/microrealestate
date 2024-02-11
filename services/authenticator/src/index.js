@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-unresolved
 import { EnvironmentConfig, Service } from '@microrealestate/typed-common';
 import logger from 'winston';
 import routes from './routes/index.js';

@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-unresolved
 import { Collections,  Middlewares, Service } from '@microrealestate/typed-common';
 import axios from 'axios';
 import bcrypt from 'bcrypt';
