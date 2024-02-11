@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "declaration": true,
+    "emitDeclarationOnly": true,
     "forceConsistentCasingInFileNames": true,
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
@@ -9,5 +10,5 @@
     "target": "ES6",
     "outDir": "dist"
   },
-  "include": ["./**/*.ts"]
+  "include": ["src/**/*"]
 }

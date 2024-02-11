@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "declaration": true,
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "skipLibCheck": true,
@@ -7,5 +8,5 @@
     "target": "ESNext",
     "outDir": "dist"
   },
-  "include": ["./**/*.ts"]
+  "include": ["src/**/*"]
 }
