@@ -35,5 +35,6 @@
         "allowSeparatedGroups": false
       }
     ]
-  }
+  },
+  "ignorePatterns": ["dist/"]
 }

@@ -51,12 +51,16 @@ services:
     environment:
       - RESETSERVICE_URL
     volumes:
-      - ./types:/usr/app/types
-      - ./services/typed-common:/usr/app/services/typed-common
-      - ./services/gateway:/usr/app/services/gateway
-      - /usr/app/node_modules
-      - /usr/app/services/gateway/node_modules
-      - /usr/app/services/gateway/dist
+      - ./package.json:/usr/app/package.json
+      - ./types/src:/usr/app/types/src
+      - ./types/package.json:/usr/app/types/package.json
+      - ./types/tsconfig.json:/usr/app/types/tsconfig.json
+      - ./services/typed-common/src:/usr/app/services/typed-common/src
+      - ./services/typed-common/package.json:/usr/app/services/typed-common/package.json
+      - ./services/typed-common/tsconfig.json:/usr/app/services/typed-common/tsconfig.json
+      - ./services/gateway/src:/usr/app/services/gateway/src
+      - ./services/gateway/package.json:/usr/app/services/gateway/package.json
+      - ./services/gateway/tsconfig.json:/usr/app/services/gateway/tsconfig.json
     ports:
       - "$GATEWAY_DEBUG_PORT:9225"
     depends_on:
@@ -84,11 +88,15 @@ services:
       context: .
       dockerfile: services/pdfgenerator/dev.Dockerfile
     volumes:
-      - ./services/common:/usr/app/services/common
-      - ./services/pdfgenerator:/usr/app/services/pdfgenerator
-      - /usr/app/node_modules
-      - /usr/app/services/pdfgenerator/node_modules
-      - /usr/app/services/pdfgenerator/dist
+      - ./package.json:/usr/app/package.json
+      - ./services/common/models:/usr/app/services/common/models
+      - ./services/common/utils:/usr/app/services/common/utils
+      - ./services/common/config.js:/usr/app/services/common/config.js
+      - ./services/common/package.json:/usr/app/services/common/package.json
+      - ./services/pdfgenerator/data:/usr/app/services/pdfgenerator/data
+      - ./services/pdfgenerator/src:/usr/app/services/pdfgenerator/src
+      - ./services/pdfgenerator/templates:/usr/app/services/pdfgenerator/templates
+      - ./services/pdfgenerator/package.json:/usr/app/services/pdfgenerator/package.json
     ports:
       - "$PDFGENERATOR_DEBUG_PORT:9227"
   ###############################################################################
@@ -99,11 +107,13 @@ services:
       context: .
       dockerfile: services/emailer/dev.Dockerfile
     volumes:
-      - ./services/common:/usr/app/services/common
-      - ./services/emailer:/usr/app/services/emailer
-      - /usr/app/node_modules
-      - /usr/app/services/emailer/node_modules
-      - /usr/app/services/emailer/dist
+      - ./package.json:/usr/app/package.json
+      - ./services/common/models:/usr/app/services/common/models
+      - ./services/common/utils:/usr/app/services/common/utils
+      - ./services/common/config.js:/usr/app/services/common/config.js
+      - ./services/common/package.json:/usr/app/services/common/package.json
+      - ./services/emailer/src:/usr/app/services/emailer/src
+      - ./services/emailer/package.json:/usr/app/services/emailer/package.json
     ports:
       - "$EMAILER_DEBUG_PORT:9228"
   ###############################################################################
@@ -114,11 +124,14 @@ services:
       context: .
       dockerfile: services/api/dev.Dockerfile
     volumes:
-      - ./services/common:/usr/app/services/common
-      - ./services/api:/usr/app/services/api
-      - /usr/app/node_modules
-      - /usr/app/services/api/node_modules
-      - /usr/app/services/api/dist
+      - ./package.json:/usr/app/package.json
+      - ./services/common/models:/usr/app/services/common/models
+      - ./services/common/utils:/usr/app/services/common/utils
+      - ./services/common/config.js:/usr/app/services/common/config.js
+      - ./services/common/package.json:/usr/app/services/common/package.json
+      - ./services/api/scripts:/usr/app/services/api/scripts
+      - ./services/api/src:/usr/app/services/api/src
+      - ./services/api/package.json:/usr/app/services/api/package.json
     ports:
       - "$API_DEBUG_PORT:9229"
   ###############################################################################
@@ -129,12 +142,16 @@ services:
       context: .
       dockerfile: services/tenantapi/dev.Dockerfile
     volumes:
-      - ./types:/usr/app/types
-      - ./services/typed-common:/usr/app/services/typed-common
-      - ./services/tenantapi:/usr/app/services/tenantapi
-      - /usr/app/node_modules
-      - /usr/app/services/tenantapi/node_modules
-      - /usr/app/services/tenantapi/dist
+      - ./package.json:/usr/app/package.json
+      - ./types/src:/usr/app/types/src
+      - ./types/package.json:/usr/app/types/package.json
+      - ./types/tsconfig.json:/usr/app/types/tsconfig.json
+      - ./services/typed-common/src:/usr/app/services/typed-common/src
+      - ./services/typed-common/package.json:/usr/app/services/typed-common/package.json
+      - ./services/typed-common/tsconfig.json:/usr/app/services/typed-common/tsconfig.json
+      - ./services/tenantapi/src:/usr/app/services/tenantapi/src
+      - ./services/tenantapi/package.json:/usr/app/services/tenantapi/package.json
+      - ./services/tenantapi/tsconfig.json:/usr/app/services/tenantapi/tsconfig.json
     ports:
       - "$TENANTAPI_DEBUG_PORT:9240"
   ###############################################################################
@@ -145,11 +162,19 @@ services:
       context: .
       dockerfile: webapps/landlord/dev.Dockerfile
     volumes:
-      - ./webapps/commonui:/usr/app/webapps/commonui
-      - ./webapps/landlord:/usr/app/webapps/landlord
-      - /usr/app/node_modules
-      - /usr/app/webapps/landlord/node_modules
-      - /usr/app/webapps/landlord/.next
+      - ./package.json:/usr/app/package.json
+      - ./webapps/commonui/components:/usr/app/webapps/commonui/components
+      - ./webapps/commonui/locales:/usr/app/webapps/commonui/locales
+      - ./webapps/commonui/scripts:/usr/app/webapps/commonui/scripts
+      - ./webapps/commonui/utils:/usr/app/webapps/commonui/utils
+      - ./webapps/commonui/package.json:/usr/app/webapps/commonui/package.json
+      - ./webapps/landlord/locales:/usr/app/webapps/landlord/locales
+      - ./webapps/landlord/public:/usr/app/webapps/landlord/public
+      - ./webapps/landlord/scripts:/usr/app/webapps/landlord/scripts
+      - ./webapps/landlord/src:/usr/app/webapps/landlord/src
+      - ./webapps/landlord/i18n.js:/usr/app/webapps/landlord/i18n.js
+      - ./webapps/landlord/next.config.js:/usr/app/webapps/landlord/next.config.js
+      - ./webapps/landlord/package.json:/usr/app/webapps/landlord/package.json
   ###############################################################################
   # Tenant frontend
   ###############################################################################
@@ -158,9 +183,21 @@ services:
       context: .
       dockerfile: webapps/tenant/dev.Dockerfile
     volumes:
-      - ./types:/usr/app/types
-      - ./webapps/commonui:/usr/app/webapps/commonui
-      - ./webapps/tenant:/usr/app/webapps/tenant
-      - /usr/app/node_modules
-      - /usr/app/webapps/tenant/node_modules
-      - /usr/app/webapps/tenant/.next
+      - ./package.json:/usr/app/package.json
+      - ./types/src:/usr/app/types/src
+      - ./types/package.json:/usr/app/types/package.json
+      - ./types/tsconfig.json:/usr/app/types/tsconfig.json
+      - ./webapps/commonui/components:/usr/app/webapps/commonui/components
+      - ./webapps/commonui/locales:/usr/app/webapps/commonui/locales
+      - ./webapps/commonui/scripts:/usr/app/webapps/commonui/scripts
+      - ./webapps/commonui/utils:/usr/app/webapps/commonui/utils
+      - ./webapps/commonui/package.json:/usr/app/webapps/commonui/package.json
+      - ./webapps/tenant/locales:/usr/app/webapps/tenant/locales
+      - ./webapps/tenant/public:/usr/app/webapps/tenant/public
+      - ./webapps/tenant/src:/usr/app/webapps/tenant/src
+      - ./webapps/tenant/components.json:/usr/app/webapps/tenant/components.json
+      - ./webapps/tenant/next.config.js:/usr/app/webapps/tenant/next.config.js
+      - ./webapps/tenant/package.json:/usr/app/webapps/tenant/package.json
+      - ./webapps/tenant/postcss.config.js:/usr/app/webapps/tenant/postcss.config.js
+      - ./webapps/tenant/tailwind.config.ts:/usr/app/webapps/tenant/tailwind.config.ts
+      - ./webapps/tenant/tsconfig.json:/usr/app/webapps/tenant/tsconfig.json
