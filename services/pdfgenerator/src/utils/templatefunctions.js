@@ -1,6 +1,9 @@
-const path = require('path');
-const moment = require('moment');
-const i18n = require('i18n');
+import { fileURLToPath } from 'url';
+import i18n from 'i18n';
+import moment from 'moment';
+import path from 'path';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 i18n.configure({
   locales: ['en', 'fr-FR', 'pt-BR', 'de-DE'],
@@ -8,7 +11,7 @@ i18n.configure({
   updateFiles: false,
 });
 
-module.exports = ({ locale, currency }) => {
+export default function({ locale, currency }) {
   moment.locale(locale);
   i18n.setLocale(locale);
 
