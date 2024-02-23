@@ -23,4 +23,10 @@ export type EnvironmentValues = {
   DOMAIN_URL?: string;
   CORS_ENABLED?: boolean;
   TENANTAPI_URL?: string;
+  DATA_DIRECTORY?: string;
+  TEMPLATES_DIRECTORY?: string;
+  TEMPORARY_DIRECTORY?: string;
+  PDF_DIRECTORY?: string;
+  UPLOADS_DIRECTORY?: string;
+  UPLOAD_MAX_SIZE?: number;
 };

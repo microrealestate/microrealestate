@@ -1,19 +1,18 @@
-const express = require('express');
-const config = require('../config');
-const {
-  needAccessToken,
-  checkOrganization,
-} = require('@microrealestate/common/utils/middlewares');
-const templates = require('./templates');
-const documents = require('./documents');
+// eslint-disable-next-line import/no-unresolved
+import { Middlewares, Service } from '@microrealestate/typed-common';
+import documents from './documents.js';
+import express from 'express';
+import templates from './templates.js';
 
-const apiRoutes = express.Router('/pdfgenerator');
-apiRoutes.use(needAccessToken(config.ACCESS_TOKEN_SECRET));
-apiRoutes.use(checkOrganization());
-apiRoutes.use('/templates', templates);
-apiRoutes.use('/documents', documents);
+export default function() {
+  const apiRoutes = express.Router('/pdfgenerator');
+  apiRoutes.use(Middlewares.needAccessToken(Service.getInstance().envConfig.getValues().ACCESS_TOKEN_SECRET));
+  apiRoutes.use(Middlewares.checkOrganization());
+  apiRoutes.use('/templates', templates());
+  apiRoutes.use('/documents', documents());
+  
+  const routes = express.Router();
+  routes.use('/pdfgenerator', apiRoutes);
+  return routes;
+};
 
-const routes = express.Router();
-routes.use('/pdfgenerator', apiRoutes);
-
-module.exports = routes;

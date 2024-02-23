@@ -1,7 +1,9 @@
-const path = require('path');
-const config = require('./config');
+import path from 'path';
+// eslint-disable-next-line import/no-unresolved
+import { Service } from '@microrealestate/typed-common';
 
-module.exports = async (templateId, params) => {
-  const data = require(path.join(config.DATA_DIRECTORY, templateId));
+export default async function(templateId, params) {
+  const { DATA_DIRECTORY } = Service.getInstance().envConfig.getValues();
+  const data = await import(path.join(DATA_DIRECTORY, templateId,  'index.js'));
   return await data.get(params);
 };

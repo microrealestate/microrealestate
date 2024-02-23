@@ -1,9 +1,13 @@
-const locale = require('locale');
-const logger = require('winston');
-const server = require('@microrealestate/common/utils/server');
-const pdf = require('./pdf');
-const config = require('./config');
-const routes = require('./routes');
+import * as pdf from './pdf.js';
+// eslint-disable-next-line import/no-unresolved
+import { EnvironmentConfig, Service } from '@microrealestate/typed-common';
+import { fileURLToPath } from 'url';
+import locale from 'locale';
+import logger from 'winston';
+import path from 'path';
+import routes from './routes/index.js';
+
+Main();
 
 async function onStartUp(express) {
   // Start pdf engine
@@ -13,7 +17,7 @@ async function onStartUp(express) {
   express.use(locale(['fr-FR', 'en-US', 'pt-BR', 'de-DE'], 'en-US'));
 
   // api
-  express.use(routes);
+  express.use(routes());
 }
 
 async function onShutDown() {
@@ -21,19 +25,36 @@ async function onShutDown() {
 }
 
 async function Main() {
+  let service;
   try {
-    await server.init({
+    const __dirname = path.dirname(fileURLToPath(import.meta.url));
+    const root_dir = path.join(__dirname, '..');
+
+    service = Service.getInstance( 
+      new EnvironmentConfig({
+        PORT: Number(process.env.PORT || 8082),
+        DATA_DIRECTORY: process.env.DATA_DIRECTORY || path.join(root_dir, '/data'),
+        TEMPLATES_DIRECTORY:
+          process.env.TEMPLATES_DIRECTORY || path.join(root_dir, '/templates'),
+        TEMPORARY_DIRECTORY:
+          process.env.TEMPORARY_DIRECTORY || path.join(root_dir, '/tmp'),
+        PDF_DIRECTORY:
+          process.env.PDF_DIRECTORY || path.join(root_dir, '/pdf_documents'),
+        UPLOADS_DIRECTORY:
+          process.env.UPLOADS_DIRECTORY || path.join(root_dir, '/uploads'),
+        UPLOAD_MAX_SIZE: Number(process.env.UPLOAD_MAX_SIZE || 1024 * 1024 * 2 /* 2Mb */),
+      })
+    );
+
+    await service.init({
       name: 'PdfGenerator',
-      port: config.PORT,
       useMongo: true,
       onStartUp,
       onShutDown,
     });
-    await server.startUp();
-  } catch (err) {
-    logger.error(err);
-    server.shutdown(1);
+    await service.startUp();
+  } catch (error) {
+    logger.error(String(error));
+    service?.shutDown(-1);
   }
 }
-
-Main();
