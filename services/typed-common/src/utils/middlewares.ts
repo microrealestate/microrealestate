@@ -1,4 +1,4 @@
-import e, * as Express from 'express';
+import * as Express from 'express';
 import * as JWT from 'jsonwebtoken';
 import {
   ApplicationServicePrincipal,
