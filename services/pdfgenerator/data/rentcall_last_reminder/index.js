@@ -1,16 +1,14 @@
-const moment = require('moment');
-const rentcall = require('../rentcall');
-const utils = require('../');
+import * as rentcall from '../rentcall/index.js';
+import * as utils from '../index.js';
+import moment from 'moment';
 
-module.exports = {
-  async get(params) {
-    const data = await rentcall.get(params);
+export async function get(params) {
+  const data = await rentcall.get(params);
 
-    const momentToday = moment();
-    data.tenant.rents.forEach((rent) => {
-      rent.documentDate = utils.avoidWeekend(momentToday).format('DD/MM/YYYY');
-    });
+  const momentToday = moment();
+  data.tenant.rents.forEach((rent) => {
+    rent.documentDate = utils.avoidWeekend(momentToday).format('DD/MM/YYYY');
+  });
 
-    return data;
-  },
-};
+  return data;
+}

@@ -1,4 +1,4 @@
-import * as Express from 'express';
+import e, * as Express from 'express';
 import * as JWT from 'jsonwebtoken';
 import {
   ApplicationServicePrincipal,
@@ -92,7 +92,10 @@ export function checkOrganization() {
         await Realm.find<MongooseDocument<CollectionTypes.Realm>>({
           members: { $elemMatch: { email: req.user.email } },
         })
-      ).map((realm) => realm.toObject());
+      ).map((realm) => realm.toObject()).map((realm) => {
+        realm._id = String(realm._id);
+        return realm;
+      });
       break;
     case 'application': {
       // for the current application access, add only the associated realm
@@ -101,7 +104,12 @@ export function checkOrganization() {
           applications: { $elemMatch: { clientId: req.user.clientId } },
         })
       )?.toObject();
-      req.realms = realm ? [realm] : [];
+      if (realm) {
+        realm._id = String(realm._id);
+        req.realms = [realm];
+      } else {
+        req.realms = [];
+      }
       break;
     }
     default:
@@ -131,12 +139,15 @@ export function checkOrganization() {
         _id: organizationId,
       })
     )?.toObject();
+
     if (!req.realm) {
       // send 404 if req.realm is not set
       logger.warn('impossible to set organizationId in request');
       return res.sendStatus(404);
     }
 
+    req.realm._id = String(req.realm._id);
+    
     // current user is not a member of the organization
     if (!req.realms.find(({ _id }) => _id === req.realm?._id)) {
       logger.warn('current user is not a member of the organization');

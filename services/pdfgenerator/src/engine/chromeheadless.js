@@ -1,16 +1,14 @@
-const logger = require('winston');
-const path = require('path');
-const fs = require('fs');
-const fileUrl = require('file-url');
-const puppeteer = require('puppeteer');
-const config = require('../config');
-
-const pdf_dir = config.PDF_DIRECTORY;
-const tmp_dir = config.TEMPORARY_DIRECTORY;
+import fileUrl from 'file-url';
+import fs from 'fs';
+import logger from 'winston';
+import path from 'path';
+import puppeteer from 'puppeteer';
+// eslint-disable-next-line import/no-unresolved
+import { Service } from '@microrealestate/typed-common';
 
 let browserWSEndpoint;
 
-async function start() {
+export async function start() {
   logger.debug('chrome headless starting...');
   const browser = await puppeteer.launch({
     headless: 'new',
@@ -22,7 +20,7 @@ async function start() {
   logger.debug(`chrome headless ready on endpoint: ${browserWSEndpoint}`);
 }
 
-async function exit() {
+export async function exit() {
   logger.debug('chrome headless stopping...');
   const browser = await puppeteer.connect({ browserWSEndpoint });
   if (browser) {
@@ -31,9 +29,10 @@ async function exit() {
   logger.debug('chrome headless stopped');
 }
 
-async function generate(documentId, html, fileName) {
-  const html_file = path.join(tmp_dir, `${fileName}.html`);
-  const pdf_file = path.join(pdf_dir, `${fileName}.pdf`);
+export async function generate(documentId, html, fileName) {
+  const { TEMPORARY_DIRECTORY, PDF_DIRECTORY } = Service.getInstance().envConfig.getValues();
+  const html_file = path.join(TEMPORARY_DIRECTORY, `${fileName}.html`);
+  const pdf_file = path.join(PDF_DIRECTORY, `${fileName}.pdf`);
 
   logger.debug(`generating pdf for ${documentId}...`);
   fs.writeFileSync(html_file, html, 'utf8');
@@ -51,9 +50,3 @@ async function generate(documentId, html, fileName) {
 
   return pdf_file;
 }
-
-module.exports = {
-  start,
-  exit,
-  generate,
-};

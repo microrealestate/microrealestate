@@ -1,19 +1,19 @@
-const moment = require('moment');
+// eslint-disable-next-line import/no-unresolved
+import { Collections } from '@microrealestate/typed-common';
+import logger from 'winston';
+import moment from 'moment';
 
-const Tenant = require('@microrealestate/common/models/tenant');
-
-async function getRentsData(params) {
+export async function getRentsData(params) {
   const { id: tenantId, term } = params;
 
   let dbTenant;
   try {
-    dbTenant = await Tenant.findOne({ _id: tenantId })
+    dbTenant = await Collections.Tenant.findOne({ _id: tenantId })
       .populate('realmId')
       .populate('leaseId')
       .populate('properties.propertyId');
   } catch (error) {
-    // TODO: replace with logger.error
-    console.error(error);
+    logger.error(error);
   }
   if (!dbTenant) {
     throw new Error(`tenant ${tenantId} not found`);
@@ -95,7 +95,7 @@ async function getRentsData(params) {
   };
 }
 
-function avoidWeekend(aMoment) {
+export function avoidWeekend(aMoment) {
   const day = aMoment.isoWeekday();
   if (day === 6) {
     // if saturday shift the due date to friday
@@ -106,8 +106,3 @@ function avoidWeekend(aMoment) {
   }
   return aMoment;
 }
-
-module.exports = {
-  avoidWeekend,
-  getRentsData,
-};
