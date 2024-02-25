@@ -1,5 +1,10 @@
-const path = require('path');
+import { fileURLToPath } from 'url';
+import fs from 'fs';
+import path from 'path';
 
-module.exports = (locale) => {
-  return require(path.join(__dirname, `${locale}.json`));
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+export default async function(locale) {
+  const content = fs.readFileSync(path.join(__dirname, `${locale}.json`));
+  return JSON.parse(content);
 };

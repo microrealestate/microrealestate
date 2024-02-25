@@ -1,12 +1,15 @@
-const fs = require('fs');
-const path = require('path');
-const ejs = require('ejs');
-const config = require('./config');
-const templateFunctions = require('./utils/templatefunctions');
+import ejs from 'ejs';
+import { fileURLToPath } from 'url';
+import fs from 'fs';
+import path from 'path';
+// eslint-disable-next-line import/no-unresolved
+import { Service } from '@microrealestate/typed-common';
+import templateFunctions from './utils/templatefunctions.js';
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const _templatesDir = path.join(__dirname, 'emailparts', 'contents');
 
-const _renderFile = (templateFile, data) => {
+function _renderFile(templateFile, data) {
   return new Promise((resolve, reject) => {
     ejs.renderFile(templateFile, data, { root: _templatesDir }, (err, html) => {
       if (err) {
@@ -17,39 +20,38 @@ const _renderFile = (templateFile, data) => {
   });
 };
 
-module.exports = {
-  build: async (
-    locale,
-    currency,
-    templateName,
-    recordId,
-    params,
-    emailData
-  ) => {
-    const contentPackagePath = path.join(_templatesDir, templateName, locale);
-    if (!fs.existsSync(contentPackagePath)) {
-      throw new Error(
-        `cannot generate email content for ${templateName}. Template not found`
-      );
-    }
+export async function build(
+  locale,
+  currency,
+  templateName,
+  recordId,
+  params,
+  emailData
+)  {
+  const contentPackagePath = path.join(_templatesDir, templateName, locale);
 
-    const data = {
-      ...emailData,
-      config,
-      _: templateFunctions({ locale, currency }),
-    };
-    const subject = await _renderFile(
-      path.join(contentPackagePath, 'subject.ejs'),
-      data
+  if (!fs.existsSync(contentPackagePath)) {
+    throw new Error(
+      `cannot generate email content for ${templateName}. Template not found`
     );
-    const html = await _renderFile(
-      path.join(contentPackagePath, 'body_html.ejs'),
-      data
-    );
-    const text = await _renderFile(
-      path.join(contentPackagePath, 'body_text.ejs'),
-      data
-    );
-    return { subject, text, html };
-  },
+  }
+
+  const data = {
+    ...emailData,
+    config: Service.getInstance().envConfig.getValues(),
+    _: templateFunctions({ locale, currency }),
+  };
+  const subject = await _renderFile(
+    path.join(contentPackagePath, 'subject.ejs'),
+    data
+  );
+  const html = await _renderFile(
+    path.join(contentPackagePath, 'body_html.ejs'),
+    data
+  );
+  const text = await _renderFile(
+    path.join(contentPackagePath, 'body_text.ejs'),
+    data
+  );
+  return { subject, text, html };
 };

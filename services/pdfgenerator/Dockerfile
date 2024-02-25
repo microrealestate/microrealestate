@@ -28,7 +28,7 @@ COPY --from=build /usr/app/.yarn/plugins .yarn/plugins
 COPY --from=build /usr/app/.yarn/releases .yarn/releases
 COPY --from=build /usr/app/types/package.json types/package.json
 COPY --from=build /usr/app/services/typed-common/package.json ./services/typed-common/package.json
-COPY --from=build /usr/app/services/pdfgenerator/package.json ./services/authenticator/package.json
+COPY --from=build /usr/app/services/pdfgenerator/package.json ./services/pdfgenerator/package.json
 COPY --from=build /usr/app/services/typed-common/dist ./services/typed-common/dist
 RUN --mount=type=cache,id=node_modules,target=/root/.yarn YARN_CACHE_FOLDER=/root/.yarn \
     yarn workspaces focus --production @microrealestate/pdfgenerator

@@ -1,39 +1,38 @@
-const fs = require('fs');
-const moment = require('moment');
-const i18n = require('../locale');
-const fetchPDF = require('../fetchpdf');
+import fetchPDF from '../fetchpdf.js';
+import fs from 'fs';
+import i18n from '../locale/index.js';
+import moment from 'moment';
 
-module.exports = {
-  get: async (
+export async function get(
+  authorizationHeader,
+  locale,
+  organizationId,
+  recordId,
+  params,
+  { tenant }
+)  {
+  const billingRef = `${moment(params.term, 'YYYYMMDDHH')
+    .locale(locale)
+    .format('MM_YY')}_${tenant.reference}`;
+  const messages = await i18n(locale);
+  const filename = `${messages['short_invoice']}-${
+    tenant.name
+  }-${billingRef}.pdf`;
+  const filePath = await fetchPDF(
     authorizationHeader,
-    locale,
     organizationId,
+    'invoice',
     recordId,
     params,
-    { tenant }
-  ) => {
-    const billingRef = `${moment(params.term, 'YYYYMMDDHH')
-      .locale(locale)
-      .format('MM_YY')}_${tenant.reference}`;
-    const filename = `${i18n(locale)['short_invoice']}-${
-      tenant.name
-    }-${billingRef}.pdf`;
-    const filePath = await fetchPDF(
-      authorizationHeader,
-      organizationId,
-      'invoice',
-      recordId,
-      params,
-      filename
-    );
-    const data = fs.readFileSync(filePath);
-    return {
-      attachment: [
-        {
-          filename,
-          data,
-        },
-      ],
-    };
-  },
-};
+    filename
+  );
+  const data = fs.readFileSync(filePath);
+  return {
+    attachment: [
+      {
+        filename,
+        data,
+      },
+    ],
+  };
+}
