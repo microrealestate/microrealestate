@@ -1,19 +1,21 @@
-const fs = require('fs');
-const path = require('path');
+import { fileURLToPath } from 'url';
+import fs from 'fs';
+import path from 'path';
 
-module.exports = {
-  build: async (templateName, recordId, params) => {
-    const dataPackagePath = path.join(
-      __dirname,
-      'emailparts',
-      'data',
-      templateName
-    );
-    if (!fs.existsSync(dataPackagePath)) {
-      return {};
-    }
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const _dataDir = path.join(__dirname, 'emailparts', 'data');
 
-    const data = require(dataPackagePath);
-    return await data.get(recordId, params);
-  },
+export async function build(templateName, recordId, params) {
+  const dataPackagePath = path.join(
+    _dataDir,
+    templateName,
+    'index.js'
+  );
+
+  if (!fs.existsSync(dataPackagePath)) {
+    return {};
+  }
+
+  const data = await import(dataPackagePath);
+  return await data.get(recordId, params);
 };

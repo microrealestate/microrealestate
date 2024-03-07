@@ -1,19 +1,21 @@
-const fs = require('fs');
-const path = require('path');
+import { fileURLToPath } from 'url';
+import fs from 'fs';
+import path from 'path';
 
-module.exports = {
-  build: async (locale, templateName, recordId, params, data) => {
-    const recipientsPackagePath = path.join(
-      __dirname,
-      'emailparts',
-      'recipients',
-      templateName
-    );
-    if (!fs.existsSync(recipientsPackagePath)) {
-      return [];
-    }
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-    const recipients = require(recipientsPackagePath);
-    return await recipients.get(recordId, params, data);
-  },
+export async function build(locale, templateName, recordId, params, data) {
+  const recipientsPackagePath = path.join(
+    __dirname,
+    'emailparts',
+    'recipients',
+    templateName,
+    'index.js'
+  );
+  if (!fs.existsSync(recipientsPackagePath)) {
+    return [];
+  }
+
+  const recipients = await import(recipientsPackagePath);
+  return await recipients.get(recordId, params, data);
 };

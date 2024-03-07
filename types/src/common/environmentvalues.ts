@@ -29,4 +29,33 @@ export type EnvironmentValues = {
   PDF_DIRECTORY?: string;
   UPLOADS_DIRECTORY?: string;
   UPLOAD_MAX_SIZE?: number;
+  ALLOW_SENDING_EMAILS?: boolean;
+  APP_NAME?: string; 
+  LANDLORD_APP_URL?: string;
+  TENANT_APP_URL?: string;
+  GMAIL?: {
+    email: string;
+    appPassword: string;
+    fromEmail: string;
+    replyToEmail: string;
+    bccEmails: string;
+  }; 
+  SMTP?: {
+    server: string;
+    port: number;
+    secure: boolean;
+    authentication: boolean;
+    username: string;
+    password: string;
+    fromEmail: string;
+    replyToEmail: string;
+    bccEmails: string;
+  }; 
+  MAILGUN?: {
+    apiKey: string;
+    domain: string;
+    fromEmail: string;
+    replyToEmail: string;
+    bccEmails: string;
+  }; 
 };

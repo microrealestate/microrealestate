@@ -1,14 +1,11 @@
-const express = require('express');
-const locale = require('locale');
-const logger = require('winston');
-const {
-  needAccessToken,
-  checkOrganization,
-} = require('@microrealestate/common/utils/middlewares');
-const emailer = require('./emailer');
-const config = require('./config');
+import * as Emailer from './emailer.js';
+// eslint-disable-next-line import/no-unresolved
+import { Middlewares, Service } from '@microrealestate/typed-common';
+import express from 'express';
+import locale from 'locale';
+import logger from 'winston';
 
-const _send = async (req, res) => {
+async function _send(req, res) {
   try {
     const { templateName, recordId, params } = req.body;
     let allowedTemplates;
@@ -34,7 +31,7 @@ const _send = async (req, res) => {
     }
 
     // TODO: pass headers in params
-    const results = await emailer.send(
+    const results = await Emailer.send(
       req.headers.authorization,
       req.realm?.locale || req.rawLocale.code,
       req.realm?.currency || '',
@@ -66,40 +63,43 @@ const _send = async (req, res) => {
   }
 };
 
-const apiRouter = express.Router();
-// parse locale
-apiRouter.use(locale(['fr-FR', 'en', 'pt-BR', 'de-DE'], 'en')); // used when organization is not set
-apiRouter.post('/emailer/resetpassword', _send); // allow this route even there is no access token
-apiRouter.post('/emailer/magiclink', _send); // allow this route even there is no access token
-apiRouter.use(needAccessToken(config.ACCESS_TOKEN_SECRET));
-apiRouter.use(checkOrganization());
+export default function routes() {
+  const { ACCESS_TOKEN_SECRET } = Service.getInstance().envConfig.getValues();
+  const apiRouter = express.Router();
+  // parse locale
+  apiRouter.use(locale(['fr-FR', 'en', 'pt-BR', 'de-DE'], 'en')); // used when organization is not set
+  apiRouter.post('/emailer/resetpassword', _send); // allow this route even there is no access token
+  apiRouter.post('/emailer/magiclink', _send); // allow this route even there is no access token
+  apiRouter.use(Middlewares.needAccessToken(ACCESS_TOKEN_SECRET));
+  apiRouter.use(Middlewares.checkOrganization());
 
-//     recordId,      // DB record Id
-//     startTerm      // ex. { term: 2018030100 })
-//     endTerm        // ex. { term: 2018040100 })
-apiRouter.get('/emailer/status/:startTerm/:endTerm?', async (req, res) => {
-  try {
-    const { startTerm, endTerm } = req.params;
-    const result = await emailer.status(
-      null,
-      Number(startTerm),
-      endTerm ? Number(endTerm) : null
-    );
-    res.json(result);
-  } catch (error) {
-    logger.error(error);
-    res.status(500).send({
-      status: 500,
-      message: error.message,
-    });
-  }
-});
+  //     recordId,      // DB record Id
+  //     startTerm      // ex. { term: 2018030100 })
+  //     endTerm        // ex. { term: 2018040100 })
+  apiRouter.get('/emailer/status/:startTerm/:endTerm?', async (req, res) => {
+    try {
+      const { startTerm, endTerm } = req.params;
+      const result = await Emailer.status(
+        null,
+        Number(startTerm),
+        endTerm ? Number(endTerm) : null
+      );
+      res.json(result);
+    } catch (error) {
+      logger.error(error);
+      res.status(500).send({
+        status: 500,
+        message: error.message,
+      });
+    }
+  });
 
-// body = {
-//     templateName,  // email template name (invoice, rentcall, rentcall-reminder...)
-//     recordId,      // DB record Id
-//     params         // extra parameters (ex. { term: 2018030100 })
-// }
-apiRouter.post('/emailer', _send);
+  // body = {
+  //     templateName,  // email template name (invoice, rentcall, rentcall-reminder...)
+  //     recordId,      // DB record Id
+  //     params         // extra parameters (ex. { term: 2018030100 })
+  // }
+  apiRouter.post('/emailer', _send);
 
-module.exports = apiRouter;
+  return apiRouter;
+};

@@ -1,8 +1,8 @@
-const formData = require('form-data');
-const nodemailer = require('nodemailer');
-const Mailgun = require('mailgun.js');
-const config = require('./config');
-const crypto = require('@microrealestate/common/utils/crypto');
+// eslint-disable-next-line import/no-unresolved
+import { Crypto, Service } from '@microrealestate/typed-common';
+import formData from 'form-data';
+import Mailgun from 'mailgun.js';
+import nodemailer from 'nodemailer';
 
 async function _sendWithMailgun(config, email) {
   const mailgun = new Mailgun(formData);
@@ -51,31 +51,32 @@ async function _sendWithSmtp(config, email) {
   };
 }
 
-function sendEmail(email, data) {
+export function sendEmail(email, data) {
+  const { GMAIL, SMTP, MAILGUN } = Service.getInstance().envConfig.getValues();
   let emailDeliveryServiceConfig;
   // email service config from env file
   if (data.useAppEmailService) {
-    if (config.GMAIL) {
+    if (GMAIL) {
       emailDeliveryServiceConfig = {
         name: 'gmail',
         server: 'smtp.gmail.com',
         port: 587,
         secure: false, // if true then port is 465, false for other ports
         authentication: true,
-        username: config.GMAIL.email,
-        password: config.GMAIL.appPassword,
+        username: GMAIL.email,
+        password: GMAIL.appPassword,
       };
     }
-    if (config.SMTP) {
+    if (SMTP) {
       emailDeliveryServiceConfig = {
         name: 'smtp',
-        ...config.SMTP,
+        ...SMTP,
       };
     }
-    if (config.MAILGUN) {
+    if (MAILGUN) {
       emailDeliveryServiceConfig = {
         name: 'mailgun',
-        ...config.MAILGUN,
+        ...MAILGUN,
       };
     }
   }
@@ -89,7 +90,7 @@ function sendEmail(email, data) {
         secure: false, // if true then port is 465, false for other ports
         authentication: true,
         username: data.landlord.thirdParties.gmail.email,
-        password: crypto.decrypt(data.landlord.thirdParties.gmail.appPassword),
+        password: Crypto.decrypt(data.landlord.thirdParties.gmail.appPassword),
       };
     }
     if (data.landlord.thirdParties?.smtp?.selected) {
@@ -103,14 +104,14 @@ function sendEmail(email, data) {
           ? data.landlord.thirdParties.smtp.username
           : null,
         password: data.landlord.thirdParties.smtp.authentication
-          ? crypto.decrypt(data.landlord.thirdParties.smtp.password)
+          ? Crypto.decrypt(data.landlord.thirdParties.smtp.password)
           : null,
       };
     }
     if (data.landlord.thirdParties?.mailgun?.selected) {
       emailDeliveryServiceConfig = {
         name: 'mailgun',
-        apiKey: crypto.decrypt(data.landlord.thirdParties.mailgun.apiKey),
+        apiKey: Crypto.decrypt(data.landlord.thirdParties.mailgun.apiKey),
         domain: data.landlord.thirdParties.mailgun.domain,
       };
     }
@@ -134,7 +135,3 @@ function sendEmail(email, data) {
       throw new Error(`${emailDeliveryServiceConfig.name} is not supported`);
   }
 }
-
-module.exports = {
-  sendEmail,
-};

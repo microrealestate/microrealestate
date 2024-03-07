@@ -1,5 +1,3 @@
-const rentcall = require('../rentcall');
+import * as Rentcall from '../rentcall/index.js';
 
-module.exports = {
-  get: rentcall.get,
-};
+export const get = Rentcall.get;

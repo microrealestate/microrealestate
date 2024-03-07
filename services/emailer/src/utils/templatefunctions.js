@@ -1,6 +1,6 @@
-const moment = require('moment');
+import moment from 'moment';
 
-module.exports = ({ locale, currency }) => {
+export default function({ locale, currency }) {
   moment.locale(locale);
 
   return {
