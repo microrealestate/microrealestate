@@ -1,6 +1,6 @@
 FROM node:20-alpine AS base
 
-FROM base AS deps
+FROM base AS build
 RUN apk --no-cache add build-base python3
 RUN corepack enable && \
     corepack prepare yarn@3.3.0 --activate
@@ -10,8 +10,25 @@ COPY .yarnrc.yml .
 COPY yarn.lock .
 COPY .yarn/plugins .yarn/plugins
 COPY .yarn/releases .yarn/releases
-COPY services/common/package.json services/common/package.json
+COPY types types
+COPY services/typed-common services/typed-common
 COPY services/emailer/package.json services/emailer/package.json
+RUN --mount=type=cache,id=node_modules,target=/root/.yarn YARN_CACHE_FOLDER=/root/.yarn \
+    yarn workspaces focus @microrealestate/emailer && \
+    yarn workspace @microrealestate/types run build && \
+    yarn workspace @microrealestate/typed-common run build
+
+FROM base AS deps
+WORKDIR /usr/app
+COPY --from=build /usr/app/package.json .
+COPY --from=build /usr/app/.yarnrc.yml .
+COPY --from=build /usr/app/yarn.lock .
+COPY --from=build /usr/app/.yarn/plugins .yarn/plugins
+COPY --from=build /usr/app/.yarn/releases .yarn/releases
+COPY --from=build /usr/app/types/package.json types/package.json
+COPY --from=build /usr/app/services/typed-common/package.json ./services/typed-common/package.json
+COPY --from=build /usr/app/services/emailer/package.json ./services/emailer/package.json
+COPY --from=build /usr/app/services/typed-common/dist ./services/typed-common/dist
 RUN --mount=type=cache,id=node_modules,target=/root/.yarn YARN_CACHE_FOLDER=/root/.yarn \
     yarn workspaces focus --production @microrealestate/emailer
 
@@ -20,7 +37,4 @@ ENV NODE_ENV production
 WORKDIR /usr/app
 COPY --from=deps /usr/app ./
 COPY services/emailer/src ./services/emailer/src
-COPY services/common/models ./services/common/models
-COPY services/common/utils ./services/common/utils
-COPY services/common/config.js ./services/common/config.js
 CMD ["node", "services/emailer/src/index.js"]

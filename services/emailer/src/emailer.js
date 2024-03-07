@@ -1,13 +1,13 @@
-const logger = require('winston');
-const config = require('./config');
-const Email = require('@microrealestate/common/models/email');
-const emailData = require('./emaildata');
-const emailRecipients = require('./emailrecipients');
-const emailContent = require('./emailcontent');
-const emailAttachments = require('./emailattachments');
-const emailEngine = require('./emailengine');
+import * as EmailAttachments from './emailattachments.js';
+import * as EmailContent from './emailcontent.js';
+import * as EmailData from './emaildata.js';
+import * as EmailEngine from './emailengine.js';
+import * as EmailRecipients from './emailrecipients.js';
+// eslint-disable-next-line import/no-unresolved
+import { Collections, Service } from '@microrealestate/typed-common';
+import logger from 'winston';
 
-const status = async (recordId, startTerm, endTerm) => {
+export async function status(recordId, startTerm, endTerm) {
   const query = {};
   if (recordId) {
     query.recordId = recordId;
@@ -23,7 +23,7 @@ const status = async (recordId, startTerm, endTerm) => {
     };
   }
 
-  return await Email.find(
+  return await Collections.Email.find(
     query,
     {
       _id: false,
@@ -38,7 +38,7 @@ const status = async (recordId, startTerm, endTerm) => {
 };
 
 // TODO: pass some args in params
-const send = async (
+export async function send(
   authorizationHeader, // Bearer accessToken
   locale,
   currency,
@@ -46,7 +46,8 @@ const send = async (
   templateName,
   recordId,
   params
-) => {
+) {
+  const { ALLOW_SENDING_EMAILS } = Service.getInstance().envConfig.getValues();
   const result = {
     templateName,
     recordId,
@@ -56,7 +57,7 @@ const send = async (
   let data;
   try {
     logger.debug('fetch email data');
-    data = await emailData.build(templateName, recordId, params);
+    data = await EmailData.build(templateName, recordId, params);
   } catch (error) {
     logger.error(error);
     return [
@@ -74,7 +75,7 @@ const send = async (
   let recipientsList;
   try {
     logger.debug('get email recipients');
-    recipientsList = await emailRecipients.build(
+    recipientsList = await EmailRecipients.build(
       locale,
       templateName,
       recordId,
@@ -98,7 +99,7 @@ const send = async (
   let attachments;
   try {
     logger.debug('add email attachments');
-    attachments = await emailAttachments.build(
+    attachments = await EmailAttachments.build(
       authorizationHeader,
       locale,
       organizationId,
@@ -123,7 +124,7 @@ const send = async (
   let content;
   try {
     logger.debug('get email content');
-    content = await emailContent.build(
+    content = await EmailContent.build(
       locale,
       currency,
       templateName,
@@ -161,12 +162,21 @@ const send = async (
         ...content,
         ...attachments,
       };
-      logger.debug(email);
+      logger.debug(`recipients:
+${email.to}
+subject:
+${email.subject} 
+text:
+${email.text}
+html:
+${email.html} 
+attachments:
+${email.attachment.map(a => `${a.filename} size: ${a.data?.length || 0}`).join('\n')}`);
 
       let status;
-      if (config.ALLOW_SENDING_EMAILS) {
-        status = await emailEngine.sendEmail(email, data);
-        new Email({
+      if (ALLOW_SENDING_EMAILS) {
+        status = await EmailEngine.sendEmail(email, data);
+        new Collections.Email({
           templateName,
           recordId, // tenantId
           params,
@@ -194,9 +204,4 @@ const send = async (
       };
     })
   );
-};
-
-module.exports = {
-  send,
-  status,
 };

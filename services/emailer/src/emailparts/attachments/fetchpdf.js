@@ -1,22 +1,24 @@
-const path = require('path');
-const fs = require('fs');
-const axios = require('axios');
-const config = require('../../config');
+import axios from 'axios';
+import fs from 'fs';
+import path from 'path';
+// eslint-disable-next-line import/no-unresolved
+import { Service } from '@microrealestate/typed-common';
 
-module.exports = (
+export default function(
   authorizationHeader,
   organizationId,
   templateName,
   recordId,
   params,
   filename
-) => {
-  const uri = `${config.PDFGENERATOR_URL}/documents/${templateName}/${recordId}/${params.term}`;
-  const fileDir = path.join(config.TEMPORARY_DIRECTORY, templateName);
+)  {
+  const { PDFGENERATOR_URL, TEMPORARY_DIRECTORY } = Service.getInstance().envConfig.getValues();
+  const uri = `${PDFGENERATOR_URL}/documents/${templateName}/${recordId}/${params.term}`;
+  const fileDir = path.join(TEMPORARY_DIRECTORY, templateName);
   if (!fs.existsSync(fileDir)) {
     fs.mkdirSync(fileDir);
   }
-  const filePath = path.join(fileDir, `${filename}.pdf`);
+  const filePath = path.join(fileDir, filename);
   const wStream = fs.createWriteStream(filePath);
 
   return axios

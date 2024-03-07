@@ -51,7 +51,7 @@ async function build({ service = 'all' }) {
     composeArgs,
     { runMode: 'prod' },
     {
-      waitLog: 'building containers...',
+      waitLog: 'building images...',
     }
   );
 

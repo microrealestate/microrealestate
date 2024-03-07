@@ -1,5 +1,4 @@
-const invoice = require('../invoice/index.js');
+import * as Invoice from '../invoice/index.js';
 
-module.exports = {
-  get: invoice.get,
-};
+export const get = Invoice.get;
+

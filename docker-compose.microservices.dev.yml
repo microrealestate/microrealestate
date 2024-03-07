@@ -114,10 +114,12 @@ services:
       dockerfile: services/emailer/dev.Dockerfile
     volumes:
       - ./package.json:/usr/app/package.json
-      - ./services/common/models:/usr/app/services/common/models
-      - ./services/common/utils:/usr/app/services/common/utils
-      - ./services/common/config.js:/usr/app/services/common/config.js
-      - ./services/common/package.json:/usr/app/services/common/package.json
+      - ./types/src:/usr/app/types/src
+      - ./types/package.json:/usr/app/types/package.json
+      - ./types/tsconfig.json:/usr/app/types/tsconfig.json
+      - ./services/typed-common/src:/usr/app/services/typed-common/src
+      - ./services/typed-common/package.json:/usr/app/services/typed-common/package.json
+      - ./services/typed-common/tsconfig.json:/usr/app/services/typed-common/tsconfig.json
       - ./services/emailer/src:/usr/app/services/emailer/src
       - ./services/emailer/package.json:/usr/app/services/emailer/package.json
     ports:
