@@ -1,4 +1,4 @@
-import { action, makeObservable, observable } from 'mobx';
+import { makeObservable, observable } from 'mobx';
 import { setAccessToken, setOrganizationId } from '../utils/fetch';
 
 import Accounting from './Accounting';
@@ -28,10 +28,6 @@ export default class Store {
     this.accounting = new Accounting();
 
     makeObservable(this, {
-      toastMessages: observable,
-      pushToastMessage: action,
-      shiftToastMessage: action,
-
       user: observable,
       organization: observable,
       lease: observable,
@@ -41,7 +37,7 @@ export default class Store {
       template: observable,
       document: observable,
       dashboard: observable,
-      accounting: observable,
+      accounting: observable
     });
   }
 
@@ -53,33 +49,33 @@ export default class Store {
     const {
       user = {},
       organization = {
-        items: [],
+        items: []
       },
       lease = {
-        items: [],
+        items: []
       },
       rent = {
-        items: [],
+        items: []
       },
       tenant = {
-        items: [],
+        items: []
       },
       property = {
-        items: [],
+        items: []
       },
       template = {
         items: [],
-        fields: [],
+        fields: []
       },
       document = {
-        items: [],
+        items: []
       },
       dashboard = {
-        data: {},
+        data: {}
       },
       accounting = {
-        data: {},
-      },
+        data: {}
+      }
     } = initialData;
 
     this.user.firstName = user.firstName;
@@ -129,13 +125,5 @@ export default class Store {
     this.dashboard.data = dashboard.data;
 
     this.accounting.data = accounting.data;
-  }
-
-  pushToastMessage(error) {
-    this.toastMessages.push(error);
-  }
-
-  shiftToastMessage() {
-    return this.toastMessages.shift();
   }
 }

@@ -1,35 +1,28 @@
-import { Box, IconButton } from '@material-ui/core';
-import { useCallback, useMemo, useState } from 'react';
-
-import CheckIcon from '@material-ui/icons/Check';
-import Menu from '@material-ui/core/Menu';
-import MenuItem from '@material-ui/core/MenuItem';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger
+} from '../components/ui/popover';
+import { useCallback, useMemo } from 'react';
+import { Checkbox } from '../components/ui/checkbox';
 
 export default function ToggleMenu({
-  startIcon,
   options,
   selectedIds = [],
   multi = false,
+  align = 'start',
   onChange,
+  children
 }) {
-  const [anchorEl, setAnchorEl] = useState(null);
   const selectedOptions = useMemo(() => {
     return selectedIds.map((id) => options.find((option) => option.id === id));
   }, [options, selectedIds]);
-
-  const handleClick = useCallback((event) => {
-    setAnchorEl(event.currentTarget);
-  }, []);
-
-  const handleClose = useCallback(() => {
-    setAnchorEl(null);
-  }, []);
 
   const handleMenuItemClick = useCallback(
     (option) => () => {
       if (multi === false) {
         onChange([option]);
-        handleClose();
+        // handleClose();
       } else {
         let newOptions;
         if (!option?.id) {
@@ -42,42 +35,32 @@ export default function ToggleMenu({
         onChange(newOptions);
       }
     },
-    [handleClose, multi, onChange, selectedOptions]
+    [multi, onChange, selectedOptions]
   );
 
   return (
-    <Box display="flex" flexWrap="nowrap">
-      <IconButton color="inherit" onClick={handleClick}>
-        {startIcon}
-      </IconButton>
-      {anchorEl ? (
-        <Menu
-          id="select-menu"
-          anchorEl={anchorEl}
-          keepMounted
-          open={Boolean(anchorEl)}
-          onClose={handleClose}
-        >
+    <Popover>
+      <PopoverTrigger asChild>{children}</PopoverTrigger>
+      <PopoverContent align={align} className="p-1 m-0">
+        <ul>
           {options.map((option) => (
-            <MenuItem key={option.label} onClick={handleMenuItemClick(option)}>
-              <Box display="flex" justifyContent="center" mr={1}>
-                <CheckIcon
-                  size="small"
-                  color="primary"
-                  style={{
-                    visibility:
-                      (option.id === '' && selectedIds.length === 0) ||
-                      selectedIds.includes(option.id)
-                        ? 'visible'
-                        : 'hidden',
-                  }}
-                />
-              </Box>
-              {option.label}
-            </MenuItem>
+            <li
+              key={option.id}
+              className="p-2 hover:bg-accent/90 hover:cursor-pointer"
+              onClick={handleMenuItemClick(option)}
+            >
+              <Checkbox
+                id={option.id}
+                checked={selectedIds.includes(option.id)}
+                className="inline-block align-middle"
+              />
+              <span className="inline-block align-middle mt-0.5 ml-1 text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                {option.label}
+              </span>
+            </li>
           ))}
-        </Menu>
-      ) : null}
-    </Box>
+        </ul>
+      </PopoverContent>
+    </Popover>
   );
 }

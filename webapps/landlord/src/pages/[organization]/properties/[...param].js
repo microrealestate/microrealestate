@@ -1,93 +1,95 @@
 import {
-  Box,
-  Button,
-  ButtonGroup,
-  Grid,
-  List,
-  ListItem,
-  ListItemText,
-  makeStyles,
-  Paper,
-  Tab,
-  Tabs,
-  Typography,
-} from '@material-ui/core';
-import { CardRow, PageInfoCard } from '../../../components/Cards';
+  ArrowLeftIcon,
+  HistoryIcon,
+  KeyRoundIcon,
+  TrashIcon
+} from 'lucide-react';
+import { Tab, Tabs } from '@material-ui/core';
 import { TabPanel, useTabChangeHelper } from '../../../components/Tabs';
 import { useCallback, useContext } from 'react';
-
-import BreadcrumbBar from '../../../components/BreadcrumbBar';
-import DeleteIcon from '@material-ui/icons/Delete';
-import Hidden from '../../../components/HiddenSSRCompatible';
-import HistoryIcon from '@material-ui/icons/History';
+import { Card } from '../../../components/ui/card';
+import { DashboardCard } from '../../../components/dashboard/DashboardCard';
 import Map from '../../../components/Map';
-import { MobileButton } from '../../../components/MobileMenuButton';
 import moment from 'moment';
 import NumberFormat from '../../../components/NumberFormat';
 import { observer } from 'mobx-react-lite';
 import Page from '../../../components/Page';
 import PropertyForm from '../../../components/properties/PropertyForm';
+import ShortcutButton from '../../../components/ShortcutButton';
 import { StoreContext } from '../../../store';
+import { toast } from 'sonner';
 import { toJS } from 'mobx';
 import useConfirmDialog from '../../../components/ConfirmDialog';
 import useFillStore from '../../../hooks/useFillStore';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
-import VpnKeyIcon from '@material-ui/icons/VpnKey';
 import { withAuthentication } from '../../../components/Authentication';
 
-const PropertyOverview = () => {
-  const store = useContext(StoreContext);
-  return (
-    <Box py={2}>
-      <CardRow>
-        {store.property.selected.name}
-        <NumberFormat value={store.property.selected.price} />
-      </CardRow>
-      <Map address={store.property.selected.address} />
-    </Box>
-  );
-};
-
-const useStyles = makeStyles(() => ({
-  root: {
-    overflow: 'auto',
-    maxHeight: 601,
-  },
-}));
-
-const OccupancyHistory = () => {
+function PropertyOverviewCard() {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
-  const classes = useStyles();
+
   return (
-    <List className={classes.root}>
-      {store.property.selected?.occupancyHistory?.length ? (
-        store.property.selected.occupancyHistory.map((occupant) => {
-          const occupationDates = t('{{beginDate}} to {{endDate}}', {
-            beginDate: moment(occupant.beginDate, 'DD/MM/YYYY').format('LL'),
-            endDate: moment(occupant.endDate, 'DD/MM/YYYY').format('LL'),
-          });
-          return (
-            <ListItem key={occupant.id}>
-              <ListItemText
-                primary={occupant.name}
-                secondary={occupationDates}
-              />
-            </ListItem>
-          );
-        })
-      ) : (
-        <Typography color="textSecondary">
-          {t('Property not rented so far')}
-        </Typography>
+    <DashboardCard
+      Icon={KeyRoundIcon}
+      title={t('Property')}
+      renderContent={() => (
+        <div className="text-base">
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">
+              {store.property.selected.name}
+            </span>
+            <NumberFormat value={store.property.selected.price} />
+          </div>
+          <Map address={store.property.selected.address} />
+        </div>
       )}
-    </List>
+    />
   );
-};
+}
+
+function OccupancyHistoryCard() {
+  const { t } = useTranslation('common');
+  const store = useContext(StoreContext);
+
+  return (
+    <DashboardCard
+      Icon={HistoryIcon}
+      title={t('Previous tenants')}
+      renderContent={() => (
+        <div className="flex flex-col gap-2 text-xs">
+          {store.property.selected?.occupancyHistory?.length ? (
+            store.property.selected.occupancyHistory.map((occupant) => {
+              const occupationDates = t('{{beginDate}} to {{endDate}}', {
+                beginDate: moment(occupant.beginDate, 'DD/MM/YYYY').format(
+                  'll'
+                ),
+                endDate: moment(occupant.endDate, 'DD/MM/YYYY').format('ll')
+              });
+              return (
+                <div key={occupant.id} className="flex justify-between">
+                  <span className="text-muted-foreground">{occupant.name}</span>
+                  <span>{occupationDates}</span>
+                </div>
+              );
+            })
+          ) : (
+            <span className="text-muted-foreground">
+              {t('Property not rented so far')}
+            </span>
+          )}
+        </div>
+      )}
+    />
+  );
+}
 
 async function fetchData(store, router) {
-  const propertyId = store.property.selected?._id || router.query.param[0];
+  const {
+    query: {
+      param: [propertyId]
+    }
+  } = router;
   const results = await store.property.fetchOne(propertyId);
   store.property.setSelected(
     store.property.items.find(({ _id }) => _id === propertyId)
@@ -95,7 +97,7 @@ async function fetchData(store, router) {
   return results;
 }
 
-const Property = observer(() => {
+function Property() {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const router = useRouter();
@@ -105,9 +107,13 @@ const Property = observer(() => {
 
   const {
     query: {
-      param: [, backPage, backPath],
-    },
+      param: [, , backPath]
+    }
   } = router;
+
+  const handleBack = useCallback(() => {
+    router.push(backPath);
+  }, [router, backPath]);
 
   const onConfirmDeleteProperty = useCallback(() => {
     setOpenConfirmDeleteProperty(true);
@@ -115,30 +121,18 @@ const Property = observer(() => {
 
   const onDeleteProperty = useCallback(async () => {
     const { status } = await store.property.delete([
-      store.property.selected._id,
+      store.property.selected._id
     ]);
     if (status !== 200) {
       switch (status) {
         case 422:
-          return store.pushToastMessage({
-            message: t('Property cannot be deleted'),
-            severity: 'error',
-          });
+          return toast.error(t('Property cannot be deleted'));
         case 404:
-          return store.pushToastMessage({
-            message: t('Property does not exist'),
-            severity: 'error',
-          });
+          return toast.error(t('Property does not exist'));
         case 403:
-          return store.pushToastMessage({
-            message: t('You are not allowed to delete the Property'),
-            severity: 'error',
-          });
+          return toast.error(t('You are not allowed to delete the Property'));
         default:
-          return store.pushToastMessage({
-            message: t('Something went wrong'),
-            severity: 'error',
-          });
+          return toast.error(t('Something went wrong'));
       }
     }
 
@@ -150,7 +144,7 @@ const Property = observer(() => {
       let property = {
         ...toJS(store.property.selected),
         ...propertyPart,
-        price: propertyPart.rent,
+        price: propertyPart.rent
       };
 
       if (property._id) {
@@ -158,20 +152,13 @@ const Property = observer(() => {
         if (status !== 200) {
           switch (status) {
             case 422:
-              return store.pushToastMessage({
-                message: t('Property name is missing'),
-                severity: 'error',
-              });
+              return toast.error(t('Property name is missing'));
             case 403:
-              return store.pushToastMessage({
-                message: t('You are not allowed to update the property'),
-                severity: 'error',
-              });
+              return toast.error(
+                t('You are not allowed to update the property')
+              );
             default:
-              return store.pushToastMessage({
-                message: t('Something went wrong'),
-                severity: 'error',
-              });
+              return toast.error(t('Something went wrong'));
           }
         }
         store.property.setSelected(data);
@@ -180,25 +167,13 @@ const Property = observer(() => {
         if (status !== 200) {
           switch (status) {
             case 422:
-              return store.pushToastMessage({
-                message: t('Property name is missing'),
-                severity: 'error',
-              });
+              return toast.error(t('Property name is missing'));
             case 403:
-              return store.pushToastMessage({
-                message: t('You are not allowed to add a property'),
-                severity: 'error',
-              });
+              return toast.error(t('You are not allowed to add a property'));
             case 409:
-              return store.pushToastMessage({
-                message: t('The property already exists'),
-                severity: 'error',
-              });
+              return toast.error(t('The property already exists'));
             default:
-              return store.pushToastMessage({
-                message: t('Something went wrong'),
-                severity: 'error',
-              });
+              return toast.error(t('Something went wrong'));
           }
         }
         store.property.setSelected(data);
@@ -214,94 +189,51 @@ const Property = observer(() => {
     <Page
       loading={fetching}
       ActionBar={
-        <Box
-          display="flex"
-          justifyContent="space-between"
-          alignItems="center"
-          mb={4}
-        >
-          <BreadcrumbBar
-            backPath={backPath}
-            backPage={backPage}
-            currentPage={store.property.selected.name}
+        <div className="grid grid-cols-5 gap-1.5 md:gap-4">
+          <ShortcutButton
+            label={t('Back')}
+            Icon={ArrowLeftIcon}
+            onClick={handleBack}
           />
-          <Hidden smDown>
-            <ButtonGroup variant="contained">
-              <Button
-                startIcon={<DeleteIcon />}
-                onClick={onConfirmDeleteProperty}
-              >
-                {t('Delete')}
-              </Button>
-            </ButtonGroup>
-          </Hidden>
-          <Hidden mdUp>
-            <ButtonGroup variant="text">
-              <MobileButton
-                label={t('Delete')}
-                Icon={DeleteIcon}
-                onClick={onConfirmDeleteProperty}
-              />
-            </ButtonGroup>
-          </Hidden>
-        </Box>
+          <ShortcutButton
+            label={t('Delete')}
+            Icon={TrashIcon}
+            onClick={onConfirmDeleteProperty}
+            className="col-start-2 col-end-2"
+          />
+        </div>
       }
     >
-      <Hidden smDown>
-        <Grid container spacing={5}>
-          <Grid item md={7} lg={8}>
-            <Paper>
-              <Tabs
-                variant="scrollable"
-                value={tabSelectedIndex}
-                onChange={handleTabChange}
-                aria-label="Property tabs"
-              >
-                <Tab label={t('Property')} wrapped />
-              </Tabs>
-              <TabPanel value={tabSelectedIndex} index={0}>
-                <PropertyForm onSubmit={onSubmit} />
-              </TabPanel>
-            </Paper>
-          </Grid>
-          <Grid item md={5} lg={4}>
-            <Box pb={4}>
-              <PageInfoCard Icon={VpnKeyIcon} title={t('Property')}>
-                <PropertyOverview />
-              </PageInfoCard>
-            </Box>
-            <PageInfoCard Icon={HistoryIcon} title={t('Previous tenants')}>
-              <OccupancyHistory />
-            </PageInfoCard>
-          </Grid>
-        </Grid>
-      </Hidden>
-      <Hidden mdUp>
-        <Grid container spacing={5}>
-          <Grid item xs={12}>
-            <Paper>
-              <Tabs
-                variant="scrollable"
-                value={tabSelectedIndex}
-                onChange={handleTabChange}
-                aria-label="Property tabs"
-              >
-                <Tab label={t('Property')} wrapped />
-              </Tabs>
-              <TabPanel value={tabSelectedIndex} index={0}>
-                <PropertyForm onSubmit={onSubmit} />
-              </TabPanel>
-            </Paper>
-          </Grid>
-        </Grid>
-      </Hidden>
-      <ConfirmDialog
-        title={t('Are you sure to definitely remove this property?')}
-        subTitle={store.property.selected.name}
-        onConfirm={onDeleteProperty}
-      />
+      <>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card className="md:col-span-2">
+            <Tabs
+              variant="scrollable"
+              value={tabSelectedIndex}
+              onChange={handleTabChange}
+              aria-label="Property tabs"
+            >
+              <Tab label={t('Property')} wrapped />
+            </Tabs>
+            <TabPanel value={tabSelectedIndex} index={0}>
+              <PropertyForm onSubmit={onSubmit} />
+            </TabPanel>
+          </Card>
+
+          <div className="hidden md:grid grid-cols-1 gap-4 h-fit">
+            <PropertyOverviewCard />
+            <OccupancyHistoryCard />
+          </div>
+        </div>
+
+        <ConfirmDialog
+          title={t('Are you sure to definitely remove this property?')}
+          subTitle={store.property.selected.name}
+          onConfirm={onDeleteProperty}
+        />
+      </>
     </Page>
   );
-});
+}
 
-export default withAuthentication(Property);
+export default withAuthentication(observer(Property));

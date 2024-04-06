@@ -4,7 +4,7 @@ import {
   Button,
   Dialog,
   Typography,
-  withStyles,
+  withStyles
 } from '@material-ui/core';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { Viewer, Worker } from '@react-pdf-viewer/core';
@@ -12,16 +12,17 @@ import { Viewer, Worker } from '@react-pdf-viewer/core';
 import { apiFetcher } from '../../utils/fetch';
 import EditorButton from '../RichTextEditor/EditorButton';
 import { grayColor } from '../../styles/styles';
-import { Loading } from '@microrealestate/commonui/components';
+import Loading from '../Loading';
 import { printPlugin } from '@react-pdf-viewer/print';
 import { StoreContext } from '../../store';
+import { toast } from 'sonner';
 import useTranslation from 'next-translate/useTranslation';
 
 const StyledDialog = withStyles(() => ({
   paperFullScreen: {
     backgroundColor: grayColor[10],
-    overflow: 'hidden',
-  },
+    overflow: 'hidden'
+  }
 }))(Dialog);
 
 export default function PdfViewer({ open, setOpen }) {
@@ -42,16 +43,13 @@ export default function PdfViewer({ open, setOpen }) {
       if (open?.url) {
         try {
           const response = await apiFetcher().get(open.url, {
-            responseType: 'blob',
+            responseType: 'blob'
           });
           setPdfSrc(URL.createObjectURL(response.data));
         } catch (error) {
           handleClose();
           console.error(error);
-          store.pushToastMessage({
-            message: t('Document not found'),
-            severity: 'error',
-          });
+          toast.error(t('Document not found'));
         }
       }
     })();
@@ -94,7 +92,7 @@ export default function PdfViewer({ open, setOpen }) {
   }
 
   if (open && !pdfSrc) {
-    return <Loading fullScreen />;
+    return <Loading />;
   }
 
   return null;

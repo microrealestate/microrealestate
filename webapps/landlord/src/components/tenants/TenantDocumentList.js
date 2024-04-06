@@ -1,15 +1,15 @@
 import {
   BlankDocumentIllustration,
-  TermsDocumentIllustration,
+  TermsDocumentIllustration
 } from '../Illustrations';
 import { useCallback, useContext, useMemo } from 'react';
-
 import AddIcon from '@material-ui/icons/Add';
 import { Box } from '@material-ui/core';
 import DocumentList from '../DocumentList';
 import FullScreenDialogMenu from '../FullScreenDialogMenu';
 import { Observer } from 'mobx-react-lite';
 import { StoreContext } from '../../store';
+import { toast } from 'sonner';
 import useConfirmDialog from '../ConfirmDialog';
 import useRichTextEditorDialog from '../RichTextEditor/RichTextEditorDialog';
 import useTranslation from 'next-translate/useTranslation';
@@ -59,14 +59,14 @@ function TenantDocumentList({ disabled = false }) {
         key: 'blank',
         label: t('Blank document'),
         illustration: <BlankDocumentIllustration />,
-        value: {},
+        value: {}
       },
       ...templates.map((template) => ({
         key: template._id,
         label: template.name,
         illustration: <TermsDocumentIllustration />,
-        value: template,
-      })),
+        value: template
+      }))
     ];
   }, [t, store.template?.items, store.tenant?.selected?.leaseId]);
 
@@ -84,7 +84,7 @@ function TenantDocumentList({ disabled = false }) {
         type: 'text',
         templateId: template._id,
         tenantId: store.tenant.selected?._id,
-        leaseId: store.tenant.selected?.leaseId,
+        leaseId: store.tenant.selected?.leaseId
       });
       if (status !== 200) {
         return console.error(status);
@@ -96,20 +96,17 @@ function TenantDocumentList({ disabled = false }) {
       store.tenant.selected?._id,
       store.tenant.selected?.leaseId,
       t,
-      setEditTextDocument,
+      setEditTextDocument
     ]
   );
 
   const handleLoadTextDocument = useCallback(async () => {
     if (!editTextDocument?._id) {
-      store.pushToastMessage({
-        message: t('Something went wrong'),
-        severity: 'error',
-      });
+      toast.error(t('Something went wrong'));
       return '';
     }
     return editTextDocument.contents;
-  }, [editTextDocument?._id, editTextDocument.contents, store, t]);
+  }, [editTextDocument?._id, editTextDocument.contents, t]);
 
   const handleSaveTextDocument = useCallback(
     async (title, contents, html) => {
@@ -117,13 +114,10 @@ function TenantDocumentList({ disabled = false }) {
         ...editTextDocument,
         name: title,
         contents,
-        html,
+        html
       });
       if (status !== 200) {
-        return store.pushToastMessage({
-          message: t('Something went wrong'),
-          severity: 'error',
-        });
+        toast.error(t('Something went wrong'));
       }
     },
     [editTextDocument, store, t]
@@ -135,10 +129,7 @@ function TenantDocumentList({ disabled = false }) {
     }
     const { status } = await store.document.delete([documentToRemove._id]);
     if (status !== 200) {
-      return store.pushToastMessage({
-        message: t('Something went wrong'),
-        severity: 'error',
-      });
+      return toast.error(t('Something went wrong'));
     }
   }, [documentToRemove, store, t]);
 

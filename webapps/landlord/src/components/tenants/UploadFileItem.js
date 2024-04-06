@@ -3,10 +3,9 @@ import {
   IconButton,
   ListItem,
   ListItemSecondaryAction,
-  ListItemText,
+  ListItemText
 } from '@material-ui/core';
 import { useCallback, useMemo } from 'react';
-
 import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 import DeleteIcon from '@material-ui/icons/Delete';
 import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
@@ -20,7 +19,7 @@ export default function UploadFileItem({
   disabled,
   onView,
   onUpload,
-  onDelete,
+  onDelete
 }) {
   const { t } = useTranslation('common');
 
@@ -30,7 +29,7 @@ export default function UploadFileItem({
         severity: 'success',
         hasLinkToDocument: true,
         uploadButtonVisible: false,
-        message: '',
+        message: ''
       };
 
       if (!document?.url) {
@@ -55,8 +54,8 @@ export default function UploadFileItem({
           state.message = isExpired
             ? t('This document has expired')
             : t('This document will expire {{relativeDate}}', {
-              relativeDate: expiryMoment.fromNow(),
-            });
+                relativeDate: expiryMoment.fromNow()
+              });
         }
         state.hasLinkToDocument = true;
 
@@ -114,7 +113,7 @@ export default function UploadFileItem({
               {document?.updatedDate ? (
                 <Box fontSize="caption.fontSize" color="text.secondary">
                   {t('Saved on {{date}}', {
-                    date: moment(document?.updatedDate).format('LL hh:mm'),
+                    date: moment(document?.updatedDate).format('LL hh:mm')
                   })}
                 </Box>
               ) : null}

@@ -180,9 +180,12 @@ services:
       - ./webapps/landlord/public:/usr/app/webapps/landlord/public
       - ./webapps/landlord/scripts:/usr/app/webapps/landlord/scripts
       - ./webapps/landlord/src:/usr/app/webapps/landlord/src
+      - ./webapps/landlord/components.json:/usr/app/webapps/landlord/components.json
       - ./webapps/landlord/i18n.js:/usr/app/webapps/landlord/i18n.js
       - ./webapps/landlord/next.config.js:/usr/app/webapps/landlord/next.config.js
       - ./webapps/landlord/package.json:/usr/app/webapps/landlord/package.json
+      - ./webapps/landlord/postcss.config.js:/usr/app/webapps/landlord/postcss.config.js
+      - ./webapps/landlord/tailwind.config.js:/usr/app/webapps/landlord/tailwind.config.js
   ###############################################################################
   # Tenant frontend
   ###############################################################################

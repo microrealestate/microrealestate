@@ -1,22 +1,14 @@
 import * as Yup from 'yup';
-
-import { Box, DialogTitle } from '@material-ui/core';
-import {
-  CheckboxField,
-  SelectField,
-  SubmitButton,
-  TextField,
-} from '@microrealestate/commonui/components';
+import { CheckboxField, TextField } from '@microrealestate/commonui/components';
 import { Form, Formik } from 'formik';
-import React, { useCallback, useContext } from 'react';
-
-import Button from '@material-ui/core/Button';
+import React, { useCallback, useContext, useRef, useState } from 'react';
+import { Button } from '../ui/button';
 import { contractEndMoment } from '@microrealestate/commonui/utils/contract';
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
 import moment from 'moment';
+import ResponsiveDialog from '../ResponsiveDialog';
+import { SelectField } from '../formfields/SelectField';
 import { StoreContext } from '../../store';
+import { toast } from 'sonner';
 import { toJS } from 'mobx';
 import useDialog from '../../hooks/useDialog';
 import { useRouter } from 'next/router';
@@ -27,20 +19,22 @@ const validationSchema = Yup.object().shape({
   isCopyFrom: Yup.boolean(),
   copyFrom: Yup.mixed().when('isCopyFrom', {
     is: true,
-    then: Yup.string().required(),
-  }),
+    then: Yup.string().required()
+  })
 });
 
 const initialValues = {
   name: '',
   copyFrom: '',
-  isCopyFrom: false,
+  isCopyFrom: false
 };
 
 function NewTenantDialog({ open, setOpen, backPage, backPath }) {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+  const formRef = useRef();
 
   const handleClose = useCallback(() => {
     setOpen(false);
@@ -48,77 +42,73 @@ function NewTenantDialog({ open, setOpen, backPage, backPath }) {
 
   const _onSubmit = useCallback(
     async (tenantPart) => {
-      let tenant = {
-        name: tenantPart.name,
-        company: tenantPart.name,
-        beginDate: moment().startOf('day').format('DD/MM/YYYY'),
-        stepperMode: true,
-      };
-      if (tenantPart.isCopyFrom) {
-        const {
-          _id,
-          reference,
-          name,
-          terminated,
-          beginDate,
-          endDate,
-          terminationDate,
-          properties,
-          discount,
-          guaranty,
-          ...originalTenant
-        } = toJS(
-          store.tenant.items.find(({ _id }) => tenantPart.copyFrom === _id)
-        );
-
-        tenant = {
-          ...originalTenant,
-          ...tenant,
+      try {
+        setIsLoading(true);
+        let tenant = {
+          name: tenantPart.name,
+          company: tenantPart.name,
+          beginDate: moment().startOf('day').format('DD/MM/YYYY'),
+          stepperMode: true
         };
-
-        if (originalTenant.lease) {
-          const lease = store.lease.items.find(
-            ({ _id }) => _id === originalTenant.lease._id
+        if (tenantPart.isCopyFrom) {
+          const {
+            _id,
+            reference,
+            name,
+            terminated,
+            beginDate,
+            endDate,
+            terminationDate,
+            properties,
+            discount,
+            guaranty,
+            ...originalTenant
+          } = toJS(
+            store.tenant.items.find(({ _id }) => tenantPart.copyFrom === _id)
           );
-          const newEndDate = contractEndMoment(moment().startOf('day'), lease);
-          tenant.endDate = newEndDate.format('DD/MM/YYYY');
+
+          tenant = {
+            ...originalTenant,
+            ...tenant
+          };
+
+          if (originalTenant.lease) {
+            const lease = store.lease.items.find(
+              ({ _id }) => _id === originalTenant.lease._id
+            );
+            const newEndDate = contractEndMoment(
+              moment().startOf('day'),
+              lease
+            );
+            tenant.endDate = newEndDate.format('DD/MM/YYYY');
+          }
         }
-      }
 
-      const { status, data } = await store.tenant.create(tenant);
-      if (status !== 200) {
-        switch (status) {
-          case 422:
-            return store.pushToastMessage({
-              message: t('Tenant name is missing'),
-              severity: 'error',
-            });
-          case 403:
-            return store.pushToastMessage({
-              message: t('You are not allowed to add a tenant'),
-              severity: 'error',
-            });
-          case 409:
-            return store.pushToastMessage({
-              message: t('The tenant already exists'),
-              severity: 'error',
-            });
-          default:
-            return store.pushToastMessage({
-              message: t('Something went wrong'),
-              severity: 'error',
-            });
+        const { status, data } = await store.tenant.create(tenant);
+        if (status !== 200) {
+          switch (status) {
+            case 422:
+              return toast.error(t('Tenant name is missing'));
+            case 403:
+              return toast.error(t('You are not allowed to add a tenant'));
+            case 409:
+              return toast.error(t('The tenant already exists'));
+            default:
+              return toast.error(t('Something went wrong'));
+          }
         }
+
+        handleClose();
+
+        store.tenant.setSelected(data);
+        await router.push(
+          `/${store.organization.selected.name}/tenants/${data._id}/${encodeURI(
+            backPage
+          )}/${encodeURIComponent(backPath)}`
+        );
+      } finally {
+        setIsLoading(false);
       }
-
-      handleClose();
-
-      store.tenant.setSelected(data);
-      await router.push(
-        `/${store.organization.selected.name}/tenants/${data._id}/${encodeURI(
-          backPage
-        )}/${encodeURIComponent(backPath)}`
-      );
     },
     [store, handleClose, router, backPage, backPath, t]
   );
@@ -138,56 +128,54 @@ function NewTenantDialog({ open, setOpen, backPage, backPath }) {
     });
 
   return (
-    <Dialog
-      maxWidth="sm"
-      fullWidth
-      open={open}
-      onClose={handleClose}
-      aria-labelledby="new-tenant-dialog"
-    >
-      <DialogTitle>{t('Add a new tenant')}</DialogTitle>
-      <Box p={1}>
+    <ResponsiveDialog
+      open={!!open}
+      setOpen={setOpen}
+      isLoading={isLoading}
+      renderHeader={() => t('Add a tenant')}
+      renderContent={() => (
         <Formik
           initialValues={initialValues}
           validationSchema={validationSchema}
           onSubmit={_onSubmit}
+          innerRef={formRef}
         >
-          {({ values, isSubmitting }) => {
-            return (
-              <Form autoComplete="off">
-                <DialogContent>
-                  <TextField label={t('Name')} name="name" />
-                  {!!tenants.length && (
-                    <>
-                      <CheckboxField
-                        name="isCopyFrom"
-                        label={t('Copy from an existing tenant')}
-                        aria-label={t('Copy from an existing tenant')}
-                      />
-                      {values.isCopyFrom && (
-                        <SelectField
-                          name="copyFrom"
-                          label={t('Tenant')}
-                          values={tenants}
-                        />
-                      )}
-                    </>
-                  )}
-                </DialogContent>
-                <DialogActions>
-                  <Button onClick={handleClose} color="primary">
-                    {t('Cancel')}
-                  </Button>
-                  <SubmitButton
-                    label={!isSubmitting ? t('Add') : t('Adding tenant')}
+          {({ values }) => (
+            <Form autoComplete="off">
+              <TextField label={t('Name')} name="name" />
+              {tenants?.length ? (
+                <>
+                  <CheckboxField
+                    name="isCopyFrom"
+                    label={t('Copy from an existing tenant')}
+                    aria-label={t('Copy from an existing tenant')}
                   />
-                </DialogActions>
-              </Form>
-            );
-          }}
+                  <SelectField
+                    name="copyFrom"
+                    label={t('Tenant')}
+                    values={tenants}
+                    disabled={!values.isCopyFrom}
+                  />
+                </>
+              ) : null}
+            </Form>
+          )}
         </Formik>
-      </Box>
-    </Dialog>
+      )}
+      renderFooter={() => (
+        <>
+          <Button variant="outline" onClick={handleClose}>
+            {t('Cancel')}
+          </Button>
+          <Button
+            onClick={() => formRef.current.submitForm()}
+            data-cy="submitTenant"
+          >
+            {t('Add')}
+          </Button>
+        </>
+      )}
+    />
   );
 }
 

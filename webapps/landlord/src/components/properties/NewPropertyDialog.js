@@ -1,20 +1,19 @@
 import * as Yup from 'yup';
-
-import { Box, DialogTitle, Grid } from '@material-ui/core';
 import { Form, Formik } from 'formik';
-import {
-  NumberField,
-  SelectField,
-  SubmitButton,
-  TextField,
-} from '@microrealestate/commonui/components';
-import React, { useCallback, useContext, useMemo } from 'react';
-
-import Button from '@material-ui/core/Button';
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
+import { NumberField, TextField } from '@microrealestate/commonui/components';
+import React, {
+  useCallback,
+  useContext,
+  useMemo,
+  useRef,
+  useState
+} from 'react';
+import { Button } from '../ui/button';
+import PropertyIcon from './PropertyIcon';
+import ResponsiveDialog from '../ResponsiveDialog';
+import { SelectField } from '../formfields/SelectField';
 import { StoreContext } from '../../store';
+import { toast } from 'sonner';
 import types from './types';
 import useDialog from '../../hooks/useDialog';
 import { useRouter } from 'next/router';
@@ -23,65 +22,58 @@ import useTranslation from 'next-translate/useTranslation';
 const validationSchema = Yup.object().shape({
   type: Yup.string().required(),
   name: Yup.string().required(),
-  rent: Yup.number().min(0).required(),
+  rent: Yup.number().min(0).required()
 });
 
 const initialValues = {
   type: '',
   name: '',
-  rent: '',
+  rent: ''
 };
 
 function NewPropertyDialog({ open, setOpen, backPage, backPath }) {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+  const formRef = useRef();
 
-  const handleClose = useCallback(() => {
-    setOpen(false);
-  }, [setOpen]);
+  const handleClose = useCallback(() => setOpen(false), [setOpen]);
 
   const _onSubmit = useCallback(
     async (propertyPart) => {
-      let property = {
-        ...propertyPart,
-        price: propertyPart.rent,
-      };
+      try {
+        setIsLoading(true);
+        let property = {
+          ...propertyPart,
+          price: propertyPart.rent
+        };
 
-      const { status, data } = await store.property.create(property);
-      if (status !== 200) {
-        switch (status) {
-          case 422:
-            return store.pushToastMessage({
-              message: t('Property name is missing'),
-              severity: 'error',
-            });
-          case 403:
-            return store.pushToastMessage({
-              message: t('You are not allowed to add a property'),
-              severity: 'error',
-            });
-          case 409:
-            return store.pushToastMessage({
-              message: t('The property already exists'),
-              severity: 'error',
-            });
-          default:
-            return store.pushToastMessage({
-              message: t('Something went wrong'),
-              severity: 'error',
-            });
+        const { status, data } = await store.property.create(property);
+        if (status !== 200) {
+          switch (status) {
+            case 422:
+              return toast.error(t('Property name is missing'));
+            case 403:
+              return toast.error(t('You are not allowed to add a property'));
+            case 409:
+              return toast.error(t('The property already exists'));
+            default:
+              return toast.error(t('Something went wrong'));
+          }
         }
+
+        handleClose();
+
+        store.property.setSelected(data);
+        await router.push(
+          `/${store.organization.selected.name}/properties/${
+            data._id
+          }/${encodeURI(backPage)}/${encodeURIComponent(backPath)}`
+        );
+      } finally {
+        setIsLoading(false);
       }
-
-      handleClose();
-
-      store.property.setSelected(data);
-      await router.push(
-        `/${store.organization.selected.name}/properties/${
-          data._id
-        }/${encodeURI(backPage)}/${encodeURIComponent(backPath)}`
-      );
     },
     [store, handleClose, router, backPage, backPath, t]
   );
@@ -92,62 +84,56 @@ function NewPropertyDialog({ open, setOpen, backPage, backPath }) {
         id: type.id,
         value: type.id,
         label: t(type.labelId),
+        renderIcon: () => <PropertyIcon type={type.id} />
       })),
     [t]
   );
 
   return (
-    <Dialog
-      maxWidth="sm"
-      fullWidth
-      open={open}
-      onClose={handleClose}
-      aria-labelledby="new-property-dialog"
-    >
-      <DialogTitle>{t('Add a new property')}</DialogTitle>
-      <Box p={1}>
+    <ResponsiveDialog
+      open={!!open}
+      setOpen={setOpen}
+      isLoading={isLoading}
+      renderHeader={() => t('Add a property')}
+      renderContent={() => (
         <Formik
           initialValues={initialValues}
           validationSchema={validationSchema}
           onSubmit={_onSubmit}
+          innerRef={formRef}
         >
-          {({ isSubmitting }) => {
+          {() => {
             return (
               <Form autoComplete="off">
-                <DialogContent>
-                  <Grid container spacing={1}>
-                    <Grid item xs={12} md={4}>
-                      <SelectField
-                        label={t('Property Type')}
-                        name="type"
-                        values={propertyTypes}
-                      />
-                    </Grid>
-                    <Grid item xs={12} md={8}>
-                      <TextField label={t('Name')} name="name" />
-                    </Grid>
-                    <Grid item xs={12}>
-                      <NumberField
-                        label={t('Rent excluding tax and expenses')}
-                        name="rent"
-                      />
-                    </Grid>
-                  </Grid>
-                </DialogContent>
-                <DialogActions>
-                  <Button onClick={handleClose} color="primary">
-                    {t('Cancel')}
-                  </Button>
-                  <SubmitButton
-                    label={!isSubmitting ? t('Add') : t('Adding property')}
-                  />
-                </DialogActions>
+                <SelectField
+                  label={t('Property Type')}
+                  name="type"
+                  values={propertyTypes}
+                />
+                <TextField label={t('Name')} name="name" />
+                <NumberField
+                  label={t('Rent excluding tax and expenses')}
+                  name="rent"
+                />
               </Form>
             );
           }}
         </Formik>
-      </Box>
-    </Dialog>
+      )}
+      renderFooter={() => (
+        <>
+          <Button variant="outline" onClick={handleClose}>
+            {t('Cancel')}
+          </Button>
+          <Button
+            onClick={() => formRef.current.submitForm()}
+            data-cy="submitProperty"
+          >
+            {t('Add')}
+          </Button>
+        </>
+      )}
+    />
   );
 }
 

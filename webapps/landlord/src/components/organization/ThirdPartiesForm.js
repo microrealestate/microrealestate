@@ -1,12 +1,7 @@
 import * as Yup from 'yup';
-
 import { Box, Link } from '@material-ui/core';
-import {
-  Form,
-  Formik,
-  validateYupSchema,
-  yupToFormErrors,
-} from 'formik';
+import { Form, Formik, validateYupSchema, yupToFormErrors } from 'formik';
+import { mergeOrganization, updateStoreOrganization } from './utils';
 import {
   NumberField,
   RadioField,
@@ -14,160 +9,193 @@ import {
   Section,
   SubmitButton,
   SwitchField,
-  TextField,
+  TextField
 } from '@microrealestate/commonui/components';
+import { QueryKeys, updateOrganization } from '../../utils/restcalls';
 import { useCallback, useContext, useMemo } from 'react';
-
-import { observer } from 'mobx-react-lite';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { StoreContext } from '../../store';
+import { toast } from 'sonner';
 import useTranslation from 'next-translate/useTranslation';
 
 const validationSchema = Yup.object().shape({
   emailDeliveryServiceActive: Yup.boolean().required(),
-  emailDeliveryServiceName: Yup.string().required(),
+  emailDeliveryServiceName: Yup.string().when('emailDeliveryServiceActive', {
+    is: true,
+    then: Yup.string().required()
+  }),
 
   gmail_email: Yup.string().when('emailDeliveryServiceName', {
     is: 'gmail',
-    then: Yup.string().email().required(),
+    then: Yup.string().email().required()
   }),
   gmail_appPassword: Yup.string().when('emailDeliveryServiceName', {
     is: 'gmail',
-    then: Yup.string().required(),
+    then: Yup.string().required()
   }),
 
   smtp_server: Yup.string().when('emailDeliveryServiceName', {
     is: 'smtp',
-    then: Yup.string().email().required(),
+    then: Yup.string().email().required()
   }),
   smtp_port: Yup.string().when('emailDeliveryServiceName', {
     is: 'smtp',
-    then: Yup.number().required().integer().min(1).max(65535),
+    then: Yup.number().required().integer().min(1).max(65535)
   }),
   smtp_secure: Yup.string().when('emailDeliveryServiceName', {
     is: 'smtp',
-    then: Yup.boolean().required(),
+    then: Yup.boolean().required()
   }),
   smtp_authentication: Yup.string().when('emailDeliveryServiceName', {
     is: 'smtp',
-    then: Yup.boolean().required(),
+    then: Yup.boolean().required()
   }),
-  smtp_username: Yup.string().when(['emailDeliveryServiceName', 'smtp_authentication'], {
-    is: (scheme, auth) => scheme === 'smtp' && auth,
-    then: Yup.string().required(),
-  }),
-  smtp_password: Yup.string().when(['emailDeliveryServiceName', 'smtp_authentication'], {
-    is: (scheme, auth) => scheme === 'smtp' && auth,
-    then: Yup.string().required(),
-  }),
+  smtp_username: Yup.string().when(
+    ['emailDeliveryServiceName', 'smtp_authentication'],
+    {
+      is: (scheme, auth) => scheme === 'smtp' && auth,
+      then: Yup.string().required()
+    }
+  ),
+  smtp_password: Yup.string().when(
+    ['emailDeliveryServiceName', 'smtp_authentication'],
+    {
+      is: (scheme, auth) => scheme === 'smtp' && auth,
+      then: Yup.string().required()
+    }
+  ),
 
   mailgun_apiKey: Yup.string().when('emailDeliveryServiceName', {
     is: 'mailgun',
-    then: Yup.string().required(),
+    then: Yup.string().required()
   }),
   mailgun_domain: Yup.string().when('emailDeliveryServiceName', {
     is: 'mailgun',
-    then: Yup.string().required(),
+    then: Yup.string().required()
   }),
 
   fromEmail: Yup.string().email().when('emailDeliveryServiceActive', {
     is: true,
-    then: Yup.string().email().required(),
+    then: Yup.string().email().required()
   }),
   replyToEmail: Yup.string().email().when('emailDeliveryServiceActive', {
     is: true,
-    then: Yup.string().email().required(),
+    then: Yup.string().email().required()
   }),
 
   b2Active: Yup.boolean().required(),
   keyId: Yup.string().when('b2Active', {
     is: true,
-    then: Yup.string().required(),
+    then: Yup.string().required()
   }),
   applicationKey: Yup.string().when('b2Active', {
     is: true,
-    then: Yup.string().required(),
+    then: Yup.string().required()
   }),
   endpoint: Yup.string().when('b2Active', {
     is: true,
-    then: Yup.string().required(),
+    then: Yup.string().required()
   }),
   bucket: Yup.string().when('b2Active', {
     is: true,
-    then: Yup.string().required(),
-  }),
+    then: Yup.string().required()
+  })
 });
 
-const ThirdPartiesForm = observer(({ onSubmit }) => {
+export default function ThirdPartiesForm({ organization }) {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
+  const queryClient = useQueryClient();
+  const { mutateAsync, isError } = useMutation({
+    mutationFn: updateOrganization,
+    onSuccess: (updatedOrganization) => {
+      updateStoreOrganization(store, updatedOrganization);
+      queryClient.invalidateQueries({ queryKey: [QueryKeys.ORGANIZATIONS] });
+    }
+  });
+
+  if (isError) {
+    toast.error(t('Error updating organization'));
+  }
 
   const initialValues = useMemo(() => {
     let emailDeliveryServiceName;
-    let fromEmail = store.organization.selected?.contacts?.[0]?.email || '';
-    let replyToEmail = store.organization.selected?.contacts?.[0]?.email || '';
+    let fromEmail = organization.contacts?.[0]?.email || '';
+    let replyToEmail = organization.contacts?.[0]?.email || '';
 
-    if (store.organization.selected.thirdParties?.gmail?.selected) {
+    if (organization.thirdParties?.gmail?.selected) {
       emailDeliveryServiceName = 'gmail';
-      fromEmail =
-        store.organization.selected.thirdParties?.gmail?.fromEmail || '';
-      replyToEmail =
-        store.organization.selected.thirdParties?.gmail?.replyToEmail || '';
-    }
-    else if (store.organization.selected.thirdParties?.smtp?.selected) {
+      fromEmail = organization.thirdParties?.gmail?.fromEmail || '';
+      replyToEmail = organization.thirdParties?.gmail?.replyToEmail || '';
+    } else if (organization.thirdParties?.smtp?.selected) {
       emailDeliveryServiceName = 'smtp';
-      fromEmail =
-        store.organization.selected.thirdParties?.smtp?.fromEmail || '';
-      replyToEmail =
-        store.organization.selected.thirdParties?.smtp?.replyToEmail || '';
-    }
-    else if (store.organization.selected.thirdParties?.mailgun?.selected) {
+      fromEmail = organization.thirdParties?.smtp?.fromEmail || '';
+      replyToEmail = organization.thirdParties?.smtp?.replyToEmail || '';
+    } else if (organization.thirdParties?.mailgun?.selected) {
       emailDeliveryServiceName = 'mailgun';
-      fromEmail =
-        store.organization.selected.thirdParties?.mailgun?.fromEmail || '';
-      replyToEmail =
-        store.organization.selected.thirdParties?.mailgun?.replyToEmail || '';
+      fromEmail = organization.thirdParties?.mailgun?.fromEmail || '';
+      replyToEmail = organization.thirdParties?.mailgun?.replyToEmail || '';
     }
 
     return {
-      emailDeliveryServiceActive: !!emailDeliveryServiceName,
+      emailDeliveryServiceActive:
+        !!organization.thirdParties?.gmail?.selected ||
+        !!organization.thirdParties?.smtp?.selected ||
+        !!organization.thirdParties?.mailgun?.selected,
       emailDeliveryServiceName,
-      gmail_email: store.organization.selected.thirdParties?.gmail?.email || '',
-      gmail_appPassword:
-        store.organization.selected.thirdParties?.gmail?.appPassword || '',
+      gmail_email: organization.thirdParties?.gmail?.email || '',
+      gmail_appPassword: organization.thirdParties?.gmail?.appPassword || '',
 
-      smtp_server:
-        store.organization.selected.thirdParties?.smtp?.server || '',
-      smtp_port:
-        store.organization.selected.thirdParties?.smtp?.port || 25,
-      smtp_secure:
-        !!store.organization.selected.thirdParties?.smtp?.secure,
+      smtp_server: organization.thirdParties?.smtp?.server || '',
+      smtp_port: organization.thirdParties?.smtp?.port || 25,
+      smtp_secure: !!organization.thirdParties?.smtp?.secure,
       smtp_authentication:
-        store.organization.selected.thirdParties?.smtp?.authentication === undefined ?
-          true :
-          store.organization.selected.thirdParties.smtp.authentication,
-      smtp_username:
-        store.organization.selected.thirdParties?.smtp?.username || '',
-      smtp_password:
-        store.organization.selected.thirdParties?.smtp?.password || '',
+        organization.thirdParties?.smtp?.authentication === undefined
+          ? true
+          : organization.thirdParties.smtp.authentication,
+      smtp_username: organization.thirdParties?.smtp?.username || '',
+      smtp_password: organization.thirdParties?.smtp?.password || '',
 
-      mailgun_apiKey:
-        store.organization.selected.thirdParties?.mailgun?.apiKey || '',
-      mailgun_domain:
-        store.organization.selected.thirdParties?.mailgun?.domain || '',
+      mailgun_apiKey: organization.thirdParties?.mailgun?.apiKey || '',
+      mailgun_domain: organization.thirdParties?.mailgun?.domain || '',
 
       fromEmail,
       replyToEmail,
 
-      b2Active: !!store.organization.selected.thirdParties?.b2?.keyId,
-      keyId: store.organization.selected.thirdParties?.b2?.keyId,
-      applicationKey:
-        store.organization.selected.thirdParties?.b2?.applicationKey,
-      endpoint: store.organization.selected.thirdParties?.b2?.endpoint,
-      bucket: store.organization.selected.thirdParties?.b2?.bucket,
+      b2Active: !!organization.thirdParties?.b2?.keyId,
+      keyId: organization.thirdParties?.b2?.keyId,
+      applicationKey: organization.thirdParties?.b2?.applicationKey,
+      endpoint: organization.thirdParties?.b2?.endpoint,
+      bucket: organization.thirdParties?.b2?.bucket
     };
-  }, [store.organization.selected]);
+  }, [
+    organization.contacts,
+    organization.thirdParties?.b2?.applicationKey,
+    organization.thirdParties?.b2?.bucket,
+    organization.thirdParties?.b2?.endpoint,
+    organization.thirdParties?.b2?.keyId,
+    organization.thirdParties?.gmail?.appPassword,
+    organization.thirdParties?.gmail?.email,
+    organization.thirdParties?.gmail?.fromEmail,
+    organization.thirdParties?.gmail?.replyToEmail,
+    organization.thirdParties?.gmail?.selected,
+    organization.thirdParties?.mailgun?.apiKey,
+    organization.thirdParties?.mailgun?.domain,
+    organization.thirdParties?.mailgun?.fromEmail,
+    organization.thirdParties?.mailgun?.replyToEmail,
+    organization.thirdParties?.mailgun?.selected,
+    organization.thirdParties.smtp?.authentication,
+    organization.thirdParties.smtp?.fromEmail,
+    organization.thirdParties.smtp?.password,
+    organization.thirdParties.smtp?.port,
+    organization.thirdParties.smtp?.replyToEmail,
+    organization.thirdParties.smtp?.secure,
+    organization.thirdParties.smtp?.selected,
+    organization.thirdParties.smtp?.server,
+    organization.thirdParties.smtp?.username
+  ]);
 
-  const _onSubmit = useCallback(
+  const onSubmit = useCallback(
     async ({
       emailDeliveryServiceActive,
       emailDeliveryServiceName,
@@ -187,7 +215,7 @@ const ThirdPartiesForm = observer(({ onSubmit }) => {
       keyId,
       applicationKey,
       endpoint,
-      bucket,
+      bucket
     }) => {
       const formData = { thirdParties: {} };
       if (emailDeliveryServiceActive) {
@@ -198,7 +226,7 @@ const ThirdPartiesForm = observer(({ onSubmit }) => {
           appPasswordUpdated:
             gmail_appPassword !== initialValues.gmail_appPassword,
           fromEmail,
-          replyToEmail,
+          replyToEmail
         };
 
         formData.thirdParties.smtp = {
@@ -209,10 +237,9 @@ const ThirdPartiesForm = observer(({ onSubmit }) => {
           authentication: smtp_authentication,
           username: smtp_username,
           password: smtp_password,
-          passwordUpdated:
-            smtp_password !== initialValues.smtp_password,
+          passwordUpdated: smtp_password !== initialValues.smtp_password,
           fromEmail,
-          replyToEmail,
+          replyToEmail
         };
 
         formData.thirdParties.mailgun = {
@@ -221,8 +248,12 @@ const ThirdPartiesForm = observer(({ onSubmit }) => {
           apiKeyUpdated: mailgun_apiKey !== initialValues.mailgun_apiKey,
           domain: mailgun_domain,
           fromEmail,
-          replyToEmail,
+          replyToEmail
         };
+      } else {
+        formData.thirdParties.gmail = null;
+        formData.thirdParties.smtp = null;
+        formData.thirdParties.mailgun = null;
       }
       if (b2Active) {
         formData.thirdParties.b2 = {
@@ -232,18 +263,25 @@ const ThirdPartiesForm = observer(({ onSubmit }) => {
           applicationKeyUpdated:
             applicationKey !== initialValues.applicationKey,
           endpoint,
-          bucket,
+          bucket
         };
+      } else {
+        formData.thirdParties.b2 = null;
       }
-      await onSubmit(formData);
+      await mutateAsync({
+        store,
+        organization: mergeOrganization(organization, formData)
+      });
     },
     [
-      onSubmit,
+      mutateAsync,
+      store,
+      organization,
       initialValues.gmail_appPassword,
       initialValues.smtp_password,
       initialValues.mailgun_apiKey,
       initialValues.keyId,
-      initialValues.applicationKey,
+      initialValues.applicationKey
     ]
   );
 
@@ -251,6 +289,7 @@ const ThirdPartiesForm = observer(({ onSubmit }) => {
     try {
       validateYupSchema(value, validationSchema, true, value);
     } catch (err) {
+      console.error(err);
       return yupToFormErrors(err); //for rendering validation errors
     }
     return {};
@@ -260,7 +299,7 @@ const ThirdPartiesForm = observer(({ onSubmit }) => {
     <Formik
       initialValues={initialValues}
       validate={handleFormValidation}
-      onSubmit={_onSubmit}
+      onSubmit={onSubmit}
     >
       {({ values, isSubmitting }) => {
         return (
@@ -287,7 +326,7 @@ const ThirdPartiesForm = observer(({ onSubmit }) => {
                     <>
                       <Box my={1}>
                         <Link
-                          href={`https://support.google.com/accounts/answer/185833?hl=${store.organization.selected.locale}`}
+                          href={`https://support.google.com/accounts/answer/185833?hl=${organization.locale}`}
                           target="_blank"
                           rel="noreferrer"
                         >
@@ -308,13 +347,20 @@ const ThirdPartiesForm = observer(({ onSubmit }) => {
                   {values?.emailDeliveryServiceName === 'smtp' && (
                     <>
                       <TextField label={t('Server')} name="smtp_server" />
-                      <NumberField label={t('Port')} name="smtp_port" min="1" max="65535" />
+                      <NumberField
+                        label={t('Port')}
+                        name="smtp_port"
+                        min="1"
+                        max="65535"
+                      />
                       <SwitchField
-                        label={t('Enable explicit TLS (Implicit TLS / StartTLS is always used when supported by the SMTP)')}
+                        label={t(
+                          'Enable explicit TLS (Implicit TLS / StartTLS is always used when supported by the SMTP)'
+                        )}
                         name="smtp_secure"
                         color="primary"
                       />
-                      <br/>
+                      <br />
                       <SwitchField
                         label={t('Use authentication')}
                         name="smtp_authentication"
@@ -322,7 +368,10 @@ const ThirdPartiesForm = observer(({ onSubmit }) => {
                       />
                       {values?.smtp_authentication ? (
                         <>
-                          <TextField label={t('Username')} name="smtp_username" />
+                          <TextField
+                            label={t('Username')}
+                            name="smtp_username"
+                          />
                           <TextField
                             label={t('Password')}
                             name="smtp_password"
@@ -339,7 +388,7 @@ const ThirdPartiesForm = observer(({ onSubmit }) => {
                     <>
                       <Box my={1}>
                         <Link
-                          href={`https://help.mailgun.com/hc/${store.organization.selected.locale.toLowerCase()}/articles/203380100-Where-can-I-find-my-API-key-and-SMTP-credentials-`}
+                          href={`https://help.mailgun.com/hc/${organization.locale.toLowerCase()}/articles/203380100-Where-can-I-find-my-API-key-and-SMTP-credentials-`}
                           target="_blank"
                           rel="noreferrer"
                         >
@@ -400,6 +449,4 @@ const ThirdPartiesForm = observer(({ onSubmit }) => {
       }}
     </Formik>
   );
-});
-
-export default ThirdPartiesForm;
+}

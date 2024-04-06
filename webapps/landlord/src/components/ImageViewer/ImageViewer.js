@@ -2,8 +2,9 @@ import { useCallback, useContext, useEffect, useState } from 'react';
 
 import { apiFetcher } from '../../utils/fetch';
 import Lightbox from 'react-awesome-lightbox';
-import { Loading } from '@microrealestate/commonui/components';
+import Loading from '../Loading';
 import { StoreContext } from '../../store';
+import { toast } from 'sonner';
 import useTranslation from 'next-translate/useTranslation';
 
 export default function ImageViewer({ open, setOpen }) {
@@ -21,16 +22,13 @@ export default function ImageViewer({ open, setOpen }) {
       if (open?.url) {
         try {
           const response = await apiFetcher().get(open.url, {
-            responseType: 'blob',
+            responseType: 'blob'
           });
           setImageSrc(URL.createObjectURL(response.data));
         } catch (error) {
           handleClose();
           console.error(error);
-          store.pushToastMessage({
-            message: t('Document not found'),
-            severity: 'error',
-          });
+          toast.error(t('Document not found'));
         }
       }
     })();
@@ -42,7 +40,7 @@ export default function ImageViewer({ open, setOpen }) {
     );
   }
   if (open && !imageSrc) {
-    return <Loading fullScreen />;
+    return <Loading />;
   }
 
   return null;

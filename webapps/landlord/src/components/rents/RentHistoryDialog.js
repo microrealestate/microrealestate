@@ -9,19 +9,19 @@ import {
   Grid,
   IconButton,
   Toolbar,
-  Typography,
+  Typography
 } from '@material-ui/core';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
-
 import BoxWithHover from '../../components/BoxWithHover';
 import DialogDefaultBackground from '../DialogDefaultBackground';
 import EditIcon from '@material-ui/icons/Edit';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import { getPeriod } from './RentPeriod';
-import { Loading } from '@microrealestate/commonui/components';
+import { getPeriod } from '../../utils';
+import Loading from '../Loading';
 import moment from 'moment';
 import RentDetails from './RentDetails';
 import { StoreContext } from '../../store';
+import { toast } from 'sonner';
 import TransitionSlideUp from '../TransitionSlideUp';
 import useDialog from '../../hooks/useDialog';
 import useNewPaymentDialog from '../payment/NewPaymentDialog';
@@ -101,10 +101,7 @@ function RentHistory({ tenantId }) {
       showLoadingAnimation && setLoading(true);
       const response = await store.rent.fetchTenantRents(tenantId);
       if (response.status !== 200) {
-        store.pushToastMessage({
-          message: t('Cannot get tenant information'),
-          severity: 'error',
-        });
+        toast.error(t('Cannot get tenant information'));
       } else {
         const tenant = response.data;
         setTenant(tenant);
@@ -144,7 +141,7 @@ function RentHistory({ tenantId }) {
     <>
       <NewPaymentDialog onClose={handleClose} />
       {loading ? (
-        <Loading fullScreen />
+        <Loading />
       ) : (
         <>
           <Box pb={4}>
@@ -158,7 +155,7 @@ function RentHistory({ tenantId }) {
                   ).format('L'),
                   endDate: moment(tenant.occupant.endDate, 'DD/MM/YYYY').format(
                     'L'
-                  ),
+                  )
                 })}
               </Typography>
             )}

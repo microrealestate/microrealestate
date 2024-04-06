@@ -1,33 +1,27 @@
-import { Box, Container } from '@material-ui/core';
+import { Card } from './ui/card';
+import { cn } from '../utils';
+import Loading from './Loading';
 
-import Hidden from './HiddenSSRCompatible';
-import { Loading } from '@microrealestate/commonui/components';
-
-function PageContent({ maxWidth, children }) {
+function Page({ children, ActionBar, loading = false, className }) {
   return (
-    <>
-      <Hidden smDown>
-        <Box ml={7}>
-          <Container maxWidth={maxWidth}>
-            <Box my={2}>{children}</Box>
-          </Container>
-        </Box>
-      </Hidden>
-      <Hidden mdUp>
-        <Box mt={12} mb={10} mx={0.8}>
-          {children}
-        </Box>
-      </Hidden>
-    </>
-  );
-}
-
-function Page({ children, ActionBar, maxWidth = 'lg', loading = false }) {
-  return (
-    <PageContent maxWidth={maxWidth}>
-      <Box mb={2}>{ActionBar}</Box>
-      {loading ? <Loading fullScreen /> : children}
-    </PageContent>
+    <div
+      className={cn(
+        'md:container md:mx-auto p-2 mt-4 mb-24 md:mb-4',
+        className
+      )}
+    >
+      {ActionBar ? (
+        <Card
+          className={cn(
+            'fixed bottom-0 left-0 bg-card w-full z-50 border-t rounded-none',
+            'md:relative md:z-auto md:border md:p-4 md:mb-6 md:rounded-lg'
+          )}
+        >
+          {ActionBar}
+        </Card>
+      ) : null}
+      {loading ? <Loading /> : children}
+    </div>
   );
 }
 

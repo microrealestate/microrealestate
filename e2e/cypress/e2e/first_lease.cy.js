@@ -55,7 +55,6 @@ describe('Create resources', () => {
     cy.navToPage('tenants');
     cy.contains(tenants[0].name).should('be.visible');
     cy.contains(tenants[0].lease.contract).should('be.visible');
-    cy.contains(tenants[0].lease.properties[0].name).should('be.visible');
     cy.contains(
       i18n.getFixedT(userWithCompanyAccount.locale)('Lease running')
     ).should('be.visible');

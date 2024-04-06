@@ -5,12 +5,10 @@ import {
   Grid,
   IconButton,
   Link,
-  Paper,
-  Tooltip,
+  Tooltip
 } from '@material-ui/core';
-import { Fragment, memo, useCallback, useContext, useMemo } from 'react';
 import { getRentAmounts, RentAmount } from './RentDetails';
-
+import { memo, useCallback, useContext, useMemo } from 'react';
 import BoxWithHover from '../../components/BoxWithHover';
 import { downloadDocument } from '../../utils/fetch';
 import EditIcon from '@material-ui/icons/Edit';
@@ -35,7 +33,7 @@ const Reminder = memo(function Reminder({ rent, ...boxProps }) {
   if (rent.emailStatus?.status?.rentcall) {
     sentDate = moment(rent.emailStatus.last.rentcall.sentDate);
     label = t('1st notice sent on {{date}}', {
-      date: sentDate.format('L LT'),
+      date: sentDate.format('L LT')
     });
     documentName = `${rent.occupant.name}-${t('first notice')}.pdf`;
     endpoint = `/documents/rentcall/${rent.occupant._id}/${rent.term}`;
@@ -44,7 +42,7 @@ const Reminder = memo(function Reminder({ rent, ...boxProps }) {
   if (rent.emailStatus?.last?.rentcall_reminder) {
     sentDate = moment(rent.emailStatus.last.rentcall_reminder.sentDate);
     label = t('2nd notice sent on {{date}}', {
-      date: sentDate.format('L LT'),
+      date: sentDate.format('L LT')
     });
     documentName = `${rent.occupant.name}-${t('second notice')}.pdf`;
     endpoint = `/documents/rentcall_reminder/${rent.occupant._id}/${rent.term}`;
@@ -53,7 +51,7 @@ const Reminder = memo(function Reminder({ rent, ...boxProps }) {
   if (rent.emailStatus?.last?.rentcall_last_reminder) {
     sentDate = moment(rent.emailStatus.last.rentcall_last_reminder.sentDate);
     label = t('Last notice sent on {{date}}', {
-      date: sentDate.format('L LT'),
+      date: sentDate.format('L LT')
     });
     color = 'warning.dark';
     documentName = `${rent.occupant.name}-${t('last notice')}.pdf`;
@@ -95,7 +93,7 @@ const RentRow = memo(function RentRow({
   isSelected,
   onSelect,
   onEdit,
-  onHistory,
+  onHistory
 }) {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
@@ -112,7 +110,7 @@ const RentRow = memo(function RentRow({
               disabled={!store.organization.canSendEmails}
               onChange={onSelect(rent)}
               inputProps={{
-                'aria-labelledby': rent.occupant.name,
+                'aria-labelledby': rent.occupant.name
               }}
               style={{ marginTop: -3 }}
             />
@@ -122,7 +120,7 @@ const RentRow = memo(function RentRow({
                 <Checkbox
                   onChange={onSelect(rent)}
                   inputProps={{
-                    'aria-labelledby': rent.occupant.name,
+                    'aria-labelledby': rent.occupant.name
                   }}
                   disabled
                 />
@@ -133,15 +131,9 @@ const RentRow = memo(function RentRow({
 
         <Grid container>
           <Grid item xs={12} sm={4}>
-            <Box
-              display="flex"
-              alignItems="center"
-              height="100%"
-              fontWeight="fontWeightBold"
-              whiteSpace="nowrap"
-            >
+            <div className="flex items-center text-xl h-full">
               {rent.occupant.name}
-            </Box>
+            </div>
           </Grid>
           <Grid item xs={12} sm={8}>
             <Grid container>
@@ -206,7 +198,7 @@ const MobileRentRow = memo(function MobileRentRow({
   isSelected,
   onSelect,
   onEdit,
-  onHistory,
+  onHistory
 }) {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
@@ -228,7 +220,7 @@ const MobileRentRow = memo(function MobileRentRow({
               disabled={!store.organization.canSendEmails}
               onChange={onSelect(rent)}
               inputProps={{
-                'aria-labelledby': rent.occupant.name,
+                'aria-labelledby': rent.occupant.name
               }}
             />
           ) : (
@@ -236,7 +228,7 @@ const MobileRentRow = memo(function MobileRentRow({
               <span>
                 <Checkbox
                   inputProps={{
-                    'aria-labelledby': rent.occupant.name,
+                    'aria-labelledby': rent.occupant.name
                   }}
                   disabled
                 />
@@ -244,15 +236,9 @@ const MobileRentRow = memo(function MobileRentRow({
             </Tooltip>
           )}
         </Box>
-        <Box
-          display="flex"
-          alignItems="center"
-          flexGrow={1}
-          fontWeight="fontWeightBold"
-          whiteSpace="nowrap"
-        >
+        <div className="flex items-center text-xl h-full">
           {rent.occupant.name}
-        </Box>
+        </div>
       </Box>
       <Box display="flex" alignItems="center" my={1}>
         <Box width="50%">
@@ -352,59 +338,55 @@ function RentTable({ rents = [], selected, setSelected }) {
       <NewPaymentDialog />
       <RentHistoryDialog />
 
-      <Paper>
-        <Box p={2}>
-          {rents.length ? (
-            <>
-              <Box display="flex" alignItems="center">
-                <Checkbox
-                  color="default"
-                  indeterminate={
-                    selected.length > 0 && selected.length < selectableRentNum
-                  }
-                  checked={selected.length === selectableRentNum}
-                  disabled={!store.organization.canSendEmails}
-                  onChange={onSelectAllClick}
-                  inputProps={{
-                    'aria-label': 'select all rents',
-                  }}
-                />
-              </Box>
+      {rents.length ? (
+        <>
+          <Box display="flex" alignItems="center">
+            <Checkbox
+              color="default"
+              indeterminate={
+                selected.length > 0 && selected.length < selectableRentNum
+              }
+              checked={selected.length === selectableRentNum}
+              disabled={!store.organization.canSendEmails}
+              onChange={onSelectAllClick}
+              inputProps={{
+                'aria-label': 'select all rents'
+              }}
+            />
+          </Box>
 
-              <Divider />
-              {rents.map((rent) => {
-                const isItemSelected = selected
-                  .map((r) => r._id)
-                  .includes(rent._id);
-                return (
-                  <BoxWithHover key={rent._id}>
-                    <Hidden smDown>
-                      <RentRow
-                        rent={rent}
-                        isSelected={isItemSelected}
-                        onSelect={onSelectClick}
-                        onEdit={handleEdit}
-                        onHistory={handleHistory}
-                      />
-                    </Hidden>
-                    <Hidden mdUp>
-                      <MobileRentRow
-                        rent={rent}
-                        isSelected={isItemSelected}
-                        onSelect={onSelectClick}
-                        onEdit={handleEdit}
-                        onHistory={handleHistory}
-                      />
-                    </Hidden>
-                  </BoxWithHover>
-                );
-              })}
-            </>
-          ) : (
-            <EmptyIllustration label={t('No rents found')} />
-          )}
-        </Box>
-      </Paper>
+          <Divider />
+          {rents.map((rent) => {
+            const isItemSelected = selected
+              .map((r) => r._id)
+              .includes(rent._id);
+            return (
+              <BoxWithHover key={rent._id}>
+                <Hidden smDown>
+                  <RentRow
+                    rent={rent}
+                    isSelected={isItemSelected}
+                    onSelect={onSelectClick}
+                    onEdit={handleEdit}
+                    onHistory={handleHistory}
+                  />
+                </Hidden>
+                <Hidden mdUp>
+                  <MobileRentRow
+                    rent={rent}
+                    isSelected={isItemSelected}
+                    onSelect={onSelectClick}
+                    onEdit={handleEdit}
+                    onHistory={handleHistory}
+                  />
+                </Hidden>
+              </BoxWithHover>
+            );
+          })}
+        </>
+      ) : (
+        <EmptyIllustration label={t('No rents found')} />
+      )}
     </>
   );
 }
