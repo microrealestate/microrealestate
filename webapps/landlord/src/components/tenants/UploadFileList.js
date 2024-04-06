@@ -1,12 +1,13 @@
+import { Alert, AlertTitle } from '../ui/alert';
 import { Box, List, Paper } from '@material-ui/core';
 import { useCallback, useContext, useMemo, useState } from 'react';
-
-import Alert from '../Alert';
+import { AlertTriangleIcon } from 'lucide-react';
 import { downloadDocument } from '../../utils/fetch';
 import ImageViewer from '../ImageViewer/ImageViewer';
 import { observer } from 'mobx-react-lite';
 import PdfViewer from '../PdfViewer/PdfViewer';
 import { StoreContext } from '../../store';
+import { toast } from 'sonner';
 import UploadFileItem from './UploadFileItem';
 import useConfirmDialog from '../ConfirmDialog';
 import useTranslation from 'next-translate/useTranslation';
@@ -35,7 +36,7 @@ function UploadFileList({ disabled }) {
           mimeType: doc.mimeType,
           expiryDate: doc.expiryDate,
           createdDate: doc.createdDate,
-          updatedDate: doc.updatedDate,
+          updatedDate: doc.updatedDate
         };
         return acc;
       }, {});
@@ -58,14 +59,14 @@ function UploadFileList({ disabled }) {
       })
       .map((template) => ({
         template,
-        document: existingDocuments[template._id],
+        document: existingDocuments[template._id]
       }));
   }, [
     store.document.items,
     store.template.items,
     store.tenant.selected?._id,
     store.tenant.selected?.leaseId,
-    store.tenant.selected.terminated,
+    store.tenant.selected.terminated
   ]);
 
   const handleView = useCallback((doc) => {
@@ -76,7 +77,7 @@ function UploadFileList({ disabled }) {
     } else {
       downloadDocument({
         endpoint: `/documents/${doc._id}`,
-        documentName: doc.name,
+        documentName: doc.name
       });
     }
   }, []);
@@ -107,13 +108,10 @@ function UploadFileList({ disabled }) {
         mimeType: doc.mimeType || '',
         expiryDate: doc.expiryDate || '',
         url: doc.url || '',
-        versionId: doc.versionId,
+        versionId: doc.versionId
       });
       if (status !== 200) {
-        return store.pushToastMessage({
-          message: t('Something went wrong'),
-          severity: 'error',
-        });
+        return toast.error(t('Something went wrong'));
       }
     },
     [store, t]
@@ -125,24 +123,21 @@ function UploadFileList({ disabled }) {
     }
     const { status } = await store.document.delete([documentToRemove._id]);
     if (status !== 200) {
-      return store.pushToastMessage({
-        message: t('Something went wrong'),
-        severity: 'error',
-      });
+      return toast.error(t('Something went wrong'));
     }
   }, [documentToRemove, store, t]);
 
   return (
     <>
       {!store.organization.canUploadDocumentsInCloud ? (
-        <Box mb={1}>
-          <Alert
-            severity="warning"
-            title={t(
+        <Alert variant="warning" className="mb-2">
+          <AlertTriangleIcon className="h-4 w-4" />
+          <AlertTitle>
+            {t(
               'Unable to upload documents without configuring the cloud storage service in Settings page'
             )}
-          />
-        </Box>
+          </AlertTitle>
+        </Alert>
       ) : null}
 
       <Paper variant="outlined">

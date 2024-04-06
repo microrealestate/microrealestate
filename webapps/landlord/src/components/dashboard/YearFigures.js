@@ -5,11 +5,11 @@ import {
   ReferenceLine,
   ResponsiveContainer,
   XAxis,
-  YAxis,
+  YAxis
 } from 'recharts';
-import { Box, Grid, Paper, Typography, useTheme } from '@material-ui/core';
 import { useCallback, useContext, useMemo } from 'react';
-
+import { BanknoteIcon } from 'lucide-react';
+import { DashboardCard } from './DashboardCard';
 import moment from 'moment';
 import { observer } from 'mobx-react-lite';
 import { StoreContext } from '../../store';
@@ -17,12 +17,11 @@ import useFormatNumber from '../../hooks/useFormatNumber';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 
-function YearFigures() {
+function YearFigures({ className }) {
   const store = useContext(StoreContext);
   const router = useRouter();
   const { t } = useTranslation('common');
   const formatNumber = useFormatNumber();
-  const theme = useTheme();
 
   const data = useMemo(() => {
     const now = moment();
@@ -31,14 +30,14 @@ function YearFigures() {
       const graphData = {
         ...revenues,
         name: revenuesMoment.format('MMM'),
-        yearMonth: moment(revenues.month, 'MMYYYY').format('YYYY.MM'),
+        yearMonth: moment(revenues.month, 'MMYYYY').format('YYYY.MM')
       };
       if (revenuesMoment.isSameOrBefore(now)) {
         acc.push(graphData);
       } else {
         acc.push({
           ...graphData,
-          notPaid: 0,
+          notPaid: 0
         });
       }
       return acc;
@@ -60,9 +59,9 @@ function YearFigures() {
       const {
         activePayload: [
           {
-            payload: { yearMonth },
-          },
-        ],
+            payload: { yearMonth }
+          }
+        ]
       } = data;
       store.rent.setFilters({});
       store.rent.setPeriod(moment(yearMonth, 'YYYY.MM', true));
@@ -72,78 +71,70 @@ function YearFigures() {
   );
 
   return hasRevenues ? (
-    <>
-      <Box mb={3}>
-        <Typography variant="h5">
-          {t('Rents of {{year}}', {
-            year: moment().format('YYYY'),
-          })}
-        </Typography>
-      </Box>
-      <Grid container>
-        <Grid item xs={12}>
-          <Paper>
-            <Box py={2} px={3} width="100%" height={600}>
-              <ResponsiveContainer height={570}>
-                <BarChart
-                  data={data}
-                  layout="vertical"
-                  stackOffset="sign"
-                  onClick={onClick}
-                >
-                  <XAxis
-                    type="number"
-                    hide={true}
-                    domain={['dataMin', 'dataMax']}
-                  />
-                  <YAxis
-                    dataKey="name"
-                    hide={false}
-                    axisLine={false}
-                    tickLine={false}
-                    type="category"
-                  />
-                  <Legend
-                    verticalAlign="top"
-                    height={40}
-                    formatter={(value) =>
-                      value === 'paid' ? t('Rent paid') : t('Rents not paid')
-                    }
-                  />
-                  <Bar
-                    isAnimationActive={false}
-                    dataKey="notPaid"
-                    fill={theme.palette.warning.dark}
-                    stackId="stack"
-                    cursor="pointer"
-                    background={{ fill: theme.palette.grey[300] }}
-                    label={{
-                      fill: theme.palette.grey[50],
-                      formatter: (value) =>
-                        value < 0 ? formatNumber(value) : '',
-                    }}
-                  />
-
-                  <Bar
-                    isAnimationActive={false}
-                    dataKey="paid"
-                    fill={theme.palette.success.dark}
-                    stackId="stack"
-                    cursor="pointer"
-                    label={{
-                      fill: theme.palette.grey[50],
-                      formatter: (value) =>
-                        value > 0 ? formatNumber(value) : '',
-                    }}
-                  />
-                  <ReferenceLine x={0} stroke={theme.palette.grey[400]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </Box>
-          </Paper>
-        </Grid>
-      </Grid>
-    </>
+    <DashboardCard
+      Icon={BanknoteIcon}
+      title={t('Rents of {{year}}', {
+        year: moment().format('YYYY')
+      })}
+      description={t('Rents for the year')}
+      renderContent={() => (
+        <div className="text-xs lg:text-lg -ml-8 lg:-ml-4">
+          <ResponsiveContainer height={570}>
+            <BarChart
+              data={data}
+              layout="vertical"
+              stackOffset="sign"
+              onClick={onClick}
+            >
+              <XAxis
+                type="number"
+                hide={true}
+                domain={['dataMin', 'dataMax']}
+              />
+              <YAxis
+                dataKey="name"
+                hide={false}
+                axisLine={false}
+                tickLine={false}
+                type="category"
+              />
+              <Legend
+                verticalAlign="top"
+                height={40}
+                formatter={(value) =>
+                  value === 'paid' ? t('Rent paid') : t('Rents not paid')
+                }
+              />
+              <Bar
+                dataKey="notPaid"
+                fill="hsl(var(--warning))"
+                stackId="stack"
+                cursor="pointer"
+                background={{ fill: 'hsl(var(--muted))' }}
+                label={{
+                  fill: 'hsl(var(--warning-foreground))',
+                  formatter: (value) => (value < 0 ? formatNumber(value) : ''),
+                  className: 'tracking-tight text-[0.5rem] sm:text-xs'
+                }}
+              />
+              <Bar
+                dataKey="paid"
+                fill="hsl(var(--success))"
+                stackId="stack"
+                cursor="pointer"
+                label={{
+                  fill: 'hsl(var(--success-foreground))',
+                  formatter: (value) => (value > 0 ? formatNumber(value) : ''),
+                  className: 'tracking-tight text-[0.5rem] sm:text-xs'
+                }}
+              />
+              <ReferenceLine x={0} stroke="hsl(var(--border))" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+      className={className}
+    />
   ) : null;
 }
 

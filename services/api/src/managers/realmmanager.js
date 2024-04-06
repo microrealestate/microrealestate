@@ -114,13 +114,13 @@ module.exports = {
     // the middleware
     if (req.user.role !== 'administrator') {
       return res.status(403).json({
-        error: 'only administrator member can update the organization',
+        error: 'only administrator member can update the organization'
       });
     }
 
     // retrieve the document from mongo & update it
-    const updatedRealm = await Realm.findOne({ _id: req.body._id }).exec();
-    updatedRealm.set(req.body);
+    const previousRealm = await Realm.findOne({ _id: req.body._id });
+    const updatedRealm = { ...previousRealm.toObject(), ...req.body };
 
     if (!_hasRequiredFields(updatedRealm)) {
       return res.status(422).json({ error: 'missing fields' });
@@ -136,58 +136,59 @@ module.exports = {
         .json({ error: 'organization name already exists' });
     }
 
-    if (updatedRealm.thirdParties?.gmail) {
+    if (req.body.thirdParties?.gmail) {
       logger.debug('realm update with Gmail third party emailer');
       if (gmailAppPasswordUpdated) {
         updatedRealm.thirdParties.gmail.appPassword = crypto.encrypt(
-          updatedRealm.thirdParties.gmail.appPassword
+          req.body.thirdParties.gmail.appPassword
         );
-      } else if (req.realm.thirdParties?.gmail?.appPassword) {
+      } else {
         updatedRealm.thirdParties.gmail.appPassword =
-          req.realm.thirdParties.gmail.appPassword;
+          previousRealm.thirdParties.gmail?.appPassword;
       }
     }
 
-    if (updatedRealm.thirdParties?.smtp) {
+    if (req.body.thirdParties?.smtp) {
       logger.debug('realm update with SMTP third party emailer');
       if (smtpPasswordUpdated) {
         updatedRealm.thirdParties.smtp.password = crypto.encrypt(
-          updatedRealm.thirdParties.smtp.password
+          req.body.thirdParties.smtp.password
         );
-      } else if (req.realm.thirdParties?.smtp?.password) {
+      } else {
         updatedRealm.thirdParties.smtp.password =
-          req.realm.thirdParties.smtp.password;
+          previousRealm.thirdParties.smtp.password;
       }
     }
 
-    if (updatedRealm.thirdParties?.mailgun) {
+    if (req.body.thirdParties?.mailgun) {
       logger.debug('realm update with Mailgun third party emailer');
       if (mailgunApiKeyUpdated) {
         updatedRealm.thirdParties.mailgun.apiKey = crypto.encrypt(
-          updatedRealm.thirdParties.mailgun.apiKey
+          req.body.thirdParties.mailgun.apiKey
         );
-      } else if (req.realm.thirdParties?.mailgun?.apiKey) {
+      } else {
         updatedRealm.thirdParties.mailgun.apiKey =
-          req.realm.thirdParties.mailgun.apiKey;
+          previousRealm.thirdParties.mailgun.apiKey;
       }
     }
 
-    if (updatedRealm.thirdParties?.b2) {
+    if (req.body.thirdParties?.b2) {
       if (b2KeyIdUpdated) {
         updatedRealm.thirdParties.b2.keyId = crypto.encrypt(
-          updatedRealm.thirdParties.b2.keyId
+          req.body.thirdParties.b2.keyId
         );
-      } else if (req.realm.thirdParties?.b2?.keyId) {
-        updatedRealm.thirdParties.b2.keyId = req.realm.thirdParties.b2.keyId;
+      } else {
+        updatedRealm.thirdParties.b2.keyId =
+          previousRealm.thirdParties.b2.keyId;
       }
 
       if (b2ApplicationKeyUpdated) {
         updatedRealm.thirdParties.b2.applicationKey = crypto.encrypt(
-          updatedRealm.thirdParties.b2.applicationKey
+          req.body.thirdParties.b2.applicationKey
         );
-      } else if (req.realm.thirdParties?.b2?.applicationKey) {
+      } else {
         updatedRealm.thirdParties.b2.applicationKey =
-          req.realm.thirdParties.b2.applicationKey;
+          previousRealm.thirdParties.b2.applicationKey;
       }
     }
 
@@ -231,7 +232,8 @@ module.exports = {
     });
 
     try {
-      res.status(201).json(_escapeSecrets(await updatedRealm.save()));
+      previousRealm.set(updatedRealm);
+      res.status(201).json(_escapeSecrets(await previousRealm.save()));
     } catch (error) {
       logger.error(error);
       res.sendStatus(500).json({ errors: error });
@@ -253,5 +255,5 @@ module.exports = {
   },
   all(req, res) {
     res.json(req.realms.map((realm) => _escapeSecrets(realm)));
-  },
+  }
 };

@@ -12,9 +12,7 @@ function Application({ children }) {
   const [routeloading, setRouteLoading] = useState(false);
   const router = useRouter();
 
-  const showNav = !!(
-    store.organization.items && store.organization.items.length
-  );
+  const hideMenu = !(store.organization.items?.length > 0);
 
   useEffect(() => {
     const routeChangeStart = (url, { shallow }) => {
@@ -42,7 +40,7 @@ function Application({ children }) {
       utils={DateFnsUtils}
       locale={store?.organization?.selected?.locale ?? 'en'}
     >
-      <Layout showNav={showNav}>{!routeloading && children}</Layout>
+      <Layout hideMenu={hideMenu}>{!routeloading && children}</Layout>
     </MuiPickersUtilsProvider>
   );
 }

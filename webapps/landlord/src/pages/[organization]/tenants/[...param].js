@@ -1,22 +1,22 @@
-import { Box, Button, ButtonGroup, Grid, Paper } from '@material-ui/core';
+import {
+  ArrowLeftIcon,
+  HistoryIcon,
+  PencilIcon,
+  StopCircleIcon,
+  TrashIcon
+} from 'lucide-react';
 import { useCallback, useContext, useMemo, useState } from 'react';
-
-import BreadcrumbBar from '../../../components/BreadcrumbBar';
-import CompulsoryDocumentStatus from '../../../components/tenants/CompulsaryDocumentStatus';
+import { Card } from '../../../components/ui/card';
 import ContractOverviewCard from '../../../components/tenants/ContractOverviewCard';
-import DeleteIcon from '@material-ui/icons/Delete';
-import EditIcon from '@material-ui/icons/Edit';
-import Hidden from '../../../components/HiddenSSRCompatible';
-import HistoryIcon from '@material-ui/icons/History';
-import { MobileButton } from '../../../components/MobileMenuButton';
 import moment from 'moment';
 import { observer } from 'mobx-react-lite';
 import Page from '../../../components/Page';
 import RentOverviewCard from '../../../components/tenants/RentOverviewCard';
-import StopIcon from '@material-ui/icons/Stop';
+import ShortcutButton from '../../../components/ShortcutButton';
 import { StoreContext } from '../../../store';
 import TenantStepper from '../../../components/tenants/TenantStepper';
 import TenantTabs from '../../../components/tenants/TenantTabs';
+import { toast } from 'sonner';
 import { toJS } from 'mobx';
 import useConfirmDialog from '../../../components/ConfirmDialog';
 import useFillStore from '../../../hooks/useFillStore';
@@ -34,7 +34,7 @@ async function fetchData(store, router) {
     store.property.fetch(),
     store.lease.fetch(),
     store.template.fetch(),
-    store.document.fetch(),
+    store.document.fetch()
   ]);
 
   store.tenant.setSelected(
@@ -44,7 +44,7 @@ async function fetchData(store, router) {
   return results;
 }
 
-const Tenant = observer(() => {
+function Tenant() {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const router = useRouter();
@@ -65,8 +65,8 @@ const Tenant = observer(() => {
 
   const {
     query: {
-      param: [, backPage, backPath],
-    },
+      param: [, , backPath]
+    }
   } = router;
 
   const onEditTenant = useCallback(() => {
@@ -78,27 +78,15 @@ const Tenant = observer(() => {
     if (status !== 200) {
       switch (status) {
         case 422:
-          return store.pushToastMessage({
-            message: t(
-              'Tenant cannot be deleted because some rents have been paid'
-            ),
-            severity: 'error',
-          });
+          return toast.error(
+            t('Tenant cannot be deleted because some rents have been paid')
+          );
         case 404:
-          return store.pushToastMessage({
-            message: t('Tenant does not exist'),
-            severity: 'error',
-          });
+          return toast.error(t('Tenant does not exist'));
         case 403:
-          return store.pushToastMessage({
-            message: t('You are not allowed to delete the tenant'),
-            severity: 'error',
-          });
+          return toast.error(t('You are not allowed to delete the tenant'));
         default:
-          return store.pushToastMessage({
-            message: t('Something went wrong'),
-            severity: 'error',
-          });
+          return toast.error(t('Something went wrong'));
       }
     }
 
@@ -119,10 +107,10 @@ const Tenant = observer(() => {
             propertyId,
             entryDate,
             exitDate,
-            expenses,
+            expenses
           })
         ),
-        ...tenantPart,
+        ...tenantPart
       };
 
       if (tenant._id) {
@@ -130,20 +118,11 @@ const Tenant = observer(() => {
         if (status !== 200) {
           switch (status) {
             case 422:
-              return store.pushToastMessage({
-                message: t('Tenant name is missing'),
-                severity: 'error',
-              });
+              return toast.error(t('Tenant name is missing'));
             case 403:
-              return store.pushToastMessage({
-                message: t('You are not allowed to update the tenant'),
-                severity: 'error',
-              });
+              return toast.error(t('You are not allowed to update the tenant'));
             default:
-              return store.pushToastMessage({
-                message: t('Something went wrong'),
-                severity: 'error',
-              });
+              return toast.error(t('Something went wrong'));
           }
         }
         store.tenant.setSelected(data);
@@ -152,25 +131,13 @@ const Tenant = observer(() => {
         if (status !== 200) {
           switch (status) {
             case 422:
-              return store.pushToastMessage({
-                message: t('Tenant name is missing'),
-                severity: 'error',
-              });
+              return toast.error(t('Tenant name is missing'));
             case 403:
-              return store.pushToastMessage({
-                message: t('You are not allowed to add a tenant'),
-                severity: 'error',
-              });
+              return toast.error(t('You are not allowed to add a tenant'));
             case 409:
-              return store.pushToastMessage({
-                message: t('The tenant already exists'),
-                severity: 'error',
-              });
+              return toast.error(t('The tenant already exists'));
             default:
-              return store.pushToastMessage({
-                message: t('Something went wrong'),
-                severity: 'error',
-              });
+              return toast.error(t('Something went wrong'));
           }
         }
         store.tenant.setSelected(data);
@@ -200,7 +167,7 @@ const Tenant = observer(() => {
       store.tenant.selected.properties?.length > 0,
     [
       store.tenant.selected.properties?.length,
-      store.tenant.selected.stepperMode,
+      store.tenant.selected.stepperMode
     ]
   );
 
@@ -212,10 +179,7 @@ const Tenant = observer(() => {
       // document already generated
       const { status, data } = await store.document.fetchOne(contractId);
       if (status !== 200) {
-        return store.pushToastMessage({
-          message: t('Something went wrong'),
-          severity: 'error',
-        });
+        return toast.error(t('Something went wrong'));
       }
       contents = data.contents;
       return contents;
@@ -232,13 +196,10 @@ const Tenant = observer(() => {
       tenantId: editContract._id,
       leaseId: lease._id,
       type: 'text',
-      name: editContract.name,
+      name: editContract.name
     });
     if (status !== 200) {
-      return store.pushToastMessage({
-        message: t('Something went wrong'),
-        severity: 'error',
-      });
+      return toast.error(t('Something went wrong'));
     }
     contractId = data._id;
     contents = data.contents;
@@ -252,7 +213,7 @@ const Tenant = observer(() => {
     editContract?.leaseId,
     store,
     onSubmit,
-    t,
+    t
   ]);
 
   const onSaveContract = useCallback(
@@ -260,17 +221,18 @@ const Tenant = observer(() => {
       const { status } = await store.document.update({
         _id: editContract.contractId,
         contents,
-        html,
+        html
       });
       if (status !== 200) {
-        return store.pushToastMessage({
-          message: t('Something went wrong'),
-          severity: 'error',
-        });
+        return toast.error(t('Something went wrong'));
       }
     },
     [editContract.contractId, store, t]
   );
+
+  const handleBack = useCallback(() => {
+    router.push(backPath);
+  }, [router, backPath]);
 
   const handleDeleteTenant = useCallback(
     () => setOpenConfirmDeleteTenant(true),
@@ -296,111 +258,59 @@ const Tenant = observer(() => {
     <Page
       loading={fetching}
       ActionBar={
-        <Box display="flex" alignItems="center" justifyContent="space-between">
-          <BreadcrumbBar
-            backPath={backPath}
-            backPage={backPage}
-            currentPage={store.tenant.selected.name}
+        <div className="grid grid-cols-5 gap-1.5 md:gap-4">
+          <ShortcutButton
+            label={t('Back')}
+            Icon={ArrowLeftIcon}
+            onClick={handleBack}
           />
-          <Hidden smDown>
-            <ButtonGroup variant="contained">
-              <Button startIcon={<DeleteIcon />} onClick={handleDeleteTenant}>
-                {t('Delete')}
-              </Button>
-              {showTerminateLeaseButton && (
-                <Button
-                  startIcon={<StopIcon />}
-                  disabled={store.tenant.selected.terminated}
-                  onClick={handleTerminateLease}
-                >
-                  {t('Terminate')}
-                </Button>
-              )}
-              {showEditButton && (
-                <Button
-                  startIcon={<EditIcon />}
-                  disabled={
-                    !(!!store.tenant.selected.properties?.length && readOnly)
-                  }
-                  onClick={handleEditTenant}
-                >
-                  {t('Edit')}
-                </Button>
-              )}
-            </ButtonGroup>
-            <ButtonGroup variant="contained">
-              {showEditButton && (
-                <Button startIcon={<HistoryIcon />} onClick={handleRentHistory}>
-                  {t('Schedule')}
-                </Button>
-              )}
-            </ButtonGroup>
-          </Hidden>
-
-          <Hidden mdUp>
-            <ButtonGroup variant="text">
-              <MobileButton
-                label={t('Delete')}
-                Icon={DeleteIcon}
-                disabled={store.tenant.selected.hasPayments}
-                onClick={handleDeleteTenant}
-              />
-
-              {showTerminateLeaseButton && (
-                <MobileButton
-                  label={t('Terminate')}
-                  Icon={StopIcon}
-                  onClick={handleTerminateLease}
-                />
-              )}
-              {showEditButton && (
-                <MobileButton
-                  label={t('Edit')}
-                  Icon={EditIcon}
-                  onClick={handleEditTenant}
-                />
-              )}
-            </ButtonGroup>
-            {showEditButton && (
-              <ButtonGroup variant="text">
-                <MobileButton
-                  Icon={HistoryIcon}
-                  label={t('Schedule')}
-                  onClick={handleRentHistory}
-                />
-              </ButtonGroup>
-            )}
-          </Hidden>
-        </Box>
+          <ShortcutButton
+            label={t('Delete')}
+            Icon={TrashIcon}
+            disabled={store.tenant.selected.hasPayments}
+            onClick={handleDeleteTenant}
+          />
+          {showTerminateLeaseButton ? (
+            <ShortcutButton
+              label={t('Terminate')}
+              Icon={StopCircleIcon}
+              onClick={handleTerminateLease}
+            />
+          ) : null}
+          {showEditButton ? (
+            <ShortcutButton
+              label={t('Edit')}
+              Icon={PencilIcon}
+              onClick={handleEditTenant}
+            />
+          ) : null}
+          {showEditButton ? (
+            <ShortcutButton
+              Icon={HistoryIcon}
+              label={t('Schedule')}
+              onClick={handleRentHistory}
+            />
+          ) : null}
+        </div>
       }
     >
       {store.tenant.selected.stepperMode ? (
-        <Paper>
+        <Card>
           <TenantStepper onSubmit={onSubmit} />
-        </Paper>
+        </Card>
       ) : (
         <>
-          <Grid container spacing={5}>
-            <Grid item xs={12} md={7} lg={8}>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="md:col-span-2">
               <TenantTabs onSubmit={onSubmit} readOnly={readOnly} />
-            </Grid>
+            </div>
             {!!store.tenant.selected.properties && (
-              <Grid item xs={12} md={5} lg={4}>
-                <CompulsoryDocumentStatus
-                  tenant={store.tenant.selected}
-                  variant="compact"
-                  elevation={1}
-                  mb={4}
-                />
-                <Box mb={4}>
-                  <ContractOverviewCard />
-                </Box>
-                <Box mb={4}>
-                  <RentOverviewCard />
-                </Box>
-              </Grid>
+              <div className="hidden md:grid grid-cols-1 gap-4 h-fit">
+                <ContractOverviewCard />
+                <RentOverviewCard />
+              </div>
             )}
-          </Grid>
+          </div>
           <RichTextEditorDialog
             onLoad={onLoadContract}
             onSave={onSaveContract}
@@ -412,11 +322,11 @@ const Tenant = observer(() => {
             title={
               store.tenant.selected.terminated
                 ? t('Lease terminated on {{terminationDate}}', {
-                  terminationDate: moment(
-                    store.tenant.selected.terminationDate,
-                    'DD/MM/YYYY'
-                  ).format('LL'),
-                })
+                    terminationDate: moment(
+                      store.tenant.selected.terminationDate,
+                      'DD/MM/YYYY'
+                    ).format('LL')
+                  })
                 : t('Lease running')
             }
             subTitle={t(
@@ -431,29 +341,26 @@ const Tenant = observer(() => {
       <ConfirmDeleteDialog
         title={
           store.tenant.selected.hasPayments
-            ? t('This contract cannot be deleted')
-            : t('Deletion of the tenant contract?')
+            ? t('This tenant cannot be deleted')
+            : t('Deletion of the tenant?')
         }
         subTitle={
           store.tenant.selected.hasPayments
             ? t(
-              'Deleting {{tenant}}\'s contract is not allowed because some rent settlements have been recorded',
-              {
-                tenant: store.tenant.selected.name,
-              }
-            )
-            : t(
-              'Do you confirm the permanent deletion of {{tenant}}\'s contract?',
-              {
-                tenant: store.tenant.selected.name,
-              }
-            )
+                'Deleting {{tenant}} is not allowed because some rent settlements have been recorded',
+                {
+                  tenant: store.tenant.selected.name
+                }
+              )
+            : t('Do you confirm the permanent deletion of {{tenant}}?', {
+                tenant: store.tenant.selected.name
+              })
         }
         justOkButton={store.tenant.selected.hasPayments}
         onConfirm={!store.tenant.selected.hasPayments ? onDeleteTenant : null}
       />
     </Page>
   );
-});
+}
 
-export default withAuthentication(Tenant);
+export default withAuthentication(observer(Tenant));

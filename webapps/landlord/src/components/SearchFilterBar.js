@@ -1,112 +1,162 @@
+import { buildPathname, cn } from '../utils';
 import {
-  Box,
-  Chip,
-  InputAdornment,
-  TextField,
-  withStyles,
-} from '@material-ui/core';
-import { useCallback, useMemo, useTransition } from 'react';
-
-import FilterListIcon from '@material-ui/icons/FilterList';
-import SearchIcon from '@material-ui/icons/Search';
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  useTransition
+} from 'react';
+import { Badge } from './ui/badge';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { PlusCircle } from 'lucide-react';
+import { Separator } from './ui/separator';
 import ToggleMenu from './ToggleMenu';
+import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 
-const StyledTextField = withStyles({
-  root: {
-    width: '100%',
-    '& .MuiInput-root': {
-      color: 'inherit',
-      '& .MuiInputAdornment-root': {
-        color: 'inherit',
-      },
-    },
-  },
-})(TextField);
-
-export default function SearchFilterBar({
-  searchText = '',
-  selectedIds = [],
-  statusList = [],
-  onSearch,
-}) {
+function FilterBar({ filters, selectedFilterIds, onChange }) {
   const { t } = useTranslation('common');
-  const [, startTransition] = useTransition();
-  const currentSelectedStatus = useMemo(() => {
-    return selectedIds.map((value) =>
-      statusList.find(({ id }) => id === value)
+
+  const visibleFilters = useMemo(() => {
+    const selectedFilters = filters.filter((filter) =>
+      selectedFilterIds.includes(filter.id)
     );
-  }, [selectedIds, statusList]);
+    let visibleFilters = selectedFilters;
+
+    if (selectedFilters.length >= 4) {
+      visibleFilters = [
+        selectedFilters[0],
+        { id: '__more__', label: '...' },
+        selectedFilters[selectedFilters.length - 2],
+        selectedFilters[selectedFilters.length - 1]
+      ];
+    }
+
+    return visibleFilters;
+  }, [filters, selectedFilterIds]);
+
+  return (
+    <ToggleMenu
+      options={filters}
+      selectedIds={selectedFilterIds}
+      onChange={onChange}
+      multi
+    >
+      <Button
+        variant="secondary"
+        className="flex rounded-md border-dotted border-2 p-2 w-fit"
+      >
+        <div className="flex items-center gap-1.5">
+          <div>
+            <PlusCircle className="inline-block align-middle w-4 h-4" />
+            <div className="inline-block align-middle ml-1">{t('Filters')}</div>
+          </div>
+          {selectedFilterIds.length > 0 ? (
+            <Separator
+              orientation="vertical"
+              className="h-6 bg-secondary-foreground/25"
+              decorative
+            />
+          ) : null}
+
+          {visibleFilters.map((status) => {
+            if (status.id === '__more__') {
+              return <span key={status.id}>{status.label}</span>;
+            }
+            return (
+              <Badge
+                key={status.id}
+                variant="secondary"
+                className="rounded-none h-6"
+              >
+                <span>{status.label}</span>
+              </Badge>
+            );
+          })}
+        </div>
+      </Button>
+    </ToggleMenu>
+  );
+}
+
+export default function SearchFilterBar({ filters = [], onSearch, className }) {
+  const { t } = useTranslation('common');
+  const router = useRouter();
+  const [, startTransition] = useTransition();
+  const [searchText, setSearchText] = useState(router.query.search || '');
+  const [selectedFilterIds, setSelectedFilterIds] = useState(
+    router.query.statuses?.split(',') || []
+  );
+
+  useEffect(() => {
+    const selectedFilters = filters.filter(({ id }) =>
+      selectedFilterIds.includes(id)
+    );
+    onSearch(selectedFilters, searchText);
+  }, [filters, onSearch, searchText, selectedFilterIds]);
+
+  const currentSelectedStatus = useMemo(() => {
+    return filters.filter(({ id }) => selectedFilterIds.includes(id));
+  }, [selectedFilterIds, filters]);
 
   const triggerSearch = useCallback(
     (inputSelectedStatus, inputSearchText) => {
       startTransition(() => {
+        const searchParams = [];
+        if (inputSearchText) {
+          searchParams.push(`search=${inputSearchText}`);
+        }
+        if (inputSelectedStatus.length) {
+          searchParams.push(
+            `statuses=${inputSelectedStatus.map(({ id }) => id).join(',')}`
+          );
+        }
+        window.history.pushState(
+          null,
+          '',
+          `${buildPathname(router)}${
+            searchParams.length ? `?${searchParams.join('&')}` : ''
+          }`
+        );
         onSearch(inputSelectedStatus, inputSearchText);
       });
     },
-    [onSearch]
+    [onSearch, router]
   );
 
   const handleTextChange = useCallback(
     (event) => {
-      triggerSearch(currentSelectedStatus, event.target.value || '');
+      const searchText = event.target.value || '';
+      setSearchText(searchText);
+      triggerSearch(currentSelectedStatus, searchText.trim());
     },
     [currentSelectedStatus, triggerSearch]
   );
 
-  const handleToggleChange = useCallback(
+  const handleFilterChange = useCallback(
     (values) => {
+      setSelectedFilterIds(values.map(({ id }) => id));
       triggerSearch(values, searchText);
     },
     [searchText, triggerSearch]
   );
 
-  const handleDeleteFilter = useCallback(
-    (item) => () => {
-      const values = currentSelectedStatus.filter(({ id }) => item.id !== id);
-      triggerSearch(values, searchText);
-    },
-    [currentSelectedStatus, searchText, triggerSearch]
-  );
-
   return (
-    <Box mb={1}>
-      <Box display="flex" flexWrap="nowrap" alignItems="center" width={330}>
-        <Box flexGrow={1}>
-          <StyledTextField
-            placeholder={t('Search')}
-            defaultValue={searchText}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon />
-                </InputAdornment>
-              ),
-            }}
-            onChange={handleTextChange}
-          />
-        </Box>
-        <ToggleMenu
-          startIcon={<FilterListIcon />}
-          options={statusList}
-          selectedIds={selectedIds}
-          onChange={handleToggleChange}
-          multi
+    <div className={cn('flex flex-col md:flex-row gap-2', className)}>
+      <Input
+        defaultValue={searchText}
+        placeholder={t('Search')}
+        onChange={handleTextChange}
+        className="md:w-60"
+      />
+      {filters?.length ? (
+        <FilterBar
+          filters={filters}
+          selectedFilterIds={selectedFilterIds}
+          onChange={handleFilterChange}
         />
-      </Box>
-      <Box display="flex" gridGap={10} py={0.5}>
-        {selectedIds
-          .filter((id) => id !== '')
-          .map((id) => statusList.find((status) => status?.id === id))
-          .map((status) => (
-            <Chip
-              key={status.id}
-              label={status.label}
-              size="small"
-              onDelete={handleDeleteFilter(status)}
-            />
-          ))}
-      </Box>
-    </Box>
+      ) : null}
+    </div>
   );
 }

@@ -1,27 +1,25 @@
 import * as Yup from 'yup';
-
-import { Box, Paper, Typography } from '@material-ui/core';
+import { Card, CardContent, CardFooter } from '../components/ui/card';
 import { Form, Formik } from 'formik';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { SubmitButton, TextField } from '@microrealestate/commonui/components';
-
 import config from '../config';
 import Link from '../components/Link';
 import LocationCityIcon from '@material-ui/icons/LocationCity';
-import Page from '../components/Page';
 import { setOrganizationId } from '../utils/fetch';
 import { StoreContext } from '../store';
+import { toast } from 'sonner';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 
 const defaultValues = {
   email: '',
-  password: '',
+  password: ''
 };
 
 const validationSchema = Yup.object().shape({
   email: Yup.string().email().required(),
-  password: Yup.string().required(),
+  password: Yup.string().required()
 });
 
 export default function SignIn() {
@@ -34,7 +32,7 @@ export default function SignIn() {
     if (config.DEMO_MODE) {
       setInitialValues({
         email: 'demo@demo.com',
-        password: 'demo',
+        password: 'demo'
       });
     }
   }, []);
@@ -46,22 +44,13 @@ export default function SignIn() {
         if (status !== 200) {
           switch (status) {
             case 422:
-              store.pushToastMessage({
-                message: t('Some fields are missing'),
-                severity: 'error',
-              });
+              toast.error(t('Some fields are missing'));
               return;
             case 401:
-              store.pushToastMessage({
-                message: t('Incorrect email or password'),
-                severity: 'error',
-              });
+              toast.error(t('Incorrect email or password'));
               return;
             default:
-              store.pushToastMessage({
-                message: t('Something went wrong'),
-                severity: 'error',
-              });
+              toast.error(t('Something went wrong'));
               return;
           }
         }
@@ -79,7 +68,7 @@ export default function SignIn() {
             `/${store.organization.selected.name}/dashboard`,
             undefined,
             {
-              locale: store.organization.selected.locale,
+              locale: store.organization.selected.locale
             }
           );
         } else {
@@ -87,10 +76,7 @@ export default function SignIn() {
         }
       } catch (error) {
         console.error(error);
-        store.pushToastMessage({
-          message: t('Something went wrong'),
-          severity: 'error',
-        });
+        toast.error(t('Something went wrong'));
       }
     },
     [router, store, t]
@@ -102,27 +88,23 @@ export default function SignIn() {
   }
 
   return (
-    <Page maxWidth="sm">
-      <Box mt={10} mb={5}>
-        <Box align="center">
-          <LocationCityIcon fontSize="large" />
-        </Box>
-        <Typography component="h1" variant="h4" align="center">
-          {config.APP_NAME}
-        </Typography>
-        <Box align="center">{t('for landlords')}</Box>
-      </Box>
-      <Paper>
-        <Box px={4} pb={4} pt={2}>
-          <Formik
-            enableReinitialize={true}
-            initialValues={initialValues}
-            validationSchema={validationSchema}
-            onSubmit={signIn}
-          >
-            {({ isSubmitting }) => {
-              return (
-                <Form>
+    <div className="mt-10 mx-4 sm:container sm:w-[36rem]">
+      <div className="flex flex-col items-center mb-10">
+        <LocationCityIcon />
+        <span className="text-2xl">{config.APP_NAME}</span>
+        <span className="text-secondary-foreground">{t('for landlords')}</span>
+      </div>
+      <Card>
+        <Formik
+          enableReinitialize={true}
+          initialValues={initialValues}
+          validationSchema={validationSchema}
+          onSubmit={signIn}
+        >
+          {({ isSubmitting }) => {
+            return (
+              <Form>
+                <CardContent className="pt-6">
                   <TextField label={t('Email Address')} name="email" />
                   <TextField
                     label={t('Password')}
@@ -131,41 +113,35 @@ export default function SignIn() {
                     autoComplete="current-password"
                   />
                   {!config.DEMO_MODE && (
-                    <Typography variant="body2">
-                      <Link href="/forgotpassword" data-cy="forgotpassword">
-                        {t('Forgot password?')}
-                      </Link>
-                    </Typography>
+                    <Link href="/forgotpassword" data-cy="forgotpassword">
+                      {t('Forgot password?')}
+                    </Link>
                   )}
-                  <Box mt={4}>
-                    <SubmitButton
-                      fullWidth
-                      label={!isSubmitting ? t('Sign in') : t('Signing in')}
-                    />
-                  </Box>
-                </Form>
-              );
-            }}
-          </Formik>
-        </Box>
-      </Paper>
-      {!config.DEMO_MODE && config.SIGNUP && (
-        <Box mt={4}>
-          <Paper>
-            <Box px={4} py={2}>
-              <Typography variant="body2">
-                {t('New to {{APP_NAME}}?', {
-                  APP_NAME: config.APP_NAME,
-                })}{' '}
-                <Link href="/signup" data-cy="signup">
-                  {t('Create an account')}
-                </Link>
-                .
-              </Typography>
-            </Box>
-          </Paper>
-        </Box>
-      )}
-    </Page>
+                </CardContent>
+                <CardFooter>
+                  <SubmitButton
+                    fullWidth
+                    label={!isSubmitting ? t('Sign in') : t('Signing in')}
+                  />
+                </CardFooter>
+              </Form>
+            );
+          }}
+        </Formik>
+        {!config.DEMO_MODE && config.SIGNUP && (
+          <CardFooter>
+            <span className="text-secondary-foreground text-center w-full">
+              {t('New to {{APP_NAME}}?', {
+                APP_NAME: config.APP_NAME
+              })}{' '}
+              <Link href="/signup" data-cy="signup">
+                {t('Create an account')}
+              </Link>
+              .
+            </span>
+          </CardFooter>
+        )}
+      </Card>
+    </div>
   );
 }

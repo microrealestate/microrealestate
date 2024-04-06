@@ -1,3 +1,4 @@
+import '../styles/globals.css';
 import 'moment/locale/fr';
 import 'moment/locale/pt';
 import 'moment/locale/de';
@@ -9,6 +10,7 @@ import '../components/RichTextEditor/richtexteditor.css';
 
 import * as Yup from 'yup';
 
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Application from '../components/Application';
 import config from '../config';
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -19,6 +21,8 @@ import { Roboto } from 'next/font/google';
 import theme from '../styles/theme';
 import { ThemeProvider } from '@material-ui/core/styles';
 import { useEffect } from 'react';
+
+const queryClient = new QueryClient();
 
 const APP_TITLE = [config.APP_NAME, 'Landlord'];
 if (config.NODE_ENV === 'development') {
@@ -41,14 +45,14 @@ Yup.addMethod(Yup.string, 'emails', function (message) {
         emails.every((email) => schema.isValidSync(email)) &&
         emails.length === new Set(emails).size
       );
-    },
+    }
   });
 });
 
 const roboto = Roboto({
   weight: ['300', '400', '500', '700'],
   display: 'swap',
-  subsets: ['latin', 'latin-ext'],
+  subsets: ['latin', 'latin-ext']
 });
 
 function MyApp(props) {
@@ -83,11 +87,13 @@ function MyApp(props) {
         <ThemeProvider theme={theme}>
           {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
           <CssBaseline />
-          <InjectStoreContext initialData={pageProps.initialState?.store}>
-            <Application {...pageProps}>
-              <Component {...pageProps} />
-            </Application>
-          </InjectStoreContext>
+          <QueryClientProvider client={queryClient}>
+            <InjectStoreContext initialData={pageProps.initialState?.store}>
+              <Application {...pageProps}>
+                <Component {...pageProps} />
+              </Application>
+            </InjectStoreContext>
+          </QueryClientProvider>
         </ThemeProvider>
       </main>
     </>

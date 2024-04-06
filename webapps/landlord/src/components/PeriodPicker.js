@@ -1,64 +1,57 @@
-import { Box, Button, IconButton } from '@material-ui/core';
-import { memo, useCallback, useState } from 'react';
-
-import ArrowLeftIcon from '@material-ui/icons/ArrowLeft';
-import ArrowRightIcon from '@material-ui/icons/ArrowRight';
-import { DatePicker } from '@material-ui/pickers';
+import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { Button } from './ui/button';
+import { cn } from '../utils';
 import moment from 'moment';
 
-function CustomDateField({ value, onClick }) {
+export default function PeriodPicker({
+  value,
+  period = 'month',
+  className,
+  onChange
+}) {
+  const [month, setMonth] = useState(value || moment());
+  const format = useMemo(() => {
+    let format = 'MMM YY';
+    switch (period) {
+      case 'year':
+        format = 'YYYY';
+        break;
+      case 'week':
+        format = 'w, YYYY';
+        break;
+      case 'day':
+        format = 'D MMMM YYYY';
+        break;
+    }
+    return format;
+  }, [period]);
+
+  const handlePreviousClick = () => {
+    const newMoment = month.clone().subtract(1, period);
+    setMonth(newMoment);
+    onChange?.(newMoment);
+  };
+
+  const handleNextClick = () => {
+    const newMoment = month.clone().add(1, period);
+    setMonth(newMoment);
+    onChange?.(newMoment);
+  };
+
   return (
-    <Button onClick={onClick} size="small">
-      <Box fontSize="h6.fontSize">{value}</Box>
-    </Button>
+    <div
+      className={cn('flex items-center justify-between uppercase', className)}
+    >
+      <span>{month.format(format)}</span>
+      <div className="flex gap-2">
+        <Button variant="secondary" size="icon" onClick={handlePreviousClick}>
+          <ChevronLeftIcon className="h-4 w-4" />
+        </Button>
+        <Button variant="secondary" size="icon" onClick={handleNextClick}>
+          <ChevronRightIcon className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
   );
 }
-
-function PeriodPicker({ value, period, format, onChange }) {
-  const [selectedPeriod, setSelectedPeriod] = useState(value);
-
-  const _onPeriodChange = useCallback(
-    (period) => {
-      setSelectedPeriod(period);
-      onChange(period);
-    },
-    [onChange]
-  );
-
-  const _onNextPeriod = useCallback(() => {
-    const newPeriod = moment(selectedPeriod).add(1, period);
-    _onPeriodChange(newPeriod);
-  }, [period, selectedPeriod, _onPeriodChange]);
-
-  const _onPreviousPeriod = useCallback(() => {
-    const newPeriod = moment(selectedPeriod).subtract(1, period);
-    _onPeriodChange(newPeriod);
-  }, [period, selectedPeriod, _onPeriodChange]);
-
-  return (
-    <Box display="flex" alignItems="center">
-      <DatePicker
-        autoOk
-        views={[period]}
-        value={selectedPeriod}
-        onChange={_onPeriodChange}
-        format={format}
-        allowKeyboardControl={false}
-        TextFieldComponent={CustomDateField}
-      />
-
-      <IconButton
-        onClick={_onPreviousPeriod}
-        size="small"
-        aria-label="previous period"
-      >
-        <ArrowLeftIcon />
-      </IconButton>
-      <IconButton onClick={_onNextPeriod} size="small" aria-label="next period">
-        <ArrowRightIcon />
-      </IconButton>
-    </Box>
-  );
-}
-
-export default memo(PeriodPicker);

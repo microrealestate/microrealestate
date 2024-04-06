@@ -5,17 +5,14 @@ import {
   CardActionArea,
   CardContent,
   Toolbar,
-  useTheme,
+  useTheme
 } from '@material-ui/core';
 import { useCallback, useState } from 'react';
-
-import Button from '@material-ui/core/Button';
+import { Button } from './ui/button';
 import Dialog from '@material-ui/core/Dialog';
 import DialogDefaultBackground from './DialogDefaultBackground';
 import { hexToRgb } from '../styles/styles';
-import Hidden from './HiddenSSRCompatible';
-import { Loading } from '@microrealestate/commonui/components';
-import { MobileButton } from './MobileMenuButton';
+import Loading from './Loading';
 import TransitionSlideUp from './TransitionSlideUp';
 import Typography from '@material-ui/core/Typography';
 import useTranslation from 'next-translate/useTranslation';
@@ -100,25 +97,10 @@ const FullScreenDialogMenu = ({
 
   return (
     <>
-      <Hidden smDown>
-        <Button
-          {...props}
-          startIcon={<Icon />}
-          onClick={handleClickOpen}
-          style={{ whiteSpace: 'nowrap' }}
-        >
-          {buttonLabel}
-        </Button>
-      </Hidden>
-      <Hidden mdUp>
-        <MobileButton
-          {...props}
-          variant="text"
-          Icon={Icon}
-          label={buttonLabel}
-          onClick={handleClickOpen}
-        />
-      </Hidden>
+      <Button variant="secondary" onClick={handleClickOpen} {...props}>
+        <Icon />
+        {buttonLabel}
+      </Button>
       <Dialog
         fullScreen
         open={open}
@@ -150,7 +132,7 @@ const FullScreenDialogMenu = ({
               illustration,
               badgeContent,
               badgeColor,
-              value,
+              value
             } = menuItem;
 
             return (
@@ -177,10 +159,10 @@ const FullScreenDialogMenu = ({
               width: '100%',
               backgroundColor: `rgba(${hexToRgb(
                 theme.palette.background.paper
-              )}, 0.5)`,
+              )}, 0.5)`
             }}
           >
-            <Loading />
+            <Loading fullScreen={false} />
           </Box>
         )}
       </Dialog>

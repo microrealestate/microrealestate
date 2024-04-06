@@ -3,7 +3,6 @@ import Document, { Head, Html, Main, NextScript } from 'next/document';
 import React from 'react';
 import Script from 'next/script';
 import { ServerStyleSheets } from '@material-ui/core/styles';
-import theme from '../styles/theme';
 
 export default function MyDocument() {
   return (
@@ -14,12 +13,7 @@ export default function MyDocument() {
           strategy="beforeInteractive"
         />
       </Head>
-      <body
-        style={{
-          backgroundColor: theme.palette.background,
-          overflowX: 'hidden',
-        }}
-      >
+      <body className="bg-background text-secondary-foreground">
         <Main />
         <NextScript />
       </body>
@@ -58,7 +52,7 @@ MyDocument.getInitialProps = async (ctx) => {
 
   ctx.renderPage = () =>
     originalRenderPage({
-      enhanceApp: (App) => (props) => sheets.collect(<App {...props} />),
+      enhanceApp: (App) => (props) => sheets.collect(<App {...props} />)
     });
 
   const initialProps = await Document.getInitialProps(ctx);
@@ -68,7 +62,7 @@ MyDocument.getInitialProps = async (ctx) => {
     // Styles fragment is rendered after the app and page rendering finish.
     styles: [
       ...React.Children.toArray(initialProps.styles),
-      sheets.getStyleElement(),
-    ],
+      sheets.getStyleElement()
+    ]
   };
 };

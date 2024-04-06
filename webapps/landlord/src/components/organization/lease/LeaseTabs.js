@@ -17,16 +17,8 @@ export default function LeaseTabs({ onSubmit }) {
         onChange={handleTabChange}
         aria-label="Lease tabs"
       >
-        <Tab
-          label={t('Contract information')}
-          wrapped
-          data-cy="tabContractInfo"
-        />
-        <Tab
-          label={t('Template documents')}
-          wrapped
-          data-cy="tabContractTemplates"
-        />
+        <Tab label={t('Contract')} wrapped data-cy="tabContractInfo" />
+        <Tab label={t('Documents')} wrapped data-cy="tabContractTemplates" />
       </Tabs>
       <TabPanel value={tabSelectedIndex} index={0}>
         <LeaseForm onSubmit={onSubmit} />

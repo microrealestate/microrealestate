@@ -18,6 +18,8 @@ All notable changes to this project will be documented here.
 
 - Changed the cli to generate the key to sign application credentials.
 
+- Added responsiveness to the Landlord application
+
 ### Changed
 
 - Changed `authenticator/landlord/signin` API endpoint to support both user credentials (email/password) and application credentials (clientId/clientSecret).
@@ -34,7 +36,7 @@ All notable changes to this project will be documented here.
 
 ### Fixed
 
-- ...
+- Fixed issue #162 - Cannot save Backblaze settings  
 
 ### Security
 

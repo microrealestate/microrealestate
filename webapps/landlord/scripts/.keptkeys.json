@@ -1,4 +1,5 @@
 [
+  "Accounting",
   "administrator",
   "Apartment",
   "Building",
@@ -50,6 +51,7 @@
   "renter",
   "Room",
   "Sending",
+  "Sign out",
   "Store",
   "tenant_address_city",
   "tenant_address_country",
@@ -78,5 +80,6 @@
   "State",
   "Street 1",
   "Street 2",
+  "Your account",
   "Zip code"
 ]

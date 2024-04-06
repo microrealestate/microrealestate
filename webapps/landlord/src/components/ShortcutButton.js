@@ -1,63 +1,37 @@
-import {
-  Box,
-  Button,
-  makeStyles,
-  Typography,
-  useTheme,
-} from '@material-ui/core';
+import { Button } from './ui/button';
+import { cn } from '../utils';
 
-import Hidden from './HiddenSSRCompatible';
-
-const ShortcutButton = ({ Icon, label, disabled, onClick }) => {
-  const theme = useTheme();
-  const useStyles = makeStyles((theme) => ({
-    root: {
-      paddingTop: 10,
-      paddingBottom: 10,
-      color: theme.palette.info.contrastText,
-      backgroundColor: theme.palette.info.main,
-      '&:hover': {
-        background: theme.palette.info.dark,
-      },
-    },
-  }));
-  const classes = useStyles();
+export default function ShortcutButton({
+  Icon,
+  label,
+  onClick,
+  disabled,
+  className,
+  dataCy
+}) {
+  const nbWords = label.split(' ').length;
 
   return (
-    <>
-      <Hidden smDown>
-        <Button
-          startIcon={<Icon style={{ fontSize: 28 }} />}
-          size="large"
-          className={classes.root}
-          fullWidth
-          disabled={!!disabled}
-          onClick={onClick}
-        >
-          <Box minWidth={250} textAlign="left">
-            {label}
-          </Box>
-        </Button>
-      </Hidden>
-      <Hidden mdUp>
-        <Button
-          startIcon={<Icon fontSize="small" />}
-          className={classes.root}
-          fullWidth
-          disabled={!!disabled}
-          onClick={onClick}
-        >
-          <Box
-            minWidth={200}
-            textAlign="left"
-            fontSize={theme.typography.caption.fontSize}
-          >
-            <Typography variant="inherit">{label}</Typography>
-          </Box>
-        </Button>
-      </Hidden>
-    </>
+    <Button
+      variant="secondary"
+      onClick={onClick}
+      disabled={disabled}
+      data-cy={dataCy}
+      className={cn(
+        'flex flex-col items-center justify-start gap-1 h-full w-full text-xs font-light rounded-none bg-card',
+        'md:flex-row md:justify-center md:gap-2 md:text-base md:font-semibold md:rounded md:bg-secondary',
+        className
+      )}
+    >
+      {Icon ? <Icon /> : null}
+      <span
+        className={cn(
+          'tracking-tighter whitespace-normal md:text-sm md:tracking-normal',
+          nbWords < 3 ? '[word-spacing:2000px] md:[word-spacing:normal]' : ''
+        )}
+      >
+        {label}
+      </span>
+    </Button>
   );
-};
-
-export default ShortcutButton;
+}
