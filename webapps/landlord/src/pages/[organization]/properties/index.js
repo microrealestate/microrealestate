@@ -1,289 +1,97 @@
-import {
-  Box,
-  Button,
-  ButtonGroup,
-  Chip,
-  List,
-  ListItem,
-  ListItemText,
-  makeStyles,
-  Paper,
-  Typography,
-} from '@material-ui/core';
-import { useCallback, useContext, useState } from 'react';
-
-import AddIcon from '@material-ui/icons/Add';
-import { EmptyIllustration } from '../../../components/Illustrations';
-import Hidden from '../../../components/HiddenSSRCompatible';
-import { MobileButton } from '../../../components/MobileMenuButton';
-import NumberFormat from '../../../components/NumberFormat';
-import { observer } from 'mobx-react-lite';
+import { fetchProperties, QueryKeys } from '../../../utils/restcalls';
+import { useCallback, useContext } from 'react';
+import { Button } from '../../../components/ui/button';
+import { List } from '../../../components/ResourceList';
 import Page from '../../../components/Page';
-import PropertyAvatar from '../../../components/properties/PropertyAvatar';
-import SearchFilterBar from '../../../components/SearchFilterBar';
+import { PlusCircleIcon } from 'lucide-react';
+import PropertyList from '../../../components/properties/PropertyList';
 import { StoreContext } from '../../../store';
+import { toast } from 'sonner';
 import types from '../../../components/properties/types';
-import useFillStore from '../../../hooks/useFillStore';
 import useNewPropertyDialog from '../../../components/properties/NewPropertyDialog';
-import usePagination from '../../../hooks/usePagination';
+import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 import { withAuthentication } from '../../../components/Authentication';
 
-const useStyles = makeStyles((theme) => ({
-  avatarVacant: {
-    backgroundColor: theme.palette.success.dark,
-  },
-  avatarOccupied: {
-    backgroundColor: theme.palette.text.disabled,
-  },
-  chipOccupied: {
-    color: theme.palette.info.contrastText,
-    backgroundColor: theme.palette.text.disabled,
-    borderRadius: 4,
-  },
-  chipVacant: {
-    color: theme.palette.info.contrastText,
-    backgroundColor: theme.palette.success.dark,
-    borderRadius: 4,
-  },
-}));
-
-function PropertyListItem({ property }) {
-  const router = useRouter();
-  const store = useContext(StoreContext);
-  const { t } = useTranslation('common');
-  const classes = useStyles();
-
-  const onClick = useCallback(async () => {
-    store.property.setSelected(property);
-    await router.push(
-      `/${store.organization.selected.name}/properties/${
-        property._id
-      }/${encodeURI(t('Properties'))}/${encodeURIComponent(router.asPath)}`
+function _filterData(data = [], filters) {
+  let filteredItems = data;
+  if (filters.statuses?.length) {
+    const typeFilters = filters.statuses.filter(
+      (status) => !['vacant', 'occupied'].includes(status)
     );
-  }, [t, property, router, store.organization.selected.name, store.property]);
+    if (typeFilters.length) {
+      filteredItems = filteredItems.filter(({ type }) =>
+        typeFilters.includes(type)
+      );
+    }
 
-  return (
-    <ListItem
-      button
-      style={{
-        marginBottom: 20,
-      }}
-      onClick={onClick}
-    >
-      <ListItemText
-        primary={
-          <>
-            <Box display="flex" justifyContent="space-between">
-              <Box display="flex" alignItems="center" mr={1}>
-                <PropertyAvatar
-                  type={property.type}
-                  className={
-                    property.status === 'vacant'
-                      ? classes.avatarVacant
-                      : classes.avatarOccupied
-                  }
-                />
-                <Typography variant="h5">{property.name}</Typography>
-              </Box>
-              <Chip
-                size="small"
-                label={
-                  <Typography variant="caption">
-                    {property.status === 'vacant' ? t('Vacant') : t('Rented')}
-                  </Typography>
-                }
-                className={
-                  property.status === 'vacant'
-                    ? classes.chipVacant
-                    : classes.chipOccupied
-                }
-              />
-            </Box>
-            <Box mt={1}>
-              <Typography variant="caption" color="textSecondary">
-                {property.description}
-              </Typography>
-            </Box>
-            {/* <Box mt={1}>
-              {property.address && (
-                <>
-                  <Typography
-                    variant="caption"
-                    color="textSecondary"
-                    component="div"
-                  >
-                    {property.address.street1}
-                  </Typography>
-                  {property.address.street2 && (
-                    <Typography
-                      variant="caption"
-                      color="textSecondary"
-                      component="div"
-                    >
-                      {property.address.street2}
-                    </Typography>
-                  )}
-                  <Typography
-                    variant="caption"
-                    color="textSecondary"
-                    component="div"
-                  >
-                    {property.address.zipCode} {property.address.city}
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    color="textSecondary"
-                    component="div"
-                  >
-                    {property.address.state ? `${property.address.state} ` : ''}
-                    {property.address.country}
-                  </Typography>
-                </>
-              )}
-            </Box> */}
-            {property.status !== 'vacant' && (
-              <Box mt={1}>
-                <Typography variant="caption" color="textSecondary">
-                  {t('Occupied by {{tenant}}', {
-                    tenant: property.occupantLabel,
-                  })}
-                </Typography>
-              </Box>
-            )}
-            <Box
-              display="flex"
-              justifyContent="space-between"
-              alignItems="center"
-            >
-              <Typography variant="caption" color="textSecondary">
-                {t('Rent excluding tax and expenses')}
-              </Typography>
-              <NumberFormat fontSize="h5.fontSize" value={property.price} />
-            </Box>
-          </>
-        }
-      />
-    </ListItem>
-  );
+    const statusFilters = filters.statuses.filter((status) =>
+      ['vacant', 'occupied'].includes(status)
+    );
+    if (statusFilters.length) {
+      filteredItems = filteredItems.filter(({ status }) =>
+        statusFilters.includes(status)
+      );
+    }
+  }
+
+  if (filters.searchText) {
+    const regExp = /\s|\.|-/gi;
+    const cleanedSearchText = filters.searchText
+      .toLowerCase()
+      .replace(regExp, '');
+
+    filteredItems = filteredItems.filter(
+      ({ name }) =>
+        name.replace(regExp, '').toLowerCase().indexOf(cleanedSearchText) != -1
+    );
+  }
+  return filteredItems;
 }
 
-const SearchBar = observer(function SearchBar() {
+function Properties() {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
-
-  const handleSearch = useCallback(
-    (status, searchText) => {
-      store.property.setFilters({
-        status: status.filter(({ id }) => id).map(({ id }) => id),
-        searchText,
-      });
-    },
-    [store.property]
-  );
-
-  return (
-    <SearchFilterBar
-      searchText={store.property.filters.searchText}
-      selectedIds={store.property.filters.status}
-      statusList={[
-        { id: 'vacant', label: t('Vacant') },
-        { id: 'occupied', label: t('Rented') },
-        ...types.map(({ id, labelId }) => ({
-          id,
-          label: t(labelId),
-        })),
-      ]}
-      onSearch={handleSearch}
-    />
-  );
-});
-
-function PropertyList({ properties }) {
-  const { t } = useTranslation('common');
-
-  return properties.length ? (
-    <List component="nav" disablePadding aria-labelledby="property-list">
-      {properties.map((property) => {
-        return (
-          <Paper key={property._id}>
-            <PropertyListItem property={property} />
-          </Paper>
-        );
-      })}
-    </List>
-  ) : (
-    <EmptyIllustration label={t('No properties found')} />
-  );
-}
-
-async function fetchData(store) {
-  return await store.property.fetch();
-}
-
-const Properties = observer(function Properties() {
-  const { t } = useTranslation('common');
   const router = useRouter();
-  const store = useContext(StoreContext);
-  const [pageData, setPageData] = useState([]);
-  const [Pagination] = usePagination(
-    20,
-    store.property.filteredItems,
-    setPageData
-  );
-
+  const { data, isError, isLoading } = useQuery({
+    queryKey: [QueryKeys.PROPERTIES],
+    queryFn: () => fetchProperties(store)
+  });
   const [NewPropertyDialog, setOpenNewPropertyDialog] = useNewPropertyDialog();
 
-  const [fetching] = useFillStore(fetchData);
-
-  const onNewProperty = useCallback(() => {
+  const handleAction = useCallback(() => {
     setOpenNewPropertyDialog(true);
   }, [setOpenNewPropertyDialog]);
 
+  if (isError) {
+    toast.error(t('Error fetching properties'));
+  }
+
   return (
-    <Page
-      loading={fetching}
-      ActionBar={
-        <Box display="flex" justifyContent="end">
-          <Hidden smDown>
-            <ButtonGroup variant="contained">
-              <Button startIcon={<AddIcon />} onClick={onNewProperty}>
-                {t('Add a property')}
-              </Button>
-            </ButtonGroup>
-          </Hidden>
-          <Hidden mdUp>
-            <ButtonGroup variant="text">
-              <MobileButton
-                label={t('Add a property')}
-                Icon={AddIcon}
-                onClick={onNewProperty}
-              />
-            </ButtonGroup>
-          </Hidden>
-        </Box>
-      }
-    >
-      <Hidden smDown>
-        <Box display="flex" alignItems="end" justifyContent="space-between">
-          <SearchBar />
-          <Pagination />
-        </Box>
-      </Hidden>
-      <Hidden mdUp>
-        <SearchBar />
-        <Box display="flex" justifyContent="center">
-          <Pagination />
-        </Box>
-      </Hidden>
-      <PropertyList properties={pageData} />
-      <Box display="flex" justifyContent="center">
-        <Pagination />
-      </Box>
+    <Page title={t('Properties')} loading={isLoading}>
+      <List
+        data={data}
+        filters={[
+          { id: 'vacant', label: t('Vacant') },
+          { id: 'occupied', label: t('Rented') },
+          ...types.map(({ id, labelId }) => ({
+            id,
+            label: t(labelId)
+          }))
+        ]}
+        actions={[{ id: 'addProperty', label: t('Add a property') }]}
+        filterFn={_filterData}
+        renderActions={() => (
+          <Button variant="secondary" className="w-full" onClick={handleAction}>
+            <PlusCircleIcon className="mr-2" /> {t('Add a property')}
+          </Button>
+        )}
+        renderList={PropertyList}
+      />
       <NewPropertyDialog backPage={t('Properties')} backPath={router.asPath} />
     </Page>
   );
-});
+}
 
 export default withAuthentication(Properties);

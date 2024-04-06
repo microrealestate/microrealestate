@@ -1,3 +1,5 @@
+import { Alert, AlertTitle } from './ui/alert';
+import { AlertTriangleIcon, InfoIcon } from 'lucide-react';
 import {
   Box,
   IconButton,
@@ -6,11 +8,9 @@ import {
   ListItemSecondaryAction,
   ListItemText,
   Paper,
-  Typography,
+  Typography
 } from '@material-ui/core';
 import { useCallback, useMemo } from 'react';
-
-import Alert from './Alert';
 import DeleteIcon from '@material-ui/icons/Delete';
 import DescriptionOutlinedIcon from '@material-ui/icons/DescriptionOutlined';
 import moment from 'moment';
@@ -54,16 +54,20 @@ const DocumentItem = ({ document, onEdit, onDelete, disabled }) => {
             </Box>
 
             {expiryMoment ? (
-              <Alert
-                severity={isExpired ? 'warning' : 'info'}
-                title={
-                  isExpired
+              <Alert variant={isExpired ? 'warning' : 'default'}>
+                {isExpired ? (
+                  <AlertTriangleIcon className="h-4 w-4" />
+                ) : (
+                  <InfoIcon className="h-4 w-4" />
+                )}
+                <AlertTitle>
+                  {isExpired
                     ? t('expired document')
                     : t('expiry {{relativeDate}}', {
-                      relativeDate: expiryMoment.fromNow(),
-                    })
-                }
-              />
+                        relativeDate: expiryMoment.fromNow()
+                      })}
+                </AlertTitle>
+              </Alert>
             ) : (
               !!document.description && (
                 <Typography variant="caption">
@@ -88,7 +92,7 @@ export default function DocumentList({
   documents,
   onEdit,
   onDelete,
-  disabled = false,
+  disabled = false
 }) {
   return (
     <Paper variant="outlined">

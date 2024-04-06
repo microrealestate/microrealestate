@@ -30,10 +30,11 @@ async function Main() {
     const __dirname = path.dirname(fileURLToPath(import.meta.url));
     const root_dir = path.join(__dirname, '..');
 
-    service = Service.getInstance( 
+    service = Service.getInstance(
       new EnvironmentConfig({
         PORT: Number(process.env.PORT || 8082),
-        DATA_DIRECTORY: process.env.DATA_DIRECTORY || path.join(root_dir, '/data'),
+        DATA_DIRECTORY:
+          process.env.DATA_DIRECTORY || path.join(root_dir, '/data'),
         TEMPLATES_DIRECTORY:
           process.env.TEMPLATES_DIRECTORY || path.join(root_dir, '/templates'),
         TEMPORARY_DIRECTORY:
@@ -42,7 +43,9 @@ async function Main() {
           process.env.PDF_DIRECTORY || path.join(root_dir, '/pdf_documents'),
         UPLOADS_DIRECTORY:
           process.env.UPLOADS_DIRECTORY || path.join(root_dir, '/uploads'),
-        UPLOAD_MAX_SIZE: Number(process.env.UPLOAD_MAX_SIZE || 1024 * 1024 * 2 /* 2Mb */),
+        UPLOAD_MAX_SIZE: Number(
+          process.env.UPLOAD_MAX_SIZE || 2_000_000_000 /* 2Gb */
+        )
       })
     );
 
@@ -50,7 +53,7 @@ async function Main() {
       name: 'PdfGenerator',
       useMongo: true,
       onStartUp,
-      onShutDown,
+      onShutDown
     });
     await service.startUp();
   } catch (error) {

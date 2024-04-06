@@ -1,22 +1,18 @@
-import { Box, Typography } from '@material-ui/core';
-
-import Button from '@material-ui/core/Button';
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
+import { AlertTriangleIcon } from 'lucide-react';
+import { Button } from './ui/button';
+import ResponsiveDialog from './ResponsiveDialog';
 import { useCallback } from 'react';
 import useDialog from '../hooks/useDialog';
 import useTranslation from 'next-translate/useTranslation';
-import WarningIcon from '@material-ui/icons/ReportProblemOutlined';
 
 function ConfirmDialog({
   title,
   subTitle,
-  subTitle2,
   open,
   setOpen,
   onConfirm,
   justOkButton = false,
+  children
 }) {
   const { t } = useTranslation('common');
   const handleClose = useCallback(() => setOpen(false), [setOpen]);
@@ -26,57 +22,38 @@ function ConfirmDialog({
   }, [setOpen, onConfirm, open]);
 
   return (
-    <Dialog
+    <ResponsiveDialog
       open={!!open}
-      onClose={handleClose}
-      aria-labelledby="confirm-dialog"
-    >
-      <Box p={1}>
-        <DialogContent>
-          <Box display="flex" alignItems="center">
-            <Box pr={1}>
-              <WarningIcon fontSize="large" color="secondary" />
-            </Box>
-            <Typography variant="h6">{title}</Typography>
-          </Box>
-          {!!subTitle && (
-            <Box py={2}>
-              <Typography variant="body2" align="center">
-                {subTitle}
-              </Typography>
-            </Box>
-          )}
-          {!!subTitle2 && (
-            <Box pb={2}>
-              <Typography variant="body2" align="center">
-                {subTitle2}
-              </Typography>
-            </Box>
-          )}
-        </DialogContent>
-        <DialogActions>
-          {justOkButton ? (
-            <Button size="small" variant="contained" onClick={handleClose}>
-              {t('Ok')}
+      setOpen={setOpen}
+      renderHeader={() => (
+        <>
+          <div className="flex flex-col md:flex-row items-center gap-2">
+            <AlertTriangleIcon size={32} />
+            <span>{title}</span>
+          </div>
+          {subTitle ? (
+            <div className="flex text-base items-center justify-center font-normal min-h-20">
+              {subTitle}
+            </div>
+          ) : null}
+        </>
+      )}
+      renderContent={
+        children ? () => <div className="p-4">{children}</div> : null
+      }
+      renderFooter={() =>
+        justOkButton ? (
+          <Button onClick={handleClose}>{t('Ok')}</Button>
+        ) : (
+          <>
+            <Button variant="outline" onClick={handleClose}>
+              {t('Cancel')}
             </Button>
-          ) : (
-            <>
-              <Button size="small" variant="contained" onClick={handleClose}>
-                {t('No')}
-              </Button>
-              <Button
-                size="small"
-                variant="contained"
-                onClick={handleConfirm}
-                color="primary"
-              >
-                {t('Yes')}
-              </Button>
-            </>
-          )}
-        </DialogActions>
-      </Box>
-    </Dialog>
+            <Button onClick={handleConfirm}>{t('Continue')}</Button>
+          </>
+        )
+      }
+    />
   );
 }
 

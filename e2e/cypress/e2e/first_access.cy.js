@@ -19,7 +19,7 @@ describe('User access', () => {
     cy.contains(
       i18n.getFixedT('en')('Welcome {{firstName}} {{lastName}}!', {
         firstName: userWithPersonalAccount.firstName,
-        lastName: userWithPersonalAccount.lastName,
+        lastName: userWithPersonalAccount.lastName
       })
     );
 
@@ -55,7 +55,7 @@ describe('User access', () => {
     cy.contains(
       i18n.getFixedT('en')('Welcome {{firstName}} {{lastName}}!', {
         firstName: userWithCompanyAccount.firstName,
-        lastName: userWithCompanyAccount.lastName,
+        lastName: userWithCompanyAccount.lastName
       })
     );
 
@@ -99,7 +99,7 @@ describe('User access', () => {
     cy.contains(i18n.getFixedT('fr-FR')('Landlord'));
     cy.contains(i18n.getFixedT('fr-FR')('Billing'));
     cy.contains(i18n.getFixedT('fr-FR')('Contracts'));
-    cy.contains(i18n.getFixedT('fr-FR')('Collaborators'));
+    cy.contains(i18n.getFixedT('fr-FR')('Access'));
     cy.contains(i18n.getFixedT('fr-FR')('Third-parties'));
 
     cy.navToPage('dashboard');
@@ -107,7 +107,7 @@ describe('User access', () => {
     cy.contains(
       i18n.getFixedT('fr-FR')('Welcome {{firstName}} {{lastName}}!', {
         firstName: userWithPersonalAccount.firstName,
-        lastName: userWithPersonalAccount.lastName,
+        lastName: userWithPersonalAccount.lastName
       })
     );
 
@@ -118,7 +118,7 @@ describe('User access', () => {
   it('Incorrect email or password', () => {
     cy.visit('/');
     cy.signIn({ email: 'demo@demo.com', password: 'demo' });
-    cy.get('.MuiAlert-message').should(
+    cy.get('ol.toaster > li').should(
       'have.text',
       i18n.getFixedT('en')('Incorrect email or password')
     );
@@ -130,7 +130,7 @@ describe('User access', () => {
     cy.get('[data-cy=signup]').click();
     cy.signUp(userWithPersonalAccount);
     cy.checkUrl('/signup');
-    cy.get('.MuiAlert-message').should(
+    cy.get('ol.toaster > li').should(
       'have.text',
       i18n.getFixedT('en')('This user is already registered')
     );

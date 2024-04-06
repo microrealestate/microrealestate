@@ -1,0 +1,112 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+ 
+@layer base {
+  :root {
+    --background: 0 0% 90%;
+    --foreground: 0 0% 12%;
+    /* --background: 0 0% 100%;    
+    --foreground: 20 14.3% 4.1%; */
+
+    --card: 0 0% 100%;    
+    --card-foreground: 20 14.3% 4.1%;    
+    --popover: 0 0% 100%;    
+    --popover-foreground: 20 14.3% 4.1%;
+    
+    /* --popover: 0 0% 100%;
+    --popover-foreground: 222.2 47.4% 11.2%;
+    
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 12%; */
+    
+    --border: 214.3 31.8% 88%;
+    --input: 214.3 31.8% 88%;
+    
+    /* --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%; */
+    --muted: 60 4.8% 95.9%;
+    --muted-foreground: 25 5.3% 44.7%;
+
+
+    --primary: 291 47% 51%;
+    --primary-foreground: 0 0% 100%;
+
+    /* --secondary: 210 40% 96.1%;
+    --secondary-foreground: 0 0% 50%; */
+
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 0 0% 50%;
+
+    --destructive: 346.8 77.2% 49.8%;
+    --destructive-foreground: 355.7 100% 97.3%;
+
+    --success: 142.1 76.2% 36.3%;
+    --success-foreground: 355.7 100% 97.3%;
+
+    --warning: 24.6 95% 53.1%;
+    --warning-foreground: 60 9.1% 97.8%;
+
+    --info: 221.2 83.2% 53.3%;    
+    --info-foreground: 210 40% 98%;
+
+    --ring: 291 47% 51%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 224 71% 4%;
+    --foreground: 213 31% 91%;
+
+    --muted: 223 47% 11%;
+    --muted-foreground: 215.4 16.3% 56.9%;
+
+    --popover: 224 71% 4%;
+    --popover-foreground: 215 20.2% 65.1%;
+
+    --card: 224 71% 4%;
+    --card-foreground: 213 31% 91%;
+
+    --border: 216 34% 17%;
+    --input: 216 34% 17%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 1.2%;
+
+    --secondary: 222.2 47.4% 11.2%;
+    --secondary-foreground: 210 40% 98%;
+
+    --accent: 216 34% 17%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
+
+    --success: 123 41% 45%;
+    --success-foreground: 0 0% 100%;
+
+    --ring: 216 34% 17%;
+
+    --radius: 0.5rem;
+  }
+}
+ 
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer utilities {
+  .w-screen-nomargin-sm {
+    width: calc(100vw - (2 * (0.5rem)));
+  }
+}

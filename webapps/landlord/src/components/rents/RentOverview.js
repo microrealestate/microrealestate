@@ -1,89 +1,76 @@
-import { Box, Grid } from '@material-ui/core';
-
-import Hidden from '../HiddenSSRCompatible';
+import {
+  CalendarFoldIcon,
+  ReceiptTextIcon,
+  TrendingDownIcon,
+  TrendingUpIcon
+} from 'lucide-react';
+import { useCallback, useContext } from 'react';
+import { DashboardCard } from '../dashboard/DashboardCard';
 import NumberFormat from '../NumberFormat';
-import { PageCard } from '../Cards';
-import ReceiptIcon from '@material-ui/icons/Receipt';
+import PeriodPicker from '../PeriodPicker';
 import { StoreContext } from '../../store';
-import TrendingDownIcon from '@material-ui/icons/TrendingDown';
-import TrendingUpIcon from '@material-ui/icons/TrendingUp';
-import { useContext } from 'react';
+import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 
-export function RentOverview({ ...props }) {
+export function RentOverview({ data }) {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
+  const router = useRouter();
+
+  const handlePeriodChange = useCallback(
+    async (period) => {
+      store.rent.setPeriod(period);
+      await router.push(
+        `/${store.organization.selected.name}/rents/${store.rent.periodAsString}`
+      );
+    },
+    [router, store.rent, store.organization.selected.name]
+  );
 
   return (
-    <Box {...props}>
-      <Hidden xsDown>
-        <Grid container spacing={3}>
-          <Grid item sm={4} md={2}>
-            <Box display="flex" height="100%">
-              <PageCard
-                variant="info"
-                Icon={ReceiptIcon}
-                title={t('Rents')}
-                info={store.rent.period.format('MMMM YYYY')}
-              >
-                {store.rent.countAll}
-              </PageCard>
-            </Box>
-          </Grid>
-          <Grid item sm={4} md={5}>
-            <PageCard
-              variant="success"
-              Icon={TrendingUpIcon}
-              title={t('Paid')}
-              info={t('{{count}} rents', {
-                count: store.rent.countPaid + store.rent.countPartiallyPaid,
-              })}
-            >
-              <NumberFormat value={store.rent.totalPaid} />
-            </PageCard>
-          </Grid>
-          <Grid item sm={4} md={5}>
-            <PageCard
-              variant="warning"
-              Icon={TrendingDownIcon}
-              title={t('Not paid')}
-              info={t('{{count}} rents', {
-                count: store.rent.countNotPaid,
-              })}
-            >
-              <NumberFormat value={store.rent.totalNotPaid} />
-            </PageCard>
-          </Grid>
-        </Grid>
-      </Hidden>
-      <Hidden smUp>
-        <Grid container spacing={3}>
-          <Grid item xs={6}>
-            <PageCard
-              variant="success"
-              Icon={TrendingUpIcon}
-              title={t('Paid')}
-              info={t('{{count}} rents', {
-                count: store.rent.countPaid + store.rent.countPartiallyPaid,
-              })}
-            >
-              <NumberFormat value={store.rent.totalPaid} />
-            </PageCard>
-          </Grid>
-          <Grid item xs={6}>
-            <PageCard
-              variant="warning"
-              Icon={TrendingDownIcon}
-              title={t('Not paid')}
-              info={t('{{count}} rents', {
-                count: store.rent.countNotPaid,
-              })}
-            >
-              <NumberFormat value={store.rent.totalNotPaid} />
-            </PageCard>
-          </Grid>
-        </Grid>
-      </Hidden>
-    </Box>
+    <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-5 gap-4">
+      <DashboardCard
+        Icon={CalendarFoldIcon}
+        title={t('Period')}
+        renderContent={() => (
+          <PeriodPicker value={data.period} onChange={handlePeriodChange} />
+        )}
+        className="2xl:col-span-2"
+      />
+
+      <DashboardCard
+        Icon={ReceiptTextIcon}
+        title={t('Rents')}
+        description={t('Rents for the period')}
+        renderContent={() => data.countAll}
+        className="hidden sm:block 2xl:col-span-1"
+      />
+      <DashboardCard
+        Icon={TrendingDownIcon}
+        title={t('Not paid')}
+        description={t('{{count}} rents', {
+          count: data.countNotPaid
+        })}
+        renderContent={() => (
+          <div className="flex-grow text-warning">
+            <NumberFormat value={data.totalNotPaid} />
+          </div>
+        )}
+        className="hidden sm:block 2xl:col-span-1"
+      />
+      <DashboardCard
+        Icon={TrendingUpIcon}
+        title={t('Paid')}
+        description={t('{{count}} rents', {
+          count: data.countPaid + data.countPartiallyPaid
+        })}
+        renderContent={() => (
+          <div className="flex-grow text-success">
+            <NumberFormat value={data.totalPaid} />
+          </div>
+        )}
+        className="hidden sm:block 2xl:col-span-1"
+      />
+    </div>
   );
 }

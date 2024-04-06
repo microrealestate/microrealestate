@@ -1,35 +1,33 @@
 import * as Yup from 'yup';
-
-import { Box, DialogTitle, Grid } from '@material-ui/core';
-import {
-  CancelButton,
-  DateField,
-  SelectField,
-  SubmitButton,
-  UploadField,
-} from '@microrealestate/commonui/components';
-import { Form, Formik, useFormikContext } from 'formik';
-import React, { useCallback, useContext, useMemo } from 'react';
-
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
+import { Form, Formik } from 'formik';
+import React, {
+  useCallback,
+  useContext,
+  useMemo,
+  useRef,
+  useState
+} from 'react';
+import { Button } from './ui/button';
+import { DateField } from '../components/formfields/DateField';
 import moment from 'moment';
+import ResponsiveDialog from '../components/ResponsiveDialog';
+import { SelectField } from '../components/formfields/SelectField';
 import { StoreContext } from '../store';
+import { toast } from 'sonner';
 import { toJS } from 'mobx';
 import { uploadDocument } from '../utils/fetch';
+import { UploadField } from '@microrealestate/commonui/components';
 import useDialog from '../hooks/useDialog';
 import useTranslation from 'next-translate/useTranslation';
 
-// TODO: constants to share between frontend and backend
-const MAX_FILE_SIZE = 20_971_520; // 20M in bytes
+const UPLOAD_MAX_SIZE = 2_000_000_000; // 2Gb
 const SUPPORTED_MIMETYPES = [
   'image/gif',
   'image/png',
   'image/jpeg',
   'image/jpg',
   'image/jpe',
-  'application/pdf',
+  'application/pdf'
 ];
 const validationSchema = Yup.object().shape({
   template: Yup.object().required(),
@@ -38,9 +36,9 @@ const validationSchema = Yup.object().shape({
     .nullable()
     .required()
     .test(
-      'MAX_FILE_SIZE',
+      'UPLOAD_MAX_SIZE',
       'File is too big. Maximum size is 2Go.',
-      (value) => value && value.size <= MAX_FILE_SIZE
+      (value) => value && value.size <= UPLOAD_MAX_SIZE
     )
     .test(
       'FILE_FORMAT',
@@ -56,43 +54,21 @@ const validationSchema = Yup.object().shape({
         return moment(value).isValid();
       }
       return true;
-    }),
+    })
 });
 
 const defaultValues = {
   template: '',
   description: '',
   file: '',
-  expiryDate: null,
-};
-
-const FormDialog = ({ open, onClose, children }) => {
-  const { isSubmitting, resetForm } = useFormikContext();
-
-  const handleClose = useCallback(
-    (e) => {
-      resetForm();
-      onClose && onClose(e);
-    },
-    [onClose, resetForm]
-  );
-
-  return (
-    <Dialog
-      maxWidth="sm"
-      fullWidth
-      open={!!open}
-      onClose={handleClose}
-      disableEscapeKeyDown={isSubmitting}
-    >
-      {children}
-    </Dialog>
-  );
+  expiryDate: null
 };
 
 function UploadDialog({ open, setOpen, onSave }) {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
+  const [isLoading, setIsLoading] = useState(false);
+  const formRef = useRef();
 
   const selectedTemplate = open?._id ? open : null;
 
@@ -107,13 +83,13 @@ function UploadDialog({ open, setOpen, onSave }) {
         id: template._id,
         label: template.name,
         description: template.description,
-        value: toJS(template),
+        value: toJS(template)
       }));
   }, [store.template.items, store.tenant.selected]);
 
   const initialValues = {
     ...defaultValues,
-    template: selectedTemplate || '',
+    template: selectedTemplate || ''
   };
 
   const handleClose = useCallback(() => {
@@ -122,99 +98,95 @@ function UploadDialog({ open, setOpen, onSave }) {
 
   const _onSubmit = useCallback(
     async (doc, { resetForm }) => {
-      doc.name = doc.template.name;
-      doc.description = doc.template.description;
-      doc.mimeType = doc.file.type;
       try {
-        const response = await uploadDocument({
-          endpoint: '/documents/upload',
-          documentName: doc.template.name,
-          file: doc.file,
-          folder: [
-            store.tenant.selected.name.replace(/[/\\]/g, '_'),
-            'contract_scanned_documents',
-          ].join('/'),
-        });
+        setIsLoading(true);
+        doc.name = doc.template.name;
+        doc.description = doc.template.description;
+        doc.mimeType = doc.file.type;
+        try {
+          const response = await uploadDocument({
+            endpoint: '/documents/upload',
+            documentName: doc.template.name,
+            file: doc.file,
+            folder: [
+              store.tenant.selected.name.replace(/[/\\]/g, '_'),
+              'contract_scanned_documents'
+            ].join('/')
+          });
 
-        doc.url = response.data.key;
-        doc.versionId = response.data.versionId;
-      } catch (error) {
-        console.error(error);
-        store.pushToastMessage({
-          message: t('Cannot upload document'),
-          severity: 'error',
-        });
-        return;
-      }
-      handleClose();
-      try {
-        await onSave(doc);
-        resetForm();
-      } catch (error) {
-        console.error(error);
-        store.pushToastMessage({
-          message: t('Cannot save document'),
-          severity: 'error',
-        });
+          doc.url = response.data.key;
+          doc.versionId = response.data.versionId;
+        } catch (error) {
+          console.error(error);
+          toast.error(t('Cannot upload document'));
+          return;
+        }
+        handleClose();
+        try {
+          await onSave(doc);
+          resetForm();
+        } catch (error) {
+          console.error(error);
+          toast.error(t('Cannot save document'));
+        }
+      } finally {
+        setIsLoading(false);
       }
     },
     [handleClose, t, onSave, store]
   );
 
   return (
-    <>
-      <Formik
-        initialValues={initialValues}
-        validationSchema={validationSchema}
-        onSubmit={_onSubmit}
-      >
-        {({ isSubmitting, values }) => {
-          return (
-            <FormDialog open={!!open} onClose={handleClose}>
-              <DialogTitle>{t('Document to upload')}</DialogTitle>
-              <Box p={1}>
-                <Form autoComplete="off">
-                  <DialogContent>
-                    <Grid container>
-                      <Grid item xs={12}>
-                        {selectedTemplate ? (
-                          <Box fontSize="body1.fontSize">
-                            {selectedTemplate.name}
-                          </Box>
-                        ) : (
-                          <SelectField
-                            label={t('Document')}
-                            name="template"
-                            values={templates}
-                          />
-                        )}
-                      </Grid>
-                      {values.template?.hasExpiryDate && (
-                        <Grid item xs={12}>
-                          <DateField
-                            label={t('Expiry date')}
-                            name="expiryDate"
-                          />
-                        </Grid>
-                      )}
-                      <Grid item xs={12}>
-                        <UploadField name="file" />
-                      </Grid>
-                    </Grid>
-                  </DialogContent>
-                  <DialogActions>
-                    <CancelButton label={t('Cancel')} onClick={handleClose} />
-                    <SubmitButton
-                      label={!isSubmitting ? t('Upload') : t('Uploading')}
-                    />
-                  </DialogActions>
-                </Form>
-              </Box>
-            </FormDialog>
-          );
-        }}
-      </Formik>
-    </>
+    <ResponsiveDialog
+      open={!!open}
+      setOpen={setOpen}
+      isLoading={isLoading}
+      renderHeader={() => t('Document to upload')}
+      renderContent={() => (
+        <Formik
+          initialValues={initialValues}
+          validationSchema={validationSchema}
+          onSubmit={_onSubmit}
+          innerRef={formRef}
+        >
+          {({ values }) => {
+            return (
+              <Form autoComplete="off">
+                {selectedTemplate ? (
+                  selectedTemplate.name
+                ) : (
+                  <SelectField
+                    label={t('Document')}
+                    name="template"
+                    values={templates}
+                  />
+                )}
+                {values.template?.hasExpiryDate && (
+                  <DateField label={t('Expiry date')} name="expiryDate" />
+                )}
+                <UploadField name="file" />
+              </Form>
+            );
+          }}
+        </Formik>
+      )}
+      renderFooter={() => (
+        <>
+          <Button
+            variant="outline"
+            onClick={() => {
+              formRef.current.resetForm();
+              handleClose();
+            }}
+          >
+            {t('Cancel')}
+          </Button>
+          <Button onClick={() => formRef.current.submitForm()}>
+            {t('Upload')}
+          </Button>
+        </>
+      )}
+    />
   );
 }
 

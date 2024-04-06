@@ -1,20 +1,12 @@
 import * as Yup from 'yup';
-
 import {
   Box,
   Button,
   Collapse,
   Grid,
   IconButton,
-  Link,
+  Link
 } from '@material-ui/core';
-import {
-  DateField,
-  NumberField,
-  SelectField,
-  SubmitButton,
-  TextField,
-} from '@microrealestate/commonui/components';
 import { FieldArray, Form, Formik } from 'formik';
 import {
   forwardRef,
@@ -22,14 +14,23 @@ import {
   useContext,
   useImperativeHandle,
   useRef,
-  useState,
+  useState
 } from 'react';
-
+import {
+  NumberField,
+  SubmitButton,
+  TextField
+} from '@microrealestate/commonui/components';
 import _ from 'lodash';
+import { DateField } from '../formfields/DateField';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import moment from 'moment';
+import { QueryKeys } from '../../utils/restcalls';
+import { SelectField } from '../formfields/SelectField';
 import { StoreContext } from '../../store';
+import { toast } from 'sonner';
 import usePaymentTypes from '../../hooks/usePaymentTypes';
+import { useQueryClient } from '@tanstack/react-query';
 import useTranslation from 'next-translate/useTranslation';
 
 const validationSchema = Yup.object().shape({
@@ -39,15 +40,15 @@ const validationSchema = Yup.object().shape({
         amount: Yup.number().min(0),
         date: Yup.mixed().when('amount', {
           is: (val) => val > 0,
-          then: Yup.date().required(),
+          then: Yup.date().required()
         }),
         type: Yup.mixed()
           .oneOf(['cash', 'transfer', 'levy', 'cheque'])
           .required(),
         reference: Yup.mixed().when(['type', 'amount'], {
           is: (type, amount) => type !== 'cash' && amount > 0,
-          then: Yup.string().required(),
-        }),
+          then: Yup.string().required()
+        })
       })
     )
     .min(1),
@@ -55,20 +56,20 @@ const validationSchema = Yup.object().shape({
   extracharge: Yup.number().min(0),
   noteextracharge: Yup.mixed().when('extracharge', {
     is: (val) => val > 0,
-    then: Yup.string().required(),
+    then: Yup.string().required()
   }),
   promo: Yup.number().min(0),
   notepromo: Yup.mixed().when('promo', {
     is: (val) => val > 0,
-    then: Yup.string().required(),
-  }),
+    then: Yup.string().required()
+  })
 });
 
 const emptyPayment = {
   amount: '',
   date: moment(),
   type: 'transfer',
-  reference: '',
+  reference: ''
 };
 
 function PaymentPartForm({ term, payments }) {
@@ -100,8 +101,8 @@ function PaymentPartForm({ term, payments }) {
                 <DateField
                   label={t('Date')}
                   name={`payments[${index}].date`}
-                  minDate={momentTerm.startOf('month').toISOString()}
-                  maxDate={momentTerm.endOf('month').toISOString()}
+                  minDate={moment(momentTerm).startOf('month')}
+                  maxDate={moment(momentTerm).endOf('month')}
                 />
                 {payments[index].type !== 'cash' ? (
                   <TextField
@@ -204,25 +205,26 @@ function initialFormValues(rent) {
   return {
     payments: rent?.payments?.length
       ? rent.payments.map(({ amount, date, type, reference }) => {
-        return {
-          amount: amount === 0 ? '' : amount,
-          date: date ? moment(date, 'DD/MM/YYYY') : null,
-          type: type,
-          reference: reference || '',
-        };
-      })
+          return {
+            amount: amount === 0 ? '' : amount,
+            date: date ? moment(date, 'DD/MM/YYYY') : null,
+            type: type,
+            reference: reference || ''
+          };
+        })
       : [emptyPayment],
     description: rent?.description?.trimEnd() || '',
     extracharge: rent?.extracharge !== 0 ? rent.extracharge : '',
     noteextracharge: rent?.noteextracharge?.trimEnd() || '',
     promo: rent?.promo !== 0 ? rent.promo : '',
-    notepromo: rent?.notepromo?.trimEnd() || '',
+    notepromo: rent?.notepromo?.trimEnd() || ''
   };
 }
 
 function PaymentTabs({ rent, onSubmit }, ref) {
   const formRef = useRef();
   const submitButtonRef = useRef();
+  const queryClient = useQueryClient();
   const store = useContext(StoreContext);
   const { t } = useTranslation('common');
   const initialValues = initialFormValues(rent);
@@ -236,17 +238,17 @@ function PaymentTabs({ rent, onSubmit }, ref) {
 
   const handleChange =
     ({ note = false, discount = false, additionalCost = false }) =>
-      () => {
-        if (note) {
-          setExpandedNote((prev) => !prev);
-        }
-        if (discount) {
-          setExpandedDiscount((prev) => !prev);
-        }
-        if (additionalCost) {
-          setExpandedAdditionalCost((prev) => !prev);
-        }
-      };
+    () => {
+      if (note) {
+        setExpandedNote((prev) => !prev);
+      }
+      if (discount) {
+        setExpandedDiscount((prev) => !prev);
+      }
+      if (additionalCost) {
+        setExpandedAdditionalCost((prev) => !prev);
+      }
+    };
 
   useImperativeHandle(
     ref,
@@ -261,7 +263,7 @@ function PaymentTabs({ rent, onSubmit }, ref) {
       },
       setValues(rent) {
         formRef?.current?.setValues(initialFormValues(rent));
-      },
+      }
     }),
     []
   );
@@ -284,21 +286,30 @@ function PaymentTabs({ rent, onSubmit }, ref) {
         _id: rent._id,
         month: rent.month,
         year: rent.year,
-        ...clonedValues,
+        ...clonedValues
       };
 
+      const period = moment(String(rent.term), 'YYYYMMDDHH').format('YYYY.MM');
       try {
         await store.rent.pay(String(rent.term), payment);
+        queryClient.invalidateQueries({ queryKey: [QueryKeys.RENTS, period] });
+        queryClient.invalidateQueries({ queryKey: [QueryKeys.DASHBOARD] });
         onSubmit?.();
       } catch (error) {
         console.error(error);
-        store.pushToastMessage({
-          message: t('Something went wrong'),
-          severity: 'error',
-        });
+        toast.error(t('Something went wrong'));
       }
     },
-    [onSubmit, rent._id, rent.month, rent.term, rent.year, store, t]
+    [
+      onSubmit,
+      queryClient,
+      rent._id,
+      rent.month,
+      rent.term,
+      rent.year,
+      store.rent,
+      t
+    ]
   );
 
   return (
@@ -316,8 +327,8 @@ function PaymentTabs({ rent, onSubmit }, ref) {
             promo,
             notepromo,
             extracharge,
-            noteextracharge,
-          },
+            noteextracharge
+          }
         }) => {
           return (
             <Form autoComplete="off">

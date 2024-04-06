@@ -17,7 +17,8 @@ Cypress.Commands.add('signIn', ({ email, password }) => {
 });
 
 Cypress.Commands.add('signOut', () => {
-  cy.get('[data-cy=signout]').click();
+  cy.get('[data-cy=orgMenu]').click();
+  cy.get('[data-cy=signoutNav]').click();
 });
 
 Cypress.Commands.add('signUp', ({ firstName, lastName, email, password }) => {
@@ -55,7 +56,7 @@ Cypress.Commands.add(
   ({ name, description, timeRange, numberOfTerms, templates = [] }) => {
     cy.get('[data-cy=shortcutCreateContract]').click();
     cy.get('input[name=name]').type(name);
-    cy.get('[data-cy=submit]').click();
+    cy.get('[data-cy=submitContract]').click();
     cy.get('textarea[name=description]').type(description);
     cy.muiSelect('timeRange', timeRange);
     cy.get('input[name=numberOfTerms]').type(numberOfTerms);
@@ -79,7 +80,7 @@ Cypress.Commands.add(
           hasExpiryDate,
           required,
           requiredOnceContractTerminated,
-          optional,
+          optional
         } = template;
         cy.get('[data-cy=addFileDescriptor]').click();
         cy.get('input[name=name]').type(title);
@@ -107,10 +108,10 @@ Cypress.Commands.add(
   'addPropertyFromStepper',
   ({ name, type, description, surface, phone, digiCode, address, rent }) => {
     cy.get('[data-cy=shortcutAddProperty]').click();
-    cy.muiSelect('type', type);
+    cy.get('select[name=type]').select(type, { force: true });
     cy.get('input[name=name]').type(name);
     cy.get('input[name=rent]').type(rent);
-    cy.get('[data-cy=submit]').click();
+    cy.get('[data-cy=submitProperty]').click();
     cy.get('input[name=description]').type(description);
     cy.get('input[name=surface]').type(surface);
     cy.get('input[name=phone]').type(phone);
@@ -135,7 +136,7 @@ Cypress.Commands.add(
   ({ name, isCompany, address, contacts, lease, billing, documents }) => {
     cy.get('[data-cy=shortcutAddTenant]').click();
     cy.get('input[name=name]').type(name);
-    cy.get('[data-cy=submit]').click();
+    cy.get('[data-cy=submitTenant]').click();
     if (isCompany) {
       cy.get('[data-cy=tenantIsBusinessAccount]').click();
     } else {
@@ -176,14 +177,13 @@ Cypress.Commands.add(
         cy.get(`input[name="properties[${index}].expense.title"]`).type(
           expense.title
         );
-        cy.get(`input[name="properties[${index}].expense.amount"]`)
-          .clear();
-        cy.get(`input[name="properties[${index}].expense.amount"]`).type(expense.amount);
-        cy.get(`input[name="properties[${index}].entryDate"]`)
-          .clear();
+        cy.get(`input[name="properties[${index}].expense.amount"]`).clear();
+        cy.get(`input[name="properties[${index}].expense.amount"]`).type(
+          expense.amount
+        );
+        cy.get(`input[name="properties[${index}].entryDate"]`).clear();
         cy.get(`input[name="properties[${index}].entryDate"]`).type(entryDate);
-        cy.get(`input[name="properties[${index}].exitDate"]`)
-          .clear();
+        cy.get(`input[name="properties[${index}].exitDate"]`).clear();
         cy.get(`input[name="properties[${index}].exitDate"]`).type(exitDate);
       });
     }
@@ -232,6 +232,7 @@ Cypress.Commands.add(
 );
 
 Cypress.Commands.add('navToPage', (pageName) => {
+  cy.get('[data-cy=appMenu]').click();
   cy.get(`[data-cy=${pageName}Nav]`).click();
 });
 

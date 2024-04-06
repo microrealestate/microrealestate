@@ -1,8 +1,7 @@
 import { Marker, Map as PigeonMap } from 'pigeon-maps';
 import { memo, useEffect, useState } from 'react';
-
 import axios from 'axios';
-import { Loading } from '@microrealestate/commonui/components';
+import Loading from './Loading';
 import { LocationIllustration } from './Illustrations';
 import { useTheme } from '@material-ui/core';
 
@@ -27,7 +26,7 @@ const Map = memo(function Map({ address, height = 200, zoom = 16 }) {
               address.zipCode,
               address.city,
               //`state=${encodeURIComponent(address.state)}`, // state often not recognized
-              address.country,
+              address.country
             ].join(' ')
           )}`;
         } else {
@@ -42,7 +41,7 @@ const Map = memo(function Map({ address, height = 200, zoom = 16 }) {
           if (response.data?.[0]?.lat && response.data?.[0]?.lon) {
             setCenter([
               Number(response.data[0].lat),
-              Number(response.data[0].lon),
+              Number(response.data[0].lon)
             ]);
           } else {
             setCenter();
@@ -74,7 +73,7 @@ const Map = memo(function Map({ address, height = 200, zoom = 16 }) {
           <LocationIllustration height={height} />
         )
       ) : (
-        <Loading height={height} />
+        <Loading fullScreen={false} />
       )}
     </>
   );

@@ -1,9 +1,8 @@
-import { Box, Button } from '@material-ui/core';
 import { useCallback, useContext } from 'react';
-
-import AddIcon from '@material-ui/icons/Add';
+import { Button } from '../../ui/button';
 import DocumentList from '../../DocumentList';
 import { observer } from 'mobx-react-lite';
+import { PlusCircleIcon } from 'lucide-react';
 import { StoreContext } from '../../../store';
 import useConfirmDialog from '../../ConfirmDialog';
 import useFileDescriptorDialog from './FileDescriptorDialog';
@@ -99,7 +98,7 @@ function TemplateList() {
         html,
         linkedResourceIds: store.lease.selected?._id
           ? [store.lease.selected._id]
-          : [],
+          : []
       });
     },
     [editTemplate?._id, onSaveTemplate, store.lease.selected._id]
@@ -113,7 +112,7 @@ function TemplateList() {
         type: 'fileDescriptor',
         linkedResourceIds: store.lease.selected?._id
           ? [store.lease.selected._id]
-          : [],
+          : []
       });
     },
     [editFileDescriptor?._id, onSaveTemplate, store.lease.selected._id]
@@ -133,16 +132,16 @@ function TemplateList() {
           ? [
               ...editTemplate.linkedResourceIds.filter(
                 (_id) => store.lease.selected._id !== _id
-              ),
+              )
             ]
-          : templateToRemove.linkedResourceIds,
+          : templateToRemove.linkedResourceIds
       });
     }
   }, [
     templateToRemove,
     store.lease.selected,
     store.template,
-    editTemplate.linkedResourceIds,
+    editTemplate.linkedResourceIds
   ]);
 
   const handleClickEdit = useCallback(
@@ -166,28 +165,26 @@ function TemplateList() {
 
   return (
     <>
-      <Box display="flex" mb={1}>
+      <div className="flex flex-wrap gap-4 mb-4">
         <Button
-          variant="contained"
-          color="primary"
-          startIcon={<AddIcon />}
+          variant="secondary"
           onClick={handleClickAddFileDescriptor}
           data-cy="addFileDescriptor"
+          className="w-full justify-start sm:justify-normal sm:w-fit"
         >
+          <PlusCircleIcon className="mr-2" />
           {t('Upload template')}
         </Button>
-        <Box ml={1}>
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<AddIcon />}
-            onClick={handleClickAddText}
-            data-cy="addTextDocument"
-          >
-            {t('Text template')}
-          </Button>
-        </Box>
-      </Box>
+        <Button
+          variant="secondary"
+          onClick={handleClickAddText}
+          data-cy="addTextDocument"
+          className="w-full justify-start sm:justify-normal sm:w-fit"
+        >
+          <PlusCircleIcon className="mr-2" />
+          {t('Text template')}
+        </Button>
+      </div>
 
       <TemplateItems onEdit={handleClickEdit} onDelete={setTemplateToRemove} />
 
