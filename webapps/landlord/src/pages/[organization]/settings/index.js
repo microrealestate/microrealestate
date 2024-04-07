@@ -47,40 +47,44 @@ function Settings() {
             title={t('Organizations')}
             description={t('Your organizations')}
           />
-          <div className="text-lg text-muted-foreground mt-6">
-            {t('Organization information')}
-          </div>
-          <SettingLink
-            href="/settings/landlord"
-            title={t('Landlord')}
-            description={t(
-              'Landlord information that will be shared with your tenants in contracts and invoices'
-            )}
-          />
-          <SettingLink
-            href="/settings/billing"
-            title={t('Billing')}
-            description={t(
-              'Billing information that will be shared with your tenants in invoices'
-            )}
-          />
-          <SettingLink
-            href="/settings/contracts"
-            title={t('Contracts')}
-            description={t('Contracts to manage your leases')}
-          />
-          <SettingLink
-            href="/settings/access"
-            title={t('Access')}
-            description={t('Managing access to your organization')}
-          />
-          <SettingLink
-            href="/settings/thirdparties"
-            title={t('Third-parties')}
-            description={t(
-              'Connect third-parties to extend the functionality of your organization'
-            )}
-          />
+          {store.user.isAdministrator ? (
+            <>
+              <div className="text-lg text-muted-foreground mt-6">
+                {t('Organization information')}
+              </div>
+              <SettingLink
+                href="/settings/landlord"
+                title={t('Landlord')}
+                description={t(
+                  'Landlord information that will be shared with your tenants in contracts and invoices'
+                )}
+              />
+              <SettingLink
+                href="/settings/billing"
+                title={t('Billing')}
+                description={t(
+                  'Billing information that will be shared with your tenants in invoices'
+                )}
+              />
+              <SettingLink
+                href="/settings/contracts"
+                title={t('Contracts')}
+                description={t('Contracts to manage your leases')}
+              />
+              <SettingLink
+                href="/settings/access"
+                title={t('Access')}
+                description={t('Managing access to your organization')}
+              />
+              <SettingLink
+                href="/settings/thirdparties"
+                title={t('Third-parties')}
+                description={t(
+                  'Connect third-parties to extend the functionality of your organization'
+                )}
+              />
+            </>
+          ) : null}
         </CardContent>
       </Card>
     </Page>
