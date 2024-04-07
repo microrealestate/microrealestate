@@ -29,6 +29,7 @@ function SettingLink({ href, title, description }) {
 
 function Settings() {
   const { t } = useTranslation('common');
+  const store = useContext(StoreContext);
 
   return (
     <Page>
