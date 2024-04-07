@@ -32,6 +32,9 @@ COPY webapps/landlord/src webapps/landlord/src
 COPY webapps/landlord/i18n.js webapps/landlord
 COPY webapps/landlord/next.config.js webapps/landlord
 COPY webapps/landlord/package.json webapps/landlord
+COPY webapps/landlord/postcss.config.js webapps/landlord
+COPY webapps/landlord/tailwind.config.js webapps/landlord
+COPY webapps/landlord/tsconfig.json webapps/landlord
 RUN  yarn workspace @microrealestate/landlord run build
 
 FROM base
