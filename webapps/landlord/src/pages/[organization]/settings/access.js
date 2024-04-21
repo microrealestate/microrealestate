@@ -7,15 +7,15 @@ import {
 } from '../../../components/ui/card';
 import { fetchOrganizations, QueryKeys } from '../../../utils/restcalls';
 import { useContext, useState } from 'react';
+import ApplicationFormDialog from '../../../components/organization/members/ApplicationFormDialog';
+import ApplicationShowDialog from '../../../components/organization/members/ApplicationShowDialog';
+import MemberFormDialog from '../../../components/organization/members/MemberFormDialog';
 import Members from '../../../components/organization/Members';
 import Page from '../../../components/Page';
 import { PlusCircleIcon } from 'lucide-react';
 import ShortcutButton from '../../../components/ShortcutButton';
 import { StoreContext } from '../../../store';
 import { toast } from 'sonner';
-import useApplicationFormDialog from '../../../components/organization/members/ApplicationFormDialog';
-import useApplicationShowDialog from '../../../components/organization/members/ApplicationShowDialog';
-import useMemberFormDialog from '../../../components/organization/members/MemberFormDialog';
 import { useQuery } from '@tanstack/react-query';
 import useTranslation from 'next-translate/useTranslation';
 import { withAuthentication } from '../../../components/Authentication';
@@ -27,12 +27,14 @@ function AccessSettings() {
     queryKey: [QueryKeys.ORGANIZATIONS],
     queryFn: () => fetchOrganizations(store)
   });
-  const [MemberFormDialog, setOpenMemberFormDialog] = useMemberFormDialog();
-  const [ApplicationFormDialog, setOpenApplicationFormDialog] =
-    useApplicationFormDialog();
-  const [ApplicationShowDialog, setOpenApplicationShowDialog] =
-    useApplicationShowDialog();
-  const [appcredz, setAppCredz] = useState();
+  const [openMemberFormDialog, setOpenMemberFormDialog] = useState(false);
+  const [selectedOrgForMember, setSelectedOrgForMember] = useState(null);
+  const [openApplicationFormDialog, setOpenApplicationFormDialog] =
+    useState(false);
+  const [selectedOrgForApp, setSelectedOrgForApp] = useState(null);
+  const [openApplicationShowDialog, setOpenApplicationShowDialog] =
+    useState(false);
+  const [appCredz, setAppCredz] = useState(null);
 
   if (isError) {
     toast.error(t('Error fetching organizations'));
@@ -50,13 +52,19 @@ function AccessSettings() {
           <ShortcutButton
             label={t('New collaborator')}
             Icon={PlusCircleIcon}
-            onClick={() => setOpenMemberFormDialog(true)}
+            onClick={() => {
+              setSelectedOrgForMember(organization);
+              setOpenMemberFormDialog(true);
+            }}
             disabled={!store.user.isAdministrator}
           />
           <ShortcutButton
             label={t('New application')}
             Icon={PlusCircleIcon}
-            onClick={() => setOpenApplicationFormDialog(true)}
+            onClick={() => {
+              setSelectedOrgForApp(organization);
+              setOpenApplicationFormDialog(true);
+            }}
             disabled={!store.user.isAdministrator}
           />
         </div>
@@ -74,12 +82,14 @@ function AccessSettings() {
         </CardContent>
       </Card>
       <MemberFormDialog
+        open={openMemberFormDialog}
         setOpen={setOpenMemberFormDialog}
-        organization={organization}
+        data={selectedOrgForMember}
       />
       <ApplicationFormDialog
+        open={openApplicationFormDialog}
         setOpen={setOpenApplicationFormDialog}
-        organization={organization}
+        data={selectedOrgForApp}
         onClose={(appCredz) => {
           if (!appCredz) return;
           setAppCredz(appCredz);
@@ -87,8 +97,9 @@ function AccessSettings() {
         }}
       />
       <ApplicationShowDialog
+        open={openApplicationShowDialog}
         setOpen={setOpenApplicationShowDialog}
-        appcredz={appcredz}
+        data={appCredz}
         onClose={() => setAppCredz(null)}
       />
     </Page>

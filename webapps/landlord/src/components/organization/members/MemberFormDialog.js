@@ -11,7 +11,6 @@ import { SelectField } from '../../formfields/SelectField';
 import { StoreContext } from '../../../store';
 import { TextField } from '@microrealestate/commonui/components';
 import { toast } from 'sonner';
-import useDialog from '../../../hooks/useDialog';
 import useTranslation from 'next-translate/useTranslation';
 
 const memberInitialValues = {
@@ -19,7 +18,11 @@ const memberInitialValues = {
   role: RENTER_ROLE
 };
 
-function MemberFormDialog({ open, setOpen, organization }) {
+export default function MemberFormDialog({
+  open,
+  setOpen,
+  data: organization
+}) {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const formRef = useRef();
@@ -54,11 +57,11 @@ function MemberFormDialog({ open, setOpen, organization }) {
       Yup.object().shape({
         email: Yup.string()
           .email()
-          .notOneOf(organization.members.map(({ email }) => email))
+          .notOneOf(organization?.members.map(({ email }) => email) || [])
           .required(),
         role: Yup.string().required()
       }),
-    [organization.members]
+    [organization?.members]
   );
 
   const roleValues = useMemo(
@@ -110,8 +113,4 @@ function MemberFormDialog({ open, setOpen, organization }) {
       )}
     />
   );
-}
-
-export default function useMemberFormDialog() {
-  return useDialog(MemberFormDialog);
 }

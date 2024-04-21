@@ -1,23 +1,22 @@
+import { useCallback, useContext } from 'react';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../ui/button';
 import { Card } from '../../components/ui/card';
 import NumberFormat from '../../components/NumberFormat';
 import PropertyIcon from './PropertyIcon';
-import { useCallback } from 'react';
+import { StoreContext } from '../../store';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 
 export default function PropertyListItem({ property }) {
   const router = useRouter();
   const { t } = useTranslation('common');
+  const store = useContext(StoreContext);
 
   const onClick = useCallback(async () => {
-    await router.push(
-      `/${property.name}/properties/${property._id}/${encodeURI(
-        t('Properties')
-      )}/${encodeURIComponent(router.asPath)}`
-    );
-  }, [property._id, property.name, router, t]);
+    store.appHistory.setPreviousPath(router.asPath);
+    await router.push(`/${property.name}/properties/${property._id}`);
+  }, [property._id, property.name, router, store]);
 
   return (
     <Card className="p-4 cursor-pointer hover:bg-accent/90" onClick={onClick}>

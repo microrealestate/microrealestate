@@ -1,12 +1,31 @@
 {
   "root": true,
-  "extends": ["next/core-web-vitals"],
+  "extends": ["next/core-web-vitals", "prettier"],
   "settings": {
     "next": {
       "rootDir": ["webapps/landlord"]
     }
   },
   "rules": {
-    "import/no-named-as-default": "off"
+    "import/no-named-as-default": "off",
+    // "indent": [
+    //   "error",
+    //   2,
+    //   {
+    //     "flatTernaryExpressions": false,
+    //     "offsetTernaryExpressions": true,
+    //     "SwitchCase": 1
+    //   }
+    // ],
+    "sort-imports": [
+      "error",
+      {
+        "allowSeparatedGroups": false,
+        "ignoreCase": true,
+        "ignoreDeclarationSort": false,
+        "ignoreMemberSort": false,
+        "memberSyntaxSortOrder": ["none", "all", "multiple", "single"]
+      }
+    ]
   }
 }

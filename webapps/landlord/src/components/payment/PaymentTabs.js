@@ -67,7 +67,7 @@ const validationSchema = Yup.object().shape({
 
 const emptyPayment = {
   amount: '',
-  date: moment(),
+  date: null,
   type: 'transfer',
   reference: ''
 };
@@ -90,27 +90,31 @@ function PaymentPartForm({ term, payments }) {
             borderRadius="borderRadius"
           >
             <Grid container spacing={2}>
-              <Grid item xs={12} sm={4}>
-                <SelectField
-                  label={t('Type')}
-                  name={`payments[${index}].type`}
-                  values={paymentTypes.itemList}
-                />
-              </Grid>
-              <Grid item xs={12} sm={8}>
+              <Grid item xs={12} sm={6}>
                 <DateField
                   label={t('Date')}
                   name={`payments[${index}].date`}
                   minDate={moment(momentTerm).startOf('month')}
                   maxDate={moment(momentTerm).endOf('month')}
                 />
-                {payments[index].type !== 'cash' ? (
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <SelectField
+                  label={t('Type')}
+                  name={`payments[${index}].type`}
+                  values={paymentTypes.itemList}
+                />
+              </Grid>
+              {payments[index].type !== 'cash' ? (
+                <Grid item xs={12} sm={6}>
                   <TextField
                     label={t('Reference')}
                     name={`payments[${index}].reference`}
                     disabled={payments[index].type === 'cash'}
                   />
-                ) : null}
+                </Grid>
+              ) : null}
+              <Grid item xs={12} sm={6}>
                 <NumberField
                   label={t('Settlement')}
                   name={`payments[${index}].amount`}

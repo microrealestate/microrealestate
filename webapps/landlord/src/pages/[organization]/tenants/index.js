@@ -1,13 +1,13 @@
 import { fetchTenants, QueryKeys } from '../../../utils/restcalls';
-import React, { useCallback, useContext } from 'react';
+import React, { useCallback, useContext, useState } from 'react';
 import { Button } from '../../../components/ui/button';
 import { List } from '../../../components/ResourceList';
+import NewTenantDialog from '../../../components/tenants/NewTenantDialog';
 import Page from '../../../components/Page';
 import { PlusCircleIcon } from 'lucide-react';
 import { StoreContext } from '../../../store';
 import TenantList from '../../../components/tenants/TenantList';
 import { toast } from 'sonner';
-import useNewTenantDialog from '../../../components/tenants/NewTenantDialog';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
@@ -82,7 +82,7 @@ function Tenants() {
     queryKey: [QueryKeys.TENANTS],
     queryFn: () => fetchTenants(store)
   });
-  const [NewTenantDialog, setOpenNewTenantDialog] = useNewTenantDialog();
+  const [openNewTenantDialog, setOpenNewTenantDialog] = useState(false);
 
   const onNewTenant = useCallback(() => {
     setOpenNewTenantDialog(true);
@@ -109,7 +109,10 @@ function Tenants() {
         )}
         renderList={({ data }) => <TenantList tenants={data} />}
       />
-      <NewTenantDialog backPage={t('Tenants')} backPath={router.asPath} />
+      <NewTenantDialog
+        open={openNewTenantDialog}
+        setOpen={setOpenNewTenantDialog}
+      />
     </Page>
   );
 }

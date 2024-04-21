@@ -6,8 +6,9 @@ import {
 } from 'lucide-react';
 import { Tab, Tabs } from '@material-ui/core';
 import { TabPanel, useTabChangeHelper } from '../../../components/Tabs';
-import { useCallback, useContext } from 'react';
+import { useCallback, useContext, useState } from 'react';
 import { Card } from '../../../components/ui/card';
+import ConfirmDialog from '../../../components/ConfirmDialog';
 import { DashboardCard } from '../../../components/dashboard/DashboardCard';
 import Map from '../../../components/Map';
 import moment from 'moment';
@@ -19,7 +20,6 @@ import ShortcutButton from '../../../components/ShortcutButton';
 import { StoreContext } from '../../../store';
 import { toast } from 'sonner';
 import { toJS } from 'mobx';
-import useConfirmDialog from '../../../components/ConfirmDialog';
 import useFillStore from '../../../hooks/useFillStore';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
@@ -85,14 +85,9 @@ function OccupancyHistoryCard() {
 }
 
 async function fetchData(store, router) {
-  const {
-    query: {
-      param: [propertyId]
-    }
-  } = router;
-  const results = await store.property.fetchOne(propertyId);
+  const results = await store.property.fetchOne(router.query.id);
   store.property.setSelected(
-    store.property.items.find(({ _id }) => _id === propertyId)
+    store.property.items.find(({ _id }) => _id === router.query.id)
   );
   return results;
 }
@@ -102,22 +97,17 @@ function Property() {
   const store = useContext(StoreContext);
   const router = useRouter();
   const { handleTabChange, tabSelectedIndex } = useTabChangeHelper();
-  const [ConfirmDialog, setOpenConfirmDeleteProperty] = useConfirmDialog();
+  const [openConfirmDeletePropertyDialog, setOpenConfirmDeletePropertyDialog] =
+    useState(false);
   const [fetching] = useFillStore(fetchData, [router]);
 
-  const {
-    query: {
-      param: [, , backPath]
-    }
-  } = router;
-
   const handleBack = useCallback(() => {
-    router.push(backPath);
-  }, [router, backPath]);
+    router.push(store.appHistory.previousPath);
+  }, [router, store.appHistory.previousPath]);
 
   const onConfirmDeleteProperty = useCallback(() => {
-    setOpenConfirmDeleteProperty(true);
-  }, [setOpenConfirmDeleteProperty]);
+    setOpenConfirmDeletePropertyDialog(true);
+  }, [setOpenConfirmDeletePropertyDialog]);
 
   const onDeleteProperty = useCallback(async () => {
     const { status } = await store.property.delete([
@@ -136,8 +126,8 @@ function Property() {
       }
     }
 
-    await router.push(backPath);
-  }, [store, router, backPath, t]);
+    await router.push(store.appHistory.previousPath);
+  }, [store, router, t]);
 
   const onSubmit = useCallback(
     async (propertyPart) => {
@@ -229,6 +219,8 @@ function Property() {
         <ConfirmDialog
           title={t('Are you sure to definitely remove this property?')}
           subTitle={store.property.selected.name}
+          open={openConfirmDeletePropertyDialog}
+          setOpen={setOpenConfirmDeletePropertyDialog}
           onConfirm={onDeleteProperty}
         />
       </>

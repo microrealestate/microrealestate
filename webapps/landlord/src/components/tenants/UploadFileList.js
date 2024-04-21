@@ -2,24 +2,31 @@ import { Alert, AlertTitle } from '../ui/alert';
 import { Box, List, Paper } from '@material-ui/core';
 import { useCallback, useContext, useMemo, useState } from 'react';
 import { AlertTriangleIcon } from 'lucide-react';
+import ConfirmDialog from '../ConfirmDialog';
 import { downloadDocument } from '../../utils/fetch';
 import ImageViewer from '../ImageViewer/ImageViewer';
 import { observer } from 'mobx-react-lite';
 import PdfViewer from '../PdfViewer/PdfViewer';
 import { StoreContext } from '../../store';
 import { toast } from 'sonner';
+import UploadDialog from '../UploadDialog';
 import UploadFileItem from './UploadFileItem';
-import useConfirmDialog from '../ConfirmDialog';
 import useTranslation from 'next-translate/useTranslation';
-import useUploadDialog from '../UploadDialog';
 
 function UploadFileList({ disabled }) {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
-  const [ConfirmDialog, setDocumentToRemove, documentToRemove] =
-    useConfirmDialog();
-  const [UploadDialog, setEditUploadDocument] = useUploadDialog();
+  const [
+    openDocumentToRemoveConfirmDialog,
+    setOpenDocumentToRemoveConfirmDialog
+  ] = useState(false);
+  const [selectedDocumentToRemove, setSelectedDocumentToRemove] =
+    useState(null);
+  const [openUploadDocumentDialog, setOpenUploadDocumentDialog] =
+    useState(false);
+  const [selectedUploadDocument, setSelectedUploadDocument] = useState(null);
   const [openImageViewer, setOpenImageViewer] = useState(false);
+  const [pdfDoc, setPdfDoc] = useState();
   const [openPdfViewer, setOpenPdfViewer] = useState(false);
 
   const files = useMemo(() => {
@@ -69,11 +76,12 @@ function UploadFileList({ disabled }) {
     store.tenant.selected.terminated
   ]);
 
-  const handleView = useCallback((doc) => {
+  const handleView = useCallback((doc, template) => {
     if (doc.mimeType.indexOf('image/') !== -1) {
       setOpenImageViewer({ url: `/documents/${doc._id}`, title: doc.name });
     } else if (doc.mimeType.indexOf('application/pdf') !== -1) {
-      setOpenPdfViewer({ url: `/documents/${doc._id}`, title: doc.name });
+      setPdfDoc({ url: `/documents/${doc._id}`, title: template.name });
+      setOpenPdfViewer(true);
     } else {
       downloadDocument({
         endpoint: `/documents/${doc._id}`,
@@ -84,16 +92,18 @@ function UploadFileList({ disabled }) {
 
   const handleUpload = useCallback(
     (template) => {
-      setEditUploadDocument(template);
+      setSelectedUploadDocument(template);
+      setOpenUploadDocumentDialog(true);
     },
-    [setEditUploadDocument]
+    [setOpenUploadDocumentDialog, setSelectedUploadDocument]
   );
 
   const handleDelete = useCallback(
     (doc) => {
-      setDocumentToRemove(doc);
+      setSelectedDocumentToRemove(doc);
+      setOpenDocumentToRemoveConfirmDialog(true);
     },
-    [setDocumentToRemove]
+    [setOpenDocumentToRemoveConfirmDialog, setSelectedDocumentToRemove]
   );
 
   const handleSaveUploadDocument = useCallback(
@@ -118,14 +128,16 @@ function UploadFileList({ disabled }) {
   );
 
   const handleDeleteDocument = useCallback(async () => {
-    if (!documentToRemove) {
+    if (!selectedDocumentToRemove) {
       return;
     }
-    const { status } = await store.document.delete([documentToRemove._id]);
+    const { status } = await store.document.delete([
+      selectedDocumentToRemove._id
+    ]);
     if (status !== 200) {
       return toast.error(t('Something went wrong'));
     }
-  }, [documentToRemove, store, t]);
+  }, [selectedDocumentToRemove, store, t]);
 
   return (
     <>
@@ -162,17 +174,29 @@ function UploadFileList({ disabled }) {
         </Box>
       </Paper>
 
-      <UploadDialog onSave={handleSaveUploadDocument} />
+      <UploadDialog
+        open={openUploadDocumentDialog}
+        setOpen={setOpenUploadDocumentDialog}
+        data={selectedUploadDocument}
+        onSave={handleSaveUploadDocument}
+      />
 
       <ConfirmDialog
         title={t('Are you sure to remove this document?')}
-        subTitle={documentToRemove.name}
+        subTitle={selectedDocumentToRemove?.name}
+        open={openDocumentToRemoveConfirmDialog}
+        setOpen={setOpenDocumentToRemoveConfirmDialog}
+        data={selectedDocumentToRemove}
         onConfirm={handleDeleteDocument}
       />
 
       <ImageViewer open={openImageViewer} setOpen={setOpenImageViewer} />
 
-      <PdfViewer open={openPdfViewer} setOpen={setOpenPdfViewer} />
+      <PdfViewer
+        open={openPdfViewer}
+        setOpen={setOpenPdfViewer}
+        pdfDoc={pdfDoc}
+      />
     </>
   );
 }

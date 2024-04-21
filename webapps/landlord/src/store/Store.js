@@ -2,6 +2,7 @@ import { makeObservable, observable } from 'mobx';
 import { setAccessToken, setOrganizationId } from '../utils/fetch';
 
 import Accounting from './Accounting';
+import AppHistory from './AppHistory';
 import Dashboard from './Dashboard';
 import Document from './Document';
 import Lease from './Lease';
@@ -15,7 +16,7 @@ import User from './User';
 
 export default class Store {
   constructor() {
-    this.toastMessages = [];
+    this.appHistory = new AppHistory();
     this.user = new User();
     this.organization = new Organization();
     this.lease = new Lease();
@@ -37,7 +38,8 @@ export default class Store {
       template: observable,
       document: observable,
       dashboard: observable,
-      accounting: observable
+      accounting: observable,
+      appHistory: observable
     });
   }
 
@@ -75,6 +77,9 @@ export default class Store {
       },
       accounting = {
         data: {}
+      },
+      appHistory = {
+        previousPath: '/'
       }
     } = initialData;
 
@@ -125,5 +130,6 @@ export default class Store {
     this.dashboard.data = dashboard.data;
 
     this.accounting.data = accounting.data;
+    this.appHistory.previousPath = appHistory.previousPath;
   }
 }

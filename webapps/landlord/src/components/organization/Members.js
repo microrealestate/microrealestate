@@ -14,11 +14,11 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { cn } from '../../utils';
+import ConfirmDialog from '../ConfirmDialog';
 import moment from 'moment';
 import { StoreContext } from '../../store';
 import { toast } from 'sonner';
 import { TrashIcon } from 'lucide-react';
-import useConfirmDialog from '../ConfirmDialog';
 import useTranslation from 'next-translate/useTranslation';
 
 export default function Members({ organization }) {
@@ -33,11 +33,15 @@ export default function Members({ organization }) {
     }
   });
 
-  const [ConfirmDialog, setMemberToRemove, memberToRemove] = useConfirmDialog();
-  const [AppConfirmDialog, setAppToRemove, appToRemove] = useConfirmDialog();
+  const [openMemberToRemoveConfirmDialog, setOpenMemberToRemoveConfirmDialog] =
+    useState(false);
+  const [selectedMemberToRemove, setSelectedMemberToRemove] = useState(null);
+  const [openAppToRemoveConfirmDialog, setOpenAppToRemoveConfirmDialog] =
+    useState(false);
+  const [selectedAppToRemove, setSelectedAppToRemove] = useState(null);
   const [updating, setUpdating] = useState();
 
-  const removeMember = useCallback(
+  const handleRemoveMember = useCallback(
     async (member) => {
       setUpdating(member);
       await mutateAsync({
@@ -53,7 +57,7 @@ export default function Members({ organization }) {
     [mutateAsync, organization, store]
   );
 
-  const removeApplication = useCallback(
+  const handleRemoveApplication = useCallback(
     async (app) => {
       setUpdating(app);
       await mutateAsync({
@@ -148,7 +152,10 @@ export default function Members({ organization }) {
                   </Select>
                   <Button
                     variant="secondary"
-                    onClick={() => setMemberToRemove(member)}
+                    onClick={() => {
+                      setSelectedMemberToRemove(member);
+                      setOpenMemberToRemoveConfirmDialog(true);
+                    }}
                     disabled={isActionDisabled}
                     size="icon"
                     className="w-12"
@@ -199,7 +206,10 @@ export default function Members({ organization }) {
                 <div className="flex-grow">{t(app.role)}</div>
                 <Button
                   variant="secondary"
-                  onClick={() => setAppToRemove(app)}
+                  onClick={() => {
+                    setSelectedAppToRemove(app);
+                    setOpenAppToRemoveConfirmDialog(true);
+                  }}
                   disabled={!!updating || store.user.role !== ADMIN_ROLE}
                   size="icon"
                   className="w-10"
@@ -213,13 +223,19 @@ export default function Members({ organization }) {
       </Card>
       <ConfirmDialog
         title={t('Are you sure to remove this collaborator?')}
-        subTitle={memberToRemove.name}
-        onConfirm={removeMember}
+        subTitle={selectedMemberToRemove?.email}
+        open={openMemberToRemoveConfirmDialog}
+        setOpen={setOpenMemberToRemoveConfirmDialog}
+        data={selectedMemberToRemove}
+        onConfirm={handleRemoveMember}
       />
-      <AppConfirmDialog
+      <ConfirmDialog
         title={t('Are you sure to remove this application?')}
-        subTitle={appToRemove.name}
-        onConfirm={removeApplication}
+        subTitle={selectedAppToRemove?.name}
+        open={openAppToRemoveConfirmDialog}
+        setOpen={setOpenAppToRemoveConfirmDialog}
+        data={selectedAppToRemove}
+        onConfirm={handleRemoveApplication}
       />
     </>
   );

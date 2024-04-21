@@ -8,7 +8,7 @@ import {
   Tooltip
 } from '@material-ui/core';
 import { getRentAmounts, RentAmount } from './RentDetails';
-import { memo, useCallback, useContext, useMemo } from 'react';
+import { memo, useCallback, useContext, useMemo, useState } from 'react';
 import BoxWithHover from '../../components/BoxWithHover';
 import { downloadDocument } from '../../utils/fetch';
 import EditIcon from '@material-ui/icons/Edit';
@@ -16,9 +16,9 @@ import { EmptyIllustration } from '../Illustrations';
 import Hidden from '../HiddenSSRCompatible';
 import HistoryIcon from '@material-ui/icons/History';
 import moment from 'moment';
+import NewPaymentDialog from '../payment/NewPaymentDialog';
+import RentHistoryDialog from './RentHistoryDialog';
 import { StoreContext } from '../../store';
-import useNewPaymentDialog from '../payment/NewPaymentDialog';
-import useRentHistoryDialog from './RentHistoryDialog';
 import useTranslation from 'next-translate/useTranslation';
 
 const Reminder = memo(function Reminder({ rent, ...boxProps }) {
@@ -283,8 +283,11 @@ const MobileRentRow = memo(function MobileRentRow({
 function RentTable({ rents = [], selected, setSelected }) {
   const store = useContext(StoreContext);
   const { t } = useTranslation('common');
-  const [NewPaymentDialog, setOpenNewPaymentDialog] = useNewPaymentDialog();
-  const [RentHistoryDialog, setOpenRentHistoryDialog] = useRentHistoryDialog();
+  const [selectedTenant, setSelectedTenant] = useState();
+  const [openNewPaymentDialog, setOpenNewPaymentDialog] = useState(false);
+  const [selectedPayment, setSelectedPayment] = useState(null);
+  const [openRentHistoryDialog, setOpenRentHistoryDialog] = useState(false);
+  const [selectedRentHistory, setSelectedRentHistory] = useState(null);
 
   const selectableRentNum = useMemo(() => {
     return rents.reduce((acc, { _id, occupant: { hasContactEmails } }) => {
@@ -321,22 +324,33 @@ function RentTable({ rents = [], selected, setSelected }) {
 
   const handleEdit = useCallback(
     (rent) => () => {
-      setOpenNewPaymentDialog(rent);
+      setSelectedPayment(rent);
+      setOpenNewPaymentDialog(true);
     },
-    [setOpenNewPaymentDialog]
+    [setOpenNewPaymentDialog, setSelectedPayment]
   );
 
   const handleHistory = useCallback(
     (rent) => () => {
-      setOpenRentHistoryDialog(rent.occupant);
+      setSelectedRentHistory(rent.occupant);
+      setOpenRentHistoryDialog(true);
     },
-    [setOpenRentHistoryDialog]
+    [setOpenRentHistoryDialog, setSelectedRentHistory]
   );
 
   return (
     <>
-      <NewPaymentDialog />
-      <RentHistoryDialog />
+      <NewPaymentDialog
+        open={openNewPaymentDialog}
+        setOpen={setOpenNewPaymentDialog}
+        data={selectedPayment}
+      />
+
+      <RentHistoryDialog
+        open={openRentHistoryDialog}
+        setOpen={setOpenRentHistoryDialog}
+        data={selectedRentHistory}
+      />
 
       {rents.length ? (
         <>
@@ -361,7 +375,7 @@ function RentTable({ rents = [], selected, setSelected }) {
               .map((r) => r._id)
               .includes(rent._id);
             return (
-              <BoxWithHover key={rent._id}>
+              <BoxWithHover key={`${rent._id}_${rent.term}`}>
                 <Hidden smDown>
                   <RentRow
                     rent={rent}

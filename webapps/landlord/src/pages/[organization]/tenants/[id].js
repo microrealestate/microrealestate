@@ -7,30 +7,28 @@ import {
 } from 'lucide-react';
 import { useCallback, useContext, useMemo, useState } from 'react';
 import { Card } from '../../../components/ui/card';
+import ConfirmDialog from '../../../components/ConfirmDialog';
 import ContractOverviewCard from '../../../components/tenants/ContractOverviewCard';
 import moment from 'moment';
 import { observer } from 'mobx-react-lite';
 import Page from '../../../components/Page';
+import RentHistoryDialog from '../../../components/rents/RentHistoryDialog';
 import RentOverviewCard from '../../../components/tenants/RentOverviewCard';
 import ShortcutButton from '../../../components/ShortcutButton';
 import { StoreContext } from '../../../store';
 import TenantStepper from '../../../components/tenants/TenantStepper';
 import TenantTabs from '../../../components/tenants/TenantTabs';
+import TerminateLeaseDialog from '../../../components/tenants/TerminateLeaseDialog';
 import { toast } from 'sonner';
 import { toJS } from 'mobx';
-import useConfirmDialog from '../../../components/ConfirmDialog';
 import useFillStore from '../../../hooks/useFillStore';
-import useRentHistoryDialog from '../../../components/rents/RentHistoryDialog';
-import useRichTextEditorDialog from '../../../components/RichTextEditor/RichTextEditorDialog';
 import { useRouter } from 'next/router';
-import useTerminateLeaseDialog from '../../../components/tenants/TerminateLeaseDialog';
 import useTranslation from 'next-translate/useTranslation';
 import { withAuthentication } from '../../../components/Authentication';
 
 async function fetchData(store, router) {
-  const tenantId = store.tenant.selected?._id || router.query.param[0];
   const results = await Promise.all([
-    store.tenant.fetchOne(tenantId),
+    store.tenant.fetchOne(router.query.id),
     store.property.fetch(),
     store.lease.fetch(),
     store.template.fetch(),
@@ -38,7 +36,7 @@ async function fetchData(store, router) {
   ]);
 
   store.tenant.setSelected(
-    store.tenant.items.find(({ _id }) => _id === tenantId)
+    store.tenant.items.find(({ _id }) => _id === router.query.id)
   );
 
   return results;
@@ -48,26 +46,19 @@ function Tenant() {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const router = useRouter();
-  const [RentHistoryDialog, setOpenRentHistoryDialog] = useRentHistoryDialog();
-  const [ConfirmEditDialog, setOpenConfirmEditTenant] = useConfirmDialog();
-  const [ConfirmDeleteDialog, setOpenConfirmDeleteTenant] = useConfirmDialog();
+  const [openRentHistoryDialog, setOpenRentHistoryDialog] = useState(false);
+  const [selectedRentHistory, setSelectedRentHistory] = useState(null);
+  const [openConfirmEditTenant, setOpenConfirmEditTenant] = useState(false);
+  const [openConfirmDeleteTenant, setOpenConfirmDeleteTenant] = useState(false);
 
   const [readOnly, setReadOnly] = useState(
     store.tenant.selected.terminated ||
       !!store.tenant.selected.properties?.length
   );
-  const [TerminateLeaseDialog, setOpenTerminateLeaseDialog] =
-    useTerminateLeaseDialog();
-
-  const [RichTextEditorDialog, , editContract] = useRichTextEditorDialog();
+  const [openTerminateLeaseDialog, setOpenTerminateLeaseDialog] =
+    useState(false);
 
   const [fetching] = useFillStore(fetchData, [router]);
-
-  const {
-    query: {
-      param: [, , backPath]
-    }
-  } = router;
 
   const onEditTenant = useCallback(() => {
     setReadOnly(false);
@@ -90,8 +81,8 @@ function Tenant() {
       }
     }
 
-    await router.push(backPath);
-  }, [store, router, backPath, t]);
+    await router.push(store.appHistory.previousPath);
+  }, [store, router, t]);
 
   const onSubmit = useCallback(
     async (tenantPart) => {
@@ -171,68 +162,9 @@ function Tenant() {
     ]
   );
 
-  const onLoadContract = useCallback(async () => {
-    let contents = '';
-    let contractId = editContract?.contractId;
-
-    if (contractId) {
-      // document already generated
-      const { status, data } = await store.document.fetchOne(contractId);
-      if (status !== 200) {
-        return toast.error(t('Something went wrong'));
-      }
-      contents = data.contents;
-      return contents;
-    }
-
-    // no existing document then generate it from the lease template
-    // (if template not available then generate an empty document)
-    const lease = store.lease.items.find(
-      ({ _id }) => _id === editContract?.leaseId
-    );
-    const templateId = lease?.templateId;
-    const { status, data } = await store.document.create({
-      templateId,
-      tenantId: editContract._id,
-      leaseId: lease._id,
-      type: 'text',
-      name: editContract.name
-    });
-    if (status !== 200) {
-      return toast.error(t('Something went wrong'));
-    }
-    contractId = data._id;
-    contents = data.contents;
-
-    await onSubmit({ contractId });
-    return contents;
-  }, [
-    editContract?.contractId,
-    editContract._id,
-    editContract.name,
-    editContract?.leaseId,
-    store,
-    onSubmit,
-    t
-  ]);
-
-  const onSaveContract = useCallback(
-    async (contents, html) => {
-      const { status } = await store.document.update({
-        _id: editContract.contractId,
-        contents,
-        html
-      });
-      if (status !== 200) {
-        return toast.error(t('Something went wrong'));
-      }
-    },
-    [editContract.contractId, store, t]
-  );
-
   const handleBack = useCallback(() => {
-    router.push(backPath);
-  }, [router, backPath]);
+    router.push(store.appHistory.previousPath);
+  }, [router, store.appHistory.previousPath]);
 
   const handleDeleteTenant = useCallback(
     () => setOpenConfirmDeleteTenant(true),
@@ -244,10 +176,10 @@ function Tenant() {
     [setOpenTerminateLeaseDialog]
   );
 
-  const handleRentHistory = useCallback(
-    () => setOpenRentHistoryDialog(store.tenant.selected),
-    [setOpenRentHistoryDialog, store.tenant.selected]
-  );
+  const handleRentHistory = useCallback(() => {
+    setSelectedRentHistory(store.tenant.selected);
+    setOpenRentHistoryDialog(true);
+  }, [setOpenRentHistoryDialog, setSelectedRentHistory, store.tenant.selected]);
 
   const handleEditTenant = useCallback(
     () => setOpenConfirmEditTenant(true),
@@ -311,14 +243,11 @@ function Tenant() {
               </div>
             )}
           </div>
-          <RichTextEditorDialog
-            onLoad={onLoadContract}
-            onSave={onSaveContract}
-            title={store.tenant.selected.name}
-            hideFields={true}
+          <TerminateLeaseDialog
+            open={openTerminateLeaseDialog}
+            setOpen={setOpenTerminateLeaseDialog}
           />
-          <TerminateLeaseDialog />
-          <ConfirmEditDialog
+          <ConfirmDialog
             title={
               store.tenant.selected.terminated
                 ? t('Lease terminated on {{terminationDate}}', {
@@ -333,12 +262,18 @@ function Tenant() {
               'Modifying this form might break the contract signed with the tenant'
             )}
             subTitle2={t('Continue editing?')}
+            open={openConfirmEditTenant}
+            setOpen={setOpenConfirmEditTenant}
             onConfirm={onEditTenant}
           />
         </>
       )}
-      <RentHistoryDialog />
-      <ConfirmDeleteDialog
+      <RentHistoryDialog
+        open={openRentHistoryDialog}
+        setOpen={setOpenRentHistoryDialog}
+        data={selectedRentHistory}
+      />
+      <ConfirmDialog
         title={
           store.tenant.selected.hasPayments
             ? t('This tenant cannot be deleted')
@@ -356,6 +291,8 @@ function Tenant() {
                 tenant: store.tenant.selected.name
               })
         }
+        open={openConfirmDeleteTenant}
+        setOpen={setOpenConfirmDeleteTenant}
         justOkButton={store.tenant.selected.hasPayments}
         onConfirm={!store.tenant.selected.hasPayments ? onDeleteTenant : null}
       />

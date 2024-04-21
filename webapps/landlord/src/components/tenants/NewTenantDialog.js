@@ -10,7 +10,6 @@ import { SelectField } from '../formfields/SelectField';
 import { StoreContext } from '../../store';
 import { toast } from 'sonner';
 import { toJS } from 'mobx';
-import useDialog from '../../hooks/useDialog';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 
@@ -29,7 +28,7 @@ const initialValues = {
   isCopyFrom: false
 };
 
-function NewTenantDialog({ open, setOpen, backPage, backPath }) {
+export default function NewTenantDialog({ open, setOpen }) {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const router = useRouter();
@@ -101,16 +100,15 @@ function NewTenantDialog({ open, setOpen, backPage, backPath }) {
         handleClose();
 
         store.tenant.setSelected(data);
+        store.appHistory.setPreviousPath(router.asPath);
         await router.push(
-          `/${store.organization.selected.name}/tenants/${data._id}/${encodeURI(
-            backPage
-          )}/${encodeURIComponent(backPath)}`
+          `/${store.organization.selected.name}/tenants/${data._id}`
         );
       } finally {
         setIsLoading(false);
       }
     },
-    [store, handleClose, router, backPage, backPath, t]
+    [store, handleClose, router, t]
   );
 
   const tenants = store.tenant.items
@@ -177,8 +175,4 @@ function NewTenantDialog({ open, setOpen, backPage, backPath }) {
       )}
     />
   );
-}
-
-export default function useNewTenantDialog() {
-  return useDialog(NewTenantDialog);
 }

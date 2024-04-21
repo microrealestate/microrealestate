@@ -6,7 +6,6 @@ import ResponsiveDialog from '../../ResponsiveDialog';
 import { StoreContext } from '../../../store';
 import { TextField } from '@microrealestate/commonui/components';
 import { toast } from 'sonner';
-import useDialog from '../../../hooks/useDialog';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 
@@ -20,7 +19,7 @@ const initialValues = {
   stepperMode: true
 };
 
-function NewLeaseDialog({ open, setOpen, backPage, backPath }) {
+export default function NewLeaseDialog({ open, setOpen }) {
   const { t } = useTranslation('common');
   const formRef = useRef();
   const store = useContext(StoreContext);
@@ -51,16 +50,15 @@ function NewLeaseDialog({ open, setOpen, backPage, backPath }) {
 
         handleClose();
         store.lease.setSelected(data);
+        store.appHistory.setPreviousPath(router.asPath);
         await router.push(
-          `/${store.organization.selected.name}/settings/contracts/${
-            data._id
-          }/${encodeURI(backPage)}/${encodeURIComponent(backPath)}`
+          `/${store.organization.selected.name}/settings/contracts/${data._id}`
         );
       } finally {
         setIsLoading(false);
       }
     },
-    [store, handleClose, router, backPage, backPath, t]
+    [store, handleClose, router, t]
   );
 
   return (
@@ -100,8 +98,4 @@ function NewLeaseDialog({ open, setOpen, backPage, backPath }) {
       )}
     />
   );
-}
-
-export default function useNewLeaseDialog() {
-  return useDialog(NewLeaseDialog);
 }

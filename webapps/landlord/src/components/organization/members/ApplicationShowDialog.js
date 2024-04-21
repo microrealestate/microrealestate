@@ -3,10 +3,14 @@ import { Button } from '../../ui/button';
 import ResponsiveDialog from '../../ResponsiveDialog';
 import { TextField } from '@microrealestate/commonui/components';
 import { useCallback } from 'react';
-import useDialog from '../../../hooks/useDialog';
 import useTranslation from 'next-translate/useTranslation';
 
-function ApplicationShowDialog({ open, setOpen, appcredz, onClose }) {
+export default function ApplicationShowDialog({
+  open,
+  setOpen,
+  data: appcredz,
+  onClose
+}) {
   const { t } = useTranslation('common');
 
   const handleClose = useCallback(() => {
@@ -38,8 +42,4 @@ function ApplicationShowDialog({ open, setOpen, appcredz, onClose }) {
       renderFooter={() => <Button onClick={handleClose}>{t('Close')}</Button>}
     />
   );
-}
-
-export default function useApplicationShowDialog() {
-  return useDialog(ApplicationShowDialog);
 }
