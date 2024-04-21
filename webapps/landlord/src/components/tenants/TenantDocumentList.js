@@ -2,16 +2,16 @@ import {
   BlankDocumentIllustration,
   TermsDocumentIllustration
 } from '../Illustrations';
-import { useCallback, useContext, useMemo } from 'react';
+import { useCallback, useContext, useMemo, useState } from 'react';
 import AddIcon from '@material-ui/icons/Add';
 import { Box } from '@material-ui/core';
+import ConfirmDialog from '../ConfirmDialog';
 import DocumentList from '../DocumentList';
 import FullScreenDialogMenu from '../FullScreenDialogMenu';
 import { Observer } from 'mobx-react-lite';
+import RichTextEditorDialog from '../RichTextEditor/RichTextEditorDialog';
 import { StoreContext } from '../../store';
 import { toast } from 'sonner';
-import useConfirmDialog from '../ConfirmDialog';
-import useRichTextEditorDialog from '../RichTextEditor/RichTextEditorDialog';
 import useTranslation from 'next-translate/useTranslation';
 
 function DocumentItems({ onView, onEdit, onDelete, disabled }) {
@@ -41,12 +41,12 @@ function DocumentItems({ onView, onEdit, onDelete, disabled }) {
 function TenantDocumentList({ disabled = false }) {
   const store = useContext(StoreContext);
   const { t } = useTranslation('common');
-
-  const [ConfirmDialog, setDocumentToRemove, documentToRemove] =
-    useConfirmDialog();
-
-  const [RichTextEditorDialog, setEditTextDocument, editTextDocument] =
-    useRichTextEditorDialog();
+  const [openDocumentToRemoveDialog, setOpenDocumentToRemoveDialog] =
+    useState(false);
+  const [selectedDocumentToRemove, setSelectedDocumentToRemove] =
+    useState(null);
+  const [openTextDocumentDialog, setOpenTextDocumentDialog] = useState(false);
+  const [selectedTextDocument, setSelectedTextDocument] = useState(null);
 
   const menuItems = useMemo(() => {
     const templates = store.template.items.filter(
@@ -72,9 +72,10 @@ function TenantDocumentList({ disabled = false }) {
 
   const handleClickEdit = useCallback(
     (doc) => {
-      setEditTextDocument(doc);
+      setSelectedTextDocument(doc);
+      setOpenTextDocumentDialog(true);
     },
-    [setEditTextDocument]
+    [setOpenTextDocumentDialog, setSelectedTextDocument]
   );
 
   const handleClickAddText = useCallback(
@@ -89,29 +90,31 @@ function TenantDocumentList({ disabled = false }) {
       if (status !== 200) {
         return console.error(status);
       }
-      setEditTextDocument(data);
+      setSelectedTextDocument(data);
+      setOpenTextDocumentDialog(true);
     },
     [
       store.document,
       store.tenant.selected?._id,
       store.tenant.selected?.leaseId,
       t,
-      setEditTextDocument
+      setSelectedTextDocument,
+      setOpenTextDocumentDialog
     ]
   );
 
   const handleLoadTextDocument = useCallback(async () => {
-    if (!editTextDocument?._id) {
+    if (!selectedTextDocument?._id) {
       toast.error(t('Something went wrong'));
       return '';
     }
-    return editTextDocument.contents;
-  }, [editTextDocument?._id, editTextDocument.contents, t]);
+    return selectedTextDocument.contents;
+  }, [selectedTextDocument?._id, selectedTextDocument?.contents, t]);
 
   const handleSaveTextDocument = useCallback(
     async (title, contents, html) => {
       const { status } = await store.document.update({
-        ...editTextDocument,
+        ...selectedTextDocument,
         name: title,
         contents,
         html
@@ -120,18 +123,20 @@ function TenantDocumentList({ disabled = false }) {
         toast.error(t('Something went wrong'));
       }
     },
-    [editTextDocument, store, t]
+    [selectedTextDocument, store, t]
   );
 
   const handleDeleteDocument = useCallback(async () => {
-    if (!documentToRemove) {
+    if (!selectedDocumentToRemove) {
       return;
     }
-    const { status } = await store.document.delete([documentToRemove._id]);
+    const { status } = await store.document.delete([
+      selectedDocumentToRemove._id
+    ]);
     if (status !== 200) {
       return toast.error(t('Something went wrong'));
     }
-  }, [documentToRemove, store, t]);
+  }, [selectedDocumentToRemove, store.document, t]);
 
   return (
     <>
@@ -150,20 +155,28 @@ function TenantDocumentList({ disabled = false }) {
 
       <DocumentItems
         onEdit={handleClickEdit}
-        onDelete={setDocumentToRemove}
+        onDelete={(docToRemove) => {
+          setSelectedDocumentToRemove(docToRemove);
+          setOpenDocumentToRemoveDialog(true);
+        }}
         disabled={disabled}
       />
 
       <RichTextEditorDialog
+        open={openTextDocumentDialog}
+        setOpen={setOpenTextDocumentDialog}
         onLoad={handleLoadTextDocument}
         onSave={handleSaveTextDocument}
-        title={editTextDocument.name}
+        title={selectedTextDocument?.name}
         editable={!disabled}
       />
 
       <ConfirmDialog
         title={t('Are you sure to remove this document?')}
-        subTitle={documentToRemove.name}
+        subTitle={selectedDocumentToRemove?.name}
+        open={openDocumentToRemoveDialog}
+        setOpen={setOpenDocumentToRemoveDialog}
+        data={selectedDocumentToRemove}
         onConfirm={handleDeleteDocument}
       />
     </>

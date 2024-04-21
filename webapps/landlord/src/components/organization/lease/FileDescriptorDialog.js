@@ -9,7 +9,6 @@ import { Form, Formik } from 'formik';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { Button } from '../../ui/button';
 import ResponsiveDialog from '../../ResponsiveDialog';
-import useDialog from '../../../hooks/useDialog';
 import useTranslation from 'next-translate/useTranslation';
 
 const validationSchema = Yup.object().shape({
@@ -26,39 +25,44 @@ const initialValues = {
   required: 'notRequired'
 };
 
-function FileDescriptorDialog({ open, setOpen, onSave }) {
+export default function FileDescriptorDialog({
+  open,
+  setOpen,
+  onSave,
+  data: fileDescriptor
+}) {
   const { t } = useTranslation('common');
   const [isLoading, setIsLoading] = useState(false);
   const formRef = useRef();
 
   const formData = useMemo(() => {
-    if (open === false) {
+    if (!fileDescriptor) {
       return initialValues;
     }
     return {
       ...initialValues,
-      ...open,
-      required: open.required
+      ...fileDescriptor,
+      required: fileDescriptor.required
         ? 'required'
-        : open.requiredOnceContractTerminated
+        : fileDescriptor.requiredOnceContractTerminated
           ? 'requiredOnceContractTerminated'
           : 'notRequired'
     };
-  }, [open]);
+  }, [fileDescriptor]);
 
   const handleClose = useCallback(() => {
     setOpen(false);
   }, [setOpen]);
 
   const _onSubmit = useCallback(
-    async (fileDescriptor) => {
+    async (data) => {
       try {
         setIsLoading(true);
         await onSave({
-          ...fileDescriptor,
-          required: fileDescriptor.required === 'required',
+          ...data,
+          required: data.required === 'required',
           requiredOnceContractTerminated:
-            fileDescriptor.required === 'requiredOnceContractTerminated'
+            data.required === 'requiredOnceContractTerminated'
         });
         handleClose();
       } finally {
@@ -70,7 +74,7 @@ function FileDescriptorDialog({ open, setOpen, onSave }) {
 
   return (
     <ResponsiveDialog
-      open={!!open}
+      open={open}
       setOpen={setOpen}
       isLoading={isLoading}
       renderHeader={() => (
@@ -141,8 +145,4 @@ function FileDescriptorDialog({ open, setOpen, onSave }) {
       )}
     />
   );
-}
-
-export default function useFileDescriptorDialog() {
-  return useDialog(FileDescriptorDialog);
 }

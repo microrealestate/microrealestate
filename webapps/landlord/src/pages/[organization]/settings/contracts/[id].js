@@ -1,7 +1,8 @@
 import { ArrowLeftIcon, TrashIcon } from 'lucide-react';
-import { useCallback, useContext } from 'react';
+import { useCallback, useContext, useState } from 'react';
 import { ADMIN_ROLE } from '../../../../store/User';
 import { Card } from '../../../../components/ui/card';
+import ConfirmDialog from '../../../../components/ConfirmDialog';
 import LeaseStepper from '../../../../components/organization/lease/LeaseStepper';
 import LeaseTabs from '../../../../components/organization/lease/LeaseTabs';
 import { observer } from 'mobx-react-lite';
@@ -10,23 +11,20 @@ import router from 'next/router';
 import ShortcutButton from '../../../../components/ShortcutButton';
 import { StoreContext } from '../../../../store';
 import { toast } from 'sonner';
-import useConfirmDialog from '../../../../components/ConfirmDialog';
 import useFillStore from '../../../../hooks/useFillStore';
 import useTranslation from 'next-translate/useTranslation';
 import { withAuthentication } from '../../../../components/Authentication';
 
 async function fetchData(store, router) {
-  const {
-    param: [leaseId],
-  } = router.query;
-
   const results = await Promise.all([
-    store.lease.fetchOne(leaseId),
+    store.lease.fetchOne(router.query.id),
     store.template.fetch(),
-    store.template.fetchFields(),
+    store.template.fetchFields()
   ]);
 
-  store.lease.setSelected(store.lease.items.find(({ _id }) => _id === leaseId));
+  store.lease.setSelected(
+    store.lease.items.find(({ _id }) => _id === router.query.id)
+  );
 
   return results;
 }
@@ -34,20 +32,15 @@ async function fetchData(store, router) {
 function Contract() {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
-  const [ConfirmDialog, setRemoveLease] = useConfirmDialog();
+  const [openRemoveContractDialog, setOpenRemoveContractDialog] =
+    useState(false);
   const [fetching] = useFillStore(fetchData, [router]);
-
-  const {
-    query: {
-      param: [, , backPath],
-    },
-  } = router;
 
   const onLeaseAddUpdate = useCallback(
     async (leasePart) => {
       const lease = {
         ...store.lease.selected,
-        ...leasePart,
+        ...leasePart
       };
 
       let status;
@@ -78,15 +71,17 @@ function Contract() {
   );
 
   const handleBack = useCallback(() => {
-    router.push(backPath);
-  }, [backPath]);
+    router.push(store.appHistory.previousPath);
+  }, [store.appHistory.previousPath]);
 
   const onLeaseRemove = useCallback(async () => {
     const { status } = await store.lease.delete([store.lease.selected._id]);
     if (status !== 200) {
       switch (status) {
         case 422:
-          return toast.error(t('Contract is used by tenants, it cannot be removed'));
+          return toast.error(
+            t('Contract is used by tenants, it cannot be removed')
+          );
         case 403:
           return toast.error(t('You are not allowed to update the contract'));
         default:
@@ -100,7 +95,7 @@ function Contract() {
     <Page
       loading={fetching}
       ActionBar={
-        <div className='grid grid-cols-5 gap-1.5 md:gap-4'>
+        <div className="grid grid-cols-5 gap-1.5 md:gap-4">
           <ShortcutButton
             label={t('Back')}
             Icon={ArrowLeftIcon}
@@ -109,8 +104,11 @@ function Contract() {
           <ShortcutButton
             label={t('Delete')}
             Icon={TrashIcon}
-            onClick={() => setRemoveLease(true)}
-            disabled={store.lease.selected?.usedByTenants || store.user.role !== ADMIN_ROLE}
+            onClick={() => setOpenRemoveContractDialog(true)}
+            disabled={
+              store.lease.selected?.usedByTenants ||
+              store.user.role !== ADMIN_ROLE
+            }
             className="col-start-2 col-end-2"
           />
         </div>
@@ -126,6 +124,8 @@ function Contract() {
       <ConfirmDialog
         title={t('Are you sure to remove this contract?')}
         subTitle={store.lease.selected?.name}
+        open={openRemoveContractDialog}
+        setOpen={setOpenRemoveContractDialog}
         onConfirm={onLeaseRemove}
       />
     </Page>

@@ -17,7 +17,6 @@ import { toast } from 'sonner';
 import { toJS } from 'mobx';
 import { uploadDocument } from '../utils/fetch';
 import { UploadField } from '@microrealestate/commonui/components';
-import useDialog from '../hooks/useDialog';
 import useTranslation from 'next-translate/useTranslation';
 
 const UPLOAD_MAX_SIZE = 2_000_000_000; // 2Gb
@@ -64,13 +63,16 @@ const defaultValues = {
   expiryDate: null
 };
 
-function UploadDialog({ open, setOpen, onSave }) {
+export default function UploadDialog({
+  open,
+  setOpen,
+  data: selectedTemplate,
+  onSave
+}) {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const [isLoading, setIsLoading] = useState(false);
   const formRef = useRef();
-
-  const selectedTemplate = open?._id ? open : null;
 
   const templates = useMemo(() => {
     return store.template.items
@@ -138,7 +140,7 @@ function UploadDialog({ open, setOpen, onSave }) {
 
   return (
     <ResponsiveDialog
-      open={!!open}
+      open={open}
       setOpen={setOpen}
       isLoading={isLoading}
       renderHeader={() => t('Document to upload')}
@@ -188,8 +190,4 @@ function UploadDialog({ open, setOpen, onSave }) {
       )}
     />
   );
-}
-
-export default function useUploadDialog() {
-  return useDialog(UploadDialog);
 }

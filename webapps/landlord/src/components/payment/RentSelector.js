@@ -8,7 +8,7 @@ import useTranslation from 'next-translate/useTranslation';
 
 function SelectRentItem({ rent, onClick, className }) {
   const { t } = useTranslation('common');
-  const rentAmounts = getRentAmounts(rent);
+  const rentAmounts = rent ? getRentAmounts(rent) : null;
 
   return (
     <div className={cn(className)}>
@@ -73,7 +73,7 @@ export default function RentSelector({ value, rents, onChange, className }) {
       >
         <div className="flex flex-col gap-2">
           {rents
-            .sort(({ occupant: { name: n1 } }, { occupant: { name: n2 } }) => {
+            ?.sort(({ occupant: { name: n1 } }, { occupant: { name: n2 } }) => {
               n1.localeCompare(n2);
             })
             .map((rent) => {

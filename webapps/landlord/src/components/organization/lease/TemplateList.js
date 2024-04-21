@@ -1,12 +1,12 @@
-import { useCallback, useContext } from 'react';
+import { useCallback, useContext, useState } from 'react';
 import { Button } from '../../ui/button';
+import ConfirmDialog from '../../ConfirmDialog';
 import DocumentList from '../../DocumentList';
+import FileDescriptorDialog from './FileDescriptorDialog';
 import { observer } from 'mobx-react-lite';
 import { PlusCircleIcon } from 'lucide-react';
+import RichTextEditorDialog from '../../RichTextEditor/RichTextEditorDialog';
 import { StoreContext } from '../../../store';
-import useConfirmDialog from '../../ConfirmDialog';
-import useFileDescriptorDialog from './FileDescriptorDialog';
-import useRichTextEditorDialog from '../../RichTextEditor/RichTextEditorDialog';
 import useTranslation from 'next-translate/useTranslation';
 
 const TemplateItems = observer(function TemplateItems({ onEdit, onDelete }) {
@@ -24,27 +24,29 @@ const TemplateItems = observer(function TemplateItems({ onEdit, onDelete }) {
 function TemplateList() {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
-  const [ConfirmDialog, setTemplateToRemove, templateToRemove] =
-    useConfirmDialog();
-  const [RichTextEditorDialog, setEditTemplate, editTemplate] =
-    useRichTextEditorDialog();
-  const [FileDescriptorDialog, setEditFileDescriptor, editFileDescriptor] =
-    useFileDescriptorDialog();
+  const [openConfirmRemoveTemplate, setOpenConfirmRemoveTemplate] =
+    useState(false);
+  const [selectedTemplateToRemove, setSelectedTemplateToRemove] =
+    useState(null);
+  const [openTemplate, setOpenTemplate] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
+  const [openFileDescriptor, setOpenFileDescriptor] = useState(false);
+  const [selectedFileDescriptor, setSelectedFileDescriptor] = useState(null);
 
-  const onLoadTemplate = useCallback(async () => {
-    if (!editTemplate || !editTemplate._id) {
+  const handleLoadTemplate = useCallback(async () => {
+    if (!selectedTemplate?._id) {
       return '';
     }
     store.template.setSelected(
-      store.template.items.find(({ _id }) => _id === editTemplate._id)
+      store.template.items.find(({ _id }) => _id === selectedTemplate._id)
     );
     return store.template.selected.contents;
-  }, [store.template, editTemplate]);
+  }, [selectedTemplate?._id, store.template]);
 
   const onSaveTemplate = useCallback(
     async (template) => {
       //setError('');
-      if (!template._id) {
+      if (!template?._id) {
         const { status, data } = await store.template.create(template);
         if (status !== 200) {
           // switch (status) {
@@ -62,9 +64,9 @@ function TemplateList() {
           return console.error(status);
         }
         if (data.type === 'text') {
-          editTemplate._id = data._id;
+          selectedTemplate._id = data._id;
         } else if (data.type === 'fileDescriptor') {
-          editFileDescriptor._id = data._id;
+          selectedFileDescriptor._id = data._id;
         }
       } else {
         const { status } = await store.template.update(template);
@@ -85,13 +87,13 @@ function TemplateList() {
         }
       }
     },
-    [editFileDescriptor, editTemplate, store.template]
+    [selectedFileDescriptor, selectedTemplate, store.template]
   );
 
-  const onSaveTextTemplate = useCallback(
+  const handleSaveTextTemplate = useCallback(
     async (title, contents, html) => {
       await onSaveTemplate({
-        _id: editTemplate?._id,
+        _id: selectedTemplate?._id,
         name: title,
         type: 'text',
         contents,
@@ -101,67 +103,84 @@ function TemplateList() {
           : []
       });
     },
-    [editTemplate?._id, onSaveTemplate, store.lease.selected._id]
+    [onSaveTemplate, selectedTemplate?._id, store.lease.selected._id]
   );
 
-  const onSaveUploadTemplate = useCallback(
+  const handleSaveFileDescriptor = useCallback(
     async (template) => {
       await onSaveTemplate({
         ...template,
-        _id: editFileDescriptor?._id,
+        _id: selectedFileDescriptor?._id,
         type: 'fileDescriptor',
         linkedResourceIds: store.lease.selected?._id
           ? [store.lease.selected._id]
           : []
       });
     },
-    [editFileDescriptor?._id, onSaveTemplate, store.lease.selected._id]
+    [onSaveTemplate, selectedFileDescriptor?._id, store.lease.selected._id]
   );
 
-  const onDeleteTemplate = useCallback(async () => {
-    if (!templateToRemove) {
+  const handleDeleteTemplate = useCallback(
+    (template) => {
+      setSelectedTemplateToRemove(template);
+      setOpenConfirmRemoveTemplate(true);
+    },
+    [setOpenConfirmRemoveTemplate, setSelectedTemplateToRemove]
+  );
+
+  const handleConfirmDeleteTemplate = useCallback(async () => {
+    if (!selectedTemplateToRemove) {
       return;
     }
 
-    if (templateToRemove.linkedResourceIds?.length <= 1) {
-      await store.template.delete([templateToRemove._id]);
+    if (selectedTemplateToRemove.linkedResourceIds?.length <= 1) {
+      await store.template.delete([selectedTemplateToRemove._id]);
     } else {
       await store.template.update({
-        ...templateToRemove,
+        ...selectedTemplateToRemove,
         linkedResourceIds: store.lease.selected?._id
           ? [
-              ...editTemplate.linkedResourceIds.filter(
+              ...selectedTemplate.linkedResourceIds.filter(
                 (_id) => store.lease.selected._id !== _id
               )
             ]
-          : templateToRemove.linkedResourceIds
+          : selectedTemplateToRemove.linkedResourceIds
       });
     }
   }, [
-    templateToRemove,
-    store.lease.selected,
+    selectedTemplateToRemove,
     store.template,
-    editTemplate.linkedResourceIds
+    store.lease.selected._id,
+    selectedTemplate?.linkedResourceIds
   ]);
 
   const handleClickEdit = useCallback(
     (template) => {
       if (template.type === 'text') {
-        setEditTemplate(template);
+        setSelectedTemplate(template);
+        setOpenTemplate(true);
       } else if (template.type === 'fileDescriptor') {
-        setEditFileDescriptor(template);
+        setSelectedFileDescriptor(template);
+        setOpenFileDescriptor(template);
       }
     },
-    [setEditFileDescriptor, setEditTemplate]
+    [
+      setOpenFileDescriptor,
+      setOpenTemplate,
+      setSelectedFileDescriptor,
+      setSelectedTemplate
+    ]
   );
 
   const handleClickAddFileDescriptor = useCallback(() => {
-    setEditFileDescriptor({});
-  }, [setEditFileDescriptor]);
+    setSelectedFileDescriptor({});
+    setOpenFileDescriptor(true);
+  }, [setOpenFileDescriptor, setSelectedFileDescriptor]);
 
   const handleClickAddText = useCallback(() => {
-    setEditTemplate({});
-  }, [setEditTemplate]);
+    setSelectedTemplate({});
+    setOpenTemplate(true);
+  }, [setOpenTemplate, setSelectedTemplate]);
 
   return (
     <>
@@ -185,20 +204,28 @@ function TemplateList() {
           {t('Text template')}
         </Button>
       </div>
-
-      <TemplateItems onEdit={handleClickEdit} onDelete={setTemplateToRemove} />
-
+      <TemplateItems onEdit={handleClickEdit} onDelete={handleDeleteTemplate} />
       <RichTextEditorDialog
-        onLoad={onLoadTemplate}
-        onSave={onSaveTextTemplate}
-        title={editTemplate.name}
+        open={openTemplate}
+        setOpen={setOpenTemplate}
+        onLoad={handleLoadTemplate}
+        onSave={handleSaveTextTemplate}
+        title={selectedTemplate?.name}
         fields={store.template.fields}
       />
-      <FileDescriptorDialog onSave={onSaveUploadTemplate} />
+      <FileDescriptorDialog
+        open={openFileDescriptor}
+        setOpen={setOpenFileDescriptor}
+        data={selectedFileDescriptor}
+        onSave={handleSaveFileDescriptor}
+      />
       <ConfirmDialog
         title={t('Are you sure to remove this template document?')}
-        subTitle={templateToRemove.name}
-        onConfirm={onDeleteTemplate}
+        subTitle={selectedTemplateToRemove?.name}
+        open={openConfirmRemoveTemplate}
+        setOpen={setOpenConfirmRemoveTemplate}
+        data={selectedTemplateToRemove}
+        onConfirm={handleConfirmDeleteTemplate}
       />
     </>
   );

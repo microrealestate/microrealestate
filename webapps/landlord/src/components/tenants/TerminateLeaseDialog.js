@@ -11,7 +11,6 @@ import { SelectField } from '../formfields/SelectField';
 import { StoreContext } from '../../store';
 import { toast } from 'sonner';
 import { toJS } from 'mobx';
-import useDialog from '../../hooks/useDialog';
 import { useQueryClient } from '@tanstack/react-query';
 import useTranslation from 'next-translate/useTranslation';
 
@@ -21,7 +20,7 @@ const validationSchema = Yup.object().shape({
   guarantyPayback: Yup.number().min(0)
 });
 
-function TerminateLeaseDialog({ open, setOpen, tenantList }) {
+export default function TerminateLeaseDialog({ open, setOpen, tenantList }) {
   const { t } = useTranslation('common');
   const queryClient = useQueryClient();
   const store = useContext(StoreContext);
@@ -187,8 +186,4 @@ function TerminateLeaseDialog({ open, setOpen, tenantList }) {
       )}
     />
   );
-}
-
-export default function useTerminateLeaseDialog() {
-  return useDialog(TerminateLeaseDialog);
 }

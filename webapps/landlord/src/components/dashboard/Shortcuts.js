@@ -7,19 +7,19 @@ import {
   StopCircleIcon
 } from 'lucide-react';
 ('lucide-react');
-import { useCallback, useContext, useMemo } from 'react';
+import { useCallback, useContext, useMemo, useState } from 'react';
 import { cn } from '../../utils';
 import FirstConnection from './FirstConnection';
+import NewLeaseDialog from '../organization/lease/NewLeaseDialog';
+import NewPaymentDialog from '../payment/NewPaymentDialog';
+import NewPropertyDialog from '../properties/NewPropertyDialog';
+import NewTenantDialog from '../tenants/NewTenantDialog';
 import { observer } from 'mobx-react-lite';
 import ShortcutButton from '../ShortcutButton';
 import { StoreContext } from '../../store';
+import TerminateLeaseDialog from '../tenants/TerminateLeaseDialog';
 import { useMediaQuery } from 'usehooks-ts';
-import useNewLeaseDialog from '../organization/lease/NewLeaseDialog';
-import useNewPaymentDialog from '../payment/NewPaymentDialog';
-import useNewPropertyDialog from '../properties/NewPropertyDialog';
-import useNewTenantDialog from '../tenants/NewTenantDialog';
 import { useRouter } from 'next/router';
-import useTerminateLeaseDialog from '../tenants/TerminateLeaseDialog';
 import useTranslation from 'next-translate/useTranslation';
 import { WelcomeIllustration } from '../../components/Illustrations';
 
@@ -28,12 +28,12 @@ function Shortcuts({ firstConnection = false, className }) {
   const router = useRouter();
   const { t } = useTranslation('common');
   const isDesktop = useMediaQuery('(min-width: 768px)');
-  const [NewLeaseDialog, setOpenNewLeaseDialog] = useNewLeaseDialog();
-  const [NewTenantDialog, setOpenNewTenantDialog] = useNewTenantDialog();
-  const [NewPropertyDialog, setOpenNewPropertyDialog] = useNewPropertyDialog();
-  const [NewPaymentDialog, setOpenNewPaymentDialog] = useNewPaymentDialog();
-  const [TerminateLeaseDialog, setOpenTerminateLeaseDialog] =
-    useTerminateLeaseDialog();
+  const [openNewLeaseDialog, setOpenNewLeaseDialog] = useState(false);
+  const [openNewTenantDialog, setOpenNewTenantDialog] = useState(false);
+  const [openNewPropertyDialog, setOpenNewPropertyDialog] = useState(false);
+  const [openNewPaymentDialog, setOpenNewPaymentDialog] = useState(false);
+  const [openTerminateLeaseDialog, setOpenTerminateLeaseDialog] =
+    useState(false);
 
   const tenantsNotTerminated = useMemo(
     () => store.tenant.items.filter((t) => !t.terminated),
@@ -134,11 +134,27 @@ function Shortcuts({ firstConnection = false, className }) {
           )}
         </Card>
       )}
-      <NewPaymentDialog />
-      <TerminateLeaseDialog tenantList={tenantsNotTerminated} />
-      <NewTenantDialog backPage={t('Dashboard')} backPath={router.asPath} />
-      <NewPropertyDialog backPage={t('Dashboard')} backPath={router.asPath} />
-      <NewLeaseDialog backPage={t('Dashboard')} backPath={router.asPath} />
+      <NewPaymentDialog
+        open={openNewPaymentDialog}
+        setOpen={setOpenNewPaymentDialog}
+      />
+      <TerminateLeaseDialog
+        open={openTerminateLeaseDialog}
+        setOpen={setOpenTerminateLeaseDialog}
+        tenantList={tenantsNotTerminated}
+      />
+      <NewTenantDialog
+        open={openNewTenantDialog}
+        setOpen={setOpenNewTenantDialog}
+      />
+      <NewPropertyDialog
+        open={openNewPropertyDialog}
+        setOpen={setOpenNewPropertyDialog}
+      />
+      <NewLeaseDialog
+        open={openNewLeaseDialog}
+        setOpen={setOpenNewLeaseDialog}
+      />
     </>
   );
 }

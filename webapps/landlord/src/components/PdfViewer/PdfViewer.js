@@ -1,31 +1,17 @@
-import {
-  AppBar,
-  Box,
-  Button,
-  Dialog,
-  Typography,
-  withStyles
-} from '@material-ui/core';
+import { Drawer, DrawerContent, DrawerHeader } from '../ui/drawer';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { Viewer, Worker } from '@react-pdf-viewer/core';
 
 import { apiFetcher } from '../../utils/fetch';
+import { Button } from '@material-ui/core';
 import EditorButton from '../RichTextEditor/EditorButton';
-import { grayColor } from '../../styles/styles';
 import Loading from '../Loading';
 import { printPlugin } from '@react-pdf-viewer/print';
 import { StoreContext } from '../../store';
 import { toast } from 'sonner';
 import useTranslation from 'next-translate/useTranslation';
 
-const StyledDialog = withStyles(() => ({
-  paperFullScreen: {
-    backgroundColor: grayColor[10],
-    overflow: 'hidden'
-  }
-}))(Dialog);
-
-export default function PdfViewer({ open, setOpen }) {
+export default function PdfViewer({ open, setOpen, pdfDoc }) {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const [pdfSrc, setPdfSrc] = useState();
@@ -40,9 +26,9 @@ export default function PdfViewer({ open, setOpen }) {
 
   useEffect(() => {
     (async () => {
-      if (open?.url) {
+      if (pdfDoc?.url) {
         try {
-          const response = await apiFetcher().get(open.url, {
+          const response = await apiFetcher().get(pdfDoc.url, {
             responseType: 'blob'
           });
           setPdfSrc(URL.createObjectURL(response.data));
@@ -53,41 +39,39 @@ export default function PdfViewer({ open, setOpen }) {
         }
       }
     })();
-  }, [t, open, store, handleClose]);
+  }, [t, pdfDoc, store, handleClose]);
 
   if (open && pdfSrc) {
     return (
-      <StyledDialog fullScreen open={!!open} onClose={handleClose}>
-        <AppBar>
-          <Box display="flex" justifyContent="space-between" p={1}>
-            <Typography variant="h6" component="div">
-              {open.title}
-            </Typography>
-            <Box display="flex">
-              <Box mr={1}>
-                <Print>
-                  {(props) => (
-                    <EditorButton
-                      iconType="ri-printer-fill"
-                      onClick={props.onClick}
-                    />
-                  )}
-                </Print>
-              </Box>
+      <Drawer open={open} onOpenChange={setOpen} dismissible={false}>
+        <DrawerContent className="w-full h-full p-4">
+          <DrawerHeader className="flex items-center px-0">
+            <div className="text-base md:text-xl font-semibold">
+              {pdfDoc.title}
+            </div>
+            <div className="flex flex-grow justify-end gap-4">
+              <Print>
+                {(props) => (
+                  <EditorButton
+                    iconType="ri-printer-fill"
+                    onClick={props.onClick}
+                  />
+                )}
+              </Print>
               <Button variant="contained" size="small" onClick={handleClose}>
                 {t('Close')}
               </Button>
-            </Box>
-          </Box>
-        </AppBar>
-        <Box overflow="auto">
-          <Box pt={8} maxWidth="230mm">
-            <Worker workerUrl="https://unpkg.com/pdfjs-dist@2.14.305/legacy/build/pdf.worker.js">
-              <Viewer fileUrl={pdfSrc} plugins={[printPluginInstance]} />
-            </Worker>
-          </Box>
-        </Box>
-      </StyledDialog>
+            </div>
+          </DrawerHeader>
+          <div className="overflow-auto">
+            <div className="max-w-4xl md:mx-auto">
+              <Worker workerUrl="https://unpkg.com/pdfjs-dist@2.14.305/legacy/build/pdf.worker.js">
+                <Viewer fileUrl={pdfSrc} plugins={[printPluginInstance]} />
+              </Worker>
+            </div>
+          </div>
+        </DrawerContent>
+      </Drawer>
     );
   }
 

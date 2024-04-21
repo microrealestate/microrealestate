@@ -25,12 +25,17 @@ export default function TenantListItem({ tenant }) {
 
   const handleClick = useCallback(async () => {
     store.tenant.setSelected(tenant);
+    store.appHistory.setPreviousPath(router.asPath);
     await router.push(
-      `/${store.organization.selected.name}/tenants/${tenant._id}/${encodeURI(
-        t('Tenants')
-      )}/${encodeURIComponent(router.asPath)}`
+      `/${store.organization.selected.name}/tenants/${tenant._id}`
     );
-  }, [t, router, tenant, store.organization.selected.name, store.tenant]);
+  }, [
+    store.tenant,
+    store.appHistory,
+    store.organization.selected.name,
+    tenant,
+    router
+  ]);
 
   // compute progress of duration of lease
   const progress = useMemo(() => {

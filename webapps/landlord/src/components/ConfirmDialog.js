@@ -2,14 +2,14 @@ import { AlertTriangleIcon } from 'lucide-react';
 import { Button } from './ui/button';
 import ResponsiveDialog from './ResponsiveDialog';
 import { useCallback } from 'react';
-import useDialog from '../hooks/useDialog';
 import useTranslation from 'next-translate/useTranslation';
 
-function ConfirmDialog({
+export default function ConfirmDialog({
   title,
   subTitle,
   open,
   setOpen,
+  data,
   onConfirm,
   justOkButton = false,
   children
@@ -18,12 +18,12 @@ function ConfirmDialog({
   const handleClose = useCallback(() => setOpen(false), [setOpen]);
   const handleConfirm = useCallback(() => {
     setOpen(false);
-    onConfirm?.(open);
-  }, [setOpen, onConfirm, open]);
+    onConfirm?.(data);
+  }, [setOpen, onConfirm, data]);
 
   return (
     <ResponsiveDialog
-      open={!!open}
+      open={open}
       setOpen={setOpen}
       renderHeader={() => (
         <>
@@ -55,8 +55,4 @@ function ConfirmDialog({
       }
     />
   );
-}
-
-export default function useConfirmDialog() {
-  return useDialog(ConfirmDialog);
 }

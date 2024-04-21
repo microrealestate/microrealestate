@@ -17,7 +17,6 @@ import { SelectField } from '../../formfields/SelectField';
 import { StoreContext } from '../../../store';
 import { TextField } from '@microrealestate/commonui/components';
 import { toast } from 'sonner';
-import useDialog from '../../../hooks/useDialog';
 import useTranslation from 'next-translate/useTranslation';
 
 const applicationInitialValues = {
@@ -26,7 +25,12 @@ const applicationInitialValues = {
   role: RENTER_ROLE
 };
 
-function ApplicationFormDialog({ open, setOpen, organization, onClose }) {
+export default function ApplicationFormDialog({
+  open,
+  setOpen,
+  data: organization,
+  onClose
+}) {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const formRef = useRef();
@@ -87,7 +91,7 @@ function ApplicationFormDialog({ open, setOpen, organization, onClose }) {
     () =>
       Yup.object().shape({
         name: Yup.string()
-          .notOneOf(organization.applications.map(({ name }) => name))
+          .notOneOf(organization?.applications.map(({ name }) => name) || [])
           .required(),
         expiryDate: Yup.mixed()
           .required()
@@ -107,7 +111,7 @@ function ApplicationFormDialog({ open, setOpen, organization, onClose }) {
           .required()
           .oneOf(roleValues.map(({ value }) => value))
       }),
-    [organization.applications, roleValues]
+    [organization?.applications, roleValues]
   );
 
   if (isError) {
@@ -163,8 +167,4 @@ function ApplicationFormDialog({ open, setOpen, organization, onClose }) {
       )}
     />
   );
-}
-
-export default function useApplicationFormDialog() {
-  return useDialog(ApplicationFormDialog);
 }

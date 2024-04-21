@@ -15,7 +15,6 @@ import { SelectField } from '../formfields/SelectField';
 import { StoreContext } from '../../store';
 import { toast } from 'sonner';
 import types from './types';
-import useDialog from '../../hooks/useDialog';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 
@@ -31,7 +30,7 @@ const initialValues = {
   rent: ''
 };
 
-function NewPropertyDialog({ open, setOpen, backPage, backPath }) {
+export default function NewPropertyDialog({ open, setOpen }) {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const router = useRouter();
@@ -66,16 +65,15 @@ function NewPropertyDialog({ open, setOpen, backPage, backPath }) {
         handleClose();
 
         store.property.setSelected(data);
+        store.appHistory.setPreviousPath(router.asPath);
         await router.push(
-          `/${store.organization.selected.name}/properties/${
-            data._id
-          }/${encodeURI(backPage)}/${encodeURIComponent(backPath)}`
+          `/${store.organization.selected.name}/properties/${data._id}`
         );
       } finally {
         setIsLoading(false);
       }
     },
-    [store, handleClose, router, backPage, backPath, t]
+    [store, handleClose, router, t]
   );
 
   const propertyTypes = useMemo(
@@ -135,8 +133,4 @@ function NewPropertyDialog({ open, setOpen, backPage, backPath }) {
       )}
     />
   );
-}
-
-export default function useNewPropertyDialog() {
-  return useDialog(NewPropertyDialog);
 }
