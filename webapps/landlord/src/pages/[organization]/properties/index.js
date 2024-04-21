@@ -1,14 +1,14 @@
 import { fetchProperties, QueryKeys } from '../../../utils/restcalls';
-import { useCallback, useContext } from 'react';
+import { useCallback, useContext, useState } from 'react';
 import { Button } from '../../../components/ui/button';
 import { List } from '../../../components/ResourceList';
+import NewPropertyDialog from '../../../components/properties/NewPropertyDialog';
 import Page from '../../../components/Page';
 import { PlusCircleIcon } from 'lucide-react';
 import PropertyList from '../../../components/properties/PropertyList';
 import { StoreContext } from '../../../store';
 import { toast } from 'sonner';
 import types from '../../../components/properties/types';
-import useNewPropertyDialog from '../../../components/properties/NewPropertyDialog';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
@@ -58,7 +58,8 @@ function Properties() {
     queryKey: [QueryKeys.PROPERTIES],
     queryFn: () => fetchProperties(store)
   });
-  const [NewPropertyDialog, setOpenNewPropertyDialog] = useNewPropertyDialog();
+
+  const [openNewPropertyDialog, setOpenNewPropertyDialog] = useState(false);
 
   const handleAction = useCallback(() => {
     setOpenNewPropertyDialog(true);
@@ -89,7 +90,10 @@ function Properties() {
         )}
         renderList={PropertyList}
       />
-      <NewPropertyDialog backPage={t('Properties')} backPath={router.asPath} />
+      <NewPropertyDialog
+        open={openNewPropertyDialog}
+        setOpen={setOpenNewPropertyDialog}
+      />
     </Page>
   );
 }

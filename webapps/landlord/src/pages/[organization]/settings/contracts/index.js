@@ -10,18 +10,18 @@ import {
   QueryKeys,
   updateLease
 } from '../../../../utils/restcalls';
-import { useCallback, useContext } from 'react';
+import { useCallback, useContext, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from '../../../../components/ui/button';
 import { cn } from '../../../../utils';
 import { Label } from '../../../../components/ui/label';
+import NewLeaseDialog from '../../../../components/organization/lease/NewLeaseDialog';
 import Page from '../../../../components/Page';
 import { PlusCircleIcon } from 'lucide-react';
 import ShortcutButton from '../../../../components/ShortcutButton';
 import { StoreContext } from '../../../../store';
 import { Switch } from '../../../../components/ui/switch';
 import { toast } from 'sonner';
-import useNewLeaseDialog from '../../../../components/organization/lease/NewLeaseDialog';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 import { withAuthentication } from '../../../../components/Authentication';
@@ -31,7 +31,7 @@ function LeasesSettings() {
   const store = useContext(StoreContext);
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [NewLeaseDialog, setOpenNewLeaseDialog] = useNewLeaseDialog();
+  const [openNewLeaseDialog, setOpenNewLeaseDialog] = useState(false);
   const leasesQuery = useQuery({
     queryKey: [QueryKeys.LEASES],
     queryFn: () => fetchLeases(store)
@@ -97,15 +97,12 @@ function LeasesSettings() {
                 <div>
                   <Button
                     variant="link"
-                    onClick={() =>
+                    onClick={() => {
+                      store.appHistory.setPreviousPath(router.asPath);
                       router.push(
-                        `/${
-                          store.organization.selected.name
-                        }/settings/contracts/${lease._id}/${encodeURI(
-                          t('Settings')
-                        )}/${encodeURIComponent(router.asPath)}`
-                      )
-                    }
+                        `/${store.organization.selected.name}/settings/contracts/${lease._id}`
+                      );
+                    }}
                     className={cn(
                       'text-xl text-left text-wrap font-semibold p-0 ',
                       lease.active ? '' : 'text-muted-foreground'
@@ -145,7 +142,10 @@ function LeasesSettings() {
           })}
         </CardContent>
       </Card>
-      <NewLeaseDialog backPage={t('Settings')} backPath={router.asPath} />
+      <NewLeaseDialog
+        open={openNewLeaseDialog}
+        setOpen={setOpenNewLeaseDialog}
+      />
     </Page>
   );
 }

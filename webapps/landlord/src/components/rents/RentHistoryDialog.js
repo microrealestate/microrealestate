@@ -2,33 +2,36 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
-  AppBar,
   Box,
-  Button,
-  Dialog,
   Grid,
   IconButton,
-  Toolbar,
   Typography
 } from '@material-ui/core';
+import { Drawer, DrawerContent, DrawerHeader } from '../ui/drawer';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import BoxWithHover from '../../components/BoxWithHover';
-import DialogDefaultBackground from '../DialogDefaultBackground';
+import { Button } from '../ui/button';
 import EditIcon from '@material-ui/icons/Edit';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { getPeriod } from '../../utils';
 import Loading from '../Loading';
 import moment from 'moment';
+import NewPaymentDialog from '../payment/NewPaymentDialog';
 import RentDetails from './RentDetails';
 import { StoreContext } from '../../store';
 import { toast } from 'sonner';
-import TransitionSlideUp from '../TransitionSlideUp';
-import useDialog from '../../hooks/useDialog';
-import useNewPaymentDialog from '../payment/NewPaymentDialog';
 import useTranslation from 'next-translate/useTranslation';
 
 function RentListItem({ rent, tenant, onClick }) {
   const { t } = useTranslation('common');
+
+  const handleClick = useCallback(
+    (event) => {
+      event.stopPropagation();
+      onClick?.(event);
+    },
+    [onClick]
+  );
 
   return (
     <BoxWithHover
@@ -37,13 +40,13 @@ function RentListItem({ rent, tenant, onClick }) {
       border={1}
       borderColor="divider"
       withCursor
-      onClick={onClick}
+      onClick={handleClick}
     >
       <Box display="flex" justifyContent="space-between" alignItems="center">
         <Box fontSize="h5.fontSize">
           {getPeriod(t, rent.term, tenant.occupant.frequency)}
         </Box>
-        <IconButton onClick={onClick}>
+        <IconButton onClick={handleClick}>
           <EditIcon fontSize="small" />
         </IconButton>
       </Box>
@@ -93,8 +96,8 @@ function RentHistory({ tenantId }) {
   const [expandedYear, setExpandedYear] = useState(
     moment().startOf('month').format('YYYYMMDDHH').slice(0, 4)
   );
-
-  const [NewPaymentDialog, setOpenNewPaymentDialog] = useNewPaymentDialog();
+  const [openNewPaymentDialog, setOpenNewPaymentDialog] = useState(false);
+  const [selectedPayment, setSelectedPayment] = useState(null);
 
   const fetchTenantRents = useCallback(
     async (showLoadingAnimation = true) => {
@@ -128,9 +131,12 @@ function RentHistory({ tenantId }) {
   };
 
   const handleClick = useCallback(
-    (rent) => setOpenNewPaymentDialog(rent),
+    (rent) => {
+      setSelectedPayment(rent);
+      setOpenNewPaymentDialog(true);
+    },
 
-    [setOpenNewPaymentDialog]
+    [setOpenNewPaymentDialog, setSelectedPayment]
   );
 
   const handleClose = useCallback(() => {
@@ -139,7 +145,12 @@ function RentHistory({ tenantId }) {
 
   return (
     <>
-      <NewPaymentDialog onClose={handleClose} />
+      <NewPaymentDialog
+        open={openNewPaymentDialog}
+        setOpen={setOpenNewPaymentDialog}
+        data={selectedPayment}
+        onClose={handleClose}
+      />
       {loading ? (
         <Loading />
       ) : (
@@ -160,74 +171,51 @@ function RentHistory({ tenantId }) {
               </Typography>
             )}
           </Box>
-
-          {rentYears.map((year) => {
-            return (
-              <Accordion
-                key={year}
-                expanded={expandedYear === year}
-                onChange={handleAccordionChange(year)}
-              >
-                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                  <Box>{year}</Box>
-                </AccordionSummary>
-                {expandedYear === year ? (
-                  <AccordionDetails>
-                    <YearRentList
-                      tenant={tenant}
-                      year={year}
-                      onClick={handleClick}
-                    />
-                  </AccordionDetails>
-                ) : null}
-              </Accordion>
-            );
-          })}
+          <div className="overflow-y-auto p-4">
+            {rentYears.map((year) => {
+              return (
+                <Accordion
+                  key={year}
+                  expanded={expandedYear === year}
+                  onChange={handleAccordionChange(year)}
+                >
+                  <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                    <Box>{year}</Box>
+                  </AccordionSummary>
+                  {expandedYear === year ? (
+                    <AccordionDetails>
+                      <YearRentList
+                        tenant={tenant}
+                        year={year}
+                        onClick={handleClick}
+                      />
+                    </AccordionDetails>
+                  ) : null}
+                </Accordion>
+              );
+            })}
+          </div>
         </>
       )}
     </>
   );
 }
 
-function RentHistoryDialog({ open, setOpen }) {
+export default function RentHistoryDialog({ open, setOpen, data: tenant }) {
   const { t } = useTranslation('common');
-  const [showContent, setShowContent] = useState(false);
-
-  const handleTransitionCompleted = useCallback(() => setShowContent(true), []);
   const handleClose = useCallback(() => setOpen(false), [setOpen]);
 
   return (
-    <Dialog
-      fullScreen
-      open={!!open}
-      onClose={handleClose}
-      TransitionComponent={TransitionSlideUp}
-      TransitionProps={{ onEntered: handleTransitionCompleted }}
-      PaperComponent={DialogDefaultBackground}
-      keepMounted
-    >
-      <AppBar position="sticky">
-        <Toolbar>
-          <Box width="100%" display="flex" alignItems="center">
-            <Box flexGrow={1}>
-              <Typography variant="h6">{t('Rent schedule')}</Typography>
-            </Box>
-            <Box>
-              <Button color="inherit" onClick={handleClose}>
-                {t('Close')}
-              </Button>
-            </Box>
-          </Box>
-        </Toolbar>
-      </AppBar>
-
-      <Box py={2} px={3}>
-        {showContent && open ? <RentHistory tenantId={open._id} /> : null}
-      </Box>
-    </Dialog>
+    <Drawer open={open} onOpenChange={setOpen} dismissible={false}>
+      <DrawerContent className="w-full h-full p-4">
+        <DrawerHeader className="flex justify-between p-0">
+          <span className="text-xl font-semibold">{t('Rent schedule')}</span>
+          <Button variant="secondary" onClick={handleClose}>
+            {t('Close')}
+          </Button>
+        </DrawerHeader>
+        {tenant ? <RentHistory tenantId={tenant._id} /> : null}
+      </DrawerContent>
+    </Drawer>
   );
-}
-
-export default function useRentHistoryDialog() {
-  return useDialog(RentHistoryDialog);
 }

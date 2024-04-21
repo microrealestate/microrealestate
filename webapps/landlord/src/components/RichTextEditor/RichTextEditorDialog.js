@@ -2,28 +2,27 @@ import { Dialog } from '@material-ui/core';
 import dynamic from 'next/dynamic';
 import { grayColor } from '../../styles/styles';
 import { useCallback } from 'react';
-import useDialog from '../../hooks/useDialog';
 import { withStyles } from '@material-ui/core/styles';
 
 const RichTextEditor = dynamic(import('./RichTextEditor'), {
-  ssr: false,
+  ssr: false
 });
 
 const StyledDialog = withStyles(() => ({
   paperFullScreen: {
     backgroundColor: grayColor[10],
-    overflow: 'hidden',
-  },
+    overflow: 'hidden'
+  }
 }))(Dialog);
 
-function RichTextEditorDialog({
+export default function RichTextEditorDialog({
   open,
   setOpen,
   onLoad,
   onSave,
   title,
   fields,
-  editable,
+  editable
 }) {
   const handleClose = useCallback(() => {
     setOpen(false);
@@ -47,8 +46,4 @@ function RichTextEditorDialog({
       />
     </StyledDialog>
   );
-}
-
-export default function useRichTextEditorDialog() {
-  return useDialog(RichTextEditorDialog);
 }

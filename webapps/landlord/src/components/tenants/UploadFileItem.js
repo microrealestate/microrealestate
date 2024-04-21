@@ -77,10 +77,10 @@ export default function UploadFileItem({
     (event) => {
       event.preventDefault();
       if (hasLinkToDocument) {
-        onView?.(document);
+        onView?.(document, template);
       }
     },
-    [document, hasLinkToDocument, onView]
+    [document, hasLinkToDocument, onView, template]
   );
 
   const handleClickUpload = useCallback(() => {

@@ -58,23 +58,14 @@ export function DateField({ disabled, ...props }) {
                 day: (dayIndex) => moment.weekdaysShort()[dayIndex]
               }
             }}
-            selected={field.value ? moment(field.value).toDate() : null}
+            selected={
+              field.value
+                ? moment(field.value).toDate()
+                : props?.minDate?.toDate()
+            }
             onSelect={handleChange}
-            disabled={(date) => {
-              if (props.minDate && props.maxDate) {
-                return (
-                  date < new Date(props.minDate.startOf('day').toDate()) ||
-                  date > new Date(props.maxDate.endOf('day').toDate())
-                );
-              }
-              if (props.minDate) {
-                return date < new Date(props.minDate.startOf('day').toDate());
-              }
-              if (props.maxDate) {
-                return date > new Date(props.maxDate.endOf('day').toDate());
-              }
-              return false;
-            }}
+            fromDate={props.minDate ? props.minDate.toDate() : null}
+            toDate={props.maxDate ? props.maxDate.toDate() : null}
             initialFocus
           />
         </PopoverContent>

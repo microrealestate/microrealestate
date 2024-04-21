@@ -17,6 +17,7 @@ import {
 import { useCallback, useContext, useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from '../../../../components/ui/button';
+import ConfirmDialog from '../../../../components/ConfirmDialog';
 import { List } from '../../../../components/ResourceList';
 import moment from 'moment';
 import Page from '../../../../components/Page';
@@ -25,7 +26,6 @@ import { RentOverview } from '../../../../components/rents/RentOverview';
 import RentTable from '../../../../components/rents/RentTable';
 import { StoreContext } from '../../../../store';
 import { toast } from 'sonner';
-import useConfirmDialog from '../../../../components/ConfirmDialog';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 import { withAuthentication } from '../../../../components/Authentication';
@@ -96,16 +96,16 @@ function Actions({ values, onDone }) {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const [sending, setSending] = useState(false);
-  const [docName, setDocName] = useState('');
-  const [ConfirmDialog, setShowConfirmDlg, showConfirmDlg] = useConfirmDialog();
+  const [showConfirmDlg, setShowConfirmDlg] = useState(false);
+  const [selectedDocumentName, setSelectedDocumentName] = useState(null);
   const disabled = !values?.length;
 
   const handleAction = useCallback(
     (docName) => async () => {
-      setDocName(docName);
+      setSelectedDocumentName(docName);
       setShowConfirmDlg(true);
     },
-    [setShowConfirmDlg]
+    [setSelectedDocumentName, setShowConfirmDlg]
   );
 
   const handleConfirm = useCallback(async () => {
@@ -113,7 +113,7 @@ function Actions({ values, onDone }) {
       setSending(true);
 
       const sendStatus = await store.rent.sendEmail({
-        document: docName,
+        document: selectedDocumentName,
         tenantIds: values.map((r) => r._id),
         terms: values.map((r) => r.term)
       });
@@ -131,7 +131,7 @@ function Actions({ values, onDone }) {
     } finally {
       setSending(false);
     }
-  }, [docName, onDone, store, t, values]);
+  }, [onDone, selectedDocumentName, store.rent, t, values]);
 
   return (
     <>
@@ -190,21 +190,23 @@ function Actions({ values, onDone }) {
           </Popover>
         </div>
       )}
-      {showConfirmDlg ? (
-        <ConfirmDialog
-          title={t('Are you sure to send "{{docName}}"?', {
-            docName: t(docName)
-          })}
-          onConfirm={handleConfirm}
-        >
-          <div className="mb-2">{t('Tenants selected')}</div>
-          <div className="flex flex-col gap-1 pl-4 text-sm max-h-48 overflow-auto">
-            {values.map((tenant) => (
-              <div key={tenant._id}>{tenant.occupant.name}</div>
-            ))}
-          </div>
-        </ConfirmDialog>
-      ) : null}
+
+      <ConfirmDialog
+        title={t('Are you sure to send "{{docName}}"?', {
+          docName: t(selectedDocumentName)
+        })}
+        open={showConfirmDlg}
+        setOpen={setShowConfirmDlg}
+        data={selectedDocumentName}
+        onConfirm={handleConfirm}
+      >
+        <div className="mb-2">{t('Tenants selected')}</div>
+        <div className="flex flex-col gap-1 pl-4 text-sm max-h-48 overflow-auto">
+          {values.map((tenant) => (
+            <div key={tenant._id}>{tenant.occupant.name}</div>
+          ))}
+        </div>
+      </ConfirmDialog>
     </>
   );
 }
