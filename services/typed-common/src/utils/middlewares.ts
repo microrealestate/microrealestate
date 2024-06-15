@@ -2,8 +2,8 @@ import * as Express from 'express';
 import * as JWT from 'jsonwebtoken';
 import {
   ApplicationServicePrincipal,
-  ConnectionRole,
   CollectionTypes,
+  ConnectionRole,
   ConnectionType,
   InternalServicePrincipal,
   MongooseDocument,
