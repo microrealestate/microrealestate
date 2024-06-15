@@ -42,10 +42,9 @@ const harvestKeysFromSourceFiles = () => {
 const loadKeysFromLocaleFile = (language) => {
   let keys;
   try {
-    keys = require(path.resolve(
-      __dirname,
-      `../locales/${language}/common.json`
-    ));
+    keys = require(
+      path.resolve(__dirname, `../locales/${language}/common.json`)
+    );
   } catch (error) {
     keys = {};
   }
@@ -87,7 +86,7 @@ const mergeKeys = (keptKeys, newKeys, oldKeys) => {
       return acc;
     },
     {
-      ...newKeys,
+      ...newKeys
     }
   );
   const keysFoundStatus = computeKeyFoundStatus(keptKeys, newKeys, oldKeys);
@@ -102,7 +101,7 @@ const mergeKeys = (keptKeys, newKeys, oldKeys) => {
     mergedKeys,
     keysToRemove: Object.entries(keysFoundStatus)
       .filter(([, value]) => !value)
-      .map(([key]) => key),
+      .map(([key]) => key)
   };
 };
 
@@ -119,7 +118,7 @@ const translateText = async (text, sourceLanguage, targetLanguage) => {
       q: text,
       source: sourceLanguage,
       target: targetLanguage,
-      format: 'text',
+      format: 'text'
     });
 
     let translatedText = response.data.translatedText;
@@ -151,9 +150,12 @@ const writeLocaleFile = (language, keys) => {
     '{',
     Object.entries(keys)
       .sort(([a], [b]) => a.localeCompare(b))
-      .map(([key, value]) => `  "${key}": "${value}"`)
+      .map(
+        ([key, value]) =>
+          `  "${key.replaceAll('"', '\\"')}": "${value.replaceAll('"', '\\"')}"`
+      )
       .join(',\n'),
-    '}',
+    '}'
   ];
 
   // replace existing local file with new content
