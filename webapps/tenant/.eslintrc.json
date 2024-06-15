@@ -16,15 +16,6 @@
   "rules": {
     "@typescript-eslint/no-unused-vars": "error",
     "import/no-named-as-default": "off",
-    "indent": [
-      "error",
-      2,
-      {
-        "flatTernaryExpressions": false,
-        "offsetTernaryExpressions": true,
-        "SwitchCase": 1
-      }
-    ],
     "no-unused-vars": "off",
     "sort-imports": [
       "error",

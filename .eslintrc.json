@@ -7,15 +7,6 @@
   },
   "extends": ["eslint:recommended", "plugin:import/recommended", "prettier"],
   "rules": {
-    "indent": [
-      "error",
-      2,
-      {
-        "SwitchCase": 1,
-        "offsetTernaryExpressions": true,
-        "flatTernaryExpressions": false
-      }
-    ],
     "no-unused-vars": [
       "error",
       {
