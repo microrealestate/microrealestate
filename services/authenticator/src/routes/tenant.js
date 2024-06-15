@@ -1,12 +1,18 @@
 // eslint-disable-next-line import/no-unresolved
 import { Collections, Service } from '@microrealestate/typed-common';
-import axios  from 'axios';
+import axios from 'axios';
 import express from 'express';
-import jwt  from 'jsonwebtoken';
-import logger  from 'winston';
+import jwt from 'jsonwebtoken';
+import logger from 'winston';
 
-export default function() {
-  const { EMAILER_URL, RESET_TOKEN_SECRET, ACCESS_TOKEN_SECRET, TOKEN_COOKIE_ATTRIBUTES } = Service.getInstance().envConfig.getValues();
+export default function () {
+  const {
+    EMAILER_URL,
+    RESET_TOKEN_SECRET,
+    ACCESS_TOKEN_SECRET,
+    TOKEN_COOKIE_ATTRIBUTES,
+    PRODUCTION
+  } = Service.getInstance().envConfig.getValues();
   const tenantRouter = express.Router();
 
   tenantRouter.post('/signin', async (req, res) => {
@@ -18,14 +24,16 @@ export default function() {
         return res.status(422).json({ error: 'missing fields' });
       }
 
-      const tenants = await Collections.Tenant.find({ 'contacts.email': email });
+      const tenants = await Collections.Tenant.find({
+        'contacts.email': email
+      });
       if (!tenants.length) {
         logger.info(`login failed for ${email} tenant not found`);
         return res.sendStatus(204);
       }
 
       const token = jwt.sign({ email }, RESET_TOKEN_SECRET, {
-        expiresIn: '5m',
+        expiresIn: '5m'
       });
       await Service.getInstance().redisClient.set(token, email);
 
@@ -40,13 +48,13 @@ export default function() {
           templateName: 'magic_link',
           recordId: email,
           params: {
-            token,
-          },
+            token
+          }
         },
         {
           headers: {
-            'Accept-Language': req.rawLocale.code,
-          },
+            'Accept-Language': req.rawLocale.code
+          }
         }
       );
     } catch (exc) {
@@ -81,7 +89,9 @@ export default function() {
 
     const email = await Service.getInstance().redisClient.get(token);
     if (!email) {
-      logger.error(`email not found for token ${token}. Magic link already used`);
+      logger.error(
+        `email not found for token ${token}. Magic link already used`
+      );
       return res.sendStatus(401);
     }
     await Service.getInstance().redisClient.del(token);
@@ -95,7 +105,7 @@ export default function() {
 
     const account = { email, role: 'tenant' };
     const sessionToken = jwt.sign({ account }, ACCESS_TOKEN_SECRET, {
-      expiresIn: '30m',
+      expiresIn: PRODUCTION ? '30m' : '12h'
     });
     await Service.getInstance().redisClient.set(sessionToken, email);
     res.json({ sessionToken });
@@ -123,6 +133,6 @@ export default function() {
 
     return res.json({ email });
   });
-  
+
   return tenantRouter;
 }
