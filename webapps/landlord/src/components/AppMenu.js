@@ -161,7 +161,10 @@ export function HamburgerMenu({ className, onChange }) {
     <div className={className}>
       <Sheet>
         <SheetTrigger asChild>
-          <Button variant="ghost" data-cy="appMenu">
+          <Button
+            data-cy="appMenu"
+            className="text-muted-foreground bg-card hover:bg-card"
+          >
             <MenuIcon />
           </Button>
         </SheetTrigger>

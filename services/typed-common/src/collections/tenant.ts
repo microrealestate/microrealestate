@@ -31,8 +31,8 @@ const TenantSchema = new mongoose.Schema<CollectionTypes.Tenant>({
     {
       contact: String,
       phone: String,
-      email: String,
-    },
+      email: String
+    }
   ],
 
   // contract
@@ -50,8 +50,8 @@ const TenantSchema = new mongoose.Schema<CollectionTypes.Tenant>({
       rent: Number,
       expenses: [{ _id: false, title: String, amount: Number }],
       entryDate: Date,
-      exitDate: Date,
-    },
+      exitDate: Date
+    }
   ],
   // rents: [
   //   {
@@ -119,7 +119,7 @@ const TenantSchema = new mongoose.Schema<CollectionTypes.Tenant>({
   guarantyPayback: Number,
 
   // ui state
-  stepperMode: { type: Boolean, default: false },
+  stepperMode: { type: Boolean, default: false }
 });
 
 export default mongoose.model<CollectionTypes.Tenant>('Occupant', TenantSchema);
