@@ -23,6 +23,7 @@ export type EnvironmentValues = {
   DOMAIN_URL?: string;
   CORS_ENABLED?: boolean;
   TENANTAPI_URL?: string;
+  EMAILER_URL?: string;
   DATA_DIRECTORY?: string;
   TEMPLATES_DIRECTORY?: string;
   TEMPORARY_DIRECTORY?: string;
@@ -30,7 +31,7 @@ export type EnvironmentValues = {
   UPLOADS_DIRECTORY?: string;
   UPLOAD_MAX_SIZE?: number;
   ALLOW_SENDING_EMAILS?: boolean;
-  APP_NAME?: string; 
+  APP_NAME?: string;
   LANDLORD_APP_URL?: string;
   TENANT_APP_URL?: string;
   GMAIL?: {
@@ -39,7 +40,7 @@ export type EnvironmentValues = {
     fromEmail: string;
     replyToEmail: string;
     bccEmails: string;
-  }; 
+  };
   SMTP?: {
     server: string;
     port: number;
@@ -50,12 +51,12 @@ export type EnvironmentValues = {
     fromEmail: string;
     replyToEmail: string;
     bccEmails: string;
-  }; 
+  };
   MAILGUN?: {
     apiKey: string;
     domain: string;
     fromEmail: string;
     replyToEmail: string;
     bccEmails: string;
-  }; 
+  };
 };

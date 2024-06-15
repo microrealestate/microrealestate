@@ -93,7 +93,7 @@ export default function() {
       return res.sendStatus(401);
     }
 
-    const account = { email };
+    const account = { email, role: 'tenant' };
     const sessionToken = jwt.sign({ account }, ACCESS_TOKEN_SECRET, {
       expiresIn: '30m',
     });

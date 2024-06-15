@@ -1,18 +1,24 @@
 import * as Express from 'express';
-import { EnvironmentConfig, Service } from '@microrealestate/typed-common';
+import {
+  EnvironmentConfig,
+  Middlewares,
+  Service
+} from '@microrealestate/typed-common';
 import logger from 'winston';
-import { Middlewares } from '@microrealestate/typed-common';
 import routes from './route.js';
 
 Main();
 
-async function onStartUp(express: Express.Application) {
-  express.use(
+async function onStartUp(application: Express.Application) {
+  application.use(
     Middlewares.needAccessToken(
       Service.getInstance().envConfig.getValues().ACCESS_TOKEN_SECRET
-    )
+    ),
+    Middlewares.checkOrganization(),
+    Middlewares.onlyTypes(['user']),
+    Middlewares.onlyRoles(['tenant'])
   );
-  express.use('/tenantapi', routes);
+  application.use('/tenantapi', routes);
 }
 
 async function Main() {
@@ -30,7 +36,7 @@ async function Main() {
       name: 'tenantapi',
       useRequestParsers: true,
       useMongo: true,
-      onStartUp,
+      onStartUp
     });
 
     await service.startUp();

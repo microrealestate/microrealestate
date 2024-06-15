@@ -1,7 +1,8 @@
-import { LeaseTimeRange, Locale, PaymentMethod } from './index.js';
+import { LeaseTimeRange, Locale, PaymentMethod, UserRole } from './index.js';
 
 export type MongooseDocument<T> = {
   __v: number;
+  save: () => Promise<T>;
   toObject: () => T;
 } & T;
 
@@ -31,12 +32,12 @@ export namespace CollectionTypes {
     members: {
       name: string;
       email: string;
-      role: string;
+      role: UserRole;
       registered: boolean;
     }[];
     applications: {
       name: string;
-      role: string;
+      role: UserRole;
       clientId: string;
       clientSecret: string;
       createdDate: Date;
