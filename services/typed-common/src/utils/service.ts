@@ -1,14 +1,19 @@
-import cookieParser from 'cookie-parser';
+import {
+  ConnectionRole,
+  InternalServicePrincipal,
+  ServiceOptions
+} from '@microrealestate/types';
+import _cookieParser from 'cookie-parser';
+import _methodOverride from 'method-override';
 import EnvironmentConfig from './environmentconfig.js';
 import Express from 'express';
 /* @ts-ignore */
 import expressWinston from 'express-winston'; // TODO bump to version 4
 import httpInterceptors from './httpinterceptors.js';
+import jwt from 'jsonwebtoken';
 import logger from 'winston';
-import methodOverride from 'method-override';
 import MongoClient from './mongoclient.js';
 import RedisClient from './redisclient.js';
-import { ServiceOptions } from '@microrealestate/types';
 
 process.on('SIGINT', async () => {
   try {
@@ -19,6 +24,8 @@ process.on('SIGINT', async () => {
 });
 
 export default class Service {
+  static cookieParser = _cookieParser;
+  static methodOverride = _methodOverride;
   private static instance: Service | null = null;
   static getInstance(envConfig?: EnvironmentConfig) {
     if (!Service.instance) {
@@ -52,7 +59,7 @@ export default class Service {
     logger.remove(logger.transports.Console);
     logger.add(logger.transports.Console, {
       level: envConfig.getValues().LOGGER_LEVEL,
-      colorize: true,
+      colorize: true
     });
 
     this.expressServer = Express();
@@ -65,7 +72,7 @@ export default class Service {
     useAxios,
     useRequestParsers = true,
     onStartUp,
-    onShutDown,
+    onShutDown
   }: ServiceOptions) {
     this.name = name;
     this.port = this.envConfig.getValues().PORT;
@@ -88,10 +95,10 @@ export default class Service {
     }
 
     if (useRequestParsers) {
-      this.expressServer.use(cookieParser());
+      this.expressServer.use(_cookieParser());
       this.expressServer.use(Express.urlencoded({ extended: true }));
       this.expressServer.use(Express.json());
-      this.expressServer.use(methodOverride());
+      this.expressServer.use(_methodOverride());
     }
 
     this.expressServer.use(
@@ -99,13 +106,13 @@ export default class Service {
         transports: [
           new logger.transports.Console({
             json: false,
-            colorize: true,
-          }),
+            colorize: true
+          })
         ],
         meta: false, // optional: control whether you want to log the meta data about the request (default to true)
         msg: String, //'HTTP {{req.method}} {{req.url}}', // optional: customize the default logging message. E.g. "{{res.statusCode}} {{req.method}} {{res.responseTime}}ms {{req.url}}"
         expressFormat: true, // Use the default Express/morgan request formatting, with the same colors. Enabling this will override any msg and colorStatus if true. Will only output colors on transports with colorize set to true
-        colorStatus: true, // Color the status code, using the Express/morgan color palette (default green, 3XX cyan, 4XX yellow, 5XX red). Will not be recognized if expressFormat is true
+        colorStatus: true // Color the status code, using the Express/morgan color palette (default green, 3XX cyan, 4XX yellow, 5XX red). Will not be recognized if expressFormat is true
         //ignoreRoute: function( /*req, res*/ ) {
         //    return false;
         //} // optional: allows to skip some log messages based on request and/or response
@@ -117,9 +124,9 @@ export default class Service {
         transports: [
           new logger.transports.Console({
             json: false,
-            colorize: true,
-          }),
-        ],
+            colorize: true
+          })
+        ]
       })
     );
   }
@@ -183,5 +190,24 @@ export default class Service {
     }
     await this.onShutDown?.();
     process.exit(errCode);
+  }
+
+  async createServiceToken(role: ConnectionRole, realmId: string) {
+    const { ACCESS_TOKEN_SECRET } = this.envConfig.getValues();
+    if (!ACCESS_TOKEN_SECRET) {
+      throw new Error('ACCESS_TOKEN_SECRET is required');
+    }
+
+    const service: InternalServicePrincipal = {
+      type: 'service',
+      serviceId: this.name || 'unknown',
+      realmId,
+      role
+    };
+    const accessToken = jwt.sign({ service }, ACCESS_TOKEN_SECRET, {
+      expiresIn: '30s'
+    });
+
+    return accessToken;
   }
 }

@@ -62,6 +62,7 @@ function configureCORS(express: Express.Application) {
     };
 
     express.use('/api', cors(corsOptions));
+    express.use('/tenantapi', cors(corsOptions));
   }
 }
 

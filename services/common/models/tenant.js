@@ -52,6 +52,62 @@ const TenantSchema = mongoose.Schema({
       exitDate: Date,
     },
   ],
+  // rents: [
+  //   {
+  //     term: Number,
+  //     preTaxAmounts: [
+  //       {
+  //         amount: Number,
+  //         description: String
+  //       }
+  //     ],
+  //     charges: [
+  //       {
+  //         amount: Number,
+  //         description: String
+  //       }
+  //     ],
+  //     debts: [
+  //       {
+  //         amount: Number,
+  //         description: String
+  //       }
+  //     ],
+  //     discounts: [
+  //       {
+  //         origin: String,
+  //         amount: Number,
+  //         description: String
+  //       }
+  //     ],
+  //     vats: [
+  //       {
+  //         origin: String,
+  //         amount: Number,
+  //         description: String,
+  //         rate: Number
+  //       }
+  //     ],
+  //     payments: [
+  //       {
+  //         date: Date,
+  //         type: String,
+  //         reference: String,
+  //         amount: Number
+  //       }
+  //     ],
+  //     total: {
+  //       preTaxAmount: Number,
+  //       charges: Number,
+  //       vat: Number,
+  //       discount: Number,
+  //       debts: Number,
+  //       balance: Number,
+  //       grandTotal: Number,
+  //       payment: Number
+  //     }
+  //   }
+  // ],
   rents: {},
 
   // billing

@@ -12,14 +12,18 @@ const emailManager = require('./managers/emailmanager');
 const {
   needAccessToken,
   checkOrganization,
+  notRoles
 } = require('@microrealestate/common/utils/middlewares');
 const router = express.Router();
 
-// protect the api access by checking the access token
-router.use(needAccessToken(config.ACCESS_TOKEN_SECRET));
-
-// update req with the user organizations
-router.use(checkOrganization());
+router.use(
+  // protect the api access by checking the access token
+  needAccessToken(config.ACCESS_TOKEN_SECRET),
+  // update req with the user organizations
+  checkOrganization(),
+  // forbid access to tenant
+  notRoles(['tenant'])
+);
 
 const realmsRouter = express.Router();
 realmsRouter.get('/', realmManager.all);

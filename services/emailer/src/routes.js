@@ -70,8 +70,11 @@ export default function routes() {
   apiRouter.use(locale(['fr-FR', 'en', 'pt-BR', 'de-DE'], 'en')); // used when organization is not set
   apiRouter.post('/emailer/resetpassword', _send); // allow this route even there is no access token
   apiRouter.post('/emailer/magiclink', _send); // allow this route even there is no access token
-  apiRouter.use(Middlewares.needAccessToken(ACCESS_TOKEN_SECRET));
-  apiRouter.use(Middlewares.checkOrganization());
+  apiRouter.use(
+    Middlewares.needAccessToken(ACCESS_TOKEN_SECRET),
+    Middlewares.checkOrganization(),
+    Middlewares.notRoles(['tenant'])
+  );
 
   //     recordId,      // DB record Id
   //     startTerm      // ex. { term: 2018030100 })

@@ -27,12 +27,20 @@ const needAccessToken = (accessTokenSecret) => {
         req.user = {
           type: 'user',
           email: decoded.account.email,
+          role: decoded.account.role
         };
       } else if (decoded.application) {
         // user type ApplicationServicePrincipal
         req.user = {
           type: 'application',
-          clientId: decoded.application.clientId,
+          clientId: decoded.application.clientId
+        };
+      } else if (decoded.service) {
+        req.user = {
+          type: 'service',
+          serviceId: decoded.service.serviceId,
+          realmId: decoded.service.realmId,
+          role: decoded.service.role
         };
       } else {
         logger.warn('accessToken is invalid');
@@ -59,13 +67,21 @@ const checkOrganization = () => {
       case 'user':
         // for the current user, add all subscribed organizations in request object
         realms = await Realm.find({
-          members: { $elemMatch: { email: req.user.email } },
+          members: { $elemMatch: { email: req.user.email } }
         });
         break;
       case 'application': {
         // for the current application access, add only the associated realm
         const realm = await Realm.findOne({
-          applications: { $elemMatch: { clientId: req.user.clientId } },
+          applications: { $elemMatch: { clientId: req.user.clientId } }
+        });
+        realms = realm ? [realm] : [];
+        break;
+      }
+      case 'service': {
+        // for the current service access, add only the associated realm
+        const realm = await Realm.findOne({
+          _id: req.user.realmId
         });
         realms = realm ? [realm] : [];
         break;
@@ -99,13 +115,13 @@ const checkOrganization = () => {
 
     // add organization in request object
     req.realm = (await Realm.findOne({ _id: organizationId }))?.toObject();
-    if (req.realm) {
-      req.realm._id = req.realm._id?.toString();
-    } else {
+    if (!req.realm) {
       // send 404 if req.realm is not set
       logger.warn('impossible to set organizationId in request');
       return res.sendStatus(404);
     }
+
+    req.realm._id = String(req.realm._id);
 
     // current user is not a member of the organization
     if (!req.realms.find(({ _id }) => _id === req.realm._id)) {
@@ -135,7 +151,72 @@ const checkOrganization = () => {
   };
 };
 
+const onlyRoles = (roles) => {
+  return (req, res, next) => {
+    if (!req.user) {
+      logger.warn('user not set in request');
+      return res.sendStatus(401);
+    }
+
+    if (!req.user.role) {
+      logger.warn('role not set in user');
+      return res.sendStatus(401);
+    }
+
+    if (!roles.includes(req.user.role)) {
+      logger.warn('user does not have required role');
+      return res.sendStatus(403);
+    }
+
+    next();
+  };
+};
+
+const notRoles = (roles) => {
+  return (req, res, next) => {
+    if (!req.user) {
+      logger.warn('user not set in request');
+      return res.sendStatus(401);
+    }
+
+    if (!req.user.role) {
+      return next();
+    }
+
+    if (roles.includes(req.user.role)) {
+      logger.warn('user has forbidden role');
+      return res.sendStatus(403);
+    }
+
+    next();
+  };
+};
+
+const onlyTypes = (types) => {
+  return (req, res, next) => {
+    if (!req.user) {
+      logger.warn('user not set in request');
+      return res.sendStatus(401);
+    }
+
+    if (!req.user.type) {
+      logger.warn('type not set in user');
+      return res.sendStatus(401);
+    }
+
+    if (!types.includes(req.user.type)) {
+      logger.warn('user does not have required type');
+      return res.sendStatus(403);
+    }
+
+    next();
+  };
+};
+
 module.exports = {
   needAccessToken,
   checkOrganization,
+  onlyRoles,
+  notRoles,
+  onlyTypes
 };
