@@ -2,11 +2,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   HoverCard,
   HoverCardContent,
-  HoverCardTrigger,
+  HoverCardTrigger
 } from '@/components/ui/hover-card';
 import { AmountValue } from '@/components/amount-value';
 import { Button } from './ui/button';
 import ContactCard from './contact-card';
+import ContractStatus from './contract-status';
 import { getFormatNumber } from '@/utils/formatnumber';
 import { getMoment } from '@/utils';
 import getTranslation from '@/utils/i18n/server/getTranslation';
@@ -14,7 +15,6 @@ import { Info } from 'lucide-react';
 import { InvoiceTable } from '@/components/invoice-table';
 import { LabelValue } from '@/components/label-value';
 import type { Lease } from '@/types';
-import { StatusBadge } from '@/components/ui/status-badge';
 
 export async function ContractCard({ lease }: { lease: Lease }) {
   const { locale, t } = await getTranslation();
@@ -25,7 +25,7 @@ export async function ContractCard({ lease }: { lease: Lease }) {
     <Card className="sm:p-6">
       <CardHeader>
         <CardTitle>
-          <div className="flex flex-col sm:flex-row sm:justify-between">
+          <div className="flex flex-col items-center sm:flex-row sm:justify-between">
             <div className="flex items-center">
               <div className="uppercase">{lease.tenant.name}</div>
               <div className="font-normal">
@@ -44,9 +44,7 @@ export async function ContractCard({ lease }: { lease: Lease }) {
                 </HoverCard>
               </div>
             </div>
-            <StatusBadge variant={lease.status}>
-              {lease.status === 'active' ? t('In progress') : t('Terminated')}
-            </StatusBadge>
+            <ContractStatus lease={lease} />
           </div>
         </CardTitle>
       </CardHeader>
@@ -81,19 +79,18 @@ export async function ContractCard({ lease }: { lease: Lease }) {
           </div>
           <div className="flex flex-col gap-6 sm:flex-row">
             <Card className="shadow w-full sm:w-44">
-              <CardContent>
+              <CardContent className="mt-6">
                 <AmountValue
-                  className="mt-6"
+                  className="font-medium"
                   label={t('Deposit')}
                   value={formatNumber({ value: lease.deposit })}
                 />
               </CardContent>
             </Card>
             <Card className="shadow w-full sm:w-44">
-              <CardContent>
+              <CardContent className="mt-6">
                 <AmountValue
-                  className="mt-6"
-                  variant={lease.balance > 0 ? 'success' : 'destructive'}
+                  variant={lease.balance >= 0 ? 'success' : 'destructive'}
                   label={t('Balance')}
                   value={formatNumber({ value: lease.balance })}
                 />
@@ -129,7 +126,9 @@ export async function ContractCard({ lease }: { lease: Lease }) {
           <Card className="shadow sm:w-2/3">
             <CardContent className="mt-6">
               <LabelValue
-                label={t('Properties')}
+                label={t('Properties', null, {
+                  count: lease.properties.length
+                })}
                 value={lease.properties.map(({ name }) => name).join(', ')}
               />
             </CardContent>

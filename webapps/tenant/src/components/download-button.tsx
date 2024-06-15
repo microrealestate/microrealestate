@@ -8,8 +8,7 @@ import useTranslation from '@/utils/i18n/client/useTranslation';
 
 export function DownLoadButton({
   tenant,
-  invoice,
-  ...props
+  invoice
 }: {
   tenant: { id: string; name: string };
   invoice: Invoice;
@@ -21,7 +20,7 @@ export function DownLoadButton({
     const response = await apiFetcher.get(
       `/api/v2/documents/invoice/${tenant.id}/${invoice.term}`,
       {
-        responseType: 'blob',
+        responseType: 'blob'
       }
     );
     fileDownload(
@@ -31,7 +30,7 @@ export function DownLoadButton({
   };
 
   return (
-    <Button variant="ghost" onClick={handleClick} {...props}>
+    <Button variant="ghost" onClick={handleClick}>
       <Download className="h-4 w-4" />
     </Button>
   );

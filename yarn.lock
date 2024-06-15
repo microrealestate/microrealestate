@@ -3859,10 +3859,13 @@ __metadata:
     "@formatjs/intl-localematcher": 0.4.2
     "@hookform/resolvers": 3.3.2
     "@microrealestate/types": "*"
+    "@radix-ui/react-avatar": 1.0.4
+    "@radix-ui/react-dialog": 1.0.5
     "@radix-ui/react-hover-card": 1.0.7
     "@radix-ui/react-label": 2.0.2
     "@radix-ui/react-popover": 1.0.7
-    "@radix-ui/react-select": ^2.0.0
+    "@radix-ui/react-select": 2.0.0
+    "@radix-ui/react-separator": 1.0.3
     "@radix-ui/react-slot": 1.0.2
     "@radix-ui/react-toast": 1.1.5
     "@radix-ui/react-tooltip": 1.0.7
@@ -3875,7 +3878,7 @@ __metadata:
     autoprefixer: 10.4.16
     axios: 1.6.2
     class-variance-authority: 0.7.0
-    clsx: 2.0.0
+    clsx: 2.1.1
     date-fns: 2.30.0
     eslint: 8.55.0
     eslint-config-next: 14.0.4
@@ -3883,11 +3886,11 @@ __metadata:
     eslint-import-resolver-typescript: 3.6.1
     eslint-plugin-import: 2.29.1
     js-file-download: 0.4.12
-    lucide-react: 0.290.0
-    moment: 2.29.4
+    lucide-react: 0.378.0
+    moment: 2.30.1
     negotiator: 0.6.3
     next: 14.0.4
-    next-runtime-env: 3.2.0
+    next-runtime-env: 3.2.1
     npm-run-all: 4.1.5
     postcss: 8.4.31
     react: 18.2.0
@@ -3899,6 +3902,8 @@ __metadata:
     tailwindcss: 3.3.5
     tailwindcss-animate: 1.0.7
     typescript: 5.3.2
+    usehooks-ts: 3.1.0
+    vaul: 0.9.1
     zod: 3.22.4
   languageName: unknown
   linkType: soft
@@ -4797,7 +4802,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@radix-ui/react-select@npm:2.0.0, @radix-ui/react-select@npm:^2.0.0":
+"@radix-ui/react-select@npm:2.0.0":
   version: 2.0.0
   resolution: "@radix-ui/react-select@npm:2.0.0"
   dependencies:
@@ -11498,6 +11503,13 @@ __metadata:
   version: 2.1.0
   resolution: "clsx@npm:2.1.0"
   checksum: 43fefc29b6b49c9476fbce4f8b1cc75c27b67747738e598e6651dd40d63692135dc60b18fa1c5b78a2a9ba8ae6fd2055a068924b94e20b42039bd53b78b98e1d
+  languageName: node
+  linkType: hard
+
+"clsx@npm:2.1.1":
+  version: 2.1.1
+  resolution: "clsx@npm:2.1.1"
+  checksum: acd3e1ab9d8a433ecb3cc2f6a05ab95fe50b4a3cfc5ba47abb6cbf3754585fcb87b84e90c822a1f256c4198e3b41c7f6c391577ffc8678ad587fc0976b24fd57
   languageName: node
   linkType: hard
 
@@ -19114,21 +19126,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lucide-react@npm:0.290.0":
-  version: 0.290.0
-  resolution: "lucide-react@npm:0.290.0"
-  peerDependencies:
-    react: ^16.5.1 || ^17.0.0 || ^18.0.0
-  checksum: c12cc136e3a48abaa3b1718c473a68d3ecdfbf0d4319c3f42526c41beb96acd59d2883e4176885a61b4617f30d0573a103fc31d52369d6e04851357e2a4e157c
-  languageName: node
-  linkType: hard
-
 "lucide-react@npm:0.365.0":
   version: 0.365.0
   resolution: "lucide-react@npm:0.365.0"
   peerDependencies:
     react: ^16.5.1 || ^17.0.0 || ^18.0.0
   checksum: 6653d4df3f209d2beb347f09448d16d403fc1d426973894ad43cf20b9c5443fa83f4131b6691b8ced581be0172944f0b2a433d77925ace5a099a948458bba956
+  languageName: node
+  linkType: hard
+
+"lucide-react@npm:0.378.0":
+  version: 0.378.0
+  resolution: "lucide-react@npm:0.378.0"
+  peerDependencies:
+    react: ^16.5.1 || ^17.0.0 || ^18.0.0
+  checksum: d1ea33e7fcdd42edf90d12777d158204bde0a99d7e6006699206fa0a8b5326d2ef21ba9345c193a18b5c7b08613bf10161dc73b76111ebb9872f1683b04d629c
   languageName: node
   linkType: hard
 
@@ -19987,6 +19999,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"moment@npm:2.30.1":
+  version: 2.30.1
+  resolution: "moment@npm:2.30.1"
+  checksum: 859236bab1e88c3e5802afcf797fc801acdbd0ee509d34ea3df6eea21eb6bcc2abd4ae4e4e64aa7c986aa6cba563c6e62806218e6412a765010712e5fa121ba6
+  languageName: node
+  linkType: hard
+
 "mongobackup@npm:0.3.5":
   version: 0.3.5
   resolution: "mongobackup@npm:0.3.5"
@@ -20288,16 +20307,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"next-runtime-env@npm:3.2.0":
-  version: 3.2.0
-  resolution: "next-runtime-env@npm:3.2.0"
+"next-runtime-env@npm:3.2.1":
+  version: 3.2.1
+  resolution: "next-runtime-env@npm:3.2.1"
   dependencies:
     next: ^14
     react: ^18
   peerDependencies:
     next: ^14
     react: ^18
-  checksum: a051aee382c4c5c79c7722eed1a96eff8ad751a779b508e1c9323b61f61fc63b0194f72550a96d0c8fa67367421a657510871deaa713b6d12995e5415dad2dc4
+  checksum: 26506197ec395f2fe9e607aa777c4db76c72aabfdae869c2d3e5f666085ee09d007d3dd297f0e795a8143765cb250650b0f9cce6f33cb6ceca1b66391d51b9a2
   languageName: node
   linkType: hard
 
@@ -26759,6 +26778,18 @@ __metadata:
     react: ^16.8 || ^17.0 || ^18.0
     react-dom: ^16.8 || ^17.0 || ^18.0
   checksum: 12c4ced1a91400abe8d20c0c2108f2ffe7d81172eb08c3d7a24e9f813a034e00a9ddb43bb30a7ec312e71292d7b15b13d0fd9e866646b35e13b6d8bc61974198
+  languageName: node
+  linkType: hard
+
+"vaul@npm:0.9.1":
+  version: 0.9.1
+  resolution: "vaul@npm:0.9.1"
+  dependencies:
+    "@radix-ui/react-dialog": ^1.0.4
+  peerDependencies:
+    react: ^16.8 || ^17.0 || ^18.0
+    react-dom: ^16.8 || ^17.0 || ^18.0
+  checksum: 489aeac7c879d0823801a3016ef22e04ee262120555092608d027d9509f92cc97bd87a649c6072d7fd356466444250c82bcbdfe0513ca00383611779deb4d234
   languageName: node
   linkType: hard
 

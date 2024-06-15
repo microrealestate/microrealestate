@@ -5,7 +5,7 @@ import {
   DEFAULT_LOCALE,
   fetchMessages,
   getLocaleFromPathname,
-  getT,
+  getT
 } from '@/utils/i18n/common';
 import type { LocalizedMessages, TFunction } from '@/types';
 import { Locale } from '@microrealestate/types';
@@ -16,7 +16,7 @@ export const LocaleContext = createContext<{
   t: TFunction;
 }>({
   locale: DEFAULT_LOCALE,
-  t: (key) => key,
+  t: (key) => key
 });
 
 export default function LocaleProvider({ children }: { children: ReactNode }) {
@@ -38,7 +38,7 @@ export default function LocaleProvider({ children }: { children: ReactNode }) {
   }, [locale, messages]);
 
   return messages ? (
-    <LocaleContext.Provider value={{ locale, t: getT(messages) }}>
+    <LocaleContext.Provider value={{ locale, t: getT(locale, messages) }}>
       {children}
     </LocaleContext.Provider>
   ) : null;

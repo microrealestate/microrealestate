@@ -5,7 +5,7 @@ export async function AmountValue({
   label,
   value,
   variant,
-  className,
+  className
 }: {
   label: string;
   value: string;
@@ -15,15 +15,15 @@ export async function AmountValue({
   let amountClass = 'text-2xl font-semibold';
 
   if (variant === 'success') {
-    amountClass += ' text-green-600';
+    amountClass += ' text-success';
   } else if (variant === 'destructive') {
-    amountClass += ' text-red-600';
+    amountClass += ' text-destructive';
   }
 
   return (
-    <div className={cn(`flex flex-col gap-2 ${className}`)}>
+    <div className={cn(`flex flex-col gap-2`)}>
       <Label>{label}</Label>
-      <div className={cn(amountClass)}>{value}</div>
+      <div className={cn(amountClass, className)}>{value}</div>
     </div>
   );
 }

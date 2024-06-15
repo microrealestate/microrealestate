@@ -3,12 +3,23 @@ import {
   LeaseTimeRange,
   Locale,
   PaymentMethod,
-  PaymentStatus,
+  PaymentStatus
 } from '@microrealestate/types';
 
-type LocalizedMessages = Record<string, string>;
+type LocalizedMessages = Record<
+  string,
+  string | Record<Intl.LDMLPluralRule, string>
+>;
 type LocaleMap = Map<Locale, LocalizedMessages>;
-type TFunction = (key: string, data?: Record<string, string>) => string;
+type TFunction = (
+  key: string,
+  data?: Record<string, string> | null,
+  plural?: {
+    type?: Intl.PluralRuleType;
+    count: number;
+    offset?: number;
+  }
+) => string;
 
 type SessionStatus = 'loading' | 'authenticated' | 'unauthenticated';
 type Session = {
@@ -70,6 +81,14 @@ type Lease = {
   terminationDate?: Date | undefined;
   timeRange: LeaseTimeRange;
   status: LeaseStatus;
+  rent: {
+    totalPreTaxAmount: number;
+    totalChargesAmount: number;
+    totalVatAmount: number;
+    totalAmount: number;
+  };
+  remainingIterations: number;
+  remainingIterationsToPay: number;
   properties: Property[];
   balance: number;
   deposit: number;

@@ -4,7 +4,8 @@ import 'moment/locale/fr';
 import 'moment/locale/pt';
 import 'moment/locale/de';
 import { type ClassValue, clsx } from 'clsx';
-import { LeaseTimeRange, Locale } from '@microrealestate/types';
+import { LeaseTimeRange, Locale, TenantAPI } from '@microrealestate/types';
+import { Lease } from '@/types';
 import moment from 'moment';
 import { twMerge } from 'tailwind-merge';
 
@@ -38,5 +39,43 @@ export function getFormatTimeRange(locale: Locale, timeRange: LeaseTimeRange) {
       default:
         return String(term);
     }
+  };
+}
+
+export function toUILease(tenant: TenantAPI.TenantDataType): Lease {
+  return {
+    landlord: tenant.landlord,
+    tenant: tenant.tenant,
+    name: tenant.lease.name,
+    beginDate: tenant.lease.beginDate
+      ? new Date(tenant.lease.beginDate)
+      : undefined,
+    endDate: tenant.lease.endDate ? new Date(tenant.lease.endDate) : undefined,
+    terminationDate: tenant.lease.terminationDate
+      ? new Date(tenant.lease.terminationDate)
+      : undefined,
+    timeRange: tenant.lease.timeRange,
+    status: tenant.lease.status,
+    rent: tenant.lease.rent,
+    remainingIterations: tenant.lease.remainingIterations,
+    remainingIterationsToPay: tenant.lease.remainingIterationsToPay,
+    properties: tenant.lease.properties.map((property) => ({
+      id: property.id,
+      name: property.name,
+      description: property.description,
+      type: property.type
+    })),
+    balance: tenant.lease.balance,
+    deposit: tenant.lease.deposit,
+    invoices: tenant.lease.invoices.map((invoice) => ({
+      id: String(invoice.term),
+      term: invoice.term,
+      grandTotal: invoice.grandTotal,
+      payment: invoice.payment,
+      status: invoice.status,
+      methods: invoice.methods
+    })),
+    documents: [],
+    //documents: tenant.lease.documents.map((document) => ({}))
   };
 }
