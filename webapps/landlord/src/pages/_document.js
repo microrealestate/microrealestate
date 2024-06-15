@@ -9,7 +9,7 @@ export default function MyDocument() {
     <Html translate="no">
       <Head>
         <Script
-          src={`${process.env.BASE_PATH}/__ENV.js`}
+          src={`${process.env.BASE_PATH || ''}/__ENV.js`}
           strategy="beforeInteractive"
         />
       </Head>
