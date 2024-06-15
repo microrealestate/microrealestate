@@ -5,7 +5,7 @@ import {
   Service
 } from '@microrealestate/typed-common';
 import logger from 'winston';
-import routes from './route.js';
+import routes from './routes.js';
 
 Main();
 

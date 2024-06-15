@@ -4,13 +4,13 @@ import {
   TableBody,
   TableCell,
   TableHeader,
-  TableRow,
+  TableRow
 } from '@/components/ui/table';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
-  TooltipTrigger,
+  TooltipTrigger
 } from './ui/tooltip';
 import { useCallback, useMemo, useState } from 'react';
 import { Button } from './ui/button';
@@ -27,7 +27,7 @@ import { StatusBadge } from '@/components/ui/status-badge';
 import TermPicker from './term-picker';
 import useTranslation from '@/utils/i18n/client/useTranslation';
 
-const MIN_VISIBLE_INVOICES = 3;
+const MIN_VISIBLE_INVOICES = 6;
 
 export function InvoiceTable({ lease }: { lease: Lease }) {
   const { locale, t } = useTranslation();
@@ -127,12 +127,14 @@ export function InvoiceTable({ lease }: { lease: Lease }) {
             <TableCell className="text-right hidden sm:table-cell">
               {t('Rent')}
             </TableCell>
-            <TableCell>{t('Status')}</TableCell>
-            <TableCell className="text-center hidden md:table-cell">
+            <TableCell className="hidden md:table-cell">
+              {t('Status')}
+            </TableCell>
+            <TableCell className="text-center hidden lg:table-cell">
               {t('Method')}
             </TableCell>
             <TableCell className="text-right hidden sm:table-cell">
-              {t('Settlement')}
+              {t('Paid')}
             </TableCell>
             <TableCell></TableCell>
           </TableRow>
@@ -142,29 +144,50 @@ export function InvoiceTable({ lease }: { lease: Lease }) {
             const mTerm = moment(String(invoice.term), 'YYYYMMDDHH');
             const isNowTerm = mTerm.isSame(moment(), lease.timeRange);
             return (
-              <TableRow key={invoice.id} className="hover:bg-inherit">
+              <TableRow
+                key={`${lease.tenant.id}_${invoice.id}`}
+                className="hover:bg-inherit"
+              >
                 <TableCell className="sm:uppercase">
                   {formatTimeRange(invoice.term)}
                 </TableCell>
                 <TableCell className="text-right hidden sm:table-cell">
                   {formatNumber({ value: invoice.grandTotal })}
                 </TableCell>
-                <TableCell>
-                  {invoice.status === 'paid' ? (
+                <TableCell className="hidden md:table-cell">
+                  {!isNowTerm ? (
+                    invoice.status === 'paid' ? (
+                      <StatusBadge variant="success">
+                        {t(invoice.status)}
+                      </StatusBadge>
+                    ) : (
+                      <StatusBadge variant="warning">
+                        {t('overdue')}
+                      </StatusBadge>
+                    )
+                  ) : invoice.status !== 'unpaid' ? (
                     <StatusBadge variant="success">
                       {t(invoice.status)}
                     </StatusBadge>
-                  ) : (
-                    <StatusBadge variant="warning">
-                      {t(invoice.status)}
-                    </StatusBadge>
-                  )}
+                  ) : null}
                 </TableCell>
-                <TableCell className="text-center hidden md:table-cell">
-                  {t(invoice.methods.map((method) => t(method)).join(', '))}
+                <TableCell className="text-center hidden lg:table-cell">
+                  {invoice.methods
+                    .reduce<string[]>((acc, method) => {
+                      if (!acc.includes(method)) {
+                        acc.push(method);
+                      }
+                      return acc;
+                    }, [])
+                    .map((method) => t(method))
+                    .join(', ')}
                 </TableCell>
                 <TableCell className="text-right hidden sm:table-cell">
-                  {formatNumber({ value: invoice.payment })}
+                  {!isNowTerm
+                    ? formatNumber({ value: invoice.payment })
+                    : invoice.payment > 0
+                      ? formatNumber({ value: invoice.payment })
+                      : ''}
                 </TableCell>
                 <TableCell className="w-5">
                   {getEnv('DEMO_MODE') === 'true' ? (
@@ -180,9 +203,9 @@ export function InvoiceTable({ lease }: { lease: Lease }) {
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
-                  ) : isNowTerm && invoice.status === 'unpaid' ? null : (
+                  ) : (isNowTerm && invoice.status === 'paid') || !isNowTerm ? (
                     <DownLoadButton tenant={lease.tenant} invoice={invoice} />
-                  )}
+                  ) : null}
                 </TableCell>
               </TableRow>
             );

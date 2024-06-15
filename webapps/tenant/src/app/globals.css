@@ -33,6 +33,12 @@
     --success: 123 41% 45%;
     --success-foreground: 0 0% 100%;
 
+    --warning: 24.6 95% 53.1%;
+    --warning-foreground: 60 9.1% 97.8%;
+
+    --info: 221.2 83.2% 53.3%;
+    --info-foreground: 210 40% 98%;
+
     --ring: 215 20.2% 65.1%;
 
     --radius: 0.5rem;
@@ -69,6 +75,12 @@
     --success: 123 41% 45%;
     --success-foreground: 0 0% 100%;
 
+    --warning: 24.6 95% 53.1%;
+    --warning-foreground: 60 9.1% 97.8%;
+
+    --info: 221.2 83.2% 53.3%;
+    --info-foreground: 210 40% 98%;
+
     --ring: 216 34% 17%;
 
     --radius: 0.5rem;
@@ -81,6 +93,8 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    font-feature-settings:
+      'rlig' 1,
+      'calt' 1;
   }
 }

@@ -2,7 +2,7 @@ import {
   DEFAULT_LOCALE,
   fetchMessages,
   getLocaleFromPathname,
-  getT,
+  getT
 } from '@/utils/i18n/common';
 import { headers } from 'next/headers';
 
@@ -12,6 +12,6 @@ export default async function getTranslation() {
   const messages = await fetchMessages(locale);
   return {
     locale,
-    t: getT(messages),
+    t: getT(locale, messages)
   };
 }

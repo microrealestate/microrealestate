@@ -34,17 +34,44 @@ export async function fetchMessages(
   return messages || {};
 }
 
-export function getT(messages: LocalizedMessages): TFunction {
-  return (key: string, data?: Record<string, string>) => {
-    if (messages === undefined) {
-      return '';
-    }
-    let message = messages?.[key] || key;
+export function getT(locale: Locale, messages: LocalizedMessages): TFunction {
+  function replaceData(message: string, data?: Record<string, string> | null) {
     if (data) {
       for (const [k, v] of Object.entries(data)) {
         message = message.replace(`{{${k}}}`, v);
       }
     }
     return message;
+  }
+
+  return (
+    key: string,
+    data?: Record<string, string> | null,
+    plural?: {
+      type?: Intl.PluralRuleType;
+      count: number;
+      offset?: number;
+    }
+  ) => {
+    if (!messages) {
+      throw new Error('Messages not loaded');
+    }
+
+    let message = messages[key];
+    if (typeof message === 'string') {
+      return replaceData(message, data);
+    }
+
+    if (typeof message === 'object' && plural) {
+      const messageObj = message;
+      const pluralKey = new Intl.PluralRules(locale, {
+        type: plural.type
+      }).select(plural.count);
+      message = messageObj[pluralKey];
+      return replaceData(message, data);
+    }
+
+    console.warn(`localized message not found for key: ${key}`);
+    return `### ${key} ###`;
   };
 }

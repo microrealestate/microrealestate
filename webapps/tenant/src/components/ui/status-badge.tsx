@@ -1,26 +1,17 @@
 import { cn } from '@/utils';
 
 export interface StatusBadgeProps {
-  variant:
-    | 'success'
-    | 'warning'
-    | 'error'
-    | 'info'
-    | 'active'
-    | 'default'
-    | 'inactive'
-    | 'terminated'
-    | 'ended';
+  variant: 'success' | 'warning' | 'error' | 'info' | 'default';
   children: React.ReactNode;
 }
 
 export function StatusBadge({ variant, children }: StatusBadgeProps) {
   const className = 'flex items-center gap-1 text-base font-semibold';
 
-  if (['success', 'active'].includes(variant)) {
+  if (variant === 'success') {
     return (
-      <div className={cn(className, 'text-green-600')}>
-        <div className="h-2 w-2 rounded-full bg-green-600" />
+      <div className={cn(className, 'text-success')}>
+        <div className="h-2 w-2 rounded-full bg-success" />
         {children}
       </div>
     );
@@ -28,17 +19,17 @@ export function StatusBadge({ variant, children }: StatusBadgeProps) {
 
   if (variant === 'warning') {
     return (
-      <div className={cn(className, 'text-yellow-600')}>
-        <div className="h-2 w-2 rounded-full bg-yellow-600" />
+      <div className={cn(className, 'text-warning')}>
+        <div className="h-2 w-2 rounded-full bg-warning" />
         {children}
       </div>
     );
   }
 
-  if (['error', 'danger'].includes(variant)) {
+  if (variant === 'error') {
     return (
-      <div className={cn(className, 'text-red-600')}>
-        <div className="h-2 w-2 rounded-full bg-red-600" />
+      <div className={cn(className, 'text-destructive')}>
+        <div className="h-2 w-2 rounded-full bg-destructive" />
         {children}
       </div>
     );
@@ -46,8 +37,8 @@ export function StatusBadge({ variant, children }: StatusBadgeProps) {
 
   if (variant === 'info') {
     return (
-      <div className={cn(className, 'text-blue-600')}>
-        <div className="h-2 w-2 rounded-full bg-blue-600" />
+      <div className={cn(className, 'text-info')}>
+        <div className="h-2 w-2 rounded-full bg-info" />
         {children}
       </div>
     );
