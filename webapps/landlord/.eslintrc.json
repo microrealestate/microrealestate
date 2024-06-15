@@ -8,15 +8,6 @@
   },
   "rules": {
     "import/no-named-as-default": "off",
-    // "indent": [
-    //   "error",
-    //   2,
-    //   {
-    //     "flatTernaryExpressions": false,
-    //     "offsetTernaryExpressions": true,
-    //     "SwitchCase": 1
-    //   }
-    // ],
     "sort-imports": [
       "error",
       {
