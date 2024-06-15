@@ -1,15 +1,9 @@
 import * as Express from 'express';
 import logger from 'winston';
-import {
-  ResetServiceAPI,
-} from '@microrealestate/types';
 import { Service } from '@microrealestate/typed-common';
 
 const routes = Express.Router();
-routes.delete('/reset', (
-  req: Express.Request<ResetServiceAPI.DeleteAll.Request>, 
-  res: Express.Response<ResetServiceAPI.DeleteAll.Response>
-) => {
+routes.delete('/reset', (req: Express.Request, res: Express.Response) => {
   const dropDB = async () => {
     try {
       const mongoClient = Service.getInstance().mongoClient;
@@ -24,9 +18,13 @@ routes.delete('/reset', (
           'occupants',
           'properties',
           'realms',
-          'templates',
-        ].map((collection) =>
-          mongoClient?.connection().dropCollection(collection).catch(console.error)
+          'templates'
+        ].map(
+          (collection) =>
+            mongoClient
+              ?.connection()
+              .dropCollection(collection)
+              .catch(console.error)
         )
       );
 
