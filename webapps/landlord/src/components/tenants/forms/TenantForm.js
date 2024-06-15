@@ -195,7 +195,7 @@ const TenantForm = observer(({ readOnly, onSubmit }) => {
             <Section
               label={t('Contacts')}
               description={t(
-                'The contacts will receive the invoices and will be able to access the tenant\'s portal'
+                "The contacts will receive the invoices and will be able to access the tenant's portal"
               )}
             >
               <FieldArray
