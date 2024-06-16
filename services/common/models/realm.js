@@ -66,7 +66,7 @@ const RealmSchema = mongoose.Schema({
       server: String,
       port: Number,
       secure: Boolean,
-      authentification: Boolean,
+      authentication: Boolean,
       username: String,
       password: String,
       fromEmail: String,
