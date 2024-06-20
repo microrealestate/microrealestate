@@ -6,7 +6,7 @@
   "{{name}} - {{status}}": "{{name}} - {{status}}",
   "{{numberOfTerms}} {{timeRange}}": "{{numberOfTerms}} {{timeRange}}",
   "1st notice sent on {{date}}": "Den ersten Zahlungshinweis am {{date}} verschickt",
-  "2nd notice sent on {{date}}": "Den zeiten Zahlungshinweis am {{date}} verschickt",
+  "2nd notice sent on {{date}}": "Den zweiten Zahlungshinweis am {{date}} verschickt",
   "A business or an institution": "Einem Unternehmen oder einer Institution",
   "A personal account": "Einem privatem Konto",
   "Access": "Zugang",
