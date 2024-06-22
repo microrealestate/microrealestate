@@ -36,7 +36,7 @@ export default class MongoClient {
         throw new Error('MONGO_URL is not set');
       }
       logger.debug(`connecting to ${obfuscatedConfig.MONGO_URL}...`);
-      // mongoose.set('strictQuery', false);
+      mongoose.set('strictQuery', true);
       this._connection = await mongoose.connect(config.MONGO_URL);
       logger.debug('db ready');
     }
