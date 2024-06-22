@@ -38,7 +38,8 @@ export default class RedisClient {
 
   async connect() {
     const config = this.envConfig.getValues();
-    logger.debug(`db connecting to ${config.REDIS_URL}...`);
+    const obfuscatedConfig = this.envConfig.getObfuscatedValues();
+    logger.debug(`db connecting to ${obfuscatedConfig.REDIS_URL}...`);
     if (!config.REDIS_URL) {
       throw new Error('REDIS_URL is not set');
     }

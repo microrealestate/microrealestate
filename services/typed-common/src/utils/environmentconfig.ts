@@ -22,18 +22,53 @@ const baseEnvironmentValues = {
   APPCREDZ_TOKEN_SECRET: process.env.APPCREDZ_TOKEN_SECRET,
   RESET_TOKEN_SECRET: process.env.RESET_TOKEN_SECRET,
   CIPHER_KEY: process.env.CIPHER_KEY,
-  CIPHER_IV_KEY: process.env.CIPHER_IV_KEY,
+  CIPHER_IV_KEY: process.env.CIPHER_IV_KEY
 } as const;
+
 const valuesToEscape: string[] = [
   'password',
   'token',
   'secret',
   'cipher',
-  'apiKey',
+  'apiKey'
 ];
+
+const urlsToEscape: string[] = ['url', 'uri', 'endpoint'];
+
+function obfuscateValue<T>(key: string, value: T): T {
+  if (value instanceof String) {
+    if (
+      valuesToEscape.some(
+        (valueToEscape) =>
+          key.toLowerCase().indexOf(valueToEscape.toLowerCase()) !== -1
+      )
+    ) {
+      return '****' as T;
+    }
+
+    if (
+      urlsToEscape.some((candidateKey) =>
+        key.toLowerCase().endsWith(candidateKey)
+      )
+    ) {
+      return value.replace(/:\/\/.*@/, '://****:****@') as T;
+    }
+  }
+
+  if (value instanceof Object) {
+    const obfuscatedObject: Record<string, string> = {};
+    Object.entries(value).forEach(([subKey, subValue]) => {
+      obfuscatedObject[subKey] = obfuscateValue(subKey, subValue);
+    });
+    return obfuscatedObject as T;
+  }
+
+  return value;
+}
 
 export default class EnvironmentConfig {
   private envValues: Readonly<EnvironmentValues>;
+  private obfuscatedValues: Record<string, unknown>;
 
   constructor(envValues?: EnvironmentValues) {
     if (envValues) {
@@ -41,31 +76,29 @@ export default class EnvironmentConfig {
     } else {
       this.envValues = baseEnvironmentValues;
     }
+    this.obfuscatedValues = _.cloneDeep<EnvironmentValues>(this.envValues);
+    Object.entries(this.obfuscatedValues).forEach(([key, value]) => {
+      this.obfuscatedValues[key] = obfuscateValue<typeof value>(key, value);
+    });
   }
 
   getValues() {
     return this.envValues;
   }
 
+  getObfuscatedValues() {
+    return this.obfuscatedValues;
+  }
+
   log() {
-    const obfuscatedConfig = _.cloneDeep<EnvironmentValues>(this.envValues);
     logger.debug('Environment variables set:');
-    Object.entries(obfuscatedConfig)
+    Object.entries(this.obfuscatedValues)
       .sort(([key1], [key2]) => key1.localeCompare(key2))
       .filter(([, value]) => {
         return value !== undefined && value !== null;
       })
       .reduce((acc, [key, value]) => {
-        let valueString = JSON.stringify(value);
-        if (
-          valuesToEscape.some(
-            (valueToEscape) =>
-              key.toLowerCase().indexOf(valueToEscape.toLowerCase()) !== -1
-          )
-        ) {
-          valueString = '****';
-        }
-        acc.push(`${key}: ${valueString}`);
+        acc.push(`${key}: ${JSON.stringify(value)}`);
         return acc;
       }, [] as string[])
       .forEach((configLine) => logger.debug(configLine));

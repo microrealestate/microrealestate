@@ -52,17 +52,19 @@ let db;
 export function init() {
   if (!db) {
     return new Promise((resolve, reject) => {
-      const { MONGO_URL } = Service.getInstance().envConfig.getValues();
-      logger.debug(`connecting database ${MONGO_URL}...`);
-      db = mongojs(MONGO_URL, collections);
+      const config = Service.getInstance().envConfig.getValues();
+      const obfuscatedConfig =
+        Service.getInstance().envConfig.getObfuscatedValues();
+      logger.debug(`connecting database ${obfuscatedConfig.MONGO_URL}...`);
+      db = mongojs(config.MONGO_URL, collections);
       db.listCollections(() => {}); // Run this command to force connection a this stage
       db.on('connect', function () {
-        logger.info(`connected to ${MONGO_URL}`);
+        logger.info(`connected to ${obfuscatedConfig.MONGO_URL}`);
         resolve(db);
       });
 
       db.on('error', function (err) {
-        logger.error(`cannot connect to ${MONGO_URL}`);
+        logger.error(`cannot connect to ${obfuscatedConfig.MONGO_URL}`);
         reject(err);
       });
     });

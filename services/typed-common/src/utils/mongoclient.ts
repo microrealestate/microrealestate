@@ -30,13 +30,14 @@ export default class MongoClient {
 
   async connect() {
     if (!this._connection) {
-      const { MONGO_URL } = this.envConfig.getValues();
-      if (!MONGO_URL) {
+      const config = this.envConfig.getValues();
+      const obfuscatedConfig = this.envConfig.getObfuscatedValues();
+      if (!config.MONGO_URL) {
         throw new Error('MONGO_URL is not set');
       }
-      logger.debug(`connecting to ${MONGO_URL}...`);
+      logger.debug(`connecting to ${obfuscatedConfig.MONGO_URL}...`);
       // mongoose.set('strictQuery', false);
-      this._connection = await mongoose.connect(MONGO_URL);
+      this._connection = await mongoose.connect(config.MONGO_URL);
       logger.debug('db ready');
     }
   }
