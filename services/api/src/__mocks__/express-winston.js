@@ -1,4 +1,7 @@
-module.exports = {
-  logger: () => (req, res, next) => next(),
-  errorLogger: () => (req, res, next) => next(),
-};
+export function logger(req, res, next) {
+  next();
+}
+
+export function errorLogger(req, res, next) {
+  next();
+}

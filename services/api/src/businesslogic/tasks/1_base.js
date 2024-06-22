@@ -1,6 +1,6 @@
-const moment = require('moment');
+import moment from 'moment';
 
-module.exports = function (
+export default function taskBase(
   contract,
   rentDate,
   previousRent,
@@ -47,14 +47,14 @@ module.exports = function (
 
         rent.preTaxAmounts.push({
           description: name,
-          amount: preTaxAmount,
+          amount: preTaxAmount
         });
 
         if (expenses.length) {
           rent.charges.push(
             ...expenses.map(({ title, amount }) => ({
               description: title,
-              amount,
+              amount
             }))
           );
         }
@@ -64,4 +64,4 @@ module.exports = function (
     rent.description = settlements.description || '';
   }
   return rent;
-};
+}

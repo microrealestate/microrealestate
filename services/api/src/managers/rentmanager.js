@@ -1,18 +1,18 @@
-const logger = require('winston');
-const axios = require('axios');
-const moment = require('moment');
-const Contract = require('./contract');
-const FD = require('./frontdata');
-const rentModel = require('../models/rent');
-const occupantModel = require('../models/occupant');
-const config = require('../config');
+import * as Contract from './contract.js';
+import * as FD from './frontdata.js';
+import axios from 'axios';
+import logger from 'winston';
+import moment from 'moment';
+import occupantModel from '../models/occupant.js';
+import rentModel from '../models/rent.js';
+import { Service } from '@microrealestate/typed-common';
 
 const _findOccupants = (realm, occupantId, startTerm, endTerm) => {
   return new Promise((resolve, reject) => {
     const filter = {
       $query: {
-        $and: [],
-      },
+        $and: []
+      }
     };
     if (occupantId) {
       filter['$query']['$and'].push({ _id: occupantId });
@@ -59,23 +59,25 @@ const _getEmailStatus = async (
   startTerm,
   endTerm
 ) => {
+  const { DEMO_MODE, EMAILER_URL } =
+    Service.getInstance().envConfig.getValues();
   try {
-    let emailEndPoint = `${config.EMAILER_URL}/status/${startTerm}`;
+    let emailEndPoint = `${EMAILER_URL}/status/${startTerm}`;
     if (endTerm) {
-      emailEndPoint = `${config.EMAILER_URL}/status/${startTerm}/${endTerm}`;
+      emailEndPoint = `${EMAILER_URL}/status/${startTerm}/${endTerm}`;
     }
     const response = await axios.get(emailEndPoint, {
       headers: {
         authorization: authorizationHeader,
         organizationid: String(realm._id),
-        'Accept-Language': locale,
-      },
+        'Accept-Language': locale
+      }
     });
     logger.debug(response.data);
     return response.data.reduce((acc, status) => {
       const data = {
         sentTo: status.sentTo,
-        sentDate: status.sentDate,
+        sentDate: status.sentDate
       };
       if (!acc[status.recordId]) {
         acc[status.recordId] = { [status.templateName]: [] };
@@ -90,7 +92,7 @@ const _getEmailStatus = async (
     }, {});
   } catch (error) {
     logger.error(error);
-    if (config.demoMode) {
+    if (DEMO_MODE) {
       logger.info('email status fallback workflow activated in demo mode');
       return {};
     } else {
@@ -117,7 +119,7 @@ const _getRentsDataByTerm = async (
       realm,
       startTerm,
       endTerm
-    ).catch(logger.error),
+    ).catch(logger.error)
   ]);
 
   // compute rents
@@ -140,7 +142,7 @@ const _getRentsDataByTerm = async (
     countNotPaid: 0,
     totalToPay: 0,
     totalPaid: 0,
-    totalNotPaid: 0,
+    totalNotPaid: 0
   };
   rents.reduce((acc, rent) => {
     if (rent.totalAmount <= 0 || rent.newBalance >= 0) {
@@ -163,7 +165,7 @@ const _getRentsDataByTerm = async (
 ////////////////////////////////////////////////////////////////////////////////
 // Exported functions
 ////////////////////////////////////////////////////////////////////////////////
-const update = async (req, res) => {
+export async function update(req, res) {
   const realm = req.realm;
   const authorizationHeader = req.headers.authorization;
   const locale = req.headers['accept-language'];
@@ -178,9 +180,9 @@ const update = async (req, res) => {
     logger.error(errors);
     res.status(500).json({ errors });
   }
-};
+}
 
-const updateByTerm = async (req, res) => {
+export async function updateByTerm(req, res) {
   const realm = req.realm;
   const term = req.params.term;
   const authorizationHeader = req.headers.authorization;
@@ -195,7 +197,7 @@ const updateByTerm = async (req, res) => {
     logger.error(errors);
     res.status(500).json({ errors });
   }
-};
+}
 
 const _updateByTerm = async (
   authorizationHeader,
@@ -230,14 +232,14 @@ const _updateByTerm = async (
     discount: dbOccupant.discount || 0,
     vatRate: dbOccupant.vatRatio,
     properties: dbOccupant.properties,
-    rents: dbOccupant.rents,
+    rents: dbOccupant.rents
   };
 
   const settlements = {
     payments: [],
     debts: [],
     discounts: [],
-    description: '',
+    description: ''
   };
 
   if (paymentData) {
@@ -249,7 +251,7 @@ const _updateByTerm = async (
           amount: Number(payment.amount),
           type: payment.type || '',
           reference: payment.reference || '',
-          description: payment.description || '',
+          description: payment.description || ''
         }));
     }
 
@@ -259,7 +261,7 @@ const _updateByTerm = async (
         description: paymentData.notepromo || '',
         amount:
           paymentData.promo *
-          (contract.vatRate ? 1 / (1 + contract.vatRate) : 1),
+          (contract.vatRate ? 1 / (1 + contract.vatRate) : 1)
       });
     }
 
@@ -268,7 +270,7 @@ const _updateByTerm = async (
         description: paymentData.noteextracharge || '',
         amount:
           paymentData.extracharge *
-          (contract.vatRate ? 1 / (1 + contract.vatRate) : 1),
+          (contract.vatRate ? 1 / (1 + contract.vatRate) : 1)
       });
     }
 
@@ -301,7 +303,7 @@ const _updateByTerm = async (
   });
 };
 
-const rentsOfOccupant = async (req, res) => {
+export async function rentsOfOccupant(req, res) {
   const realm = req.realm;
   const { id } = req.params;
   const term = Number(moment().format('YYYYMMDDHH'));
@@ -324,15 +326,15 @@ const rentsOfOccupant = async (req, res) => {
 
     res.json({
       occupant: FD.toOccupantData(dbOccupant),
-      rents: rentsToReturn,
+      rents: rentsToReturn
     });
   } catch (errors) {
     logger.error(errors);
     res.status(500).json({ errors });
   }
-};
+}
 
-const rentOfOccupant = async (req, res) => {
+export async function rentOfOccupant(req, res) {
   const realm = req.realm;
   const { id, month, year } = req.params;
   const term = Number(
@@ -352,9 +354,9 @@ const rentOfOccupant = async (req, res) => {
     logger.error(errors);
     res.status(errors.status || 500).json({ errors });
   }
-};
+}
 
-const rentOfOccupantByTerm = async (req, res) => {
+export async function rentOfOccupantByTerm(req, res) {
   const realm = req.realm;
   const { id, term } = req.params;
   try {
@@ -370,7 +372,7 @@ const rentOfOccupantByTerm = async (req, res) => {
   } catch (errors) {
     res.status(errors.status || 500).json({ errors });
   }
-};
+}
 
 const _rentOfOccupant = async (
   authorizationHeader,
@@ -383,7 +385,7 @@ const _rentOfOccupant = async (
     _findOccupants(realm, tenantId, Number(term)).catch(logger.error),
     _getEmailStatus(authorizationHeader, locale, realm, Number(term)).catch(
       logger.error
-    ),
+    )
   ]);
 
   if (!dbOccupants.length) {
@@ -407,7 +409,7 @@ const _rentOfOccupant = async (
   return rent;
 };
 
-const all = async (req, res) => {
+export async function all(req, res) {
   const realm = req.realm;
 
   let currentDate = moment().startOf('month');
@@ -429,9 +431,9 @@ const all = async (req, res) => {
     logger.error(errors);
     res.status(500).json({ errors });
   }
-};
+}
 
-const overview = async (req, res) => {
+export async function overview(req, res) {
   try {
     const realm = req.realm;
     let currentDate = moment().startOf('month');
@@ -451,14 +453,4 @@ const overview = async (req, res) => {
     logger.error(errors);
     res.status(500).json({ errors });
   }
-};
-
-module.exports = {
-  update,
-  updateByTerm,
-  rentsOfOccupant,
-  rentOfOccupant,
-  rentOfOccupantByTerm,
-  all,
-  overview,
-};
+}

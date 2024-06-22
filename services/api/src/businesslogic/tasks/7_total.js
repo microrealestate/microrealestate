@@ -1,4 +1,4 @@
-module.exports = function (
+export default function taskTotal(
   contract,
   rentDate,
   previousRent,
@@ -39,4 +39,4 @@ module.exports = function (
   rent.total.payment = payment;
 
   return rent;
-};
+}

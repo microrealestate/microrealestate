@@ -1,22 +1,27 @@
-const logger = require('winston');
-const i18n = require('i18n');
-const path = require('path');
-const server = require('@microrealestate/common/utils/server');
-const { restoreDB } = require('../scripts/dbbackup');
+import * as Db from './models/db.js';
+import { EnvironmentConfig, Service } from '@microrealestate/typed-common';
+import { fileURLToPath } from 'url';
+import i18n from 'i18n';
+import logger from 'winston';
+import migratedb from '../scripts/migration.js';
+import path from 'path';
+import { restoreDB } from '../scripts/dbbackup.js';
+import routes from './routes.js';
 
-const config = require('./config');
-const db = require('./models/db');
-const migratedb = require('../scripts/migration');
-const routes = require('./routes');
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 i18n.configure({
   locales: ['en', 'fr-FR', 'pt-BR', 'de-DE'],
   directory: path.join(__dirname, 'locales'),
-  updateFiles: false,
+  updateFiles: false
 });
 
-async function onStartUp(express) {
-  if (config.restoreDatabase) {
+async function onStartUp(application) {
+  // init mongojs
+  await Db.init();
+
+  const { RESTORE_DB } = Service.getInstance().envConfig.getValues();
+  if (RESTORE_DB) {
     logger.debug('restoring database from backup');
     await restoreDB();
     logger.debug('database restored');
@@ -25,25 +30,36 @@ async function onStartUp(express) {
   // migrate db to the new models
   await migratedb();
 
-  // init mongojs
-  await db.init();
-
-  express.use(routes);
+  application.use(routes());
 }
 
 async function Main() {
+  let service;
   try {
-    await server.init({
-      name: 'API',
-      port: config.PORT,
+    service = Service.getInstance(
+      new EnvironmentConfig({
+        DEMO_MODE: process.env.DEMO_MODE
+          ? process.env.DEMO_MODE.toLowerCase() === 'true'
+          : undefined,
+        RESTORE_DB: process.env.RESTORE_DB
+          ? process.env.RESTORE_DB.toLowerCase() === 'true'
+          : undefined,
+        EMAILER_URL: process.env.EMAILER_URL || 'http://localhost:8083/emailer',
+        PDFGENERATOR_URL:
+          process.env.PDFGENERATOR_URL || 'http://localhost:8082/pdfgenerator'
+      })
+    );
+
+    await service.init({
+      name: 'api',
       useMongo: true,
       useAxios: true,
-      onStartUp,
+      onStartUp
     });
-    await server.startUp();
+    await service.startUp();
   } catch (err) {
     logger.error(err);
-    server.shutdown(1);
+    service.shutdown(1);
   }
 }
 

@@ -1,3 +1,3 @@
-module.exports = {
-  findByEmail: (email, cb) => cb(null, []),
-};
+export function findByEmail(email, cb) {
+  cb(null, []);
+}

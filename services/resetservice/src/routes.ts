@@ -21,10 +21,7 @@ routes.delete('/reset', (req: Express.Request, res: Express.Response) => {
           'templates'
         ].map(
           (collection) =>
-            mongoClient
-              ?.connection()
-              .dropCollection(collection)
-              .catch(console.error)
+            mongoClient?.dropCollection(collection).catch(console.error)
         )
       );
 

@@ -1,5 +1,5 @@
-const OF = require('./objectfilter');
-const Model = require('./model');
+import Model from './model.js';
+import OF from './objectfilter.js';
 
 class DocumentModel extends Model {
   constructor() {
@@ -19,9 +19,9 @@ class DocumentModel extends Model {
       url: String,
       versionId: String,
       createdDate: Date,
-      updatedDate: Date,
+      updatedDate: Date
     });
   }
 }
 
-module.exports = new DocumentModel();
+export default new DocumentModel();

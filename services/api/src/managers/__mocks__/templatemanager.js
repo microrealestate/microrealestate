@@ -1,7 +1,15 @@
-module.exports = {
-  all: jest.fn().mockImplementation((req, res) => res.sendStatus(200)),
-  one: jest.fn().mockImplementation((req, res) => res.sendStatus(200)),
-  add: jest.fn().mockImplementation((req, res) => res.sendStatus(200)),
-  update: jest.fn().mockImplementation((req, res) => res.sendStatus(200)),
-  remove: jest.fn().mockImplementation((req, res) => res.sendStatus(200)),
-};
+export const all = jest
+  .fn()
+  .mockImplementation((req, res) => res.sendStatus(200));
+export const one = jest
+  .fn()
+  .mockImplementation((req, res) => res.sendStatus(200));
+export const add = jest
+  .fn()
+  .mockImplementation((req, res) => res.sendStatus(200));
+export const update = jest
+  .fn()
+  .mockImplementation((req, res) => res.sendStatus(200));
+export const remove = jest
+  .fn()
+  .mockImplementation((req, res) => res.sendStatus(200));

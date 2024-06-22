@@ -1,26 +1,36 @@
-const path = require('path');
-const { URL } = require('url');
-const mongobackup = require('mongobackup');
-const config = require('@microrealestate/common/config');
-const moment = require('moment');
+import { fileURLToPath, URL } from 'url';
+import moment from 'moment';
+import mongobackup from 'mongobackup';
+import path from 'path';
+import { Service } from '@microrealestate/typed-common';
 
-const connectionString = config.MONGO_URL;
-const dbUrl = new URL(connectionString);
-const dbName = dbUrl.pathname.slice(1);
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const bkpDirectory = path.join(__dirname, '..', '..', '..', 'backup');
 
-async function restoreDB(timeStamp) {
+function _getDBInfo() {
+  const connectionString =
+    Service.getInstance().envConfig.getValues().MONGO_URL;
+  const url = new URL(connectionString);
+  const name = url.pathname.slice(1);
+  return {
+    name,
+    uri: connectionString
+  };
+}
+
+export function restoreDB(timeStamp) {
+  const { name: dbName, uri } = _getDBInfo();
   const bkpFile = path.join(
     bkpDirectory,
     timeStamp ? `${dbName}-${timeStamp}.dump` : `${dbName}.dump`
   );
-  await new Promise((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     try {
       const cmd = mongobackup.restore({
-        uri: connectionString,
+        uri,
         drop: true,
         gzip: true,
-        archive: bkpFile,
+        archive: bkpFile
       });
       cmd.on('close', (code) => {
         resolve(code);
@@ -34,15 +44,16 @@ async function restoreDB(timeStamp) {
   });
 }
 
-async function dumpDB() {
+export function dumpDB() {
+  const { name: dbName, uri } = _getDBInfo();
   const timeStamp = moment().format('YYYYMMDDHHmm');
   const bkpFile = path.join(bkpDirectory, `${dbName}-${timeStamp}.dump`);
-  await new Promise((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     try {
       const cmd = mongobackup.dump({
-        uri: connectionString,
+        uri,
         gzip: true,
-        archive: bkpFile,
+        archive: bkpFile
       });
       cmd.on('close', (code) => {
         resolve(code);
@@ -55,8 +66,3 @@ async function dumpDB() {
     }
   });
 }
-
-module.exports = {
-  restoreDB,
-  dumpDB,
-};

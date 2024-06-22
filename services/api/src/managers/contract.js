@@ -1,8 +1,8 @@
-const Sugar = require('sugar');
-const moment = require('moment');
-const BL = require('../businesslogic');
+import * as BL from '../businesslogic/index.js';
+import moment from 'moment';
+import Sugar from 'sugar';
 
-const create = (contract) => {
+export function create(contract) {
   const supportedFrequencies = ['hours', 'days', 'weeks', 'months', 'years'];
 
   if (
@@ -42,7 +42,7 @@ const create = (contract) => {
   contract = {
     ...contract,
     terms,
-    rents: [],
+    rents: []
   };
 
   const current = moment(momentBegin);
@@ -60,13 +60,13 @@ const create = (contract) => {
     current.add(1, contract.frequency);
   }
   return contract;
-};
+}
 
-const update = (inputContract, modification) => {
+export function update(inputContract, modification) {
   const originalContract = Sugar.Object.clone(inputContract, true);
   const modifiedContract = {
     ...originalContract,
-    ...modification,
+    ...modification
   };
 
   const momentBegin = moment(modifiedContract.begin);
@@ -98,15 +98,15 @@ const update = (inputContract, modification) => {
           debts: paidRent.debts.filter(
             (debt) => debt.amount && debt.amount > 0
           ),
-          description: paidRent.description,
+          description: paidRent.description
         });
       });
   }
 
   return updatedContract;
-};
+}
 
-const renew = (contract) => {
+export function renew(contract) {
   const momentEnd = moment(contract.end);
   const momentNewEnd = moment(momentEnd).add(
     contract.terms,
@@ -115,15 +115,15 @@ const renew = (contract) => {
 
   return {
     ...update(contract, { end: momentNewEnd.toDate() }),
-    terms: contract.terms,
+    terms: contract.terms
   };
-};
+}
 
-const terminate = (inputContract, termination) => {
+export function terminate(inputContract, termination) {
   return update(inputContract, { termination });
-};
+}
 
-const payTerm = (contract, term, settlements) => {
+export function payTerm(contract, term, settlements) {
   if (!contract.rents || !contract.rents.length) {
     throw Error('cannot pay term, the rents were not generated');
   }
@@ -149,7 +149,7 @@ const payTerm = (contract, term, settlements) => {
         settlements = {
           debts,
           discounts: discounts.filter((d) => d.origin === 'settlement'),
-          payments,
+          payments
         };
       }
       contract.rents[index] = BL.computeRent(
@@ -164,7 +164,7 @@ const payTerm = (contract, term, settlements) => {
   });
 
   return contract;
-};
+}
 
 const _isPayment = (rent) => {
   return (
@@ -209,12 +209,4 @@ const _checkLostPayments = (momentBegin, momentEnd, contract) => {
       )}`
     );
   }
-};
-
-module.exports = {
-  create,
-  update,
-  terminate,
-  renew,
-  payTerm,
 };

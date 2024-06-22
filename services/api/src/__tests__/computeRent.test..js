@@ -1,24 +1,24 @@
 /* eslint-env node, mocha */
-const moment = require('moment');
-const BL = require('../businesslogic');
+import * as BL from '../businesslogic/index.js';
+import moment from 'moment';
 
 describe('one property rented', () => {
   const property = {
-    entryDate: '01/01/2017',
-    exitDate: '31/08/2017',
+    entryDate: moment('01/01/2017', 'DD/MM/YYYY').toDate(),
+    exitDate: moment('31/08/2017', 'DD/MM/YYYY').toDate(),
     property: {
       name: 'mon bureau',
-      price: 300,
+      price: 300
     },
     rent: 300,
-    expenses: [{ title: 'expense', amount: 10 }],
+    expenses: [{ title: 'expense', amount: 10 }]
   };
   const contract = {
     begin: '01/01/2017',
     end: '31/01/2017',
     discount: 10,
     vatRate: 0.2,
-    properties: [property],
+    properties: [property]
   };
 
   const grandTotal =
@@ -57,31 +57,31 @@ describe('one property rented', () => {
 
 describe('two properties rented with one month offset', () => {
   const property1 = {
-    entryDate: '01/01/2017',
-    exitDate: '31/08/2017',
+    entryDate: moment('01/01/2017', 'DD/MM/YYYY').toDate(),
+    exitDate: moment('31/08/2017', 'DD/MM/YYYY').toDate(),
     property: {
       name: 'mon bureau',
-      price: 300,
+      price: 300
     },
     rent: 300,
-    expenses: [{ title: 'expense', amount: 10 }],
+    expenses: [{ title: 'expense', amount: 10 }]
   };
   const property2 = {
-    entryDate: '01/02/2017',
-    exitDate: '31/08/2017',
+    entryDate: moment('01/02/2017', 'DD/MM/YYYY').toDate(),
+    exitDate: moment('31/08/2017', 'DD/MM/YYYY').toDate(),
     property: {
       name: 'mon parking',
-      price: 30,
+      price: 30
     },
     rent: 30,
-    expenses: [{ title: 'expense', amount: 5 }],
+    expenses: [{ title: 'expense', amount: 5 }]
   };
   const contract = {
     begin: '01/01/2017',
     end: '31/01/2017',
     discount: 10,
     vatRate: 0.2,
-    properties: [property1, property2],
+    properties: [property1, property2]
   };
   const grandTotal1 =
     Math.round(

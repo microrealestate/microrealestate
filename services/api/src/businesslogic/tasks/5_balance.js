@@ -1,4 +1,4 @@
-module.exports = function (
+export default function taskBalance(
   contract,
   rentDate,
   previousRent,
@@ -11,4 +11,4 @@ module.exports = function (
       previousRent.total.grandTotal - previousRent.total.payment;
   }
   return rent;
-};
+}

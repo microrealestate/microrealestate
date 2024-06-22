@@ -5,13 +5,13 @@ const chalk = require('chalk');
 const figlet = require('figlet');
 const inquirer = require('inquirer');
 const moment = require('moment');
-const { buildUrl, destructUrl } = require('@microrealestate/common/utils/url');
+const { buildUrl, destructUrl } = require('./utils');
 const {
   generateRandomToken,
   runCompose,
   loadEnv,
   validEmail,
-  getBackupPath,
+  getBackupPath
 } = require('./utils');
 
 function initDirectories() {
@@ -26,7 +26,7 @@ function displayHeader() {
   console.log(
     chalk.white(
       figlet.textSync('MicroRealEstate', {
-        horizontalLayout: 'full',
+        horizontalLayout: 'full'
       })
     )
   );
@@ -51,7 +51,7 @@ async function build({ service = 'all' }) {
     composeArgs,
     { runMode: 'prod' },
     {
-      waitLog: 'building images...',
+      waitLog: 'building images...'
     }
   );
 
@@ -63,11 +63,7 @@ async function start() {
 
   initDirectories();
 
-  await runCompose(
-    'start',
-    [],
-    { runMode: 'prod' }
-  );
+  await runCompose('start', [], { runMode: 'prod' });
 
   console.log(chalk.green('application started\n'));
   const landlordAppUrl = process.env.APP_URL || process.env.LANDLORD_APP_URL;
@@ -108,13 +104,9 @@ async function dev() {
 
   initDirectories();
 
-  await runCompose(
-    'dev',
-    [],
-    {
-      runMode: 'dev',
-    }
-  );
+  await runCompose('dev', [], {
+    runMode: 'dev'
+  });
 }
 
 async function ci() {
@@ -122,19 +114,13 @@ async function ci() {
 
   initDirectories();
 
-  await runCompose(
-    'ci',
-    [],
-    {
-      runMode: 'ci',
-    }
-  );
+  await runCompose('ci', [], {
+    runMode: 'ci'
+  });
 
   const landlordAppUrl = process.env.APP_URL || process.env.LANDLORD_APP_URL;
   console.log('application started\n');
-  console.log(
-    `Landlord front-end ready and accessible on ${landlordAppUrl}`
-  );
+  console.log(`Landlord front-end ready and accessible on ${landlordAppUrl}`);
   console.log(
     `Tenant front-end ready and accessible on ${process.env.TENANT_APP_URL}`
   );
@@ -143,25 +129,17 @@ async function ci() {
 async function status() {
   loadEnv();
 
-  await runCompose(
-    'status',
-    [],
-    {
-      runMode: 'prod',
-    }
-  );
+  await runCompose('status', [], {
+    runMode: 'prod'
+  });
 }
 
 async function showConfig(runMode) {
   loadEnv();
 
-  await runCompose(
-    'config',
-    [],
-    {
-      runMode,
-    }
-  );
+  await runCompose('config', [], {
+    runMode
+  });
 }
 
 async function restoreDB(backupFile) {
@@ -178,11 +156,11 @@ async function restoreDB(backupFile) {
       `--uri=${connectionString}`,
       '--drop',
       '--gzip',
-      `--archive=${archiveFile}`,
+      `--archive=${archiveFile}`
     ],
     {},
     {
-      waitLog: 'restoring database...',
+      waitLog: 'restoring database...'
     }
   );
 }
@@ -203,11 +181,11 @@ async function dumpDB() {
       '/usr/bin/mongodump',
       `--uri=${connectionString}`,
       '--gzip',
-      `--archive=${archiveFile}`,
+      `--archive=${archiveFile}`
     ],
     {},
     {
-      waitLog: 'dumping database...',
+      waitLog: 'dumping database...'
     }
   );
 }
@@ -258,7 +236,7 @@ function displayHelp() {
   const commands = [
     {
       name: 'dev',
-      description: 'Start the application in development mode',
+      description: 'Start the application in development mode'
     },
     {
       name: 'build',
@@ -266,46 +244,46 @@ function displayHelp() {
       options: [
         {
           name: '--service',
-          description: 'Build only one service',
-        },
-      ],
+          description: 'Build only one service'
+        }
+      ]
     },
     {
       name: 'start',
       description:
-        'Start the application in production mode (build command has to be run first)',
+        'Start the application in production mode (build command has to be run first)'
     },
     {
       name: 'ci',
-      description: 'Start the application in CI mode',
+      description: 'Start the application in CI mode'
     },
     {
       name: 'stop',
-      description: 'Stop the application running in production mode',
+      description: 'Stop the application running in production mode'
     },
     {
       name: 'status',
-      description: 'Display the status of the application',
+      description: 'Display the status of the application'
     },
     {
       name: 'showconfig',
-      description: 'Display the configuration of the application',
+      description: 'Display the configuration of the application'
     },
     {
       name: 'configure',
       description:
-        'Prompt the user to configure the .env file. The application has to be stopped to run this command.',
+        'Prompt the user to configure the .env file. The application has to be stopped to run this command.'
     },
     {
       name: 'restoredb',
       description:
-        'Restore the database from a backup file located in /backup. The application has to be started to run this command.',
+        'Restore the database from a backup file located in /backup. The application has to be started to run this command.'
     },
     {
       name: 'dumpdb',
       description:
-        'Dump the database to a backup file located in /backup. The application has to be started to run this command.',
-    },
+        'Dump the database to a backup file located in /backup. The application has to be started to run this command.'
+    }
   ];
 
   console.log(
@@ -347,9 +325,9 @@ function askForEnvironmentVariables(envConfig, ignorePreviousAnswers = false) {
       message: 'Do you want the database to be populated with?',
       choices: [
         { name: 'no data (keep existing data)', value: 'no_data' },
-        { name: 'demonstration data', value: 'demo_data' },
+        { name: 'demonstration data', value: 'demo_data' }
       ],
-      default: 'empty_data',
+      default: 'empty_data'
     },
     {
       name: 'emailConfig',
@@ -360,77 +338,77 @@ function askForEnvironmentVariables(envConfig, ignorePreviousAnswers = false) {
         {
           name: 'Gmail',
           description: 'https://support.google.com/accounts/answer/185833',
-          value: 'gmail',
+          value: 'gmail'
         },
         {
           name: 'Mailgun',
           description: 'https://www.mailgun.com/',
-          value: 'mailgun',
+          value: 'mailgun'
         },
         { name: 'SMTP server', value: 'smtp' },
-        { name: 'None', value: 'none' },
+        { name: 'None', value: 'none' }
       ],
-      default: 'gmail',
+      default: 'gmail'
     },
     {
       name: 'gmailEmail',
       type: 'input',
       message: 'Enter your Gmail email address:',
       validate: (input) => validEmail(input),
-      when: (answers) => answers.emailConfig === 'gmail',
+      when: (answers) => answers.emailConfig === 'gmail'
     },
     {
       name: 'gmailAppPassword',
       type: 'password',
       message: 'Enter your Gmail app password:',
-      when: (answers) => answers.emailConfig === 'gmail',
+      when: (answers) => answers.emailConfig === 'gmail'
     },
     {
       name: 'mailgunApiKey',
       type: 'input',
       message: 'Enter the mailgun API key:',
       validate: (input) => !!input,
-      when: (answers) => answers.emailConfig === 'mailgun',
+      when: (answers) => answers.emailConfig === 'mailgun'
     },
     {
       name: 'mailgunDomain',
       type: 'input',
       message: 'Enter the mailgun domain:',
       validate: (input) => !!input,
-      when: (answers) => answers.emailConfig === 'mailgun',
+      when: (answers) => answers.emailConfig === 'mailgun'
     },
     {
       name: 'smtpServer',
       type: 'input',
       message: 'Enter the SMTP server:',
       validate: (input) => !!input,
-      when: (answers) => answers.emailConfig === 'smtp',
+      when: (answers) => answers.emailConfig === 'smtp'
     },
     {
       name: 'smtpPort',
       type: 'input',
       message: 'Enter the SMTP port:',
       default: 587,
-      when: (answers) => answers.emailConfig === 'smtp',
+      when: (answers) => answers.emailConfig === 'smtp'
     },
     {
       name: 'smtpSecure',
       type: 'confirm',
       message: 'Is the SMTP server use SSL?',
       default: false,
-      when: (answers) => answers.emailConfig === 'smtp',
+      when: (answers) => answers.emailConfig === 'smtp'
     },
     {
       name: 'smtpUsername',
       type: 'input',
       message: 'Enter the SMTP username:',
-      when: (answers) => answers.emailConfig === 'smtp',
+      when: (answers) => answers.emailConfig === 'smtp'
     },
     {
       name: 'smtpPassword',
       type: 'password',
       message: 'Enter the SMTP password:',
-      when: (answers) => answers.emailConfig === 'smtp',
+      when: (answers) => answers.emailConfig === 'smtp'
     },
     {
       name: 'fromEmail',
@@ -438,7 +416,7 @@ function askForEnvironmentVariables(envConfig, ignorePreviousAnswers = false) {
       message: 'Enter the sender email address (from):',
       validate: (input) => validEmail(input),
       default: (answers) => answers.gmailEmail || null,
-      when: (answers) => answers.emailConfig !== 'none',
+      when: (answers) => answers.emailConfig !== 'none'
     },
     {
       name: 'replyToEmail',
@@ -446,7 +424,7 @@ function askForEnvironmentVariables(envConfig, ignorePreviousAnswers = false) {
       message: 'Enter the reply to email address (reply to):',
       validate: (input) => validEmail(input),
       default: (answers) => answers.fromEmail || '',
-      when: (answers) => answers.emailConfig !== 'none',
+      when: (answers) => answers.emailConfig !== 'none'
     },
     {
       name: 'landlordAppUrl',
@@ -460,7 +438,7 @@ function askForEnvironmentVariables(envConfig, ignorePreviousAnswers = false) {
           return false;
         }
       },
-      default: envConfig?.LANDLORD_APP_URL || 'http://localhost:8080/landlord',
+      default: envConfig?.LANDLORD_APP_URL || 'http://localhost:8080/landlord'
     },
     {
       name: 'tenantAppUrl',
@@ -490,31 +468,32 @@ function askForEnvironmentVariables(envConfig, ignorePreviousAnswers = false) {
               subDomain,
               domain,
               port,
-              basePath: '/tenant',
+              basePath: '/tenant'
             });
           }
           return buildUrl({
             protocol,
             subDomain: 'tenant',
             domain,
-            port,
+            port
           });
         } catch (error) {
           return 'http://localhost:8080/tenant';
         }
-      },
-    },
+      }
+    }
   ];
   return inquirer.prompt(
     questions,
     ignorePreviousAnswers
       ? {}
       : {
-          dbData: envConfig?.DEMO_MODE === undefined 
-            ? undefined
-            : envConfig?.DEMO_MODE === 'true' 
-              ? 'demo_data' 
-              : 'empty_data',
+          dbData:
+            envConfig?.DEMO_MODE === undefined
+              ? undefined
+              : envConfig?.DEMO_MODE === 'true'
+                ? 'demo_data'
+                : 'empty_data',
           emailConfig: envConfig?.GMAIL_EMAIL
             ? 'gmail'
             : envConfig?.SMTP_SERVER
@@ -536,7 +515,7 @@ function askForEnvironmentVariables(envConfig, ignorePreviousAnswers = false) {
           fromEmail: envConfig?.EMAIL_FROM,
           replyToEmail: envConfig?.EMAIL_REPLY_TO,
           landlordAppUrl: envConfig?.APP_URL || envConfig?.LANDLORD_APP_URL,
-          tenantAppUrl: envConfig?.TENANT_APP_URL,
+          tenantAppUrl: envConfig?.TENANT_APP_URL
         }
   );
 }
@@ -549,10 +528,10 @@ function askRunMode() {
       message: 'How do you want to run?',
       choices: [
         { name: 'production mode', value: 'prod' },
-        { name: 'development mode', value: 'dev' },
+        { name: 'development mode', value: 'dev' }
       ],
-      default: 'prod',
-    },
+      default: 'prod'
+    }
   ];
   return inquirer.prompt(questions);
 }
@@ -582,9 +561,9 @@ function askBackupFile() {
       message: 'Select a backup:',
       choices: backupFiles.map((file) => ({
         name: file,
-        value: file,
-      })),
-    },
+        value: file
+      }))
+    }
   ];
   return inquirer.prompt(questions);
 }
@@ -606,7 +585,7 @@ function writeDotEnv(promptsConfig, envConfig) {
     protocol,
     domain,
     port,
-    basePath: landlordBasePath,
+    basePath: landlordBasePath
   } = destructUrl(promptsConfig.landlordAppUrl);
   const { basePath: tenantBasePath } = destructUrl(promptsConfig.tenantAppUrl);
   const sendEmails =
@@ -636,7 +615,7 @@ function writeDotEnv(promptsConfig, envConfig) {
       ...destructUrl(promptsConfig.landlordAppUrl),
       subDomain: null,
       port: null,
-      basePath: null,
+      basePath: null
     });
   const gatewayUrl =
     envConfig?.GATEWAY_URL ||
@@ -644,19 +623,19 @@ function writeDotEnv(promptsConfig, envConfig) {
       protocol,
       domain,
       port: gatewayPort !== '80' ? '${GATEWAY_PORT}' : null,
-      basePath: null,
+      basePath: null
     });
   const landlordAppUrl =
     envConfig?.LANDLORD_APP_URL ||
     buildUrl({
       ...destructUrl(promptsConfig.landlordAppUrl),
-      port: gatewayPort !== '80' ? '${GATEWAY_PORT}' : null,
+      port: gatewayPort !== '80' ? '${GATEWAY_PORT}' : null
     });
   const tenantAppUrl =
     envConfig?.TENANT_APP_URL ||
     buildUrl({
       ...destructUrl(promptsConfig.tenantAppUrl),
-      port: gatewayPort !== '80' ? '${GATEWAY_PORT}' : null,
+      port: gatewayPort !== '80' ? '${GATEWAY_PORT}' : null
     });
 
   // delete env variables already taken in account in prompts
@@ -702,8 +681,8 @@ function writeDotEnv(promptsConfig, envConfig) {
   const others = listCustomEnvVariables.length
     ? `## others
 ${Object.entries(envConfig)
-    .map(([key, value]) => `${key}=${value}`)
-    .join('\n')}`
+  .map(([key, value]) => `${key}=${value}`)
+  .join('\n')}`
     : '';
 
   // email delivery configuration
@@ -814,5 +793,5 @@ module.exports = {
   askBackupFile,
   writeDotEnv,
   restoreDB,
-  dumpDB,
+  dumpDB
 };

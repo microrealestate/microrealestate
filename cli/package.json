@@ -23,7 +23,6 @@
   "author": "Camel Aissani",
   "license": "MIT",
   "dependencies": {
-    "@microrealestate/common": "*",
     "chalk": "4.1.2",
     "clear": "0.1.0",
     "clui": "0.3.6",

@@ -3,7 +3,7 @@
  * https://jestjs.io/docs/configuration
  */
 
-module.exports = {
+export default {
   // Indicates whether the coverage information should be collected while executing the test
   collectCoverage: true,
 
@@ -14,5 +14,5 @@ module.exports = {
   coverageDirectory: 'coverage',
 
   // Indicates which provider should be used to instrument code for coverage
-  coverageProvider: 'v8',
+  coverageProvider: 'v8'
 };

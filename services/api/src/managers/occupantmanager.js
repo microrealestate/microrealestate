@@ -1,15 +1,13 @@
-const logger = require('winston');
-const { customAlphabet } = require('nanoid');
-const moment = require('moment');
-const { default: axios } = require('axios');
-const mongoose = require('mongoose');
-const Tenant = require('@microrealestate/common/models/tenant');
-const FD = require('./frontdata');
-const Contract = require('./contract');
-const occupantModel = require('../models/occupant');
-const propertyModel = require('../models/property');
-const documentModel = require('../models/document');
-const config = require('../config');
+import * as Contract from './contract.js';
+import * as FD from './frontdata.js';
+import { Collections, Service } from '@microrealestate/typed-common';
+import axios from 'axios';
+import { customAlphabet } from 'nanoid';
+import documentModel from '../models/document.js';
+import logger from 'winston';
+import moment from 'moment';
+import occupantModel from '../models/occupant.js';
+import propertyModel from '../models/property.js';
 
 const nanoid = customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', 12);
 
@@ -29,13 +27,13 @@ function _buildPropertyMap(realm, callback) {
 
 async function _fetchTenants(realmId, tenantId) {
   const $match = {
-    realmId,
+    realmId
   };
   if (tenantId) {
-    $match._id = mongoose.Types.ObjectId(tenantId);
+    $match._id = Collections.ObjectId(tenantId);
   }
 
-  const tenants = await Tenant.aggregate([
+  const tenants = await Collections.Tenant.aggregate([
     { $match },
     {
       $lookup: {
@@ -43,7 +41,7 @@ async function _fetchTenants(realmId, tenantId) {
         let: {
           tenant_realmId: '$realmId',
           tenant_tenantId: { $toString: '$_id' },
-          tenant_leaseId: '$leaseId',
+          tenant_leaseId: '$leaseId'
         },
         pipeline: [
           {
@@ -52,10 +50,10 @@ async function _fetchTenants(realmId, tenantId) {
                 $and: [
                   { $eq: ['$realmId', '$$tenant_realmId'] },
                   { $in: ['$$tenant_leaseId', '$linkedResourceIds'] },
-                  { $eq: ['$type', 'fileDescriptor'] },
-                ],
-              },
-            },
+                  { $eq: ['$type', 'fileDescriptor'] }
+                ]
+              }
+            }
           },
           {
             $lookup: {
@@ -70,10 +68,10 @@ async function _fetchTenants(realmId, tenantId) {
                         { $eq: ['$tenantId', '$$tenant_tenantId'] },
                         { $eq: ['$leaseId', '$$tenant_leaseId'] },
                         { $eq: ['$type', 'file'] },
-                        { $eq: ['$templateId', '$$template_templateId'] },
-                      ],
-                    },
-                  },
+                        { $eq: ['$templateId', '$$template_templateId'] }
+                      ]
+                    }
+                  }
                 },
                 {
                   $project: {
@@ -83,35 +81,35 @@ async function _fetchTenants(realmId, tenantId) {
                     type: 0,
                     mimeType: 0,
                     templateId: 0,
-                    url: 0,
-                  },
-                },
+                    url: 0
+                  }
+                }
               ],
-              as: 'documents',
-            },
+              as: 'documents'
+            }
           },
           {
             $project: {
               realmId: 0,
               linkedResourceIds: 0,
               type: 0,
-              hasExpiryDate: 0,
-            },
-          },
+              hasExpiryDate: 0
+            }
+          }
         ],
-        as: 'filesToUpload',
-      },
+        as: 'filesToUpload'
+      }
     },
-    { $sort: { name: 1 } },
+    { $sort: { name: 1 } }
   ]);
 
-  await Tenant.populate(tenants, [
+  await Collections.Tenant.populate(tenants, [
     {
-      path: 'leaseId',
+      path: 'leaseId'
     },
     {
-      path: 'properties.propertyId',
-    },
+      path: 'properties.propertyId'
+    }
   ]);
 
   // TODO: compute the missing doc property in mongodb
@@ -135,7 +133,7 @@ async function _fetchTenants(realmId, tenantId) {
 ////////////////////////////////////////////////////////////////////////////////
 // Exported functions
 ////////////////////////////////////////////////////////////////////////////////
-function add(req, res) {
+export function add(req, res) {
   const realm = req.realm;
   const occupant = occupantModel.schema.filter(req.body);
 
@@ -153,14 +151,14 @@ function add(req, res) {
 
   if (!occupant.name) {
     return res.status(422).json({
-      errors: ['Missing tenant name'],
+      errors: ['Missing tenant name']
     });
   }
 
   _buildPropertyMap(realm, (errors, propertyMap) => {
     if (errors && errors.length > 0) {
       return res.status(404).json({
-        errors: errors,
+        errors: errors
       });
     }
 
@@ -178,7 +176,7 @@ function add(req, res) {
         item.expenses =
           item.expenses ||
           (item.property.expense && [
-            { title: 'general expense', amount: item.property.expense },
+            { title: 'general expense', amount: item.property.expense }
           ]) ||
           [];
       });
@@ -191,7 +189,7 @@ function add(req, res) {
         begin: occupant.beginDate,
         end: occupant.endDate,
         frequency: occupant.frequency || 'months',
-        properties: occupant.properties,
+        properties: occupant.properties
       });
 
       occupant.rents = contract.rents;
@@ -200,7 +198,7 @@ function add(req, res) {
     occupantModel.add(realm, occupant, async (errors, occupant) => {
       if (errors) {
         return res.status(500).json({
-          errors: errors,
+          errors: errors
         });
       }
       const tenants = await _fetchTenants(req.realm._id, occupant._id);
@@ -209,7 +207,7 @@ function add(req, res) {
   });
 }
 
-function update(req, res) {
+export function update(req, res) {
   const realm = req.realm;
   const occupantId = req.params.id;
   const occupant = occupantModel.schema.filter(req.body);
@@ -228,14 +226,14 @@ function update(req, res) {
 
   if (!occupant.name) {
     return res.status(422).json({
-      errors: ['Missing tenant name'],
+      errors: ['Missing tenant name']
     });
   }
 
   occupantModel.findOne(realm, occupantId, (errors, dbOccupant) => {
     if (errors && errors.length > 0) {
       return res.status(404).json({
-        errors: errors,
+        errors: errors
       });
     }
 
@@ -246,7 +244,7 @@ function update(req, res) {
     _buildPropertyMap(realm, (errors, propertyMap) => {
       if (errors && errors.length > 0) {
         return res.status(404).json({
-          errors: errors,
+          errors: errors
         });
       }
 
@@ -265,7 +263,7 @@ function update(req, res) {
           if (!itemToKeep) {
             itemToKeep = {
               propertyId: item.propertyId,
-              property: propertyMap[item.propertyId],
+              property: propertyMap[item.propertyId]
             };
           }
           if (!itemToKeep.property) {
@@ -282,7 +280,7 @@ function update(req, res) {
           itemToKeep.expenses =
             item.expenses ||
             (itemToKeep.property.expense && [
-              { title: 'general expense', amount: itemToKeep.property.expense },
+              { title: 'general expense', amount: itemToKeep.property.expense }
             ]) ||
             [];
           return itemToKeep;
@@ -311,7 +309,7 @@ function update(req, res) {
             properties: dbOccupant.properties,
             vatRate: dbOccupant.vatRatio,
             discount: dbOccupant.discount,
-            rents: dbOccupant.rents,
+            rents: dbOccupant.rents
           };
 
           const modification = {
@@ -319,7 +317,7 @@ function update(req, res) {
             end: occupant.endDate,
             termination: occupant.terminationDate,
             properties: occupant.properties,
-            frequency: occupant.frequency || 'months',
+            frequency: occupant.frequency || 'months'
           };
           if (occupant.vatRatio !== undefined) {
             modification.vatRate = occupant.vatRatio;
@@ -339,7 +337,7 @@ function update(req, res) {
       occupantModel.update(realm, occupant, async (errors) => {
         if (errors) {
           return res.status(500).json({
-            errors: errors,
+            errors: errors
           });
         }
 
@@ -350,7 +348,7 @@ function update(req, res) {
   });
 }
 
-async function remove(req, res) {
+export async function remove(req, res) {
   const realm = req.realm;
   const occupantIds = req.params?.ids.split(',') || [];
 
@@ -366,13 +364,13 @@ async function remove(req, res) {
           $query: {
             $or: occupantIds.map((_id) => {
               return { _id };
-            }),
-          },
+            })
+          }
         },
         (errors, occupants) => {
           if (errors) {
             return reject({
-              errors,
+              errors
             });
           }
 
@@ -397,8 +395,8 @@ async function remove(req, res) {
     if (occupantsWithPaidRents.length) {
       return res.status(422).json({
         errors: [
-          `impossible to remove ${occupantsWithPaidRents[0].name}. Rents have been recorded.`,
-        ],
+          `impossible to remove ${occupantsWithPaidRents[0].name}. Rents have been recorded.`
+        ]
       });
     }
 
@@ -408,7 +406,7 @@ async function remove(req, res) {
         documentModel.findAll(realm, async (errors, dbDocuments) => {
           if (errors && errors.length > 0) {
             return reject({
-              errors: errors,
+              errors: errors
             });
           }
           resolve(
@@ -419,16 +417,17 @@ async function remove(req, res) {
         });
       });
 
-      const documentsEndPoint = `${
-        config.PDFGENERATOR_URL
-      }/documents/${documents.map(({ _id }) => _id).join(',')}`;
+      const { PDFGENERATOR_URL } = Service.getInstance().envConfig.getValues();
+      const documentsEndPoint = `${PDFGENERATOR_URL}/documents/${documents
+        .map(({ _id }) => _id)
+        .join(',')}`;
 
       await axios.delete(documentsEndPoint, {
         headers: {
           authorization: req.headers.authorization,
           organizationid: req.headers.organizationid || String(req.realm._id),
-          'Accept-Language': req.headers['accept-language'],
-        },
+          'Accept-Language': req.headers['accept-language']
+        }
       });
     } catch (error) {
       const errorMessage = error.response?.data?.message || error.message;
@@ -443,7 +442,7 @@ async function remove(req, res) {
         (errors) => {
           if (errors) {
             return reject({
-              errors,
+              errors
             });
           }
           resolve();
@@ -455,48 +454,48 @@ async function remove(req, res) {
   } catch (error) {
     logger.error(error);
     res.status(500).json({
-      errors: ['a problem occured when deleting tenants'],
+      errors: ['a problem occured when deleting tenants']
     });
   }
 }
 
-async function all(req, res) {
+export async function all(req, res) {
   try {
     const tenants = await _fetchTenants(req.realm._id);
     res.json(tenants.map((tenant) => FD.toOccupantData(tenant)));
   } catch (error) {
     logger.error(error);
     res.status(500).json({
-      errors: ['an error occurred when fetching the tenants in db'],
+      errors: ['an error occurred when fetching the tenants in db']
     });
   }
 }
 
-async function one(req, res) {
+export async function one(req, res) {
   const occupantId = req.params.id;
   try {
     const tenants = await _fetchTenants(req.realm._id, occupantId);
     res.json(FD.toOccupantData(tenants.length ? tenants[0] : null));
   } catch (error) {
     return res.status(500).json({
-      errors: ['an error occurred when fetching a tenant from db'],
+      errors: ['an error occurred when fetching a tenant from db']
     });
   }
 }
 
-function overview(req, res) {
+export function overview(req, res) {
   const realm = req.realm;
   let result = {
     countAll: 0,
     countActive: 0,
-    countInactive: 0,
+    countInactive: 0
   };
   const currentDate = moment();
 
   occupantModel.findAll(realm, (errors, occupants) => {
     if (errors && errors.length > 0) {
       return res.status(404).json({
-        errors: errors,
+        errors: errors
       });
     }
 
@@ -515,12 +514,3 @@ function overview(req, res) {
     res.json(result);
   });
 }
-
-module.exports = {
-  add,
-  update,
-  remove,
-  one,
-  all,
-  overview,
-};

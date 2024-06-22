@@ -1,5 +1,5 @@
-const OF = require('./objectfilter');
-const Model = require('./model');
+import Model from './model.js';
+import OF from './objectfilter.js';
 
 class TemplateModel extends Model {
   constructor() {
@@ -14,9 +14,9 @@ class TemplateModel extends Model {
       html: String,
       linkedResourceIds: Array,
       required: Boolean,
-      requiredOnceContractTerminated: Boolean,
+      requiredOnceContractTerminated: Boolean
     });
   }
 }
 
-module.exports = new TemplateModel();
+export default new TemplateModel();

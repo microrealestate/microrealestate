@@ -1,4 +1,4 @@
-module.exports = function (
+export default function taskDebts(
   contract,
   rentDate,
   previousRent,
@@ -9,9 +9,9 @@ module.exports = function (
     settlements.debts.forEach((debt) => {
       rent.debts.push({
         description: debt.description,
-        amount: debt.amount,
+        amount: debt.amount
       });
     });
   }
   return rent;
-};
+}

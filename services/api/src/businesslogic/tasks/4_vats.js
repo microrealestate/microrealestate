@@ -1,4 +1,4 @@
-module.exports = function (
+export default function taskVATs(
   contract,
   rentDate,
   previousRent,
@@ -13,7 +13,7 @@ module.exports = function (
         origin: 'contract',
         description: `${preTaxAmount.description} T.V.A. (${rate * 100}%)`,
         amount: preTaxAmount.amount * rate,
-        rate,
+        rate
       });
     });
 
@@ -22,7 +22,7 @@ module.exports = function (
         origin: 'contract',
         description: `${charges.description} T.V.A. (${rate * 100}%)`,
         amount: charges.amount * rate,
-        rate,
+        rate
       });
     });
 
@@ -31,7 +31,7 @@ module.exports = function (
         origin: 'debts',
         description: `${debt.description} T.V.A. (${rate * 100}%)`,
         amount: debt.amount * rate,
-        rate,
+        rate
       });
     });
 
@@ -40,10 +40,10 @@ module.exports = function (
         origin: discount.origin,
         description: `${discount.description} T.V.A. (${rate * 100}%)`,
         amount: discount.amount * rate * -1,
-        rate,
+        rate
       });
     });
   }
 
   return rent;
-};
+}

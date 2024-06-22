@@ -1,3 +1,3 @@
-module.exports = {
-  send: jest.fn().mockImplementation((req, res) => res.sendStatus(200)),
-};
+export const send = jest
+  .fn()
+  .mockImplementation((req, res) => res.sendStatus(200));

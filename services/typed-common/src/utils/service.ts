@@ -162,7 +162,6 @@ export default class Service {
       });
     logger.info(`Starting service ${this.name}...`);
     this.envConfig.log();
-    await this.onStartUp?.(this.expressServer);
     if (this.mongoClient) {
       await this.mongoClient.connect();
     }
@@ -170,6 +169,7 @@ export default class Service {
       await this.redisClient.connect();
       // await this.redisClient.monitor();
     }
+    await this.onStartUp?.(this.expressServer);
     await startService();
   }
 

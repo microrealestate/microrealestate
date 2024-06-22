@@ -1,4 +1,4 @@
-module.exports = function (
+export default function taskPayments(
   contract,
   rentDate,
   previousRent,
@@ -11,4 +11,4 @@ module.exports = function (
     });
   }
   return rent;
-};
+}

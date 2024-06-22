@@ -28,18 +28,15 @@ export default class MongoClient {
     this.envConfig = envConfig;
   }
 
-  connection() {
-    return mongoose.connection.db;
-  }
-
   async connect() {
     if (!this._connection) {
-      logger.debug(`connecting to ${this.envConfig.getValues().MONGO_URL}...`);
-      const config = this.envConfig.getValues();
-      if (!config.MONGO_URL) {
+      const { MONGO_URL } = this.envConfig.getValues();
+      if (!MONGO_URL) {
         throw new Error('MONGO_URL is not set');
       }
-      this._connection = await mongoose.connect(config.MONGO_URL);
+      logger.debug(`connecting to ${MONGO_URL}...`);
+      // mongoose.set('strictQuery', false);
+      this._connection = await mongoose.connect(MONGO_URL);
       logger.debug('db ready');
     }
   }
@@ -50,6 +47,14 @@ export default class MongoClient {
       await mongoose.disconnect();
       this._connection = null;
       logger.debug('db disconnected');
+    }
+  }
+
+  async dropCollection(collection: string) {
+    if (this._connection) {
+      logger.debug(`dropping collection ${collection}...`);
+      await this._connection.connection.db.dropCollection(collection);
+      logger.debug(`collection ${collection} dropped`);
     }
   }
 }

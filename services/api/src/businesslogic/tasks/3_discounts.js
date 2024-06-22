@@ -1,4 +1,4 @@
-module.exports = function (
+export default function taskDiscounts(
   contract,
   rentDate,
   previousRent,
@@ -9,7 +9,7 @@ module.exports = function (
     rent.discounts.push({
       origin: 'contract',
       description: 'Remise exceptionnelle',
-      amount: contract.discount,
+      amount: contract.discount
     });
   }
 
@@ -18,9 +18,9 @@ module.exports = function (
       rent.discounts.push({
         origin: 'settlement',
         description: discount.description,
-        amount: discount.amount,
+        amount: discount.amount
       });
     });
   }
   return rent;
-};
+}
