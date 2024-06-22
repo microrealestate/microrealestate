@@ -18,7 +18,8 @@
     "watch:common": "tsc --build ../typed-common/tsconfig.json --watch --preserveWatchOutput",
     "watch:service": "nodemon -w src --inspect=0.0.0.0:9226 ./src/index.js",
     "dev": "npm-run-all build --parallel watch:types watch:common watch:service",
-    "lint": "eslint .",
+    "eslint": "eslint .",
+    "lint": "npm-run-all transpile eslint",
     "format": "prettier --write '**/*.{js,jsx,ts,tsx,json,css}'"
   },
   "keywords": [

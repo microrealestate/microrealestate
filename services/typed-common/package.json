@@ -17,7 +17,8 @@
     "transpile": "npm-run-all transpile:types transpile:common",
     "build": "npm-run-all clean transpile",
     "test": "jest",
-    "lint": "eslint .",
+    "eslint": "eslint .",
+    "lint": "npm-run-all transpile eslint",
     "format": "prettier --write '**/*.{js,jsx,ts,tsx,json,css}'"
   },
   "dependencies": {

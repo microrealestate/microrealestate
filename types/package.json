@@ -12,7 +12,8 @@
     "clean": "rimraf dist",
     "transpile": "tsc",
     "build": "npm-run-all clean transpile",
-    "lint": "eslint .",
+    "eslint": "eslint .",
+    "lint": "npm-run-all transpile eslint",
     "format": "prettier --write '**/*.{js,jsx,ts,tsx,json,css}'"
   },
   "dependencies": {

@@ -22,7 +22,8 @@
     "watch:service": "tsx --watch src/index.ts --watch-preserve-output --inspect=0.0.0.0:9225",
     "dev": "npm-run-all build --parallel watch:types watch:common watch:service",
     "start": "node dist/index.js",
-    "lint": "eslint .",
+    "eslint": "eslint .",
+    "lint": "npm-run-all transpile eslint",
     "format": "prettier --write '**/*.{js,jsx,ts,tsx,json,css}'"
   },
   "dependencies": {

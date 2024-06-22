@@ -2,7 +2,6 @@ import {
   Collections,
   Middlewares,
   Service
-// eslint-disable-next-line import/no-unresolved
 } from '@microrealestate/typed-common';
 import axios from 'axios';
 import bcrypt from 'bcrypt';
