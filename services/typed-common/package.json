@@ -31,7 +31,7 @@
     "method-override": "3.0.0",
     "mongoose": "6.11.3",
     "redis": "4.6.10",
-    "winston": "2.4.4"
+    "winston": "2.4.7"
   },
   "devDependencies": {
     "@microrealestate/types": "*",

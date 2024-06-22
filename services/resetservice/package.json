@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "@microrealestate/typed-common": "*",
-    "winston": "2.4.4"
+    "winston": "2.4.7"
   },
   "devDependencies": {
     "@microrealestate/types": "*",

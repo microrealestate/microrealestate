@@ -44,7 +44,7 @@
     "multer": "1.4.4",
     "puppeteer": "21.3.8",
     "sanitize-filename": "1.6.3",
-    "winston": "2.4.4"
+    "winston": "2.4.7"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "6.14.0",
