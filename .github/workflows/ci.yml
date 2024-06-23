@@ -121,6 +121,10 @@ jobs:
           key: ${{ secrets.KEY }}
           script: |
             cd microrealestate_ci
+            docker stop $(docker ps -qf "network=microrealestate_ci_net")
+            docker rm $(docker ps -qf "network=microrealestate_ci_net") 
+            docker rmi $(docker images --filter=reference="ghcr.io/microrealestate/microrealestate/*:${{ github.sha }}" -q)
+            docker system prune -f
             MRE_VERSION=${{ github.sha }} ./mre ci
 
   healthcheck:
@@ -160,18 +164,3 @@ jobs:
             e2e/cypress/videos
             e2e/cypress/results
           if-no-files-found: ignore
-
-  cleanup:
-    name: Stop and remove containers
-    if: always()
-    uses: appleboy/ssh-action@v1.0.3
-    with:
-      host: ${{ secrets.HOST }}
-      username: ${{ secrets.USERNAME }}
-      key: ${{ secrets.KEY }}
-      script: |
-        cd microrealestate_ci
-        docker stop $(docker ps -qf "network=microrealestate_ci_net")
-        docker rm $(docker ps -qf "network=microrealestate_ci_net") 
-        docker rmi $(docker images --filter=reference="ghcr.io/microrealestate/microrealestate/*:${{ github.sha }}" -q)
-        docker system prune -f
