@@ -3,7 +3,7 @@ import logger from 'winston';
 import moment from 'moment';
 import occupantModel from '../models/occupant.js';
 import { promisify } from 'util';
-import { Service } from '@microrealestate/typed-common';
+import { Service } from '@microrealestate/common';
 
 async function _sendEmail(req, message) {
   const { EMAILER_URL } = Service.getInstance().envConfig.getValues();

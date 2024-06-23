@@ -1,4 +1,4 @@
-import { Collections, Crypto } from '@microrealestate/typed-common';
+import { Collections, Crypto } from '@microrealestate/common';
 import accountModel from '../models/account.js';
 import logger from 'winston';
 

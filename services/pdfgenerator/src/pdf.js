@@ -5,12 +5,12 @@ import fs from 'fs';
 import logger from 'winston';
 import path from 'path';
 // eslint-disable-next-line import/no-unresolved
-import { Service } from '@microrealestate/typed-common';
+import { Service } from '@microrealestate/common';
 import templateFunctions from './utils/templatefunctions.js';
 
 const settings = {
   'view engine': ejs.renderFile,
-  'pdf engine': PdfEngine,
+  'pdf engine': PdfEngine
 };
 
 export function set(key, value) {
@@ -18,7 +18,8 @@ export function set(key, value) {
 }
 
 export async function start() {
-  const { TEMPORARY_DIRECTORY, PDF_DIRECTORY } = Service.getInstance().envConfig.getValues();
+  const { TEMPORARY_DIRECTORY, PDF_DIRECTORY } =
+    Service.getInstance().envConfig.getValues();
 
   if (!fs.existsSync(PDF_DIRECTORY)) {
     fs.mkdirSync(PDF_DIRECTORY);
@@ -26,7 +27,7 @@ export async function start() {
   if (!fs.existsSync(TEMPORARY_DIRECTORY)) {
     fs.mkdirSync(TEMPORARY_DIRECTORY);
   }
-  
+
   await settings['pdf engine'].start();
 }
 
@@ -54,8 +55,8 @@ export async function generate(documentId, params) {
       ...data,
       _: templateFunctions({
         locale: data.landlord.locale,
-        currency: data.landlord.currency,
-      }),
+        currency: data.landlord.currency
+      })
     },
     { root: TEMPLATES_DIRECTORY }
   );

@@ -9,16 +9,16 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "clean:types": "rimraf ../../types/dist",
-    "clean:common": "rimraf ../typed-common/dist",
+    "clean:common": "rimraf ../common/dist",
     "clean:service": "rimraf dist",
     "clean": "npm-run-all clean:types clean:common clean:service",
     "transpile:types": "tsc --build ../../types/tsconfig.json",
-    "transpile:common": "tsc --build ../typed-common/tsconfig.json",
+    "transpile:common": "tsc --build ../common/tsconfig.json",
     "transpile:service": "tsc",
     "transpile": "npm-run-all transpile:types transpile:common transpile:service",
     "build": "npm-run-all clean transpile",
     "watch:types": "tsc --build ../../types/tsconfig.json --watch --preserveWatchOutput",
-    "watch:common": "tsc --build ../typed-common/tsconfig.json --watch --preserveWatchOutput",
+    "watch:common": "tsc --build ../common/tsconfig.json --watch --preserveWatchOutput",
     "watch:service": "tsx --watch src/index.ts --watch-preserve-output --inspect=0.0.0.0:9240",
     "dev": "npm-run-all build --parallel watch:types watch:common watch:service",
     "start": "node dist/index.js",
@@ -27,7 +27,7 @@
     "format": "prettier --write '**/*.{js,jsx,ts,tsx,json,css}'"
   },
   "dependencies": {
-    "@microrealestate/typed-common": "*",
+    "@microrealestate/common": "*",
     "moment": "2.29.4"
   },
   "devDependencies": {

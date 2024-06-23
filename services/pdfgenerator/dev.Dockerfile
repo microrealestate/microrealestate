@@ -12,7 +12,7 @@ COPY .yarnrc.yml .
 COPY .yarn/plugins .yarn/plugins
 COPY .yarn/releases .yarn/releases
 COPY types/package.json types/package.json
-COPY services/typed-common/package.json services/typed-common/package.json
+COPY services/common/package.json services/common/package.json
 COPY services/pdfgenerator/package.json services/pdfgenerator/package.json
 RUN --mount=type=cache,id=node_modules,target=/root/.yarn YARN_CACHE_FOLDER=/root/.yarn \
     yarn workspaces focus @microrealestate/pdfgenerator

@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-unresolved
-import { Collections } from '@microrealestate/typed-common';
+import { Collections } from '@microrealestate/common';
 import moment from 'moment';
 
 export async function get(tenantId, params) {
@@ -18,9 +18,9 @@ export async function get(tenantId, params) {
   const tenant = dbTenant.toObject();
   const landlord = tenant.realmId;
   landlord.name =
-      (landlord.isCompany
-        ? landlord.companyInfo?.name
-        : landlord.contacts?.[0]?.name) || '';
+    (landlord.isCompany
+      ? landlord.companyInfo?.name
+      : landlord.contacts?.[0]?.name) || '';
   landlord.hasCompanyInfo = !!landlord.companyInfo;
   landlord.hasBankInfo = !!landlord.bankInfo;
   landlord.hasAddress = !!landlord.addresses?.length;
@@ -36,7 +36,7 @@ export async function get(tenantId, params) {
     properties: tenant.properties.reduce((acc, { propertyId }) => {
       acc.push(propertyId);
       return acc;
-    }, []),
+    }, [])
   };
 
   delete tenant.leaseId;
@@ -50,6 +50,6 @@ export async function get(tenantId, params) {
     landlord,
     tenant,
     period: params.term,
-    today: moment().format('DD/MM/YYYY'),
+    today: moment().format('DD/MM/YYYY')
   };
 }

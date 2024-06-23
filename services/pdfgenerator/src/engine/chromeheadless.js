@@ -4,7 +4,7 @@ import logger from 'winston';
 import path from 'path';
 import puppeteer from 'puppeteer';
 // eslint-disable-next-line import/no-unresolved
-import { Service } from '@microrealestate/typed-common';
+import { Service } from '@microrealestate/common';
 
 let browserWSEndpoint;
 

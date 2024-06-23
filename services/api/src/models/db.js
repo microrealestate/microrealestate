@@ -1,6 +1,6 @@
 import logger from 'winston';
 import mongojs from 'mongojs';
-import { Service } from '@microrealestate/typed-common';
+import { Service } from '@microrealestate/common';
 import sugar from 'sugar';
 
 sugar.extend();

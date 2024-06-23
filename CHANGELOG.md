@@ -61,7 +61,7 @@ All notable changes to this project will be documented here.
 
 - Added a validator in the cli to check if the .env is valid before starting the app.
 
-- Continued to introduce typescript in the project (see folders: types, webapps/tenant, services/typed-common, services/tenantapi, services/gateway).
+- Continued to introduce typescript in the project (see folders: types, webapps/tenant, services/common, services/tenantapi, services/gateway).
 
 ### Changed
 

@@ -1,5 +1,5 @@
 import * as FD from './frontdata.js';
-import { Collections } from '@microrealestate/typed-common';
+import { Collections } from '@microrealestate/common';
 import logger from 'winston';
 import propertyModel from '../models/property.js';
 

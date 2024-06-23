@@ -1,6 +1,6 @@
 import * as Contract from './contract.js';
 import * as FD from './frontdata.js';
-import { Collections, Service } from '@microrealestate/typed-common';
+import { Collections, Service } from '@microrealestate/common';
 import axios from 'axios';
 import { customAlphabet } from 'nanoid';
 import documentModel from '../models/document.js';

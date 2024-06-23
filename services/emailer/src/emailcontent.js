@@ -3,7 +3,7 @@ import { fileURLToPath } from 'url';
 import fs from 'fs';
 import path from 'path';
 // eslint-disable-next-line import/no-unresolved
-import { Service } from '@microrealestate/typed-common';
+import { Service } from '@microrealestate/common';
 import templateFunctions from './utils/templatefunctions.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -18,7 +18,7 @@ function _renderFile(templateFile, data) {
       resolve(html);
     });
   });
-};
+}
 
 export async function build(
   locale,
@@ -27,7 +27,7 @@ export async function build(
   recordId,
   params,
   emailData
-)  {
+) {
   const contentPackagePath = path.join(_templatesDir, templateName, locale);
 
   if (!fs.existsSync(contentPackagePath)) {
@@ -39,7 +39,7 @@ export async function build(
   const data = {
     ...emailData,
     config: Service.getInstance().envConfig.getValues(),
-    _: templateFunctions({ locale, currency }),
+    _: templateFunctions({ locale, currency })
   };
   const subject = await _renderFile(
     path.join(contentPackagePath, 'subject.ejs'),
@@ -54,4 +54,4 @@ export async function build(
     data
   );
   return { subject, text, html };
-};
+}

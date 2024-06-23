@@ -1,5 +1,5 @@
 import * as Express from 'express';
-import { EnvironmentConfig, Service } from '@microrealestate/typed-common';
+import { EnvironmentConfig, Service } from '@microrealestate/common';
 import logger from 'winston';
 import routes from './routes.js';
 
@@ -12,17 +12,17 @@ async function onStartUp(express: Express.Application) {
 async function Main() {
   let service;
   try {
-    service = Service.getInstance( 
+    service = Service.getInstance(
       new EnvironmentConfig({
-        PORT: Number(process.env.PORT || 8900),
+        PORT: Number(process.env.PORT || 8900)
       })
     );
-  
+
     await service.init({
       name: 'Reset service',
       useMongo: true,
       useRedis: true,
-      onStartUp,
+      onStartUp
     });
 
     await service.startUp();

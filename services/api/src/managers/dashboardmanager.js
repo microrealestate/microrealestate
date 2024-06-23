@@ -1,4 +1,4 @@
-import { Collections } from '@microrealestate/typed-common';
+import { Collections } from '@microrealestate/common';
 import logger from 'winston';
 import moment from 'moment';
 

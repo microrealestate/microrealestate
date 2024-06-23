@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-unresolved
-import { Middlewares, Service } from '@microrealestate/typed-common';
+import { Middlewares, Service } from '@microrealestate/common';
 import documents from './documents.js';
 import express from 'express';
 import templates from './templates.js';

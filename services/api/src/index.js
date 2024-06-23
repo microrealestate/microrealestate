@@ -1,5 +1,5 @@
 import * as Db from './models/db.js';
-import { EnvironmentConfig, Service } from '@microrealestate/typed-common';
+import { EnvironmentConfig, Service } from '@microrealestate/common';
 import { fileURLToPath } from 'url';
 import i18n from 'i18n';
 import logger from 'winston';

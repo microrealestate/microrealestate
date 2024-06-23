@@ -2,7 +2,7 @@ import { fileURLToPath, URL } from 'url';
 import moment from 'moment';
 import mongobackup from 'mongobackup';
 import path from 'path';
-import { Service } from '@microrealestate/typed-common';
+import { Service } from '@microrealestate/common';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const bkpDirectory = path.join(__dirname, '..', '..', '..', 'backup');

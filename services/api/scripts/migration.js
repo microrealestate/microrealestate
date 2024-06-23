@@ -2,7 +2,7 @@ import {
   Collections,
   EnvironmentConfig,
   MongoClient
-} from '@microrealestate/typed-common';
+} from '@microrealestate/common';
 import { fileURLToPath } from 'url';
 import logger from 'winston';
 

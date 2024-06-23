@@ -1,7 +1,7 @@
 {
-  "name": "@microrealestate/typed-common",
+  "name": "@microrealestate/common",
   "version": "1.0.0",
-  "description": "Common modules required for the MicroRealEstate application'",
+  "description": "Common modules required by the MicroRealEstate services'",
   "author": "Camel Aissani",
   "license": "MIT",
   "type": "module",

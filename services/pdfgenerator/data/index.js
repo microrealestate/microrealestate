@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-unresolved
-import { Collections } from '@microrealestate/typed-common';
+import { Collections } from '@microrealestate/common';
 import logger from 'winston';
 import moment from 'moment';
 
@@ -47,8 +47,8 @@ export async function getRentsData(params) {
             rent.total.charges -
             rent.total.discount +
             rent.total.debts,
-          newBalance: rent.total.grandTotal - rent.total.payment,
-        },
+          newBalance: rent.total.grandTotal - rent.total.payment
+        }
       }));
   }
 
@@ -61,7 +61,7 @@ export async function getRentsData(params) {
       ein: dbTenant.siret,
       dos: dbTenant.rcs,
       vatNumber: dbTenant.vatNumber,
-      legalRepresentative: dbTenant.manager,
+      legalRepresentative: dbTenant.manager
     },
     addresses: [
       {
@@ -69,8 +69,8 @@ export async function getRentsData(params) {
         street2: dbTenant.street2,
         city: dbTenant.city,
         state: dbTenant.state,
-        country: dbTenant.country,
-      },
+        country: dbTenant.country
+      }
     ],
     contract: {
       name: dbTenant.contract,
@@ -80,9 +80,9 @@ export async function getRentsData(params) {
       properties: dbTenant.properties.reduce((acc, { propertyId }) => {
         acc.push(propertyId);
         return acc;
-      }, []),
+      }, [])
     },
-    rents,
+    rents
   };
   if (dbTenant.terminationDate) {
     tenant.contract.terminationDate = dbTenant.terminationDate;
@@ -91,7 +91,7 @@ export async function getRentsData(params) {
   return {
     fileName: `${dbTenant.name}-${term}`,
     tenant,
-    landlord,
+    landlord
   };
 }
 

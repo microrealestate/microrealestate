@@ -5,7 +5,7 @@ import logger from 'winston';
 import moment from 'moment';
 import occupantModel from '../models/occupant.js';
 import rentModel from '../models/rent.js';
-import { Service } from '@microrealestate/typed-common';
+import { Service } from '@microrealestate/common';
 
 const _findOccupants = (realm, occupantId, startTerm, endTerm) => {
   return new Promise((resolve, reject) => {

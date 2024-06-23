@@ -1,8 +1,4 @@
-import {
-  Collections,
-  Middlewares,
-  Service
-} from '@microrealestate/typed-common';
+import { Collections, Middlewares, Service } from '@microrealestate/common';
 import axios from 'axios';
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';

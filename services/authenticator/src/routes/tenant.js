@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-unresolved
-import { Collections, Service } from '@microrealestate/typed-common';
+import { Collections, Service } from '@microrealestate/common';
 import axios from 'axios';
 import express from 'express';
 import jwt from 'jsonwebtoken';
