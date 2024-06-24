@@ -100,7 +100,7 @@ async function _getTemplateValues(organization, tenantId, leaseId) {
       address: {
         street1: tenant?.street1,
         street2: tenant?.street2,
-        zipCode: tenant?.zipCode,
+        zipCode: tenant?.zipCode || '',
         city: tenant?.city,
         state: tenant?.state,
         country: tenant?.country,
