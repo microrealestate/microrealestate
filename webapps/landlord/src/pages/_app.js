@@ -78,10 +78,6 @@ function MyApp(props) {
           content="minimum-scale=1, initial-scale=1, width=device-width"
         />
         <link rel="shortcut icon" href={`${config.BASE_PATH}/favicon.svg`} />
-        <link
-          href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.min.css"
-          rel="stylesheet"
-        />
       </Head>
       <main className={roboto.className}>
         <ThemeProvider theme={theme}>

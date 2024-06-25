@@ -23,6 +23,7 @@ import config from '../config';
 import moment from 'moment';
 import { Separator } from './ui/separator';
 import SideMenuButton from './SideMenuButton';
+import SponsorMenu from './SponsorMenu';
 import { StoreContext } from '../store';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
@@ -168,13 +169,13 @@ export function HamburgerMenu({ className, onChange }) {
             <MenuIcon />
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="flex flex-col px-4">
-          <SheetHeader>
+        <SheetContent side="left" className="flex flex-col px-0">
+          <SheetHeader className="px-4">
             <SheetTitle> {store.organization.selected?.name}</SheetTitle>
             <SheetDescription>{config.APP_NAME}</SheetDescription>
           </SheetHeader>
-          <Separator className="bg-secondary-foreground/25" />
-          <div>
+          <Separator className="bg-secondary-foreground/25 flex-col" />
+          <div className="flex-grow overflow-auto">
             {menuItems
               .filter((menuItem) => !menuItem.hidden)
               .map((item) => {
@@ -191,9 +192,12 @@ export function HamburgerMenu({ className, onChange }) {
                 );
               })}
           </div>
+          <SponsorMenu />
         </SheetContent>
       </Sheet>
-      <span className="text-base flex-grow">{t(selectedMenu?.labelId)}</span>
+      {selectedMenu ? (
+        <span className="text-base flex-grow">{t(selectedMenu.labelId)}</span>
+      ) : null}
     </div>
   );
 }
@@ -215,7 +219,7 @@ export function SideMenu({ className }) {
   }, [router.pathname]);
 
   const handleMenuClick = useCallback(
-    (menuItem) => {
+    (menuItem) => () => {
       setSelectedMenu(menuItem);
       let pathname = menuItem.pathname.replace(
         '[yearMonth]',
@@ -238,13 +242,18 @@ export function SideMenu({ className }) {
   );
 
   return (
-    <div className={cn('bg-card', className)}>
+    <div
+      className={cn(
+        'bg-card flex flex-col fixed w-60 h-full z-50 shadow-md',
+        className
+      )}
+    >
       <div className="whitespace-nowrap text-2xl font-semibold px-4 -mt-10">
         {store.organization.selected.name}
       </div>
       <div className="text-muted-foreground px-4 mt-2">{config.APP_NAME}</div>
       <Separator className="bg-secondary-foreground/25 my-4" />
-      <div className="h-fit overflow-auto">
+      <div className="flex-grow overflow-auto">
         {menuItems
           .filter((menuItem) => !menuItem.hidden)
           .map((item) => {
@@ -253,12 +262,13 @@ export function SideMenu({ className }) {
                 <SideMenuButton
                   item={item}
                   selected={item === selectedMenu}
-                  onClick={() => handleMenuClick(item)}
+                  onClick={handleMenuClick(item)}
                 />
               </div>
             );
           })}
       </div>
+      <SponsorMenu className="mb-20" />
     </div>
   );
 }

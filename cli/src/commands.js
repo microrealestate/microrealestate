@@ -24,17 +24,32 @@ function initDirectories() {
 function displayHeader() {
   clear();
   console.log(
-    chalk.white(
+    chalk.dim(
       figlet.textSync('MicroRealEstate', {
-        horizontalLayout: 'full'
+        horizontalLayout: 'fitted'
       })
     )
   );
   console.log(
-    chalk.white(
+    chalk.dim(
       'The application designed to assist landlords in managing their properties and rentals'
     )
   );
+  console.log('');
+  console.log(
+    chalk.red.bold('❤'),
+    chalk.dim('If you like this project, please consider sponsoring it'),
+    chalk.red.bold('❤')
+  );
+  console.log(
+    chalk.dim('Click here >>>'),
+    chalk.cyan.bold('https://github.com/sponsors/camelaissani'),
+    chalk.dim('<<< to sponsor')
+  );
+  console.log(
+    chalk.dim('Thank you'),
+    chalk.white('🙏')
+   );
   console.log('');
 }
 
