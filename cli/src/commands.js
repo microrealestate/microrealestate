@@ -4,7 +4,7 @@ const clear = require('clear');
 const chalk = require('chalk');
 const figlet = require('figlet');
 const inquirer = require('inquirer');
-const fetch = require('node-fetch');
+const axios = require('axios');
 const moment = require('moment');
 const { buildUrl, destructUrl } = require('./utils');
 const {
@@ -192,7 +192,7 @@ async function checkHealth() {
           `checking if the application is started... (${attempt + 1}/5)`
         )
       );
-      response = await fetch(`${process.env.GATEWAY_URL}/health`);
+      response = await axios.get(`${process.env.GATEWAY_URL}/health`);
     } catch (error) {
       response = { status: 500, statusText: error.message };
     }

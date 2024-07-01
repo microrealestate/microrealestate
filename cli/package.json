@@ -23,6 +23,7 @@
   "author": "Camel Aissani",
   "license": "MIT",
   "dependencies": {
+    "axios": "1.6.2",
     "chalk": "4.1.2",
     "clear": "0.1.0",
     "clui": "0.3.6",
