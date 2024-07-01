@@ -1,11 +1,12 @@
-version: "3.3"
+version: '3.3'
 services:
   ###############################################################################
   # Mongo
   ###############################################################################
   mongo:
+    command: --quiet --logpath /dev/null
     ports:
-      - "$MONGO_PORT:$MONGO_PORT"
+      - '$MONGO_PORT:$MONGO_PORT'
   ###############################################################################
   # ResetService
   ###############################################################################
@@ -15,6 +16,7 @@ services:
       context: .
       dockerfile: services/resetservice/dev.Dockerfile
     environment:
+      - NODE_OPTIONS=--trace-warnings
       - NODE_ENV
       - PORT=$RESETSERVICE_PORT
       - LOGGER_LEVEL
@@ -26,16 +28,16 @@ services:
       - ./types/src:/usr/app/types/src
       - ./types/package.json:/usr/app/types/package.json
       - ./types/tsconfig.json:/usr/app/types/tsconfig.json
-      - ./services/typed-common/src:/usr/app/services/typed-common/src
-      - ./services/typed-common/package.json:/usr/app/services/typed-common/package.json
-      - ./services/typed-common/tsconfig.json:/usr/app/services/typed-common/tsconfig.json
+      - ./services/common/src:/usr/app/services/common/src
+      - ./services/common/package.json:/usr/app/services/common/package.json
+      - ./services/common/tsconfig.json:/usr/app/services/common/tsconfig.json
       - ./services/resetservice/src:/usr/app/services/resetservice/src
       - ./services/resetservice/package.json:/usr/app/services/resetservice/package.json
       - ./services/resetservice/tsconfig.json:/usr/app/services/resetservice/tsconfig.json
     expose:
-      - "$RESETSERVICE_PORT"
+      - '$RESETSERVICE_PORT'
     ports:
-      - "$RESETSERVICE_DEBUG_PORT:9230"
+      - '$RESETSERVICE_DEBUG_PORT:9230'
     networks:
       - net
     depends_on:
@@ -49,20 +51,21 @@ services:
       context: .
       dockerfile: services/gateway/dev.Dockerfile
     environment:
+      - NODE_OPTIONS=--trace-warnings
       - RESETSERVICE_URL
     volumes:
       - ./package.json:/usr/app/package.json
       - ./types/src:/usr/app/types/src
       - ./types/package.json:/usr/app/types/package.json
       - ./types/tsconfig.json:/usr/app/types/tsconfig.json
-      - ./services/typed-common/src:/usr/app/services/typed-common/src
-      - ./services/typed-common/package.json:/usr/app/services/typed-common/package.json
-      - ./services/typed-common/tsconfig.json:/usr/app/services/typed-common/tsconfig.json
+      - ./services/common/src:/usr/app/services/common/src
+      - ./services/common/package.json:/usr/app/services/common/package.json
+      - ./services/common/tsconfig.json:/usr/app/services/common/tsconfig.json
       - ./services/gateway/src:/usr/app/services/gateway/src
       - ./services/gateway/package.json:/usr/app/services/gateway/package.json
       - ./services/gateway/tsconfig.json:/usr/app/services/gateway/tsconfig.json
     ports:
-      - "$GATEWAY_DEBUG_PORT:9225"
+      - '$GATEWAY_DEBUG_PORT:9225'
     depends_on:
       - resetservice
   ###############################################################################
@@ -72,18 +75,20 @@ services:
     build:
       context: .
       dockerfile: services/authenticator/dev.Dockerfile
+    environment:
+      - NODE_OPTIONS=--trace-warnings
     volumes:
       - ./package.json:/usr/app/package.json
       - ./types/src:/usr/app/types/src
       - ./types/package.json:/usr/app/types/package.json
       - ./types/tsconfig.json:/usr/app/types/tsconfig.json
-      - ./services/typed-common/src:/usr/app/services/typed-common/src
-      - ./services/typed-common/package.json:/usr/app/services/typed-common/package.json
-      - ./services/typed-common/tsconfig.json:/usr/app/services/typed-common/tsconfig.json
+      - ./services/common/src:/usr/app/services/common/src
+      - ./services/common/package.json:/usr/app/services/common/package.json
+      - ./services/common/tsconfig.json:/usr/app/services/common/tsconfig.json
       - ./services/authenticator/src:/usr/app/services/authenticator/src
       - ./services/authenticator/package.json:/usr/app/services/authenticator/package.json
     ports:
-      - "$AUTHENTICATOR_DEBUG_PORT:9226"
+      - '$AUTHENTICATOR_DEBUG_PORT:9226'
   ###############################################################################
   # PDFGenerator
   ###############################################################################
@@ -91,20 +96,22 @@ services:
     build:
       context: .
       dockerfile: services/pdfgenerator/dev.Dockerfile
+    environment:
+      - NODE_OPTIONS=--trace-warnings
     volumes:
       - ./package.json:/usr/app/package.json
       - ./types/src:/usr/app/types/src
       - ./types/package.json:/usr/app/types/package.json
       - ./types/tsconfig.json:/usr/app/types/tsconfig.json
-      - ./services/typed-common/src:/usr/app/services/typed-common/src
-      - ./services/typed-common/package.json:/usr/app/services/typed-common/package.json
-      - ./services/typed-common/tsconfig.json:/usr/app/services/typed-common/tsconfig.json
+      - ./services/common/src:/usr/app/services/common/src
+      - ./services/common/package.json:/usr/app/services/common/package.json
+      - ./services/common/tsconfig.json:/usr/app/services/common/tsconfig.json
       - ./services/pdfgenerator/data:/usr/app/services/pdfgenerator/data
       - ./services/pdfgenerator/src:/usr/app/services/pdfgenerator/src
       - ./services/pdfgenerator/templates:/usr/app/services/pdfgenerator/templates
       - ./services/pdfgenerator/package.json:/usr/app/services/pdfgenerator/package.json
     ports:
-      - "$PDFGENERATOR_DEBUG_PORT:9227"
+      - '$PDFGENERATOR_DEBUG_PORT:9227'
   ###############################################################################
   # Emailer
   ###############################################################################
@@ -112,18 +119,20 @@ services:
     build:
       context: .
       dockerfile: services/emailer/dev.Dockerfile
+    environment:
+      - NODE_OPTIONS=--trace-warnings
     volumes:
       - ./package.json:/usr/app/package.json
       - ./types/src:/usr/app/types/src
       - ./types/package.json:/usr/app/types/package.json
       - ./types/tsconfig.json:/usr/app/types/tsconfig.json
-      - ./services/typed-common/src:/usr/app/services/typed-common/src
-      - ./services/typed-common/package.json:/usr/app/services/typed-common/package.json
-      - ./services/typed-common/tsconfig.json:/usr/app/services/typed-common/tsconfig.json
+      - ./services/common/src:/usr/app/services/common/src
+      - ./services/common/package.json:/usr/app/services/common/package.json
+      - ./services/common/tsconfig.json:/usr/app/services/common/tsconfig.json
       - ./services/emailer/src:/usr/app/services/emailer/src
       - ./services/emailer/package.json:/usr/app/services/emailer/package.json
     ports:
-      - "$EMAILER_DEBUG_PORT:9228"
+      - '$EMAILER_DEBUG_PORT:9228'
   ###############################################################################
   # api
   ###############################################################################
@@ -131,17 +140,21 @@ services:
     build:
       context: .
       dockerfile: services/api/dev.Dockerfile
+    environment:
+      - NODE_OPTIONS=--trace-warnings
     volumes:
       - ./package.json:/usr/app/package.json
-      - ./services/common/models:/usr/app/services/common/models
-      - ./services/common/utils:/usr/app/services/common/utils
-      - ./services/common/config.js:/usr/app/services/common/config.js
+      - ./types/src:/usr/app/types/src
+      - ./types/package.json:/usr/app/types/package.json
+      - ./types/tsconfig.json:/usr/app/types/tsconfig.json
+      - ./services/common/src:/usr/app/services/common/src
       - ./services/common/package.json:/usr/app/services/common/package.json
+      - ./services/common/tsconfig.json:/usr/app/services/common/tsconfig.json
       - ./services/api/scripts:/usr/app/services/api/scripts
       - ./services/api/src:/usr/app/services/api/src
       - ./services/api/package.json:/usr/app/services/api/package.json
     ports:
-      - "$API_DEBUG_PORT:9229"
+      - '$API_DEBUG_PORT:9229'
   ###############################################################################
   # tenantapi
   ###############################################################################
@@ -149,19 +162,21 @@ services:
     build:
       context: .
       dockerfile: services/tenantapi/dev.Dockerfile
+    environment:
+      - NODE_OPTIONS=--trace-warnings
     volumes:
       - ./package.json:/usr/app/package.json
       - ./types/src:/usr/app/types/src
       - ./types/package.json:/usr/app/types/package.json
       - ./types/tsconfig.json:/usr/app/types/tsconfig.json
-      - ./services/typed-common/src:/usr/app/services/typed-common/src
-      - ./services/typed-common/package.json:/usr/app/services/typed-common/package.json
-      - ./services/typed-common/tsconfig.json:/usr/app/services/typed-common/tsconfig.json
+      - ./services/common/src:/usr/app/services/common/src
+      - ./services/common/package.json:/usr/app/services/common/package.json
+      - ./services/common/tsconfig.json:/usr/app/services/common/tsconfig.json
       - ./services/tenantapi/src:/usr/app/services/tenantapi/src
       - ./services/tenantapi/package.json:/usr/app/services/tenantapi/package.json
       - ./services/tenantapi/tsconfig.json:/usr/app/services/tenantapi/tsconfig.json
     ports:
-      - "$TENANTAPI_DEBUG_PORT:9240"
+      - '$TENANTAPI_DEBUG_PORT:9240'
   ###############################################################################
   # Landlord frontend
   ###############################################################################

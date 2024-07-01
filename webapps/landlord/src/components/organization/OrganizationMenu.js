@@ -137,8 +137,8 @@ export default function OrganizationMenu({ className }) {
           </Button>
         </div>
       </SheetTrigger>
-      <SheetContent side="right" className="flex flex-col px-4">
-        <SheetHeader className="flex flex-row items-center">
+      <SheetContent side="right" className="flex flex-col px-0">
+        <SheetHeader className="flex flex-row items-center px-4">
           <SheetTitle>{`${store.user.firstName} ${store.user.lastName}`}</SheetTitle>
         </SheetHeader>
         <Separator className="bg-secondary-foreground/25" />
@@ -158,7 +158,7 @@ export default function OrganizationMenu({ className }) {
         {store.user.isAdministrator ? (
           <>
             <Separator className="bg-secondary-foreground/25" />
-            <SheetDescription>
+            <SheetDescription className="px-4">
               {t('Organization information', {
                 organization: store.organization.selected.name
               })}

@@ -12,7 +12,7 @@ services:
     command:
       - 'bash'
       - '-c'
-      - 'docker-entrypoint.sh --requirepass $REDIS_PASSWORD'
+      - 'docker-entrypoint.sh --requirepass $REDIS_PASSWORD --loglevel warning'
     networks:
       - net
   ###############################################################################

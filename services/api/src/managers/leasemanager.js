@@ -1,7 +1,7 @@
-const logger = require('winston');
-const leaseModel = require('../models/lease');
-const templateModel = require('../models/template');
-const occupantModel = require('../models/occupant');
+import leaseModel from '../models/lease.js';
+import logger from 'winston';
+import occupantModel from '../models/occupant.js';
+import templateModel from '../models/template.js';
 
 /**
  * @returns a Set of leaseId (_id)
@@ -26,7 +26,7 @@ async function _leaseUsedByTenant(realm) {
 function _rejectMissingFields(lease, res) {
   if (!lease.name) {
     res.status(422).json({
-      errors: ['"name" field is required'],
+      errors: ['"name" field is required']
     });
     return true;
   }
@@ -36,7 +36,7 @@ function _rejectMissingFields(lease, res) {
 ////////////////////////////////////////////////////////////////////////////////
 // Exported functions
 ////////////////////////////////////////////////////////////////////////////////
-function add(req, res) {
+export function add(req, res) {
   const realm = req.realm;
   const lease = leaseModel.schema.filter(req.body);
 
@@ -49,12 +49,12 @@ function add(req, res) {
     realm,
     {
       ...lease,
-      active: !!lease.active && !!lease.numberOfTerms && !!lease.timeRange,
+      active: !!lease.active && !!lease.numberOfTerms && !!lease.timeRange
     },
     async (errors, dbLease) => {
       if (errors) {
         return res.status(500).json({
-          errors: errors,
+          errors: errors
         });
       }
       const setOfUsedLeases = await _leaseUsedByTenant(realm);
@@ -64,7 +64,7 @@ function add(req, res) {
   );
 }
 
-async function update(req, res) {
+export async function update(req, res) {
   const realm = req.realm;
   let lease = leaseModel.schema.filter(req.body);
 
@@ -92,7 +92,7 @@ async function update(req, res) {
       name: lease.name || dbLease.name,
       description: lease.description ?? dbLease.description,
       active: lease.active ?? dbLease.active,
-      stepperMode: lease.stepperMode ?? dbLease.stepperMode,
+      stepperMode: lease.stepperMode ?? dbLease.stepperMode
     };
   }
 
@@ -103,7 +103,7 @@ async function update(req, res) {
   leaseModel.update(realm, lease, (errors, dbLease) => {
     if (errors) {
       return res.status(500).json({
-        errors: errors,
+        errors: errors
       });
     }
     dbLease.usedByTenants = setOfUsedLeases.has(lease._id);
@@ -111,7 +111,7 @@ async function update(req, res) {
   });
 }
 
-async function remove(req, res) {
+export async function remove(req, res) {
   const realm = req.realm;
   const leaseIds = req.params.ids.split(',') || [];
 
@@ -123,13 +123,13 @@ async function remove(req, res) {
     const setOfUsedLeases = await _leaseUsedByTenant(realm);
     if (leaseIds.some((lease) => setOfUsedLeases.has(lease._id))) {
       return res.status(422).json({
-        errors: ['One lease is used by tenants. It cannot be removed'],
+        errors: ['One lease is used by tenants. It cannot be removed']
       });
     }
   } catch (error) {
     logger.error(error);
     res.status(500).json({
-      errors: ['a problem occured when deleting leases'],
+      errors: ['a problem occured when deleting leases']
     });
   }
 
@@ -138,7 +138,7 @@ async function remove(req, res) {
       leaseModel.findAll(realm, async (errors, dbLeases) => {
         if (errors && errors.length > 0) {
           return reject({
-            errors: errors,
+            errors: errors
           });
         }
 
@@ -156,7 +156,7 @@ async function remove(req, res) {
       templateModel.findAll(realm, async (errors, dbTemplates) => {
         if (errors && errors.length > 0) {
           return reject({
-            errors: errors,
+            errors: errors
           });
         }
 
@@ -190,7 +190,7 @@ async function remove(req, res) {
           (errors) => {
             if (errors) {
               return reject({
-                errors,
+                errors
               });
             }
             resolve();
@@ -203,31 +203,31 @@ async function remove(req, res) {
               templateModel.remove(realm, templateIdsToRemove, (errors) => {
                 if (errors) {
                   return reject({
-                    errors,
+                    errors
                   });
                 }
                 resolve();
               });
-            }),
+            })
           ]
         : []),
       ...(templatesToUpdate.length
         ? templatesToUpdate.map((template) => {
-          template.linkedResourceIds = template.linkedResourceIds.filter(
-            (_id) => !leaseIds.includes(_id)
-          );
-          return new Promise((resolve, reject) => {
-            templateModel.update(realm, template, (errors) => {
-              if (errors) {
-                return reject({
-                  errors,
-                });
-              }
-              resolve();
+            template.linkedResourceIds = template.linkedResourceIds.filter(
+              (_id) => !leaseIds.includes(_id)
+            );
+            return new Promise((resolve, reject) => {
+              templateModel.update(realm, template, (errors) => {
+                if (errors) {
+                  return reject({
+                    errors
+                  });
+                }
+                resolve();
+              });
             });
-          });
-        })
-        : []),
+          })
+        : [])
     ]);
     res.sendStatus(200);
   } catch (error) {
@@ -236,31 +236,31 @@ async function remove(req, res) {
   }
 }
 
-function all(req, res) {
+export function all(req, res) {
   const realm = req.realm;
   leaseModel.findAll(realm, async (errors, dbLeases) => {
     if (errors && errors.length > 0) {
       return res.status(500).json({
-        errors: errors,
+        errors: errors
       });
     }
     const setOfUsedLeases = await _leaseUsedByTenant(realm);
     const allLeases = dbLeases.map((dbLease) => ({
       ...dbLease,
-      usedByTenants: setOfUsedLeases.has(dbLease._id),
+      usedByTenants: setOfUsedLeases.has(dbLease._id)
     }));
 
     res.json(allLeases.sort((l1, l2) => l1.name?.localeCompare(l2.name)));
   });
 }
 
-function one(req, res) {
+export function one(req, res) {
   const realm = req.realm;
   const leaseId = req.params.id;
   leaseModel.findOne(realm, leaseId, async (errors, dbLease) => {
     if (errors && errors.length > 0) {
       return res.status(404).json({
-        errors: errors,
+        errors: errors
       });
     }
     const setOfUsedLeases = await _leaseUsedByTenant(realm);
@@ -268,11 +268,3 @@ function one(req, res) {
     res.json(dbLease);
   });
 }
-
-module.exports = {
-  add,
-  update,
-  remove,
-  one,
-  all,
-};

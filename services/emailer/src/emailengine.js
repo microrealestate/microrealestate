@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-unresolved
-import { Crypto, Service } from '@microrealestate/typed-common';
+import { Crypto, Service } from '@microrealestate/common';
 import formData from 'form-data';
 import Mailgun from 'mailgun.js';
 import nodemailer from 'nodemailer';
@@ -9,7 +9,7 @@ async function _sendWithMailgun(config, email) {
   const mg = mailgun.client({ username: 'api', key: config.apiKey });
   return await mg.messages.create(config.domain, {
     ...email,
-    'h:Reply-To': email.replyTo,
+    'h:Reply-To': email.replyTo
   });
 }
 
@@ -20,7 +20,7 @@ async function _sendWithSmtp(config, email) {
   if (config.authentication) {
     auth = {
       user: config.username,
-      pass: config.password,
+      pass: config.password
     };
   }
 
@@ -28,7 +28,7 @@ async function _sendWithSmtp(config, email) {
     host: config.server,
     port: config.ports,
     secure: config.secure,
-    auth,
+    auth
   });
 
   const result = await transporter.sendMail({
@@ -41,13 +41,13 @@ async function _sendWithSmtp(config, email) {
     html,
     attachments: attachment.map(({ filename, data }) => ({
       filename,
-      content: data,
-    })),
+      content: data
+    }))
   });
 
   return {
     id: result.messageId,
-    message: result.response,
+    message: result.response
   };
 }
 
@@ -64,19 +64,19 @@ export function sendEmail(email, data) {
         secure: false, // if true then port is 465, false for other ports
         authentication: true,
         username: GMAIL.email,
-        password: GMAIL.appPassword,
+        password: GMAIL.appPassword
       };
     }
     if (SMTP) {
       emailDeliveryServiceConfig = {
         name: 'smtp',
-        ...SMTP,
+        ...SMTP
       };
     }
     if (MAILGUN) {
       emailDeliveryServiceConfig = {
         name: 'mailgun',
-        ...MAILGUN,
+        ...MAILGUN
       };
     }
   }
@@ -90,7 +90,7 @@ export function sendEmail(email, data) {
         secure: false, // if true then port is 465, false for other ports
         authentication: true,
         username: data.landlord.thirdParties.gmail.email,
-        password: Crypto.decrypt(data.landlord.thirdParties.gmail.appPassword),
+        password: Crypto.decrypt(data.landlord.thirdParties.gmail.appPassword)
       };
     }
     if (data.landlord.thirdParties?.smtp?.selected) {
@@ -105,14 +105,14 @@ export function sendEmail(email, data) {
           : null,
         password: data.landlord.thirdParties.smtp.authentication
           ? Crypto.decrypt(data.landlord.thirdParties.smtp.password)
-          : null,
+          : null
       };
     }
     if (data.landlord.thirdParties?.mailgun?.selected) {
       emailDeliveryServiceConfig = {
         name: 'mailgun',
         apiKey: Crypto.decrypt(data.landlord.thirdParties.mailgun.apiKey),
-        domain: data.landlord.thirdParties.mailgun.domain,
+        domain: data.landlord.thirdParties.mailgun.domain
       };
     }
   }

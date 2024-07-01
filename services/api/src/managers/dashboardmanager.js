@@ -1,9 +1,8 @@
-const logger = require('winston');
-const moment = require('moment');
-const TenantModel = require('@microrealestate/common/models/tenant');
-const PropertyModel = require('@microrealestate/common/models/property');
+import { Collections } from '@microrealestate/common';
+import logger from 'winston';
+import moment from 'moment';
 
-function all(req, res) {
+export function all(req, res) {
   const fetch = async () => {
     try {
       const now = moment();
@@ -13,8 +12,8 @@ function all(req, res) {
       const endOfTheYear = moment(now).endOf('year');
 
       // count active tenants
-      const allTenants = await TenantModel.find({
-        realmId: req.headers.organizationid,
+      const allTenants = await Collections.Tenant.find({
+        realmId: req.headers.organizationid
       });
       const activeTenants = allTenants.reduce((acc, tenant) => {
         const terminationMoment = tenant.terminationDate
@@ -30,8 +29,8 @@ function all(req, res) {
       const tenantCount = activeTenants.length;
 
       // count properties
-      const propertyCount = await PropertyModel.find({
-        realmId: req.headers.organizationid,
+      const propertyCount = await Collections.Property.find({
+        realmId: req.headers.organizationid
       }).count();
 
       // compute occupancyRate
@@ -84,7 +83,7 @@ function all(req, res) {
               tenantCount,
               propertyCount,
               occupancyRate,
-              totalYearRevenues,
+              totalYearRevenues
             }
           : null;
 
@@ -92,33 +91,33 @@ function all(req, res) {
       const topUnpaid =
         tenantCount || propertyCount
           ? activeTenants
-            .reduce((acc, tenant) => {
-              const currentRent = tenant.rents.find((rent) => {
-                const termMoment =
+              .reduce((acc, tenant) => {
+                const currentRent = tenant.rents.find((rent) => {
+                  const termMoment =
                     rent.term && moment(rent.term, 'YYYYMMDDHH');
-                return (
-                  termMoment &&
+                  return (
+                    termMoment &&
                     termMoment.isBetween(
                       beginOfTheMonth,
                       endOfTheMonth,
                       'day',
                       '[]'
                     )
-                );
-              });
-              if (currentRent) {
-                acc.push({
-                  tenant: tenant.toObject(),
-                  balance:
-                      currentRent.total.payment - currentRent.total.grandTotal,
-                  rent: currentRent,
+                  );
                 });
-              }
-              return acc;
-            }, [])
-            .sort((t1, t2) => t1.balance - t2.balance)
-            .filter((t) => t.balance < 0)
-            .slice(0, 5) // Top 5
+                if (currentRent) {
+                  acc.push({
+                    tenant: tenant.toObject(),
+                    balance:
+                      currentRent.total.payment - currentRent.total.grandTotal,
+                    rent: currentRent
+                  });
+                }
+                return acc;
+              }, [])
+              .sort((t1, t2) => t1.balance - t2.balance)
+              .filter((t) => t.balance < 0)
+              .slice(0, 5) // Top 5
           : [];
 
       // compute rents of year splitted by month
@@ -129,7 +128,7 @@ function all(req, res) {
         acc[key] = {
           month: key,
           paid: 0,
-          notPaid: 0,
+          notPaid: 0
         };
         return acc;
       }, {});
@@ -149,7 +148,7 @@ function all(req, res) {
               notPaid:
                 rent.total.payment - rent.total.grandTotal < 0
                   ? rent.total.payment - rent.total.grandTotal
-                  : 0,
+                  : 0
             };
             if (acc[key]) {
               acc[key].paid += revenue.paid;
@@ -168,7 +167,7 @@ function all(req, res) {
           notPaid:
             value.notPaid < 0
               ? Math.round(value.notPaid * 100) / 100
-              : value.notPaid,
+              : value.notPaid
         }))
         .sort((r1, r2) =>
           moment(r1.month, 'MMYYYY').isBefore(moment(r2.month, 'MMYYYY'))
@@ -179,19 +178,15 @@ function all(req, res) {
       res.status(200).json({
         overview,
         topUnpaid,
-        revenues,
+        revenues
       });
     } catch (error) {
       logger.error(error);
       return res.status(500).json({
-        errors: ['An error occured when computing dashboard data'],
+        errors: ['An error occured when computing dashboard data']
       });
     }
   };
 
   fetch();
 }
-
-module.exports = {
-  all,
-};

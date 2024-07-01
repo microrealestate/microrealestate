@@ -1,5 +1,5 @@
-const OF = require('./objectfilter');
-const Model = require('./model');
+import Model from './model.js';
+import OF from './objectfilter.js';
 
 class PropertyModel extends Model {
   constructor() {
@@ -22,7 +22,7 @@ class PropertyModel extends Model {
       // TODO to remove, replaced by address
       building: String,
       level: String,
-      location: String,
+      location: String
     });
   }
 
@@ -46,4 +46,4 @@ class PropertyModel extends Model {
   }
 }
 
-module.exports = new PropertyModel();
+export default new PropertyModel();

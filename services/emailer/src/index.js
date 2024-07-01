@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-unresolved
-import { EnvironmentConfig, Service } from '@microrealestate/typed-common';
+import { EnvironmentConfig, Service } from '@microrealestate/common';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 import logger from 'winston';
@@ -22,20 +22,24 @@ async function Main() {
     const __dirname = path.dirname(fileURLToPath(import.meta.url));
     const root_dir = path.join(__dirname, '..');
 
-    service = Service.getInstance( 
+    service = Service.getInstance(
       new EnvironmentConfig({
         PORT: Number(process.env.PORT || 8083),
-        ALLOW_SENDING_EMAILS: process.env.NODE_ENV === 'production' ||  process.env.ALLOW_SENDING_EMAILS === 'true',
+        ALLOW_SENDING_EMAILS:
+          process.env.NODE_ENV === 'production' ||
+          process.env.ALLOW_SENDING_EMAILS === 'true',
         APP_NAME: process.env.APP_NAME || 'MicroRealEstate',
-        LANDLORD_APP_URL: process.env.LANDLORD_APP_URL || 'http://localhost:8080/landlord',
-        TENANT_APP_URL: process.env.TENANT_APP_URL || 'http://localhost:8080/tenant',
+        LANDLORD_APP_URL:
+          process.env.LANDLORD_APP_URL || 'http://localhost:8080/landlord',
+        TENANT_APP_URL:
+          process.env.TENANT_APP_URL || 'http://localhost:8080/tenant',
         GMAIL: process.env.GMAIL_EMAIL
           ? {
               email: process.env.GMAIL_EMAIL,
               appPassword: process.env.GMAIL_APP_PASSWORD,
               fromEmail: process.env.EMAIL_FROM,
               replyToEmail: process.env.EMAIL_REPLY_TO,
-              bccEmails: process.env.EMAIL_BCC,
+              bccEmails: process.env.EMAIL_BCC
             }
           : null,
         SMTP: process.env.SMTP_SERVER
@@ -48,7 +52,7 @@ async function Main() {
               password: process.env.SMTP_PASSWORD,
               fromEmail: process.env.EMAIL_FROM,
               replyToEmail: process.env.EMAIL_REPLY_TO,
-              bccEmails: process.env.EMAIL_BCC,
+              bccEmails: process.env.EMAIL_BCC
             }
           : null,
         MAILGUN: process.env.MAILGUN_API_KEY
@@ -57,18 +61,20 @@ async function Main() {
               domain: process.env.MAILGUN_DOMAIN,
               fromEmail: process.env.EMAIL_FROM,
               replyToEmail: process.env.EMAIL_REPLY_TO,
-              bccEmails: process.env.EMAIL_BCC,
+              bccEmails: process.env.EMAIL_BCC
             }
           : null,
-        PDFGENERATOR_URL: process.env.PDFGENERATOR_URL || 'http://localhost:8082/pdfgenerator',
-        TEMPORARY_DIRECTORY: process.env.TEMPORARY_DIRECTORY || path.join(root_dir, '/tmp'),
+        PDFGENERATOR_URL:
+          process.env.PDFGENERATOR_URL || 'http://localhost:8082/pdfgenerator',
+        TEMPORARY_DIRECTORY:
+          process.env.TEMPORARY_DIRECTORY || path.join(root_dir, '/tmp')
       })
     );
 
     await service.init({
       name: 'Emailer',
       useMongo: true,
-      onStartUp,
+      onStartUp
     });
     await service.startUp();
   } catch (error) {
@@ -76,4 +82,3 @@ async function Main() {
     service?.shutDown(-1);
   }
 }
-

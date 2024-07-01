@@ -1,34 +1,14 @@
-const logger = require('winston');
-const mongoosedb = require('@microrealestate/common/models/db');
-const Realm = require('@microrealestate/common/models/realm');
-const Lease = require('@microrealestate/common/models/lease');
-const Property = require('@microrealestate/common/models/property');
-const Template = require('@microrealestate/common/models/template');
-// const Tenant = require('@microrealestate/common/models/tenant');
-// const NewTenant = require('@microrealestate/common/models/newtenant');
-// const Document = require('@microrealestate/common/models/document');
-// const Contract = require('@microrealestate/common/models/contract');
-
-async function withDB(job) {
-  let failure = false;
-  try {
-    await mongoosedb.connect();
-    await job();
-  } catch (error) {
-    logger.error(error);
-    failure = true;
-  } finally {
-    try {
-      await mongoosedb.disconnect();
-    } catch (error) {
-      logger.error(error);
-    }
-  }
-  return failure;
-}
+import {
+  Collections,
+  EnvironmentConfig,
+  MongoClient
+} from '@microrealestate/common';
+import { fileURLToPath } from 'url';
+import logger from 'winston';
 
 async function updateThirdPartyConfiguration() {
-  const landlords = await Realm.find();
+  const landlords = await Collections.Realm.find({});
+  logger.info(`updating Realm ${landlords.length} records`);
   await Promise.all(
     landlords.map(async (landlord) => {
       if (
@@ -46,7 +26,8 @@ async function updateThirdPartyConfiguration() {
 }
 
 async function cleanupUnusedAttributes() {
-  const landlords = await Realm.find();
+  const landlords = await Collections.Realm.find({});
+  logger.info(`cleaning up Realm ${landlords.length} records`);
   await Promise.all(
     landlords.map(async (landlord) => {
       landlord.set('administrator', undefined, { strict: false });
@@ -87,7 +68,8 @@ async function cleanupUnusedAttributes() {
     })
   );
 
-  const leases = await Lease.find();
+  const leases = await Collections.Lease.find({});
+  logger.info(`cleaning up Lease ${leases.length} records`);
   await Promise.all(
     leases.map(async (lease) => {
       lease.set('templateIds', undefined, { strict: false });
@@ -98,7 +80,8 @@ async function cleanupUnusedAttributes() {
     })
   );
 
-  const properties = await Property.find();
+  const properties = await Collections.Property.find({});
+  logger.info(`cleaning up Property ${properties.length} records`);
   await Promise.all(
     properties.map(async (property) => {
       property.set('expense', undefined, { strict: false });
@@ -119,7 +102,8 @@ async function cleanupUnusedAttributes() {
     })
   );
 
-  const templates = await Template.find();
+  const templates = await Collections.Template.find({});
+  logger.info(`cleaning up Template ${templates.length} records`);
   await Promise.all(
     templates.map(async (template) => {
       template.set('organizationId', undefined, { strict: false });
@@ -128,137 +112,48 @@ async function cleanupUnusedAttributes() {
   );
 }
 
-// async function migrateOccupantToTenant() {
-//   const occupants = await Tenant.find();
-
-//   const occupantMap = {};
-//   occupants.forEach((occupant) => {
-//     const name = `${occupant.realmId}_${occupant.name.trim()}`;
-//     if (!occupantMap[name]) {
-//       occupantMap[name] = [occupant];
-//     } else if (occupantMap[name]) {
-//       occupantMap[name].push(occupant);
-//     }
-//     if (occupantMap[name].length > 1) {
-//       occupantMap[name] = occupantMap[name].sort((o1, o2) => {
-//         if (o1.beginDate > o2.beginDate) {
-//           return -1;
-//         } else if (o1.beginDate < o2.beginDate) {
-//           return 1;
-//         }
-//         return 0;
-//       });
-//     }
-//   });
-
-//   await Promise.all(
-//     Object.values(occupantMap).map(async (groupedOccupants) => {
-//       const contracts = await Promise.all(
-//         groupedOccupants.map(async (occupant) => {
-//           const documents = await Document.find({
-//             realmId: occupant.realmId,
-//             tenantId: occupant._id,
-//           });
-
-//           return await Contract.create({
-//             realmId: occupant.realmId,
-//             tenantName: occupant.name,
-//             lease: occupant.leaseId,
-//             beginDate: occupant.beginDate,
-//             endDate: occupant.endDate,
-//             terminationDate: occupant.terminationDate,
-//             securityDeposit: {
-//               payments: [
-//                 {
-//                   amount: occupant.guaranty ?? 0,
-//                 },
-//               ],
-//               refunds:
-//                 occupant.guarantyPayback >= 0
-//                   ? [
-//                       {
-//                         amount: occupant.guarantyPayback,
-//                       },
-//                     ]
-//                   : undefined,
-//             },
-//             properties: occupant.properties.map((property) => ({
-//               property: property.propertyId,
-//               rent: property.rent,
-//               expenses: property.expenses,
-//               entryDate: property.entryDate,
-//               exitDate: property.exitDate,
-//             })),
-//             billingInfo: {
-//               reference: occupant.reference,
-//               isVat: occupant.isVat,
-//               vatRatio: occupant.vatRatio,
-//               discount: occupant.discount,
-//             },
-//             documents: documents.map((doc) => String(doc._id)),
-//             rents: occupant.rents,
-//             stepperMode: occupant.stepperMode,
-//           });
-//         })
-//       );
-
-//       const occupant = groupedOccupants[0];
-//       return await NewTenant.create({
-//         realmId: occupant.realmId,
-//         name: occupant.name,
-//         isCompany: occupant.isCompany,
-//         companyInfo: occupant.isCompany
-//           ? {
-//               name: occupant.name,
-//               legalStructure: occupant.legalForm,
-//               legalRepresentative: occupant.manager,
-//               capital: occupant.capital,
-//               ein: occupant.siret,
-//               dos: occupant.rcs,
-//             }
-//           : undefined,
-//         addresses: [
-//           {
-//             street1: occupant.street1,
-//             street2: occupant.street2,
-//             zipCode: occupant.zipCode,
-//             city: occupant.city,
-//           },
-//         ],
-//         contacts: occupant.contacts.map((contact) => ({
-//           name: contact.contact,
-//           email: contact.email,
-//           phone1: contact.phone,
-//         })),
-//         contracts: contracts.map((c) => String(c._id)),
-//       });
-//     })
-//   );
-// }
-
-// Main
-async function Main(processExitOnCompleted = false) {
+export default async function migratedb() {
   let failure = false;
+  let db;
   try {
-    failure = await withDB(async () => {
-      await cleanupUnusedAttributes();
-      await updateThirdPartyConfiguration();
+    // init db connection when running as a script
+    // otherwise the connection is managed by the service
+    if (isRunningAsScript()) {
+      logger.info('Connecting to database...');
+      db = MongoClient.getInstance(new EnvironmentConfig());
+      await db.connect();
+      logger.info('Database connected');
+    }
 
-      //await migrateOccupantToTenant();
-    });
+    logger.info('Starting migration...');
+    await cleanupUnusedAttributes();
+    await updateThirdPartyConfiguration();
+    logger.info('Migration done');
   } catch (error) {
     logger.error(error);
     failure = true;
   } finally {
-    if (processExitOnCompleted) {
+    if (isRunningAsScript()) {
+      // disconnect db and exit process when running as a script
+      if (db) {
+        try {
+          await db.disconnect();
+        } catch (error) {
+          logger.error(error);
+          failure = true;
+        }
+      }
       process.exit(failure ? 1 : 0);
     }
   }
 }
 
-// run this block if script is executed not imported
-if (require.main === module) {
-  Main(true);
+const __filename = fileURLToPath(import.meta.url);
+function isRunningAsScript() {
+  return __filename === process.argv[1];
 }
 
-module.exports = Main;
+// run this block only when running as a script
+if (isRunningAsScript()) {
+  migratedb();
+}

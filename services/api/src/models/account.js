@@ -1,5 +1,5 @@
-const Model = require('./model');
-const OF = require('./objectfilter');
+import Model from './model.js';
+import OF from './objectfilter.js';
 
 class AccountModel extends Model {
   constructor() {
@@ -9,7 +9,7 @@ class AccountModel extends Model {
       password: String,
       firstname: String,
       lastname: String,
-      creation: String,
+      creation: String
     });
   }
 
@@ -17,7 +17,7 @@ class AccountModel extends Model {
     super.findFilter(
       null,
       {
-        email: email.toLowerCase(),
+        email: email.toLowerCase()
       },
       (errors, accounts) => {
         if (errors) {
@@ -45,4 +45,4 @@ class AccountModel extends Model {
   }
 }
 
-module.exports = new AccountModel();
+export default new AccountModel();

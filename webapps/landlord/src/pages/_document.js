@@ -12,6 +12,10 @@ export default function MyDocument() {
           src={`${process.env.BASE_PATH || ''}/__ENV.js`}
           strategy="beforeInteractive"
         />
+        <link
+          href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.min.css"
+          rel="stylesheet"
+        />
       </Head>
       <body className="bg-background text-secondary-foreground">
         <Main />

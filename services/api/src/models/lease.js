@@ -1,5 +1,5 @@
-const OF = require('./objectfilter');
-const Model = require('./model');
+import Model from './model.js';
+import OF from './objectfilter.js';
 
 class LeaseModel extends Model {
   constructor() {
@@ -13,7 +13,7 @@ class LeaseModel extends Model {
       active: Boolean,
 
       // ui state
-      stepperMode: Boolean,
+      stepperMode: Boolean
     });
   }
 
@@ -34,4 +34,4 @@ class LeaseModel extends Model {
   }
 }
 
-module.exports = new LeaseModel();
+export default new LeaseModel();

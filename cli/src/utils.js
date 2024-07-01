@@ -32,7 +32,7 @@ function loadEnv(args) {
 
   return dotenvExpand.expand({
     ignoreProcessEnv,
-    parsed: { ...baseEnv, ...env },
+    parsed: { ...baseEnv, ...env }
   }).parsed;
 }
 
@@ -105,7 +105,9 @@ function getBackupPath() {
     backupPath = path.resolve(__dirname, '..', '..', 'backup');
   }
   if (!fs.existsSync(backupPath)) {
-    throw new Error('Cannot find backup path check if the backup folder exists. Ensure you are running the command from the root of the project.');
+    throw new Error(
+      'Cannot find backup path check if the backup folder exists. Ensure you are running the command from the root of the project.'
+    );
   }
   return backupPath;
 }
@@ -115,39 +117,67 @@ function getComposeActions(cri, action) {
     case 'docker':
     case 'docker-compose':
       return {
-        start: ['up', '-d', '--force-recreate', '--remove-orphans', '--no-color', '--quiet-pull'],
-        ci: ['up', '-d', '--force-recreate', '--remove-orphans',  '--no-color', '--quiet-pull'],
+        start: [
+          'up',
+          '-d',
+          '--force-recreate',
+          '--remove-orphans',
+          '--no-color',
+          '--quiet-pull'
+        ],
+        ci: [
+          'up',
+          '-d',
+          '--force-recreate',
+          '--remove-orphans',
+          '--no-color',
+          '--quiet-pull'
+        ],
         dev: [
           'up',
           '--build',
           '--force-recreate',
           '--remove-orphans',
-          '--no-color',
+          '--no-color'
         ],
         build: ['build', '--no-cache', '--force-rm'],
         stop: ['rm', '--stop', '--force'],
         status: ['ps'],
         config: ['config'],
-        run: ['run'],
+        run: ['run']
       }[action];
 
     case 'podman':
     case 'podman-compose':
       return {
-        start: ['up', '-d', '--force-recreate', '--remove-orphans', '--no-color', '--quiet-pull'],
-        ci: ['up', '-d', '--force-recreate', '--remove-orphans', '--no-color', '--quiet-pull'],
+        start: [
+          'up',
+          '-d',
+          '--force-recreate',
+          '--remove-orphans',
+          '--no-color',
+          '--quiet-pull'
+        ],
+        ci: [
+          'up',
+          '-d',
+          '--force-recreate',
+          '--remove-orphans',
+          '--no-color',
+          '--quiet-pull'
+        ],
         dev: [
           'up',
           '--build',
           '--force-recreate',
           '--remove-orphans',
-          '--no-color',
+          '--no-color'
         ],
         build: ['build', '--no-cache'],
         stop: ['down'],
         status: ['ps'],
         config: ['config'],
-        run: ['run'],
+        run: ['run']
       }[action];
   }
 }
@@ -162,19 +192,19 @@ async function runCompose(
     '-f',
     'docker-compose.microservices.base.yml',
     '-f',
-    'docker-compose.microservices.prod.yml',
+    'docker-compose.microservices.prod.yml'
   ];
   const devComposeArgs = [
     '-f',
     'docker-compose.microservices.base.yml',
     '-f',
-    'docker-compose.microservices.dev.yml',
+    'docker-compose.microservices.dev.yml'
   ];
   const ciComposeArgs = [
     '-f',
     'docker-compose.microservices.base.yml',
     '-f',
-    'docker-compose.microservices.test.yml',
+    'docker-compose.microservices.test.yml'
   ];
 
   let composeFilesArgs = devComposeArgs;
@@ -191,7 +221,7 @@ async function runCompose(
   } else if (composeOptions.runMode === 'ci') {
     process.env.NODE_ENV = 'test';
   }
-   
+
   const baseCmd = await findCRI();
 
   const actionArgs = getComposeActions(baseCmd[0], composeAction);
@@ -201,12 +231,7 @@ async function runCompose(
 
   await runCommand(
     baseCmd[0],
-    [
-      ...baseCmd.slice(1),
-      ...composeFilesArgs,
-      ...actionArgs,
-      ...composeArgs,
-    ],
+    [...baseCmd.slice(1), ...composeFilesArgs, ...actionArgs, ...composeArgs],
     commandOptions
   );
 }
@@ -216,10 +241,55 @@ function validEmail(email) {
   return re.test(email);
 }
 
+function destructUrl(baseUrl) {
+  const url = new URL(baseUrl);
+  let subDomain;
+  let domain = url.hostname;
+
+  if (!/^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$/.test(url.hostname)) {
+    // avoid the split if hostname is an IP address
+    const canonicalHostname = url.hostname.split('.');
+    if (canonicalHostname.length >= 3) {
+      subDomain = canonicalHostname.slice(0, -2).join('.');
+      domain = `${canonicalHostname.at(-2)}.${canonicalHostname.at(-1)}`;
+    }
+  }
+
+  let basePath;
+  if (url.pathname !== '/') {
+    basePath = url.pathname;
+  }
+
+  return {
+    protocol: url.protocol,
+    subDomain,
+    domain,
+    port: url.port,
+    basePath
+  };
+}
+
+function buildUrl({ protocol, subDomain, domain, port, basePath }) {
+  let url = `${protocol}//`;
+  if (subDomain) {
+    url += `${subDomain}.`;
+  }
+  url += `${domain}`;
+  if (port) {
+    url += `:${port}`;
+  }
+  if (basePath) {
+    url += basePath;
+  }
+  return url;
+}
+
 module.exports = {
   generateRandomToken,
   loadEnv,
   runCompose,
   validEmail,
-  getBackupPath
+  getBackupPath,
+  destructUrl,
+  buildUrl
 };

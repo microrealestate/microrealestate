@@ -3,7 +3,7 @@ import fileUrl from 'file-url';
 import moment from 'moment';
 import path from 'path';
 // eslint-disable-next-line import/no-unresolved
-import { Service } from '@microrealestate/typed-common';
+import { Service } from '@microrealestate/common';
 
 export async function get(params) {
   const { TEMPLATES_DIRECTORY } = Service.getInstance().envConfig.getValues();

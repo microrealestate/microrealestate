@@ -1,7 +1,7 @@
-const logger = require('winston');
-const db = require('./db');
+import * as db from './db.js';
+import logger from 'winston';
 
-module.exports = class Model {
+export default class Model {
   constructor(collection) {
     this.collection = collection;
     db.addCollection(collection);
@@ -92,4 +92,4 @@ module.exports = class Model {
       callback(errors && errors.length > 0 ? errors : null);
     });
   }
-};
+}

@@ -1,10 +1,26 @@
 {
   "name": "@microrealestate/common",
   "version": "1.0.0",
-  "description": "Common modules required for the MicroRealEstate application'",
+  "description": "Common modules required by the MicroRealEstate services'",
   "author": "Camel Aissani",
   "license": "MIT",
+  "type": "module",
   "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "clean:types": "rimraf ../../types/dist",
+    "clean:common": "rimraf dist",
+    "clean:": "npm-run-all clean:types clean:common",
+    "transpile:types": "tsc --build ../../types/tsconfig.json",
+    "transpile:common": "tsc",
+    "transpile": "npm-run-all transpile:types transpile:common",
+    "build": "npm-run-all clean transpile",
+    "test": "jest",
+    "eslint": "eslint .",
+    "lint": "npm-run-all transpile eslint",
+    "format": "prettier --write '**/*.{js,jsx,ts,tsx,json,css}'"
+  },
   "dependencies": {
     "axios": "1.6.2",
     "bcrypt": "5.1.1",
@@ -15,18 +31,25 @@
     "lodash": "4.17.21",
     "method-override": "3.0.0",
     "mongoose": "6.11.3",
-    "redis": "3.1.1",
-    "winston": "2.4.4"
+    "redis": "4.6.10",
+    "winston": "2.4.7"
   },
   "devDependencies": {
+    "@microrealestate/types": "*",
+    "@types/bcrypt": "5.0.1",
+    "@types/cookie-parser": "1.4.5",
+    "@types/express": "4.17.20",
+    "@types/jsonwebtoken": "9.0.4",
+    "@types/lodash": "4.14.200",
+    "@types/method-override": "0.0.34",
+    "@typescript-eslint/eslint-plugin": "6.14.0",
+    "@typescript-eslint/parser": "6.14.0",
     "eslint": "8.55.0",
     "eslint-config-prettier": "9.1.0",
     "eslint-plugin-import": "2.29.1",
-    "jest": "27.5.0"
-  },
-  "scripts": {
-    "test": "jest",
-    "lint": "eslint .",
-    "format": "prettier --write '**/*.{js,jsx,ts,tsx,json,css}'"
+    "jest": "27.5.0",
+    "npm-run-all": "4.1.5",
+    "rimraf": "5.0.5",
+    "typescript": "5.3.2"
   }
 }

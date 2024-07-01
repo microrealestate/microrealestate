@@ -5,7 +5,7 @@ import { useMediaQuery } from 'usehooks-ts';
 import useTranslation from 'next-translate/useTranslation';
 
 function InProgress() {
-  const { t } = useTranslation();
+  const { t } = useTranslation('common');
   return (
     <div className='flex items-center justify-center gap-2 text-sm h-10 md:justify-normal'>
       <span>{t('In progress')}</span>
