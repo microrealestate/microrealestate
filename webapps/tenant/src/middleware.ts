@@ -1,7 +1,7 @@
 import {
   DEFAULT_LOCALE,
   getLocaleFromPathname,
-  LOCALES,
+  LOCALES
 } from '@/utils/i18n/common';
 import getServerEnv from './utils/env/server';
 import { Locale } from '@microrealestate/types';
@@ -11,7 +11,10 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 const DOMAIN_URL = new URL(getServerEnv('DOMAIN_URL') || 'http://localhost');
-const GATEWAY_URL = getServerEnv('DOCKER_GATEWAY_URL') || getServerEnv('GATEWAY_URL') || 'http://localhost';
+const GATEWAY_URL =
+  getServerEnv('DOCKER_GATEWAY_URL') ||
+  getServerEnv('GATEWAY_URL') ||
+  'http://localhost';
 
 export async function middleware(request: NextRequest) {
   let nextResponse;
@@ -45,9 +48,9 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     // Skip all paths which do not need to be localized
-    '/((?!api|_next/static|_next/image|favicon.svg).*)',
-    '/',
-  ],
+    '/((?!api|health|_next/static|_next/image|favicon.svg).*)',
+    '/'
+  ]
 };
 
 function getRequestLocale(request: NextRequest) {
@@ -76,7 +79,7 @@ async function injectSessionToken(request: NextRequest) {
         httpOnly: true,
         sameSite: 'lax',
         secure: DOMAIN_URL.protocol === 'https:',
-        domain: DOMAIN_URL.hostname,
+        domain: DOMAIN_URL.hostname
       });
       return nextResponse;
     } catch (error) {
@@ -117,8 +120,8 @@ async function redirectSignIn(request: NextRequest) {
         headers: {
           cookie: `sessionToken=${
             request.cookies.get('sessionToken')?.value || ''
-          }`,
-        },
+          }`
+        }
       }
     );
     session = await response.json();
@@ -150,7 +153,7 @@ function injectXPathHeader(request: NextRequest) {
   requestHeaders.set('x-path', pathname);
   return NextResponse.next({
     request: {
-      headers: requestHeaders,
-    },
+      headers: requestHeaders
+    }
   });
 }

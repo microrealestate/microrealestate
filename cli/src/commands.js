@@ -4,6 +4,7 @@ const clear = require('clear');
 const chalk = require('chalk');
 const figlet = require('figlet');
 const inquirer = require('inquirer');
+const fetch = require('node-fetch');
 const moment = require('moment');
 const { buildUrl, destructUrl } = require('./utils');
 const {
@@ -36,20 +37,32 @@ function displayHeader() {
     )
   );
   console.log('');
+}
+
+function displaySponsorMessage() {
+  console.log('');
+  console.log(chalk.dim('#'.repeat(80)));
   console.log(
-    chalk.red.bold('❤'),
+    chalk.dim('#' + ' '.repeat(2)),
+    chalk.red.bold(' '.repeat(6) + '❤'),
     chalk.dim('If you like this project, please consider sponsoring it'),
-    chalk.red.bold('❤')
+    chalk.red.bold('❤'),
+    chalk.dim(' '.repeat(9) + '#')
   );
   console.log(
+    chalk.dim('#' + ' '.repeat(2)),
     chalk.dim('Click here >>>'),
     chalk.cyan.bold('https://github.com/sponsors/camelaissani'),
-    chalk.dim('<<< to sponsor')
+    chalk.dim('<<< to sponsor'),
+    chalk.dim(' '.repeat(4) + '#')
   );
   console.log(
+    chalk.dim('#' + ' '.repeat(32)),
     chalk.dim('Thank you'),
-    chalk.white('🙏')
-   );
+    chalk.white('🙏'),
+    chalk.dim(' '.repeat(32) + '#')
+  );
+  console.log(chalk.dim('#'.repeat(80)));
   console.log('');
 }
 
@@ -80,27 +93,37 @@ async function start() {
 
   await runCompose('start', [], { runMode: 'prod' });
 
+  const healthcheckSuccess = await checkHealth();
+  if (!healthcheckSuccess) {
+    console.log(chalk.red('Application did not start successfully'));
+    displayConfigWarningsAndErrors();
+    return;
+  }
+
   console.log(chalk.green('application started\n'));
   const landlordAppUrl = process.env.APP_URL || process.env.LANDLORD_APP_URL;
   console.log(
-    'Landlord front-end ready and accessible on',
+    chalk.dim('Landlord front-end ready and accessible on'),
     chalk.green.bold(landlordAppUrl)
   );
 
   console.log(
-    'Tenant front-end ready and accessible on',
+    chalk.dim('Tenant front-end ready and accessible on'),
     chalk.green.bold(process.env.TENANT_APP_URL)
   );
 
   if (process.env.SIGNUP === 'true') {
     console.log(
-      chalk.white.bgBlue('INFO'),
-      'You can now create your landlord account on the landlord front-end',
+      chalk.dim(
+        'You can now create your landlord account on the landlord front-end'
+      ),
       chalk.green.bold(`${landlordAppUrl}/signup`)
     );
   }
 
   displayConfigWarningsAndErrors();
+
+  displaySponsorMessage();
 }
 
 async function stop({ runMode = 'prod' }) {
@@ -112,6 +135,8 @@ async function stop({ runMode = 'prod' }) {
     { runMode },
     { waitLog: 'stopping current running application...' }
   );
+
+  displaySponsorMessage();
 }
 
 async function dev() {
@@ -155,6 +180,39 @@ async function showConfig(runMode) {
   await runCompose('config', [], {
     runMode
   });
+}
+
+async function checkHealth() {
+  let healthcheckSuccess = true;
+  for await (const attempt of [...Array(5).keys()]) {
+    let response;
+    try {
+      console.log(
+        chalk.dim(
+          `checking if the application is started... (${attempt + 1}/5)`
+        )
+      );
+      response = await fetch(`${process.env.GATEWAY_URL}/health`);
+    } catch (error) {
+      response = { status: 500, statusText: error.message };
+    }
+
+    if (response.status !== 200) {
+      healthcheckSuccess = false;
+      if (attempt < 4) {
+        console.log(chalk.dim('retrying in 2 seconds...'));
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+      } else {
+        console.log(
+          chalk.red(`failed: ${response.status} ${response.statusText}`)
+        );
+      }
+    } else {
+      healthcheckSuccess = true;
+      break;
+    }
+  }
+  return healthcheckSuccess;
 }
 
 async function restoreDB(backupFile) {
@@ -245,6 +303,7 @@ function displayConfigWarningsAndErrors() {
       )
     );
   }
+  console.log('');
 }
 
 function displayHelp() {

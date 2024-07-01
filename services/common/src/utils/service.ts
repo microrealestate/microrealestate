@@ -43,6 +43,7 @@ export default class Service {
   useRedis?: boolean;
   useAxios?: boolean;
   useRequestParsers?: boolean;
+  exposeHealthCheck?: boolean;
   onStartUp?: (express: Express.Application) => Promise<void>;
   onShutDown?: () => Promise<void>;
 
@@ -71,12 +72,15 @@ export default class Service {
     useRedis,
     useAxios,
     useRequestParsers = true,
+    exposeHealthCheck = true,
     onStartUp,
     onShutDown
   }: ServiceOptions) {
     this.name = name;
     this.port = this.envConfig.getValues().PORT;
     this.useAxios = useAxios;
+    this.useRequestParsers = useRequestParsers;
+    this.exposeHealthCheck = exposeHealthCheck;
     this.onStartUp = onStartUp;
     this.onShutDown = onShutDown;
     this.useMongo = useMongo;
@@ -94,7 +98,7 @@ export default class Service {
       httpInterceptors();
     }
 
-    if (useRequestParsers) {
+    if (this.useRequestParsers) {
       this.expressServer.use(_cookieParser());
       this.expressServer.use(Express.urlencoded({ extended: true }));
       this.expressServer.use(Express.json());
@@ -169,6 +173,13 @@ export default class Service {
       await this.redisClient.connect();
       // await this.redisClient.monitor();
     }
+
+    if (this.exposeHealthCheck) {
+      this.expressServer.get('/health', async (req, res) => {
+        res.status(200).send('OK');
+      });
+    }
+
     await this.onStartUp?.(this.expressServer);
     await startService();
   }

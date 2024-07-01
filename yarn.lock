@@ -3691,6 +3691,7 @@ __metadata:
     "@microrealestate/common": "*"
     "@microrealestate/types": "*"
     "@types/cors": 2.8.15
+    axios: 1.6.2
     cors: 2.8.5
     eslint: 8.55.0
     eslint-config-prettier: 9.1.0

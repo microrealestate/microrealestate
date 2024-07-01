@@ -9,6 +9,7 @@ export type ServiceOptions = {
   useRedis?: boolean;
   useAxios?: boolean;
   useRequestParsers?: boolean;
+  exposeHealthCheck?: boolean;
   onStartUp?: (express: Express.Application) => Promise<void>;
   onShutDown?: () => Promise<void>;
 };
