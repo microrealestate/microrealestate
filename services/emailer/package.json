@@ -8,18 +8,19 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "clean:types": "rimraf ../../types/dist",
-    "clean:common": "rimraf ../typed-common/dist",
+    "clean:common": "rimraf ../common/dist",
     "clean": "npm-run-all clean:types clean:common",
     "transpile:types": "tsc --build ../../types/tsconfig.json",
-    "transpile:common": "tsc --build ../typed-common/tsconfig.json",
+    "transpile:common": "tsc --build ../common/tsconfig.json",
     "transpile": "npm-run-all transpile:types transpile:common",
     "build": "npm-run-all clean transpile",
     "watch:types": "tsc --build ../../types/tsconfig.json --watch --preserveWatchOutput",
-    "watch:common": "tsc --build ../typed-common/tsconfig.json --watch --preserveWatchOutput",
+    "watch:common": "tsc --build ../common/tsconfig.json --watch --preserveWatchOutput",
     "watch:service": "nodemon -w src --inspect=0.0.0.0:9228 ./src/index.js",
     "start": "node ./src/index.js",
     "dev": "npm-run-all build --parallel watch:types watch:common watch:service",
-    "lint": "eslint .",
+    "eslint": "eslint .",
+    "lint": "npm-run-all transpile eslint",
     "format": "prettier --write '**/*.{js,jsx,ts,tsx,json,css}'"
   },
   "keywords": [
@@ -30,7 +31,7 @@
   "author": "Camel Aissani",
   "license": "MIT",
   "dependencies": {
-    "@microrealestate/typed-common": "*",
+    "@microrealestate/common": "*",
     "axios": "1.6.2",
     "ejs": "3.1.8",
     "form-data": "4.0.0",
@@ -39,7 +40,7 @@
     "mailgun.js": "8.2.1",
     "moment": "2.29.4",
     "nodemailer": "6.9.0",
-    "winston": "2.4.4"
+    "winston": "2.4.7"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "6.14.0",

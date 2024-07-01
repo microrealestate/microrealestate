@@ -1,8 +1,7 @@
 // eslint-disable-next-line import/no-unresolved
-import { Service } from '@microrealestate/typed-common';
+import { Service } from '@microrealestate/common';
 
 export function get(email /*, params, data*/) {
-  
   if (!email) {
     throw new Error('recipient email not found');
   }
@@ -25,6 +24,6 @@ export function get(email /*, params, data*/) {
     {
       to: email.toLowerCase(),
       from: emailDeliveryServiceConfig.fromEmail
-    },
+    }
   ];
 }

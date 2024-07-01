@@ -1,6 +1,6 @@
 import AWS from 'aws-sdk';
 // eslint-disable-next-line import/no-unresolved
-import { Crypto } from '@microrealestate/typed-common';
+import { Crypto } from '@microrealestate/common';
 import fs from 'fs-extra';
 import logger from 'winston';
 
@@ -14,7 +14,7 @@ function _initS3(b2Config) {
   return new AWS.S3({ endpoint: ep });
 }
 
-export function isEnabled(b2Config)  {
+export function isEnabled(b2Config) {
   return !!(
     b2Config?.keyId &&
     b2Config?.applicationKey &&
@@ -29,7 +29,7 @@ export function downloadFile(b2Config, url) {
   return s3
     .getObject({
       Bucket: b2Config.bucket,
-      Key: url,
+      Key: url
     })
     .createReadStream();
 }
@@ -43,7 +43,7 @@ export function uploadFile(b2Config, { file, fileName, url }) {
       {
         Bucket: b2Config.bucket,
         Key: url,
-        Body: fileStream,
+        Body: fileStream
       },
       (err, data) => {
         if (err) {
@@ -52,7 +52,7 @@ export function uploadFile(b2Config, { file, fileName, url }) {
         resolve({
           fileName,
           key: url,
-          versionId: data.VersionId,
+          versionId: data.VersionId
         });
       }
     );
@@ -69,9 +69,9 @@ export function deleteFiles(b2Config, urlsIds) {
         Delete: {
           Objects: urlsIds.map(({ url, versionId }) => ({
             Key: url,
-            VersionId: versionId,
-          })),
-        },
+            VersionId: versionId
+          }))
+        }
       },
       (err, data) => {
         if (err) {

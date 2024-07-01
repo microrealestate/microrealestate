@@ -1,8 +1,9 @@
-const config = require('../config');
-const mongojs = require('mongojs');
-const logger = require('winston');
+import logger from 'winston';
+import mongojs from 'mongojs';
+import { Service } from '@microrealestate/common';
+import sugar from 'sugar';
 
-require('sugar').extend();
+sugar.extend();
 
 function stringId2ObjectId(obj) {
   if (obj) {
@@ -25,7 +26,7 @@ function buildFilter(realm, inputfilter) {
   const filter = stringId2ObjectId(inputfilter);
   if (realm) {
     const realmFilter = {
-      realmId: realm._id,
+      realmId: realm._id
     };
     const andArray = filter.$query ? filter.$query.$and : null;
     if (andArray) {
@@ -48,190 +49,153 @@ function logDBError(err) {
 const collections = [];
 let db;
 
-module.exports = {
-  init() {
-    if (!db) {
-      return new Promise((resolve, reject) => {
-        logger.debug(`connecting database ${config.MONGO_URL}...`);
-        db = mongojs(config.MONGO_URL, collections);
-        db.listCollections(() => {}); // Run this command to force connection a this stage
-        db.on('connect', function () {
-          logger.info(`connected to ${config.MONGO_URL}`);
-          resolve(db);
-        });
-
-        db.on('error', function (err) {
-          logger.error(`cannot connect to ${config.MONGO_URL}`);
-          reject(err);
-        });
+export function init() {
+  if (!db) {
+    return new Promise((resolve, reject) => {
+      const config = Service.getInstance().envConfig.getValues();
+      const obfuscatedConfig =
+        Service.getInstance().envConfig.getObfuscatedValues();
+      logger.debug(`connecting database ${obfuscatedConfig.MONGO_URL}...`);
+      db = mongojs(config.MONGO_URL, collections);
+      db.listCollections(() => {}); // Run this command to force connection a this stage
+      db.on('connect', function () {
+        logger.info(`connected to ${obfuscatedConfig.MONGO_URL}`);
+        resolve(db);
       });
-    }
-    logger.debug('database already connected');
-    return Promise.resolve(db);
-  },
 
-  exists() {
-    return new Promise((resolve /*, reject*/) => {
-      db.getCollectionNames((error, collectionNames) => {
-        resolve(!(error || !collectionNames || collectionNames.length === 0));
+      db.on('error', function (err) {
+        logger.error(`cannot connect to ${obfuscatedConfig.MONGO_URL}`);
+        reject(err);
       });
     });
-  },
+  }
+  logger.debug('database already connected');
+  return Promise.resolve(db);
+}
 
-  addCollection(collection) {
-    if (collections.indexOf(collection.toLowerCase()) >= 0) {
-      logger.silly(`db collection ${collection} already added`);
-      return;
-    }
-    collections.push(collection.toLowerCase());
-    logger.silly(`db collections have been updated ${collections}`);
-  },
-
-  findItemById(realm, collection, id, callback) {
-    logger.info(
-      `find item by id in collection ${collection} ${
-        realm && realm.length > 0 ? 'in realm: ' + realm.name : ''
-      }`
-    );
-    const query = buildFilter(realm, {
-      $query: {
-        _id: id,
-      },
+export function exists() {
+  return new Promise((resolve /*, reject*/) => {
+    db.getCollectionNames((error, collectionNames) => {
+      resolve(!(error || !collectionNames || collectionNames.length === 0));
     });
-    logger.debug(`\tfilter is ${JSON.stringify(query)}`);
+  });
+}
 
-    db[collection].find(query, function (err, dbItems) {
-      if (err || !dbItems || dbItems.length < 0) {
-        if (err) {
-          logDBError(err);
-        }
-        callback(['item has not been found in database']);
-        return;
-      }
-      logger.silly('\treturned values', dbItems.join('\n'));
-      callback([], dbItems);
-    });
-  },
+export function addCollection(collection) {
+  if (collections.indexOf(collection.toLowerCase()) >= 0) {
+    logger.silly(`db collection ${collection} already added`);
+    return;
+  }
+  collections.push(collection.toLowerCase());
+  logger.silly(`db collections have been updated ${collections}`);
+}
 
-  listWithFilter(realm, collection, filter, callback) {
-    logger.info(
-      `find items in collection: ${collection}${
-        realm && realm.length > 0 ? ' in realm: ' + realm.name : ''
-      }`
-    );
-    const query = buildFilter(realm, filter);
-    if (query) {
-      logger.debug(`\tfilter is ${JSON.stringify(query)}`);
+export function findItemById(realm, collection, id, callback) {
+  logger.info(
+    `find item by id in collection ${collection} ${
+      realm && realm.length > 0 ? 'in realm: ' + realm.name : ''
+    }`
+  );
+  const query = buildFilter(realm, {
+    $query: {
+      _id: id
     }
-    db[collection].find(query, function (err, dbItems) {
+  });
+  logger.debug(`\tfilter is ${JSON.stringify(query)}`);
+
+  db[collection].find(query, function (err, dbItems) {
+    if (err || !dbItems || dbItems.length < 0) {
       if (err) {
         logDBError(err);
-        callback(['item has not been found in database']);
-        return;
       }
-      if (dbItems) {
-        logger.silly('\treturned values', dbItems.join('\n'));
-      } else {
-        logger.silly('\treturned an empty list');
-      }
-      callback([], dbItems || []);
-    });
-  },
-
-  add(realm, collection, item, callback) {
-    logger.info(
-      `insert item in collection ${collection} ${
-        realm && realm.length > 0 ? 'in realm: ' + realm.name : ''
-      }`
-    );
-
-    item._id = mongojs.ObjectId();
-    if (realm) {
-      item.realmName = realm.name;
-      item.realmId = realm._id;
+      callback(['item has not been found in database']);
+      return;
     }
-    logger.debug('\titem is', item);
-    db[collection].save(item, function (err, saved) {
-      if (err || !saved) {
-        if (err) {
-          logDBError(err);
-        }
-        callback(['item not added in database']);
-        return;
-      }
-      item._id = item._id.toString();
-      logger.silly('\treturned values is', item);
-      callback([], item);
-    });
-  },
+    logger.silly('\treturned values', dbItems.join('\n'));
+    callback([], dbItems);
+  });
+}
 
-  update(realm, collection, item, callback) {
-    logger.info(
-      `update items in collection: ${collection}${
-        realm && realm.length > 0 ? ' in realm: ' + realm.name : ''
-      }`
-    );
-    const _id = item._id.toString();
-    delete item._id;
-    const filter = buildFilter(null, { _id });
-    const itemToUpdate = {
-      $set: item,
-    };
-    if (realm) {
-      itemToUpdate.$set = Object.merge(item, {
-        realmName: realm.name,
-        realmId: realm._id,
-      });
-    }
-    logger.debug(`\tfilter is ${JSON.stringify(filter)}`);
-    logger.silly(`\titem to update is ${JSON.stringify(itemToUpdate)}`);
-
-    db[collection].update(
-      filter,
-      itemToUpdate,
-      {
-        multi: true,
-      },
-      (err, saved) => {
-        if (err || !saved) {
-          if (err) {
-            logDBError(err);
-          }
-          callback(['item has not been updated in database']);
-          return;
-        }
-        item._id = _id;
-        logger.silly('\treturned value is', item);
-        callback([], item);
-      }
-    );
-  },
-
-  upsert(realm, collection, query, fieldsToSet, fieldsToSetOnInsert, callback) {
-    logger.info(
-      `upsert in collection ${collection} ${
-        realm && realm.length > 0 ? 'in realm: ' + realm.name : ''
-      }`
-    );
-
-    const fieldsToUpdate = {
-      $set: fieldsToSet,
-      $setOnInsert: fieldsToSetOnInsert,
-    };
-    if (realm) {
-      fieldsToUpdate.$set = Object.merge(fieldsToSet, {
-        realmName: realm.name,
-        realmId: realm._id,
-      });
-    }
-    const options = {
-      upsert: true,
-    };
-
+export function listWithFilter(realm, collection, filter, callback) {
+  logger.info(
+    `find items in collection: ${collection}${
+      realm && realm.length > 0 ? ' in realm: ' + realm.name : ''
+    }`
+  );
+  const query = buildFilter(realm, filter);
+  if (query) {
     logger.debug(`\tfilter is ${JSON.stringify(query)}`);
-    logger.silly(`\titem to update is ${JSON.stringify(fieldsToSet)}`);
-    logger.silly(`\titem to insert is ${JSON.stringify(fieldsToSetOnInsert)}`);
-    db[collection].update(query, fieldsToUpdate, options, (err, saved) => {
+  }
+  db[collection].find(query, function (err, dbItems) {
+    if (err) {
+      logDBError(err);
+      callback(['item has not been found in database']);
+      return;
+    }
+    if (dbItems) {
+      logger.silly('\treturned values', dbItems.join('\n'));
+    } else {
+      logger.silly('\treturned an empty list');
+    }
+    callback([], dbItems || []);
+  });
+}
+
+export function add(realm, collection, item, callback) {
+  logger.info(
+    `insert item in collection ${collection} ${
+      realm && realm.length > 0 ? 'in realm: ' + realm.name : ''
+    }`
+  );
+
+  item._id = mongojs.ObjectId();
+  if (realm) {
+    item.realmName = realm.name;
+    item.realmId = realm._id;
+  }
+  logger.debug('\titem is', item);
+  db[collection].save(item, function (err, saved) {
+    if (err || !saved) {
+      if (err) {
+        logDBError(err);
+      }
+      callback(['item not added in database']);
+      return;
+    }
+    item._id = item._id.toString();
+    logger.silly('\treturned values is', item);
+    callback([], item);
+  });
+}
+
+export function update(realm, collection, item, callback) {
+  logger.info(
+    `update items in collection: ${collection}${
+      realm && realm.length > 0 ? ' in realm: ' + realm.name : ''
+    }`
+  );
+  const _id = item._id.toString();
+  delete item._id;
+  const filter = buildFilter(null, { _id });
+  const itemToUpdate = {
+    $set: item
+  };
+  if (realm) {
+    itemToUpdate.$set = Object.merge(item, {
+      realmName: realm.name,
+      realmId: realm._id
+    });
+  }
+  logger.debug(`\tfilter is ${JSON.stringify(filter)}`);
+  logger.silly(`\titem to update is ${JSON.stringify(itemToUpdate)}`);
+
+  db[collection].update(
+    filter,
+    itemToUpdate,
+    {
+      multi: true
+    },
+    (err, saved) => {
       if (err || !saved) {
         if (err) {
           logDBError(err);
@@ -239,32 +203,77 @@ module.exports = {
         callback(['item has not been updated in database']);
         return;
       }
-      callback([]);
-    });
-  },
+      item._id = _id;
+      logger.silly('\treturned value is', item);
+      callback([], item);
+    }
+  );
+}
 
-  remove(realm, collection, items, callback) {
-    logger.info(
-      `remove items in collection: ${collection}${
-        realm && realm.length > 0 ? 'in realm: ' + realm.name : ''
-      }`
-    );
-    const filter = buildFilter(null, {
-      $or: items.map((item) => {
-        return { _id: item };
-      }),
-    });
+export function upsert(
+  realm,
+  collection,
+  query,
+  fieldsToSet,
+  fieldsToSetOnInsert,
+  callback
+) {
+  logger.info(
+    `upsert in collection ${collection} ${
+      realm && realm.length > 0 ? 'in realm: ' + realm.name : ''
+    }`
+  );
 
-    logger.debug(`\tfilter is ${JSON.stringify(filter)}`);
-    db[collection].remove(filter, function (err, deleted) {
-      if (err || !deleted) {
-        if (err) {
-          logDBError(err);
-        }
-        callback(['item has not been deleted in database']);
-        return;
+  const fieldsToUpdate = {
+    $set: fieldsToSet,
+    $setOnInsert: fieldsToSetOnInsert
+  };
+  if (realm) {
+    fieldsToUpdate.$set = Object.merge(fieldsToSet, {
+      realmName: realm.name,
+      realmId: realm._id
+    });
+  }
+  const options = {
+    upsert: true
+  };
+
+  logger.debug(`\tfilter is ${JSON.stringify(query)}`);
+  logger.silly(`\titem to update is ${JSON.stringify(fieldsToSet)}`);
+  logger.silly(`\titem to insert is ${JSON.stringify(fieldsToSetOnInsert)}`);
+  db[collection].update(query, fieldsToUpdate, options, (err, saved) => {
+    if (err || !saved) {
+      if (err) {
+        logDBError(err);
       }
-      callback([]);
-    });
-  },
-};
+      callback(['item has not been updated in database']);
+      return;
+    }
+    callback([]);
+  });
+}
+
+export function remove(realm, collection, items, callback) {
+  logger.info(
+    `remove items in collection: ${collection}${
+      realm && realm.length > 0 ? 'in realm: ' + realm.name : ''
+    }`
+  );
+  const filter = buildFilter(null, {
+    $or: items.map((item) => {
+      return { _id: item };
+    })
+  });
+
+  logger.debug(`\tfilter is ${JSON.stringify(filter)}`);
+  db[collection].remove(filter, function (err, deleted) {
+    if (err || !deleted) {
+      if (err) {
+        logDBError(err);
+      }
+      callback(['item has not been deleted in database']);
+      return;
+    }
+    callback([]);
+  });
+}

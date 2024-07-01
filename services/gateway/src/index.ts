@@ -1,9 +1,5 @@
 import * as Express from 'express';
-import {
-  EnvironmentConfig,
-  Service,
-  URLUtils,
-} from '@microrealestate/typed-common';
+import { EnvironmentConfig, Service, URLUtils } from '@microrealestate/common';
 import cors from 'cors';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 import logger from 'winston';
@@ -33,13 +29,13 @@ async function Main() {
         TENANT_BASE_PATH: process.env.TENANT_BASE_PATH,
         DOMAIN_URL: process.env.DOMAIN_URL || 'http://localhost',
         CORS_ENABLED: process.env.CORS_ENABLED === 'true',
-        TENANTAPI_URL: process.env.TENANTAPI_URL,
+        TENANTAPI_URL: process.env.TENANTAPI_URL
       })
     );
     await service.init({
       name: 'Gateway',
       useRequestParsers: false,
-      onStartUp,
+      onStartUp
     });
     await service.startUp();
   } catch (error) {
@@ -58,7 +54,7 @@ function configureCORS(express: Express.Application) {
       allowedHeaders:
         //',If-Modified-Since,Range, DNT',
         'Origin,User-Agent,X-Requested-With,Cache-Control,Content-Type,Accept,Authorization,organizationId,timeout',
-      credentials: true,
+      credentials: true
     };
 
     express.use('/api', cors(corsOptions));
@@ -76,7 +72,7 @@ function exposeFrontends(express: Express.Application) {
       config.LANDLORD_BASE_PATH,
       createProxyMiddleware({
         target: config.LANDLORD_FRONTEND_URL,
-        ws: true,
+        ws: true
       })
     );
 
@@ -87,7 +83,7 @@ function exposeFrontends(express: Express.Application) {
       config.TENANT_BASE_PATH,
       createProxyMiddleware({
         target: config.TENANT_FRONTEND_URL,
-        ws: true,
+        ws: true
       })
     );
   }
@@ -99,7 +95,7 @@ function exposeServices(express: Express.Application) {
     '/api/v2/authenticator',
     createProxyMiddleware({
       target: config.AUTHENTICATOR_URL,
-      pathRewrite: { '^/api/v2/authenticator': '' },
+      pathRewrite: { '^/api/v2/authenticator': '' }
     })
   );
 
@@ -107,7 +103,7 @@ function exposeServices(express: Express.Application) {
     '/api/v2/documents',
     createProxyMiddleware({
       target: config.PDFGENERATOR_URL,
-      pathRewrite: { '^/api/v2': '' },
+      pathRewrite: { '^/api/v2': '' }
     })
   );
 
@@ -115,7 +111,7 @@ function exposeServices(express: Express.Application) {
     '/api/v2/templates',
     createProxyMiddleware({
       target: config.PDFGENERATOR_URL,
-      pathRewrite: { '^/api/v2': '' },
+      pathRewrite: { '^/api/v2': '' }
     })
   );
 
@@ -123,7 +119,7 @@ function exposeServices(express: Express.Application) {
     '/api/v2',
     createProxyMiddleware({
       target: config.API_URL,
-      pathRewrite: { '^/api/v2': '' },
+      pathRewrite: { '^/api/v2': '' }
     })
   );
 
@@ -131,7 +127,7 @@ function exposeServices(express: Express.Application) {
     '/tenantapi',
     createProxyMiddleware({
       target: config.TENANTAPI_URL,
-      pathRewrite: { '^/tenantapi': '' },
+      pathRewrite: { '^/tenantapi': '' }
     })
   );
 
@@ -141,7 +137,7 @@ function exposeServices(express: Express.Application) {
       '/api/reset',
       createProxyMiddleware({
         target: config.RESETSERVICE_URL,
-        pathRewrite: { '^/api': '' },
+        pathRewrite: { '^/api': '' }
       })
     );
   }

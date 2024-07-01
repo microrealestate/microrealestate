@@ -5,7 +5,7 @@ import {
   TenantAPI,
   UserServicePrincipal
 } from '@microrealestate/types';
-import { Collections } from '@microrealestate/typed-common';
+import { Collections } from '@microrealestate/common';
 import moment from 'moment';
 
 export async function getOneTenant(

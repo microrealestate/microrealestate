@@ -11,12 +11,12 @@ COPY yarn.lock .
 COPY .yarn/plugins .yarn/plugins
 COPY .yarn/releases .yarn/releases
 COPY types types
-COPY services/typed-common services/typed-common
+COPY services/common services/common
 COPY services/emailer/package.json services/emailer/package.json
 RUN --mount=type=cache,id=node_modules,target=/root/.yarn YARN_CACHE_FOLDER=/root/.yarn \
     yarn workspaces focus @microrealestate/emailer && \
     yarn workspace @microrealestate/types run build && \
-    yarn workspace @microrealestate/typed-common run build
+    yarn workspace @microrealestate/common run build
 
 FROM base AS deps
 WORKDIR /usr/app
@@ -26,9 +26,9 @@ COPY --from=build /usr/app/yarn.lock .
 COPY --from=build /usr/app/.yarn/plugins .yarn/plugins
 COPY --from=build /usr/app/.yarn/releases .yarn/releases
 COPY --from=build /usr/app/types/package.json types/package.json
-COPY --from=build /usr/app/services/typed-common/package.json ./services/typed-common/package.json
+COPY --from=build /usr/app/services/common/package.json ./services/common/package.json
 COPY --from=build /usr/app/services/emailer/package.json ./services/emailer/package.json
-COPY --from=build /usr/app/services/typed-common/dist ./services/typed-common/dist
+COPY --from=build /usr/app/services/common/dist ./services/common/dist
 RUN --mount=type=cache,id=node_modules,target=/root/.yarn YARN_CACHE_FOLDER=/root/.yarn \
     yarn workspaces focus --production @microrealestate/emailer
 

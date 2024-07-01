@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-unresolved
-import { Service } from '@microrealestate/typed-common';
+import { Service } from '@microrealestate/common';
 
 export function get(email /*, params, data*/) {
   if (!email) {
@@ -25,7 +25,7 @@ export function get(email /*, params, data*/) {
       to: email.toLowerCase(),
       from: emailDeliveryServiceConfig.fromEmail,
       replyTo: emailDeliveryServiceConfig.replyToEmail,
-      bcc: emailDeliveryServiceConfig.bccEmails,
-    },
+      bcc: emailDeliveryServiceConfig.bccEmails
+    }
   ];
 }

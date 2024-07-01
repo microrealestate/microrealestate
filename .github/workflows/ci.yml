@@ -95,71 +95,72 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-push-images
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Build linux cli
-      run: |
-       npm install -g pkg
-       yarn workspaces focus @microrealestate/cli
-       pkg cli/package.json --targets node18-linux-x64 --compress Brotli --output mre
+      - name: Build linux cli
+        run: |
+          npm install -g pkg
+          yarn workspaces focus @microrealestate/cli
+          pkg cli/package.json --targets node18-linux-x64 --compress Brotli --output mre
 
-    - name: Copy files to remote server
-      uses: appleboy/scp-action@v0.1.7
-      with:
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USERNAME }}
-        key: ${{ secrets.KEY }}
-        source: "base.env,docker-compose.microservices.base.yml,docker-compose.microservices.test.yml,mre"
-        target: microrealestate_ci
-    
-    - name: Start mre on remote server
-      uses: appleboy/ssh-action@v1.0.3
-      with:
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USERNAME }}
-        key: ${{ secrets.KEY }}     
-        script: |
-          cd microrealestate_ci
-          docker stop $(docker ps -qf "network=microrealestate_ci_net")
-          docker rm $(docker ps -qf "network=microrealestate_ci_net") 
-          docker rmi $(docker images --filter=reference="ghcr.io/microrealestate/microrealestate/*:${{ github.sha }}" -q)
-          MRE_VERSION=${{ github.sha }} ./mre ci
+      - name: Copy files to remote server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          source: 'base.env,docker-compose.microservices.base.yml,docker-compose.microservices.test.yml,mre'
+          target: microrealestate_ci
+
+      - name: Start mre on remote server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          script: |
+            cd microrealestate_ci
+            docker stop $(docker ps -qf "network=microrealestate_ci_net")
+            docker rm $(docker ps -qf "network=microrealestate_ci_net") 
+            docker rmi $(docker images --filter=reference="ghcr.io/microrealestate/microrealestate/*:${{ github.sha }}" -q)
+            docker system prune -f
+            MRE_VERSION=${{ github.sha }} ./mre ci
 
   healthcheck:
     runs-on: ubuntu-latest
     needs: deploy
     steps:
-    - name: Check if the app is up and running
-      uses: gerdemann/http-status-code@1.0.0
-      with:
-        url: ${{ secrets.CI_LANDLORD_APP_URL }}/en/signin
-        code: 200
-        interval: 5
-        
+      - name: Check if the app is up and running
+        uses: gerdemann/http-status-code@1.0.0
+        with:
+          url: ${{ secrets.CI_LANDLORD_APP_URL }}/en/signin
+          code: 200
+          interval: 5
+
   test:
     runs-on: ubuntu-latest
     needs: healthcheck
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Run tests
-      env:
-        GATEWAY_URL: ${{ secrets.CI_GATEWAY_URL }}
-        LANDLORD_APP_URL: ${{ secrets.CI_LANDLORD_APP_URL }}
-      run: |
-        corepack enable
-        yarn
-        yarn run e2e:ci
-    
-    - name: Upload cypress artifacts
-      uses: actions/upload-artifact@v4
-      if: ${{ always() }}
-      with:
-        name: cypress-results
-        path: |
-          e2e/cypress/screenshots
-          e2e/cypress/videos
-          e2e/cypress/results
-        if-no-files-found: ignore
+      - name: Run tests
+        env:
+          GATEWAY_URL: ${{ secrets.CI_GATEWAY_URL }}
+          LANDLORD_APP_URL: ${{ secrets.CI_LANDLORD_APP_URL }}
+        run: |
+          corepack enable
+          yarn
+          yarn run e2e:ci
+
+      - name: Upload cypress artifacts
+        uses: actions/upload-artifact@v4
+        if: ${{ always() }}
+        with:
+          name: cypress-results
+          path: |
+            e2e/cypress/screenshots
+            e2e/cypress/videos
+            e2e/cypress/results
+          if-no-files-found: ignore

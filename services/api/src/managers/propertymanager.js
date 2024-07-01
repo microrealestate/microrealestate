@@ -1,14 +1,14 @@
-const logger = require('winston');
-const FD = require('./frontdata');
-const propertyModel = require('../models/property');
-const Tenant = require('@microrealestate/common/models/tenant');
+import * as FD from './frontdata.js';
+import { Collections } from '@microrealestate/common';
+import logger from 'winston';
+import propertyModel from '../models/property.js';
 
 async function _toPropertiesData(realm, inputProperties) {
-  const allTenants = await Tenant.find({
+  const allTenants = await Collections.Tenant.find({
     realmId: realm._id,
     'properties.propertyId': {
-      $in: inputProperties.map(({ _id }) => _id),
-    },
+      $in: inputProperties.map(({ _id }) => _id)
+    }
   });
 
   return inputProperties.map((property) => {
@@ -28,7 +28,7 @@ async function _toPropertiesData(realm, inputProperties) {
 ////////////////////////////////////////////////////////////////////////////////
 // Exported functions
 ////////////////////////////////////////////////////////////////////////////////
-function add(req, res) {
+export function add(req, res) {
   const realm = req.realm;
   const property = propertyModel.schema.filter(req.body);
 
@@ -46,7 +46,7 @@ function add(req, res) {
   });
 }
 
-function update(req, res) {
+export function update(req, res) {
   const realm = req.realm;
   const property = propertyModel.schema.filter(req.body);
 
@@ -65,7 +65,7 @@ function update(req, res) {
   });
 }
 
-function remove(req, res) {
+export function remove(req, res) {
   const realm = req.realm;
   const ids = req.params.ids.split(',');
 
@@ -77,13 +77,13 @@ function remove(req, res) {
   });
 }
 
-function all(req, res) {
+export function all(req, res) {
   const realm = req.realm;
 
   propertyModel.findAll(realm, async (errors, dbProperties) => {
     if (errors && errors.length > 0) {
       return res.status(500).json({
-        errors: errors,
+        errors: errors
       });
     }
 
@@ -97,14 +97,14 @@ function all(req, res) {
   });
 }
 
-function one(req, res) {
+export function one(req, res) {
   const realm = req.realm;
   const tenantId = req.params.id;
 
   propertyModel.findOne(realm, tenantId, async (errors, dbProperty) => {
     if (errors && errors.length > 0) {
       return res.status(500).json({
-        errors: errors,
+        errors: errors
       });
     }
 
@@ -118,13 +118,13 @@ function one(req, res) {
   });
 }
 
-function overview(req, res) {
+export function overview(req, res) {
   const realm = req.realm;
 
   propertyModel.findAll(realm, async (errors, dbProperties) => {
     if (errors && errors.length > 0) {
       return res.status(500).json({
-        errors: errors,
+        errors: errors
       });
     }
 
@@ -133,7 +133,7 @@ function overview(req, res) {
       let result = {
         countAll: properties.length,
         countFree: 0,
-        countBusy: 0,
+        countBusy: 0
       };
 
       properties.reduce((acc, property) => {
@@ -152,12 +152,3 @@ function overview(req, res) {
     }
   });
 }
-
-module.exports = {
-  add,
-  update,
-  remove,
-  all,
-  one,
-  overview,
-};

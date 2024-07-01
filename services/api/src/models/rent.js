@@ -1,4 +1,4 @@
-const OF = require('./objectfilter');
+import OF from './objectfilter.js';
 
 class RentModel {
   constructor() {
@@ -11,9 +11,9 @@ class RentModel {
       promo: Number,
       notepromo: String,
       extracharge: Number,
-      noteextracharge: String,
+      noteextracharge: String
     });
   }
 }
 
-module.exports = new RentModel();
+export default new RentModel();

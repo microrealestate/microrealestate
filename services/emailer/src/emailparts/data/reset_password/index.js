@@ -1,8 +1,7 @@
 // eslint-disable-next-line import/no-unresolved
-import { Collections } from '@microrealestate/typed-common';
+import { Collections } from '@microrealestate/common';
 
 export async function get(email, params) {
-  
   const dbAccount = await Collections.Account.findOne({ email });
   if (!dbAccount) {
     throw new Error('user not found');
@@ -14,6 +13,6 @@ export async function get(email, params) {
   return {
     firstname: account.firstname,
     token: params.token,
-    useAppEmailService: true,
+    useAppEmailService: true
   };
 }

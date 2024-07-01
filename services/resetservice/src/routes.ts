@@ -1,6 +1,6 @@
 import * as Express from 'express';
 import logger from 'winston';
-import { Service } from '@microrealestate/typed-common';
+import { Service } from '@microrealestate/common';
 
 const routes = Express.Router();
 routes.delete('/reset', (req: Express.Request, res: Express.Response) => {
@@ -21,10 +21,7 @@ routes.delete('/reset', (req: Express.Request, res: Express.Response) => {
           'templates'
         ].map(
           (collection) =>
-            mongoClient
-              ?.connection()
-              .dropCollection(collection)
-              .catch(console.error)
+            mongoClient?.dropCollection(collection).catch(console.error)
         )
       );
 

@@ -1,12 +1,10 @@
-module.exports = {
-  transports: {
-    Console: jest.fn(),
-    File: jest.fn(),
-  },
-  add: jest.fn(),
-  remove: jest.fn(),
-  info: jest.fn(),
-  warn: jest.fn(),
-  error: jest.fn(),
-  silly: jest.fn(),
+export const transports = {
+  Console: jest.fn(),
+  File: jest.fn()
 };
+export const add = jest.fn();
+export const remove = jest.fn();
+export const info = jest.fn();
+export const warn = jest.fn();
+export const error = jest.fn();
+export const silly = jest.fn();

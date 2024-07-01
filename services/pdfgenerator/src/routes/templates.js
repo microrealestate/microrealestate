@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-unresolved
-import { Collections } from '@microrealestate/typed-common';
+import { Collections } from '@microrealestate/common';
 import express from 'express';
 
 /**
@@ -10,7 +10,7 @@ const _checkTemplateParameters = ({
   type,
   hasExpiryDate,
   contents,
-  html,
+  html
 }) => {
   const errors = [];
   if (!name) {
@@ -34,7 +34,7 @@ const _checkTemplateParameters = ({
   return errors;
 };
 
-export default function() {
+export default function () {
   const templatesApi = express.Router();
 
   templatesApi.get('/fields', (req, res) => {
@@ -42,273 +42,273 @@ export default function() {
       {
         _id: 'current_location',
         marker: '{{current.location}}',
-        type: 'string',
+        type: 'string'
       },
       {
         _id: 'current_date',
         marker: '{{current.date}}',
-        type: 'date',
+        type: 'date'
       },
       {
         _id: 'landlord_name',
         marker: '{{landlord.name}}',
-        type: 'string',
+        type: 'string'
       },
       {
         _id: 'landlord_contact_phone1',
         marker: '{{landlord.contact.phone1}}',
-        type: 'string',
+        type: 'string'
       },
       {
         _id: 'landlord_contact_phone2',
         marker: '{{landlord.contact.phone2}}',
-        type: 'string',
+        type: 'string'
       },
       {
         _id: 'landlord_contact_email',
         marker: '{{landlord.contact.email}}',
-        type: 'string',
+        type: 'string'
       },
       {
         _id: 'landlord_address_street1',
         marker: '{{landlord.address.street1}}',
-        type: 'string',
+        type: 'string'
       },
       {
         _id: 'landlord_address_street2',
         marker: '{{landlord.address.street2}}',
-        type: 'string',
+        type: 'string'
       },
       {
         _id: 'landlord_address_city',
         marker: '{{landlord.address.city}}',
-        type: 'string',
+        type: 'string'
       },
       {
         _id: 'landlord_address_state',
         marker: '{{landlord.address.state}}',
-        type: 'string',
+        type: 'string'
       },
       {
         _id: 'landlord_address_country',
         marker: '{{landlord.address.country}}',
-        type: 'string',
+        type: 'string'
       },
       {
         _id: 'landlord_address_zipCode',
         marker: '{{landlord.address.zipCode}}',
-        type: 'string',
+        type: 'string'
       },
       {
         _id: 'landlord_companyInfo_legalRepresentative',
         marker: '{{landlord.companyInfo.legalRepresentative}}',
-        type: 'string',
+        type: 'string'
       },
       {
         _id: 'landlord_companyInfo_legalStructure',
         marker: '{{landlord.companyInfo.legalStructure}}',
-        type: 'string',
+        type: 'string'
       },
       {
         _id: 'landlord_companyInfo_capital',
         marker: '{{landlord.companyInfo.capital}}',
-        type: 'amount',
+        type: 'amount'
       },
       {
         _id: 'landlord_companyInfo_ein',
         marker: '{{landlord.companyInfo.ein}}',
-        type: 'string',
+        type: 'string'
       },
       {
         _id: 'landlord_companyInfo_dos',
         marker: '{{landlord.companyInfo.dos}}',
-        type: 'string',
+        type: 'string'
       },
       {
         _id: 'landlord_companyInfo_vatNumber',
         marker: '{{landlord.companyInfo.vatNumber}}',
-        type: 'string',
+        type: 'string'
       },
       {
         _id: 'tenant_name',
         marker: '{{tenant.name}}',
-        type: 'string',
+        type: 'string'
       },
       {
         _id: 'tenant_contacts_name',
         marker: '{{tenant.contacts.[0].name}}',
-        type: 'string',
+        type: 'string'
       },
       {
         _id: 'tenant_contacts_phone1',
         marker: '{{tenant.contacts.[0].phone1}}',
-        type: 'string',
+        type: 'string'
       },
       {
         _id: 'tenant_contacts_phone2',
         marker: '{{tenant.contacts.[0].phone2}}',
-        type: 'string',
+        type: 'string'
       },
       {
         _id: 'tenant_contacts_email',
         marker: '{{tenant.contacts.[0].email}}',
-        type: 'string',
+        type: 'string'
       },
       {
         _id: 'tenant_address_street1',
         marker: '{{tenant.address.street1}}',
-        type: 'string',
+        type: 'string'
       },
       {
         _id: 'tenant_address_street2',
         marker: '{{tenant.address.street2}}',
-        type: 'string',
+        type: 'string'
       },
       {
         _id: 'tenant_address_city',
         marker: '{{tenant.address.city}}',
-        type: 'string',
+        type: 'string'
       },
       {
         _id: 'tenant_address_state',
         marker: '{{tenant.address.state}}',
-        type: 'string',
+        type: 'string'
       },
       {
         _id: 'tenant_address_country',
         marker: '{{tenant.address.country}}',
-        type: 'string',
+        type: 'string'
       },
       {
         _id: 'tenant_address_zipCode',
         marker: '{{tenant.address.zipCode}}',
-        type: 'string',
+        type: 'string'
       },
       {
         _id: 'tenant_companyInfo_legalRepresentative',
         marker: '{{tenant.companyInfo.legalRepresentative}}',
-        type: 'string',
+        type: 'string'
       },
       {
         _id: 'tenant_companyInfo_legalStructure',
         marker: '{{tenant.companyInfo.legalStructure}}',
-        type: 'string',
+        type: 'string'
       },
       {
         _id: 'tenant_companyInfo_capital',
         marker: '{{tenant.companyInfo.capital}}',
-        type: 'amount',
+        type: 'amount'
       },
       {
         _id: 'tenant_companyInfo_ein',
         marker: '{{tenant.companyInfo.ein}}',
-        type: 'string',
+        type: 'string'
       },
       {
         _id: 'tenant_companyInfo_dos',
         marker: '{{tenant.companyInfo.dos}}',
-        type: 'string',
+        type: 'string'
       },
       {
         _id: 'properties_name',
         marker: '{{properties.list.[0].name}}',
-        type: 'string',
+        type: 'string'
       },
       {
         _id: 'properties_description',
         marker: '{{properties.list.[0].description}}',
-        type: 'string',
+        type: 'string'
       },
       {
         _id: 'properties_type',
         marker: '{{properties.list.[0].type}}',
-        type: 'string',
+        type: 'string'
       },
       {
         _id: 'properties_surface',
         marker: '{{properties.list.[0].surface}}',
-        type: 'surface',
+        type: 'surface'
       },
       {
         _id: 'properties_total_surface',
         marker: '{{properties.total.surface}}',
-        type: 'surface',
+        type: 'surface'
       },
       {
         _id: 'properties_rent',
         marker: '{{properties.list.[0].rent}}',
-        type: 'amount',
+        type: 'amount'
       },
       {
         _id: 'properties_phone',
         marker: '{{properties.list.[0].phone}}',
-        type: 'string',
+        type: 'string'
       },
       {
         _id: 'properties_digicode',
         marker: '{{properties.list.[0].digicode}}',
-        type: 'string',
+        type: 'string'
       },
       {
         _id: 'properties_address_street1',
         marker: '{{properties.list.[0].address.street1}}',
-        type: 'string',
+        type: 'string'
       },
       {
         _id: 'properties_address_street2',
         marker: '{{properties.list.[0].address.street2}}',
-        type: 'string',
+        type: 'string'
       },
       {
         _id: 'properties_address_city',
         marker: '{{properties.list.[0].address.city}}',
-        type: 'string',
+        type: 'string'
       },
       {
         _id: 'properties_address_state',
         marker: '{{properties.list.[0].address.state}}',
-        type: 'string',
+        type: 'string'
       },
       {
         _id: 'properties_address_country',
         marker: '{{properties.list.[0].address.country}}',
-        type: 'string',
+        type: 'string'
       },
       {
         _id: 'properties_address_zipCode',
         marker: '{{properties.list.[0].address.zipCode}}',
-        type: 'string',
+        type: 'string'
       },
       {
         _id: 'lease_reference',
         marker: '{{lease.reference}}',
-        type: 'string',
+        type: 'string'
       },
       {
         _id: 'lease_beginDate',
         marker: '{{lease.beginDate}}',
-        type: 'date',
+        type: 'date'
       },
       {
         _id: 'lease_endDate',
         marker: '{{lease.endDate}}',
-        type: 'date',
+        type: 'date'
       },
       {
         _id: 'lease_deposit',
         marker: '{{lease.deposit}}',
-        type: 'amount',
+        type: 'amount'
       },
       {
         _id: 'lease_rentAmount',
         marker: '{{properties.total.rentAmount}}',
-        type: 'amount',
+        type: 'amount'
       },
       {
         _id: 'lease_expensesAmount',
         marker: '{{properties.total.expensesAmount}}',
-        type: 'amount',
-      },
+        type: 'amount'
+      }
     ]);
   });
 
@@ -317,7 +317,7 @@ export default function() {
       const organizationId = req.headers.organizationid;
 
       const templatesFound = await Collections.Template.find({
-        realmId: organizationId,
+        realmId: organizationId
       });
       if (!templatesFound) {
         return res.sendStatus(404);
@@ -338,7 +338,7 @@ export default function() {
 
       let templateFound = await Collections.Template.findOne({
         _id: templateId,
-        realmId: req.realm._id,
+        realmId: req.realm._id
       });
 
       if (!templateFound) {
@@ -368,7 +368,7 @@ export default function() {
         html,
         linkedResourceIds,
         required,
-        requiredOnceContractTerminated,
+        requiredOnceContractTerminated
       } = req.body || {};
       const createdTemplate = await Collections.Template.create({
         realmId: organizationId,
@@ -380,7 +380,7 @@ export default function() {
         html,
         linkedResourceIds,
         required,
-        requiredOnceContractTerminated,
+        requiredOnceContractTerminated
       });
 
       res.status(201).json(createdTemplate);
@@ -404,11 +404,11 @@ export default function() {
       const updatedTemplate = await Collections.Template.findOneAndReplace(
         {
           _id: template._id,
-          realmId: organizationId,
+          realmId: organizationId
         },
         {
           ...template,
-          realmId: organizationId,
+          realmId: organizationId
         },
         { new: true }
       );
@@ -428,7 +428,7 @@ export default function() {
       const templateIds = req.params.ids.split(',');
       const result = await Collections.Template.deleteMany({
         _id: { $in: templateIds },
-        realmId: organizationId,
+        realmId: organizationId
       });
 
       if (!result.acknowledged) {

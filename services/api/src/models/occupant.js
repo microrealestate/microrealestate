@@ -1,5 +1,5 @@
-const OF = require('./objectfilter');
-const Model = require('./model');
+import Model from './model.js';
+import OF from './objectfilter.js';
 
 class OccupantModel extends Model {
   constructor() {
@@ -35,7 +35,7 @@ class OccupantModel extends Model {
       vatRatio: Number,
       discount: Number,
       rents: Array,
-      stepperMode: Boolean,
+      stepperMode: Boolean
     });
   }
 
@@ -59,4 +59,4 @@ class OccupantModel extends Model {
   }
 }
 
-module.exports = new OccupantModel();
+export default new OccupantModel();

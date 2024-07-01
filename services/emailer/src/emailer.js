@@ -4,7 +4,7 @@ import * as EmailData from './emaildata.js';
 import * as EmailEngine from './emailengine.js';
 import * as EmailRecipients from './emailrecipients.js';
 // eslint-disable-next-line import/no-unresolved
-import { Collections, Service } from '@microrealestate/typed-common';
+import { Collections, Service } from '@microrealestate/common';
 import logger from 'winston';
 
 export async function status(recordId, startTerm, endTerm) {
@@ -15,11 +15,11 @@ export async function status(recordId, startTerm, endTerm) {
   if (startTerm && endTerm) {
     query.$and = [
       { 'params.term': { $gte: startTerm } },
-      { 'params.term': { $lte: endTerm } },
+      { 'params.term': { $lte: endTerm } }
     ];
   } else if (startTerm) {
     query.params = {
-      term: startTerm,
+      term: startTerm
     };
   }
 
@@ -31,11 +31,11 @@ export async function status(recordId, startTerm, endTerm) {
       recordId: true,
       params: true,
       sentTo: true,
-      sentDate: true,
+      sentDate: true
     },
     { sort: { sentDate: -1 } }
   );
-};
+}
 
 // TODO: pass some args in params
 export async function send(
@@ -51,7 +51,7 @@ export async function send(
   const result = {
     templateName,
     recordId,
-    params,
+    params
   };
 
   let data;
@@ -65,9 +65,9 @@ export async function send(
         ...result,
         error: {
           status: 404,
-          message: `no data found for ${templateName} recordId: ${recordId}`,
-        },
-      },
+          message: `no data found for ${templateName} recordId: ${recordId}`
+        }
+      }
     ];
   }
   logger.debug(data);
@@ -89,9 +89,9 @@ export async function send(
         ...result,
         error: {
           status: 422,
-          message: `cannot get recipients for ${templateName}`,
-        },
-      },
+          message: `cannot get recipients for ${templateName}`
+        }
+      }
     ];
   }
   logger.debug(recipientsList);
@@ -115,9 +115,9 @@ export async function send(
         ...result,
         error: {
           status: 404,
-          message: `cannot add attachments for ${templateName}`,
-        },
-      },
+          message: `cannot add attachments for ${templateName}`
+        }
+      }
     ];
   }
 
@@ -139,9 +139,9 @@ export async function send(
         ...result,
         error: {
           status: 422,
-          message: `cannot get email content for ${templateName}`,
-        },
-      },
+          message: `cannot get email content for ${templateName}`
+        }
+      }
     ];
   }
 
@@ -152,15 +152,15 @@ export async function send(
           ...result,
           error: {
             status: 422,
-            message: 'email not set',
-          },
+            message: 'email not set'
+          }
         };
       }
 
       const email = {
         ...recipients,
         ...content,
-        ...attachments,
+        ...attachments
       };
       logger.debug(`recipients:
 ${email.to}
@@ -171,7 +171,9 @@ ${email.text}
 html:
 ${email.html} 
 attachments:
-${email.attachment.map(a => `${a.filename} size: ${a.data?.length || 0}`).join('\n')}`);
+${email.attachment
+  .map((a) => `${a.filename} size: ${a.data?.length || 0}`)
+  .join('\n')}`);
 
       let status;
       if (ALLOW_SENDING_EMAILS) {
@@ -183,7 +185,7 @@ ${email.attachment.map(a => `${a.filename} size: ${a.data?.length || 0}`).join('
           sentTo: recipients.to,
           sentDate: new Date(),
           emailId: status.id,
-          status: 'queued',
+          status: 'queued'
         }).save();
         logger.info(`${templateName} sent to ${recordId} at ${recipients.to}`);
       } else {
@@ -191,7 +193,7 @@ ${email.attachment.map(a => `${a.filename} size: ${a.data?.length || 0}`).join('
         status = {
           id: '<devid>',
           to: email.to,
-          message,
+          message
         };
         logger.warn(message);
       }
@@ -200,8 +202,8 @@ ${email.attachment.map(a => `${a.filename} size: ${a.data?.length || 0}`).join('
       return {
         ...result,
         email: recipients.to,
-        status,
+        status
       };
     })
   );
-};
+}

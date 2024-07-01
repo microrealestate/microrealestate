@@ -1,14 +1,14 @@
-const realmModel = require('../models/realm');
+import realmModel from '../models/realm.js';
 
 ////////////////////////////////////////////////////////////////////////////////
 // Exported functions
 ////////////////////////////////////////////////////////////////////////////////
-function all(req, res) {
+export function all(req, res) {
   const realm = req.realm;
   realmModel.findOne(realm._id, (errors, dbRealm) => {
     if (errors && errors.length > 0) {
       res.json({
-        errors: errors,
+        errors: errors
       });
       return;
     }
@@ -33,12 +33,12 @@ function all(req, res) {
       phone1: dbRealm.contacts[0].phone1,
       phone2: dbRealm.contacts[0].phone2,
       bank: dbRealm.bankInfo.name,
-      rib: dbRealm.bankInfo.iban,
+      rib: dbRealm.bankInfo.iban
     });
   });
 }
 
-function update(req, res) {
+export function update(req, res) {
   const realm = req.realm;
   const owner = req.body;
 
@@ -50,7 +50,7 @@ function update(req, res) {
     ein: owner.siret,
     dos: owner.dos,
     vatNumber: owner.vatNumber,
-    legalRepresentative: owner.manager,
+    legalRepresentative: owner.manager
   };
 
   realm.addresses = [
@@ -60,8 +60,8 @@ function update(req, res) {
       zipCode: owner.zipCode,
       city: owner.city,
       state: owner.state,
-      country: owner.country,
-    },
+      country: owner.country
+    }
   ];
 
   realm.contacts = [
@@ -69,21 +69,16 @@ function update(req, res) {
       name: owner.contact,
       email: owner.email,
       phone1: owner.phone1,
-      phone2: owner.phone2,
-    },
+      phone2: owner.phone2
+    }
   ];
 
   realm.bankInfo = {
     name: owner.bank,
-    iban: owner.rib,
+    iban: owner.rib
   };
 
   realmModel.update(realmModel.schema.filter(realm), (errors) => {
     res.json({ errors: errors });
   });
 }
-
-module.exports = {
-  all,
-  update,
-};

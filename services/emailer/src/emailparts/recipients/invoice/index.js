@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-unresolved
-import { Service } from '@microrealestate/typed-common';
+import { Service } from '@microrealestate/common';
 
 export function get(recordId, params, data) {
   if (!data.tenant && !data.tenant.contacts) {
@@ -36,7 +36,7 @@ export function get(recordId, params, data) {
       let recipients = {
         from: fromEmail,
         to: email.toLowerCase(),
-        replyTo: replyToEmail,
+        replyTo: replyToEmail
       };
       if (PRODUCTION && data.landlord.members.length) {
         recipients = {
@@ -46,7 +46,7 @@ export function get(recordId, params, data) {
               ({ email, registered }) => registered && email !== fromEmail
             )
             .map(({ email }) => email)
-            .join(','),
+            .join(',')
         };
       }
       acc.push(recipients);

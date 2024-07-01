@@ -1,6 +1,6 @@
-const OF = require('./objectfilter');
-const Model = require('./model');
-const logger = require('winston');
+import logger from 'winston';
+import Model from './model.js';
+import OF from './objectfilter.js';
 
 class RealmModel extends Model {
   constructor() {
@@ -17,7 +17,7 @@ class RealmModel extends Model {
       companyInfo: Object, // { name, legalStructure, capital, ein, dos, vatNumber, legalRepresentative }
       thirdParties: Object, // { gmail: { selected, email, appPassword, fromEmail, replyToEmail }, mailgun: { selected, apiKey, domain, fromEmail, replyToEmail }, b2: { keyId, applicationKey, endpoint, bucket } },
       locale: String,
-      currency: String,
+      currency: String
     });
   }
 
@@ -74,4 +74,4 @@ class RealmModel extends Model {
   }
 }
 
-module.exports = new RealmModel();
+export default new RealmModel();

@@ -8,17 +8,18 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "clean:types": "rimraf ../../types/dist",
-    "clean:common": "rimraf ../typed-common/dist",
+    "clean:common": "rimraf ../common/dist",
     "clean": "npm-run-all clean:types clean:common",
     "transpile:types": "tsc --build ../../types/tsconfig.json",
-    "transpile:common": "tsc --build ../typed-common/tsconfig.json",
+    "transpile:common": "tsc --build ../common/tsconfig.json",
     "transpile": "npm-run-all transpile:types transpile:common",
     "build": "npm-run-all clean transpile",
     "watch:types": "tsc --build ../../types/tsconfig.json --watch --preserveWatchOutput",
-    "watch:common": "tsc --build ../typed-common/tsconfig.json --watch --preserveWatchOutput",
+    "watch:common": "tsc --build ../common/tsconfig.json --watch --preserveWatchOutput",
     "watch:service": "nodemon -w src --inspect=0.0.0.0:9226 ./src/index.js",
     "dev": "npm-run-all build --parallel watch:types watch:common watch:service",
-    "lint": "eslint .",
+    "eslint": "eslint .",
+    "lint": "npm-run-all transpile eslint",
     "format": "prettier --write '**/*.{js,jsx,ts,tsx,json,css}'"
   },
   "keywords": [
@@ -41,11 +42,11 @@
     "typescript": "5.3.2"
   },
   "dependencies": {
-    "@microrealestate/typed-common": "*",
+    "@microrealestate/common": "*",
     "axios": "1.6.2",
     "bcrypt": "5.1.1",
     "jsonwebtoken": "9.0.0",
     "locale": "0.1.0",
-    "winston": "2.4.4"
+    "winston": "2.4.7"
   }
 }

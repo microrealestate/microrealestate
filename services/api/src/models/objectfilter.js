@@ -1,9 +1,9 @@
-const sugar = require('sugar');
-const moment = require('moment');
-const logger = require('winston');
+import logger from 'winston';
+import moment from 'moment';
+import sugar from 'sugar';
 sugar.extend();
 
-module.exports = class ObjectFilter {
+export default class ObjectFilter {
   constructor(schema) {
     this.schema = schema;
   }
@@ -77,4 +77,4 @@ module.exports = class ObjectFilter {
       return filteredData;
     }, {});
   }
-};
+}

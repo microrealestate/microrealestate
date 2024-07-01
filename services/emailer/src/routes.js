@@ -1,6 +1,6 @@
 import * as Emailer from './emailer.js';
 // eslint-disable-next-line import/no-unresolved
-import { Middlewares, Service } from '@microrealestate/typed-common';
+import { Middlewares, Service } from '@microrealestate/common';
 import express from 'express';
 import locale from 'locale';
 import logger from 'winston';
@@ -21,7 +21,7 @@ async function _send(req, res) {
           'invoice',
           'rentcall',
           'rentcall_last_reminder',
-          'rentcall_reminder',
+          'rentcall_reminder'
         ];
         break;
     }
@@ -58,10 +58,10 @@ async function _send(req, res) {
     logger.error(error);
     res.status(500).json({
       status: 500,
-      message: 'unexpected error occured when sending the email',
+      message: 'unexpected error occured when sending the email'
     });
   }
-};
+}
 
 export default function routes() {
   const { ACCESS_TOKEN_SECRET } = Service.getInstance().envConfig.getValues();
@@ -92,7 +92,7 @@ export default function routes() {
       logger.error(error);
       res.status(500).send({
         status: 500,
-        message: error.message,
+        message: error.message
       });
     }
   });
@@ -105,4 +105,4 @@ export default function routes() {
   apiRouter.post('/emailer', _send);
 
   return apiRouter;
-};
+}

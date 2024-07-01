@@ -34,9 +34,7 @@ export default function Layout({ hideMenu, children }) {
             ) : null}
           </div>
           <div className="flex">
-            {store.user?.signedIn && isXLorGreater ? (
-              <SideMenu className="fixed w-60 h-full z-50 shadow-md" />
-            ) : null}
+            {store.user?.signedIn && isXLorGreater ? <SideMenu /> : null}
             <div
               className={cn(
                 'flex-grow',

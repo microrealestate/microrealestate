@@ -3,7 +3,7 @@ import {
   EnvironmentConfig,
   Middlewares,
   Service
-} from '@microrealestate/typed-common';
+} from '@microrealestate/common';
 import logger from 'winston';
 import routes from './routes.js';
 
@@ -28,7 +28,7 @@ async function Main() {
       new EnvironmentConfig({
         DEMO_MODE: process.env.DEMO_MODE
           ? process.env.DEMO_MODE.toLowerCase() === 'true'
-          : undefined,
+          : undefined
       })
     );
 

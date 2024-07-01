@@ -1,14 +1,25 @@
 {
   "name": "@microrealestate/api",
   "version": "1.0.0",
-  "description": "",
+  "description": "Api service",
   "main": "src/index.js",
   "private": true,
+  "type": "module",
   "scripts": {
-    "test": "jest",
-    "start": "node src/index.js",
-    "dev": "nodemon -w ../common -w scripts -w src --inspect=0.0.0.0:9229 ./src/index.js",
-    "lint": "eslint .",
+    "test": "node --experimental-vm-modules ../../node_modules/jest/bin/jest.js",
+    "clean:types": "rimraf ../../types/dist",
+    "clean:common": "rimraf ../common/dist",
+    "clean": "npm-run-all clean:types clean:common",
+    "transpile:types": "tsc --build ../../types/tsconfig.json",
+    "transpile:common": "tsc --build ../common/tsconfig.json",
+    "transpile": "npm-run-all transpile:types transpile:common",
+    "build": "npm-run-all clean transpile",
+    "watch:types": "tsc --build ../../types/tsconfig.json --watch --preserveWatchOutput",
+    "watch:common": "tsc --build ../common/tsconfig.json --watch --preserveWatchOutput",
+    "watch:service": "nodemon -w src --inspect=0.0.0.0:9226 ./src/index.js",
+    "dev": "npm-run-all build --parallel watch:types watch:common watch:service",
+    "eslint": "eslint .",
+    "lint": "npm-run-all transpile eslint",
     "format": "prettier --write '**/*.{js,jsx,ts,tsx,json,css}'"
   },
   "author": "Camel Aissani",
@@ -22,17 +33,21 @@
     "moment": "2.29.4",
     "mongobackup": "0.3.5",
     "mongojs": "3.1.0",
-    "mongoose": "6.11.3",
     "nanoid": "3.2.0",
     "sugar": "2.0.6",
-    "winston": "2.4.4"
+    "winston": "2.4.7"
   },
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "6.14.0",
+    "@typescript-eslint/parser": "6.14.0",
     "eslint": "8.55.0",
     "eslint-config-prettier": "9.1.0",
     "eslint-plugin-import": "2.29.1",
     "jest": "27.5.0",
     "nodemon": "2.0.19",
-    "supertest": "6.1.3"
+    "npm-run-all": "4.1.5",
+    "rimraf": "5.0.5",
+    "supertest": "6.1.3",
+    "typescript": "5.3.2"
   }
 }

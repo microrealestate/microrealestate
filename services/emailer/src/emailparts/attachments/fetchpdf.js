@@ -2,17 +2,18 @@ import axios from 'axios';
 import fs from 'fs';
 import path from 'path';
 // eslint-disable-next-line import/no-unresolved
-import { Service } from '@microrealestate/typed-common';
+import { Service } from '@microrealestate/common';
 
-export default function(
+export default function (
   authorizationHeader,
   organizationId,
   templateName,
   recordId,
   params,
   filename
-)  {
-  const { PDFGENERATOR_URL, TEMPORARY_DIRECTORY } = Service.getInstance().envConfig.getValues();
+) {
+  const { PDFGENERATOR_URL, TEMPORARY_DIRECTORY } =
+    Service.getInstance().envConfig.getValues();
   const uri = `${PDFGENERATOR_URL}/documents/${templateName}/${recordId}/${params.term}`;
   const fileDir = path.join(TEMPORARY_DIRECTORY, templateName);
   if (!fs.existsSync(fileDir)) {
@@ -26,8 +27,8 @@ export default function(
       responseType: 'stream',
       headers: {
         authorization: authorizationHeader,
-        organizationid: organizationId,
-      },
+        organizationid: organizationId
+      }
     })
     .then((response) => {
       return new Promise((resolve, reject) => {
@@ -46,4 +47,4 @@ export default function(
         response.data.pipe(wStream);
       });
     });
-};
+}
