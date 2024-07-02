@@ -100,9 +100,9 @@ jobs:
 
       - name: Build linux cli
         run: |
-          npm install -g pkg
+          npm install -g @yao-pkg/pkg
           yarn workspaces focus @microrealestate/cli
-          pkg cli/package.json --targets node18-linux-x64 --compress Brotli --output mre
+          pkg cli/package.json --targets node20-linux-x64 --compress Brotli --output mre
 
       - name: Copy files to remote server
         uses: appleboy/scp-action@v0.1.7

@@ -4,7 +4,6 @@ const clear = require('clear');
 const chalk = require('chalk');
 const figlet = require('figlet');
 const inquirer = require('inquirer');
-const axios = require('axios');
 const moment = require('moment');
 const { buildUrl, destructUrl } = require('./utils');
 const {
@@ -25,11 +24,9 @@ function initDirectories() {
 function displayHeader() {
   clear();
   console.log(
-    chalk.dim(
-      figlet.textSync('MicroRealEstate', {
-        horizontalLayout: 'fitted'
-      })
-    )
+    figlet.textSync('MicroRealEstate', {
+      horizontalLayout: 'fitted'
+    })
   );
   console.log(
     chalk.dim(
@@ -43,22 +40,22 @@ function displaySponsorMessage() {
   console.log('');
   console.log(chalk.dim('#'.repeat(80)));
   console.log(
-    chalk.dim('#' + ' '.repeat(2)),
-    chalk.red.bold(' '.repeat(6) + '❤'),
-    chalk.dim('If you like this project, please consider sponsoring it'),
+    chalk.dim('#' + ' '.repeat(8)),
+    chalk.red.bold('❤'),
+    chalk.white('If you like this project, please consider sponsoring it'),
     chalk.red.bold('❤'),
     chalk.dim(' '.repeat(9) + '#')
   );
   console.log(
-    chalk.dim('#' + ' '.repeat(2)),
-    chalk.dim('Click here >>>'),
+    chalk.dim('#' + ' '.repeat(3)),
+    chalk.white('Click here >>>'),
     chalk.cyan.bold('https://github.com/sponsors/camelaissani'),
-    chalk.dim('<<< to sponsor'),
-    chalk.dim(' '.repeat(4) + '#')
+    chalk.white('<<< to sponsor'),
+    chalk.dim(' '.repeat(3) + '#')
   );
   console.log(
     chalk.dim('#' + ' '.repeat(32)),
-    chalk.dim('Thank you'),
+    chalk.white('Thank you'),
     chalk.white('🙏'),
     chalk.dim(' '.repeat(32) + '#')
   );
@@ -74,14 +71,7 @@ async function build({ service = 'all' }) {
     composeArgs.push(service);
   }
 
-  await runCompose(
-    'build',
-    composeArgs,
-    { runMode: 'prod' },
-    {
-      waitLog: 'building images...'
-    }
-  );
+  await runCompose('build', composeArgs, { runMode: 'prod' });
 
   console.log(chalk.green('build completed'));
 }
@@ -95,29 +85,27 @@ async function start() {
 
   const healthcheckSuccess = await checkHealth();
   if (!healthcheckSuccess) {
-    console.log(chalk.red('Application did not start successfully'));
+    console.log(chalk.red('💣 Application did not start successfully'));
     displayConfigWarningsAndErrors();
     return;
   }
 
-  console.log(chalk.green('application started\n'));
+  console.log(chalk.green('🚀 application started\n'));
   const landlordAppUrl = process.env.APP_URL || process.env.LANDLORD_APP_URL;
   console.log(
-    chalk.dim('Landlord front-end ready and accessible on'),
-    chalk.green.bold(landlordAppUrl)
+    chalk.dim('Landlord front-end ready on'),
+    chalk.cyan.bold(landlordAppUrl)
   );
 
   console.log(
-    chalk.dim('Tenant front-end ready and accessible on'),
-    chalk.green.bold(process.env.TENANT_APP_URL)
+    chalk.dim('Tenant front-end ready on'),
+    chalk.cyan.bold(process.env.TENANT_APP_URL)
   );
 
   if (process.env.SIGNUP === 'true') {
     console.log(
-      chalk.dim(
-        'You can now create your landlord account on the landlord front-end'
-      ),
-      chalk.green.bold(`${landlordAppUrl}/signup`)
+      chalk.dim('You can now create your landlord account on'),
+      chalk.cyan.bold(`${landlordAppUrl}/signup`)
     );
   }
 
@@ -129,14 +117,11 @@ async function start() {
 async function stop({ runMode = 'prod' }) {
   loadEnv();
 
-  await runCompose(
-    'stop',
-    [],
-    { runMode },
-    { waitLog: 'stopping current running application...' }
-  );
+  await runCompose('stop', [], { runMode });
 
-  displaySponsorMessage();
+  if (runMode === 'prod') {
+    displaySponsorMessage();
+  }
 }
 
 async function dev() {
@@ -184,15 +169,15 @@ async function showConfig(runMode) {
 
 async function checkHealth() {
   let healthcheckSuccess = true;
-  for await (const attempt of [...Array(5).keys()]) {
+  for await (const attempt of [...Array(10).keys()]) {
     let response;
     try {
       console.log(
         chalk.dim(
-          `checking if the application is started... (${attempt + 1}/5)`
+          `  checking if the application is started... (${attempt + 1}/10)`
         )
       );
-      response = await axios.get(`${process.env.GATEWAY_URL}/health`);
+      response = await fetch(`${process.env.GATEWAY_URL}/health`);
     } catch (error) {
       response = { status: 500, statusText: error.message };
     }
@@ -200,7 +185,7 @@ async function checkHealth() {
     if (response.status !== 200) {
       healthcheckSuccess = false;
       if (attempt < 4) {
-        console.log(chalk.dim('retrying in 2 seconds...'));
+        console.log(chalk.dim('  retrying in 2 seconds...'));
         await new Promise((resolve) => setTimeout(resolve, 2000));
       } else {
         console.log(
@@ -231,10 +216,7 @@ async function restoreDB(backupFile) {
       '--gzip',
       `--archive=${archiveFile}`
     ],
-    {},
-    {
-      waitLog: 'restoring database...'
-    }
+    {}
   );
 }
 
@@ -256,10 +238,7 @@ async function dumpDB() {
       '--gzip',
       `--archive=${archiveFile}`
     ],
-    {},
-    {
-      waitLog: 'dumping database...'
-    }
+    {}
   );
 }
 

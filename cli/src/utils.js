@@ -1,5 +1,4 @@
 const crypto = require('crypto');
-const clui = require('clui');
 const fs = require('fs');
 const chalk = require('chalk');
 const { spawn } = require('child_process');
@@ -8,14 +7,8 @@ const dotenv = require('dotenv');
 const dotenvExpand = require('dotenv-expand');
 const which = require('which');
 
-const Spinner = clui.Spinner;
-
 function generateRandomToken(size = 64) {
   return crypto.randomBytes(size).toString('hex');
-}
-
-function removeEndLineBreak(log) {
-  return log.replace(/\s$/g, '');
 }
 
 function loadEnv(args) {
@@ -36,32 +29,14 @@ function loadEnv(args) {
   }).parsed;
 }
 
-async function runCommand(cmd, parameters = [], options = {}) {
-  let spinner;
-  if (options.waitLog) {
-    spinner = new Spinner(options.waitLog);
-    spinner.start();
-  }
+async function runCommand(cmd, parameters = []) {
   return new Promise((resolve, reject) => {
     try {
-      const shellCommand = spawn(cmd, parameters, {});
+      const shellCommand = spawn(cmd, parameters, {
+        stdio: 'inherit'
+      });
 
-      shellCommand.stdout.on('data', (data) => {
-        spinner?.stop();
-        console.log(removeEndLineBreak(data.toString()));
-        spinner?.start();
-      });
-      shellCommand.stderr.on('data', (data) => {
-        spinner?.stop();
-        console.log(removeEndLineBreak(data.toString()));
-        spinner?.start();
-      });
-      shellCommand.on('error', (data) => {
-        console.error(chalk.red(removeEndLineBreak(data.toString())));
-      });
       shellCommand.on('close', (exitCode) => {
-        spinner?.stop();
-
         if (exitCode !== 0) {
           reject(exitCode);
         } else {
@@ -69,7 +44,6 @@ async function runCommand(cmd, parameters = [], options = {}) {
         }
       });
     } catch (error) {
-      spinner?.stop();
       console.error(chalk.red(error.stack || error));
       reject(1);
     }
@@ -117,29 +91,9 @@ function getComposeActions(cri, action) {
     case 'docker':
     case 'docker-compose':
       return {
-        start: [
-          'up',
-          '-d',
-          '--force-recreate',
-          '--remove-orphans',
-          '--no-color',
-          '--quiet-pull'
-        ],
-        ci: [
-          'up',
-          '-d',
-          '--force-recreate',
-          '--remove-orphans',
-          '--no-color',
-          '--quiet-pull'
-        ],
-        dev: [
-          'up',
-          '--build',
-          '--force-recreate',
-          '--remove-orphans',
-          '--no-color'
-        ],
+        start: ['up', '-d', '--force-recreate', '--remove-orphans'],
+        ci: ['up', '-d', '--force-recreate', '--remove-orphans'],
+        dev: ['up', '--build', '--force-recreate', '--remove-orphans'],
         build: ['build', '--no-cache', '--force-rm'],
         stop: ['rm', '--stop', '--force'],
         status: ['ps'],
@@ -150,29 +104,9 @@ function getComposeActions(cri, action) {
     case 'podman':
     case 'podman-compose':
       return {
-        start: [
-          'up',
-          '-d',
-          '--force-recreate',
-          '--remove-orphans',
-          '--no-color',
-          '--quiet-pull'
-        ],
-        ci: [
-          'up',
-          '-d',
-          '--force-recreate',
-          '--remove-orphans',
-          '--no-color',
-          '--quiet-pull'
-        ],
-        dev: [
-          'up',
-          '--build',
-          '--force-recreate',
-          '--remove-orphans',
-          '--no-color'
-        ],
+        start: ['up', '-d', '--force-recreate', '--remove-orphans'],
+        ci: ['up', '-d', '--force-recreate', '--remove-orphans'],
+        dev: ['up', '--build', '--force-recreate', '--remove-orphans'],
         build: ['build', '--no-cache'],
         stop: ['down'],
         status: ['ps'],
@@ -185,8 +119,7 @@ function getComposeActions(cri, action) {
 async function runCompose(
   composeAction,
   composeArgs,
-  composeOptions = { runMode: 'dev' },
-  commandOptions = {}
+  composeOptions = { runMode: 'dev' }
 ) {
   const prodComposeArgs = [
     '-f',
@@ -214,6 +147,11 @@ async function runCompose(
     composeFilesArgs = ciComposeArgs;
   }
 
+  // set BUILDKIT environment variable
+  if (['build', 'dev'].includes(composeAction)) {
+    process.env.BUILDKIT_PROGRESS = 'plain';
+  }
+
   // set NODE_ENV environment variable according to runMode
   process.env.NODE_ENV = 'development';
   if (composeOptions.runMode === 'prod') {
@@ -229,11 +167,12 @@ async function runCompose(
     return;
   }
 
-  await runCommand(
-    baseCmd[0],
-    [...baseCmd.slice(1), ...composeFilesArgs, ...actionArgs, ...composeArgs],
-    commandOptions
-  );
+  await runCommand(baseCmd[0], [
+    ...baseCmd.slice(1),
+    ...composeFilesArgs,
+    ...actionArgs,
+    ...composeArgs
+  ]);
 }
 
 function validEmail(email) {

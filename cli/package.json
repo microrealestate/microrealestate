@@ -15,18 +15,16 @@
     "scripts": "src/**/*.js",
     "assets": "../node_modules/figlet/fonts/Standard.flf",
     "targets": [
-      "node18-linux-x64",
-      "node18-macos-x64",
-      "node18-win-x64"
+      "node20-linux-x64",
+      "node20-macos-x64",
+      "node20-win-x64"
     ]
   },
   "author": "Camel Aissani",
   "license": "MIT",
   "dependencies": {
-    "axios": "1.6.2",
     "chalk": "4.1.2",
     "clear": "0.1.0",
-    "clui": "0.3.6",
     "dotenv": "16.0.1",
     "dotenv-expand": "8.0.3",
     "figlet": "1.5.2",

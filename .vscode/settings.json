@@ -28,5 +28,8 @@
     "*_text.ejs": "plaintext"
   },
   "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "editor.formatOnPaste": true
+  "editor.formatOnPaste": true,
+  "tailwindCSS.includeLanguages": {
+    "plaintext": "javascript"
+  }
 }
