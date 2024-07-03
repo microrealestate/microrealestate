@@ -35,7 +35,10 @@
     "format": "yarn workspaces foreach run format",
     "lint": "yarn workspaces foreach run lint",
     "dev": "cross-env MRE_VERSION=dev node cli/src/index.js dev",
-    "mre": "cross-env MRE_VERSION=local node cli/src/index.js"
+    "mre": "cross-env MRE_VERSION=local node cli/src/index.js",
+    "stop": "yarn run mre stop",
+    "start": "yarn run mre start",
+    "build": "yarn run mre build"
   },
   "lint-staged": {
     "*.{js,ts,tsx, jsx}": [
