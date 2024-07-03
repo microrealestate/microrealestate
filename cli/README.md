@@ -7,19 +7,19 @@
 Install the `pkg` tool globaly to create executables which can run on linux, mac and windows.
 
 ```shell
-npm install -g pkg
+npm install -g @yao-pkg/pkg
 ```
 
 Install the packages
 
 ```shell
-yarn workspaces focus  @microrealestate/cli
+yarn workspaces focus @microrealestate/cli
 ```
 
 Run the `pkg` tool to create the mre executables
 
 ```shell
-pkg cli/package.json --compress Brotli --output mre
+pkg cli/package.json --compress Brotli --output mre --options experimental-fetch
 ```
 
 Rename the linux and windows executables

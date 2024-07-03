@@ -98,11 +98,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: install node v20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
       - name: Build linux cli
         run: |
           npm install -g @yao-pkg/pkg
           yarn workspaces focus @microrealestate/cli
-          pkg cli/package.json --targets node20-linux-x64 --compress Brotli --output mre
+          pkg cli/package.json --targets node20-linux-x64 --compress Brotli --output mre --options experimental-fetch
 
       - name: Copy files to remote server
         uses: appleboy/scp-action@v0.1.7

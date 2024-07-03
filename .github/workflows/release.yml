@@ -19,11 +19,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - name: install node v20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
       - name: Build
         run: |
          npm install -g @yao-pkg/pkg
          yarn workspaces focus @microrealestate/cli
-         pkg cli/package.json --compress Brotli --output mre
+         pkg cli/package.json --compress Brotli --output mre --options experimental-fetch
          mv mre-linux mre
          mv mre-win.exe mre.exe
 
