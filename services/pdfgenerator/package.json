@@ -16,7 +16,7 @@
     "build": "npm-run-all clean transpile",
     "watch:types": "tsc --build ../../types/tsconfig.json --watch --preserveWatchOutput",
     "watch:common": "tsc --build ../common/tsconfig.json --watch --preserveWatchOutput",
-    "watch:service": "nodemon -w src --inspect=0.0.0.0:9227 ./src/index.js",
+    "watch:service": "nodemon -w src --inspect=0.0.0.0:9227 --no-colours ./src/index.js",
     "start": "node ./src/index.js",
     "dev": "npm-run-all build --parallel watch:types watch:common watch:service",
     "eslint": "eslint .",

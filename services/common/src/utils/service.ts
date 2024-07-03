@@ -60,7 +60,7 @@ export default class Service {
     logger.remove(logger.transports.Console);
     logger.add(logger.transports.Console, {
       level: envConfig.getValues().LOGGER_LEVEL,
-      colorize: true
+      colorize: false
     });
 
     this.expressServer = Express();
@@ -110,7 +110,7 @@ export default class Service {
         transports: [
           new logger.transports.Console({
             json: false,
-            colorize: true
+            colorize: false
           })
         ],
         meta: false, // optional: control whether you want to log the meta data about the request (default to true)
@@ -128,7 +128,7 @@ export default class Service {
         transports: [
           new logger.transports.Console({
             json: false,
-            colorize: true
+            colorize: false
           })
         ]
       })
