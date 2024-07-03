@@ -34,7 +34,7 @@
   "dependencies": {
     "@microrealestate/common": "*",
     "aws-sdk": "2.1116.0",
-    "ejs": "3.1.8",
+    "ejs": "3.1.10",
     "file-url": "3.0.0",
     "fs-extra": "10.1.0",
     "handlebars": "4.7.7",
