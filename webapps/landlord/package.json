@@ -99,7 +99,7 @@
     "@types/lodash": "4.17.5",
     "autoprefixer": "10.4.19",
     "babel-loader": "8.2.5",
-    "eslint": "8.55.0",
+    "eslint": "8.57.0",
     "eslint-config-next": "14.1.4",
     "eslint-config-prettier": "9.1.0",
     "eslint-plugin-import": "2.29.1",
