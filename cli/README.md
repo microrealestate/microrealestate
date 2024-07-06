@@ -19,7 +19,7 @@ yarn workspaces focus @microrealestate/cli
 Run the `pkg` tool to create the mre executables
 
 ```shell
-pkg cli/package.json --compress Brotli --output mre --options experimental-fetch
+pkg cli/package.json --compress Brotli --output mre
 ```
 
 Rename the linux and windows executables

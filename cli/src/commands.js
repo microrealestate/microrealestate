@@ -5,7 +5,7 @@ const chalk = require('chalk');
 const figlet = require('figlet');
 const inquirer = require('inquirer');
 const moment = require('moment');
-const { buildUrl, destructUrl } = require('./utils');
+const { buildUrl, destructUrl, fetch } = require('./utils');
 const {
   generateRandomToken,
   runCompose,
@@ -169,22 +169,29 @@ async function showConfig(runMode) {
 
 async function checkHealth() {
   let healthcheckSuccess = true;
-  for await (const attempt of [...Array(10).keys()]) {
+  const maxAttempt = 10;
+  for await (const attempt of [...Array(maxAttempt).keys()]) {
     let response;
     try {
       console.log(
         chalk.dim(
-          `  checking if the application is started... (${attempt + 1}/10)`
+          `  checking if the application is started... (${
+            attempt + 1
+          }/${maxAttempt})`
         )
       );
       response = await fetch(`${process.env.GATEWAY_URL}/health`);
     } catch (error) {
-      response = { status: 500, statusText: error.message };
+      if (error.status) {
+        response = error;
+      } else {
+        response = { status: 400, statusText: error.message };
+      }
     }
 
     if (response.status !== 200) {
       healthcheckSuccess = false;
-      if (attempt < 4) {
+      if (attempt < maxAttempt - 1) {
         console.log(chalk.dim('  retrying in 2 seconds...'));
         await new Promise((resolve) => setTimeout(resolve, 2000));
       } else {

@@ -6,6 +6,8 @@ const path = require('path');
 const dotenv = require('dotenv');
 const dotenvExpand = require('dotenv-expand');
 const which = require('which');
+const https = require('https');
+const http = require('http');
 
 function generateRandomToken(size = 64) {
   return crypto.randomBytes(size).toString('hex');
@@ -223,6 +225,40 @@ function buildUrl({ protocol, subDomain, domain, port, basePath }) {
   return url;
 }
 
+/**
+ * Temporary minimum fetch function
+ */
+async function fetch(endpoint) {
+  const url = new URL(endpoint);
+  const requester = url.protocol === 'https:' ? https : http;
+
+  return new Promise((resolve, reject) => {
+    requester
+      .get(endpoint, (res) => {
+        const data = [];
+
+        res.on('data', (chunk) => {
+          data.push(chunk);
+        });
+
+        res.on('end', () => {
+          const response = {
+            status: res.statusCode,
+            statusText: Buffer.concat(data).toString()
+          };
+          if (res.statusCode !== 200) {
+            reject(response);
+          } else {
+            resolve(response);
+          }
+        });
+      })
+      .on('error', (err) => {
+        reject({ status: 400, statusText: err.message });
+      });
+  });
+}
+
 module.exports = {
   generateRandomToken,
   loadEnv,
@@ -230,5 +266,6 @@ module.exports = {
   validEmail,
   getBackupPath,
   destructUrl,
-  buildUrl
+  buildUrl,
+  fetch
 };

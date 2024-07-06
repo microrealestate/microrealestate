@@ -107,7 +107,7 @@ jobs:
         run: |
           npm install -g @yao-pkg/pkg
           yarn workspaces focus @microrealestate/cli
-          pkg cli/package.json --targets node20-linux-x64 --compress Brotli --output mre --options experimental-fetch
+          pkg cli/package.json --targets node20-linux-x64 --compress Brotli --output mre
 
       - name: Copy files to remote server
         uses: appleboy/scp-action@v0.1.7

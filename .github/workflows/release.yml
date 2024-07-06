@@ -28,7 +28,7 @@ jobs:
         run: |
          npm install -g @yao-pkg/pkg
          yarn workspaces focus @microrealestate/cli
-         pkg cli/package.json --compress Brotli --output mre --options experimental-fetch
+         pkg cli/package.json --compress Brotli --output mre
          mv mre-linux mre
          mv mre-win.exe mre.exe
 
