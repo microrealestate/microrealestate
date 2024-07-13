@@ -4,15 +4,16 @@ import properties from '../fixtures/properties.json';
 import tenants from '../fixtures/tenants.json';
 import userWithCompanyAccount from '../fixtures/user_admin_company_account.json';
 
-describe('Create resources', () => {
+describe('Create/delete resources', () => {
   before(() => {
     cy.resetAppData();
     cy.signUp(userWithCompanyAccount);
     cy.signIn(userWithCompanyAccount);
+    cy.checkPage('firstaccess');
     cy.registerLandlord(userWithCompanyAccount);
   });
 
-  it('Create a first contract, a first property and a first tenant', () => {
+  it('Create/delete a contract, a property and a tenant', () => {
     // First contract
     cy.createContractFromStepper(contract369);
     cy.get('[data-cy=tabContractTemplates]').click();
@@ -36,33 +37,33 @@ describe('Create resources', () => {
       contract369.numberOfTerms
     );
 
-    cy.navToPage('dashboard');
+    cy.navAppMenu('dashboard');
 
     // First property
     cy.addPropertyFromStepper(properties[0]);
     cy.get('.pigeon-tiles-box').should('be.visible');
-    cy.navToPage('properties');
+    cy.navAppMenu('properties');
     cy.contains(properties[0].name).should('be.visible');
     cy.contains(properties[0].description).should('be.visible');
     cy.contains(i18n.getFixedT(userWithCompanyAccount.locale)('Vacant')).should(
       'be.visible'
     );
 
-    cy.navToPage('dashboard');
+    cy.navAppMenu('dashboard');
 
     // First tenant
     cy.addTenantFromStepper(tenants[0]);
-    cy.navToPage('tenants');
+    cy.navAppMenu('tenants');
     cy.contains(tenants[0].name).should('be.visible');
     cy.contains(tenants[0].lease.contract).should('be.visible');
     cy.contains(
       i18n.getFixedT(userWithCompanyAccount.locale)('Lease running')
     ).should('be.visible');
 
-    cy.navToPage('rents');
+    cy.navAppMenu('rents');
     cy.contains(tenants[0].name).should('be.visible');
 
-    cy.navToPage('dashboard');
+    cy.navAppMenu('dashboard');
     cy.contains(
       i18n.getFixedT(userWithCompanyAccount.locale)('Occupancy rate')
     ).should('be.visible');
@@ -77,5 +78,29 @@ describe('Create resources', () => {
     ).should('be.visible');
     cy.get('.recharts-pie').should('be.visible');
     cy.get('.recharts-bar').should('be.visible');
+
+    cy.navAppMenu('tenants');
+    cy.searchResource(tenants[0].name);
+    cy.openResource(tenants[0].name);
+    cy.removeResource();
+    cy.contains(i18n.getFixedT('fr-FR')('No tenants found'));
+
+    cy.navAppMenu('properties');
+    cy.searchResource(properties[0].name);
+    cy.openResource(properties[0].name);
+    cy.removeResource();
+    cy.contains(i18n.getFixedT('fr-FR')('No properties found'));
+
+    cy.navOrgMenu('contracts');
+    cy.openResource(contract369.name);
+    cy.removeResource();
+    cy.contains(contract369.name).should('not.exist');
+
+    cy.navAppMenu('dashboard');
+    cy.contains(
+      i18n.getFixedT('fr-FR')(
+        'Follow these steps to start managing your properties'
+      )
+    );
   });
 });

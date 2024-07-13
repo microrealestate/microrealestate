@@ -16,6 +16,7 @@ describe('User access', () => {
 
     cy.signIn(userWithPersonalAccount);
     cy.checkUrl('/firstaccess');
+    cy.checkPage('firstaccess');
     cy.contains(
       i18n.getFixedT('en')('Welcome {{firstName}} {{lastName}}!', {
         firstName: userWithPersonalAccount.firstName,
@@ -52,6 +53,7 @@ describe('User access', () => {
 
     cy.signIn(userWithCompanyAccount);
     cy.checkUrl('/firstaccess');
+    cy.checkPage('firstaccess');
     cy.contains(
       i18n.getFixedT('en')('Welcome {{firstName}} {{lastName}}!', {
         firstName: userWithCompanyAccount.firstName,
@@ -69,8 +71,9 @@ describe('User access', () => {
   it('Check page navigation', () => {
     cy.visit('/');
     cy.signIn(userWithPersonalAccount);
+    cy.checkPage('dashboard');
 
-    cy.navToPage('rents');
+    cy.navAppMenu('rents');
     const now = new Date();
     cy.checkUrl(
       `/rents/${now.getFullYear()}.${String(now.getMonth() + 1).padStart(
@@ -80,21 +83,21 @@ describe('User access', () => {
     );
     cy.contains(i18n.getFixedT('fr-FR')('Rents'));
 
-    cy.navToPage('tenants');
+    cy.navAppMenu('tenants');
     cy.checkUrl('/tenants');
     cy.contains(i18n.getFixedT('fr-FR')('Tenants'));
     cy.contains(i18n.getFixedT('fr-FR')('Add a tenant'));
 
-    cy.navToPage('properties');
+    cy.navAppMenu('properties');
     cy.checkUrl('/properties');
     cy.contains(i18n.getFixedT('fr-FR')('Properties'));
     cy.contains(i18n.getFixedT('fr-FR')('Add a property'));
 
-    cy.navToPage('accounting');
+    cy.navAppMenu('accounting');
     cy.checkUrl(`/accounting/${now.getFullYear()}`);
     cy.contains(i18n.getFixedT('fr-FR')('Accounting'));
 
-    cy.navToPage('settings');
+    cy.navAppMenu('settings');
     cy.checkUrl('/settings');
     cy.contains(i18n.getFixedT('fr-FR')('Landlord'));
     cy.contains(i18n.getFixedT('fr-FR')('Billing'));
@@ -102,7 +105,7 @@ describe('User access', () => {
     cy.contains(i18n.getFixedT('fr-FR')('Access'));
     cy.contains(i18n.getFixedT('fr-FR')('Third-parties'));
 
-    cy.navToPage('dashboard');
+    cy.navAppMenu('dashboard');
     cy.checkUrl('/dashboard');
     cy.contains(
       i18n.getFixedT('fr-FR')('Welcome {{firstName}} {{lastName}}!', {
@@ -110,6 +113,34 @@ describe('User access', () => {
         lastName: userWithPersonalAccount.lastName
       })
     );
+
+    cy.navOrgMenu('account');
+    cy.checkUrl('/account');
+    cy.contains(i18n.getFixedT('fr-FR')('Account'));
+
+    cy.navOrgMenu('organizations');
+    cy.checkUrl('/organizations');
+    cy.contains(i18n.getFixedT('fr-FR')('Organizations'));
+
+    cy.navOrgMenu('landlord');
+    cy.checkUrl('/landlord');
+    cy.contains(i18n.getFixedT('fr-FR')('Landlord'));
+
+    cy.navOrgMenu('billing');
+    cy.checkUrl('/billing');
+    cy.contains(i18n.getFixedT('fr-FR')('Billing'));
+
+    cy.navOrgMenu('contracts');
+    cy.checkUrl('/contracts');
+    cy.contains(i18n.getFixedT('fr-FR')('Contracts'));
+
+    cy.navOrgMenu('access');
+    cy.checkUrl('/access');
+    cy.contains(i18n.getFixedT('fr-FR')('Access'));
+
+    cy.navOrgMenu('thirdparties');
+    cy.checkUrl('/thirdparties');
+    cy.contains(i18n.getFixedT('fr-FR')('Third-parties'));
 
     cy.signOut();
     cy.checkUrl('/signin');

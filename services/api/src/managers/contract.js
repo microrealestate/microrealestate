@@ -1,6 +1,6 @@
 import * as BL from '../businesslogic/index.js';
+import _ from 'lodash';
 import moment from 'moment';
-import Sugar from 'sugar';
 
 export function create(contract) {
   const supportedFrequencies = ['hours', 'days', 'weeks', 'months', 'years'];
@@ -63,7 +63,7 @@ export function create(contract) {
 }
 
 export function update(inputContract, modification) {
-  const originalContract = Sugar.Object.clone(inputContract, true);
+  const originalContract = _.cloneDeep(inputContract);
   const modifiedContract = {
     ...originalContract,
     ...modification
@@ -76,7 +76,7 @@ export function update(inputContract, modification) {
     momentTermination = moment(modifiedContract.termination);
   }
 
-  // Check possible lost payments
+  // Check possible payments loss
   _checkLostPayments(
     momentBegin,
     momentTermination || momentEnd,

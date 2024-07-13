@@ -41,7 +41,7 @@ function OrganizationsSettings() {
   }
 
   return (
-    <Page loading={isLoading}>
+    <Page loading={isLoading} dataCy="organizationsPage">
       <Card>
         <CardHeader>
           <CardTitle>{t('Organizations')}</CardTitle>

@@ -3,7 +3,6 @@ import * as dashboardManager from './managers/dashboardmanager.js';
 import * as emailManager from './managers/emailmanager.js';
 import * as leaseManager from './managers/leasemanager.js';
 import * as occupantManager from './managers/occupantmanager.js';
-import * as ownerManager from './managers/ownermanager.js';
 import * as propertyManager from './managers/propertymanager.js';
 import * as realmManager from './managers/realmmanager.js';
 import * as rentManager from './managers/rentmanager.js';
@@ -74,11 +73,6 @@ export default function routes() {
     accountingManager.csv.outgoingTenants
   );
   router.get('/csv/settlements/:year', accountingManager.csv.settlements);
-
-  const ownerRouter = express.Router();
-  ownerRouter.get('/', ownerManager.all);
-  ownerRouter.patch('/:id', ownerManager.update);
-  router.use('/owner', ownerRouter);
 
   const emailRouter = express.Router();
   emailRouter.post('/', emailManager.send);

@@ -65,6 +65,7 @@ export default function TenantListItem({ tenant }) {
           <Button
             variant="link"
             className="justify-start p-0 m-0 text-xl text-ellipsis whitespace-nowrap overflow-hidden"
+            data-cy="openResourceButton"
           >
             {tenant.name}
           </Button>

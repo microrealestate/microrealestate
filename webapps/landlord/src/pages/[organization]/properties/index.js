@@ -70,7 +70,7 @@ function Properties() {
   }
 
   return (
-    <Page title={t('Properties')} loading={isLoading}>
+    <Page title={t('Properties')} loading={isLoading} dataCy="propertiesPage">
       <List
         data={data}
         filters={[

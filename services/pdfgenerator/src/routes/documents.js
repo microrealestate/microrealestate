@@ -466,7 +466,7 @@ export default function () {
     });
 
     // delete document from s3
-    if (s3.isEnabled(req.realm.thirdParties.b2)) {
+    if (s3.isEnabled(req.realm.thirdParties?.b2)) {
       const urlsIds = documents
         .filter((doc) => doc.type === 'file')
         .map(({ url, versionId }) => ({ url, versionId }));

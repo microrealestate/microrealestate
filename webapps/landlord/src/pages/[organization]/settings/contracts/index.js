@@ -76,6 +76,7 @@ function LeasesSettings() {
           />
         </div>
       }
+      dataCy="contractsPage"
     >
       <Card>
         <CardHeader>
@@ -107,6 +108,7 @@ function LeasesSettings() {
                       'text-xl text-left text-wrap font-semibold p-0 ',
                       lease.active ? '' : 'text-muted-foreground'
                     )}
+                    data-cy="openResourceButton"
                   >
                     {lease.name}
                   </Button>

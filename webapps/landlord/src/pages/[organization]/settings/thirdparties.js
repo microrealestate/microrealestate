@@ -36,7 +36,7 @@ function ThirdPartiesSettings() {
     orgs?.[0];
 
   return (
-    <Page loading={isLoading}>
+    <Page loading={isLoading} dataCy="thirdpartiesPage">
       <Card>
         <CardHeader>
           <CardTitle>{t('Third-parties')}</CardTitle>

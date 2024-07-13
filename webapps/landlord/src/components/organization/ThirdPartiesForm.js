@@ -184,15 +184,15 @@ export default function ThirdPartiesForm({ organization }) {
     organization.thirdParties?.mailgun?.fromEmail,
     organization.thirdParties?.mailgun?.replyToEmail,
     organization.thirdParties?.mailgun?.selected,
-    organization.thirdParties.smtp?.authentication,
-    organization.thirdParties.smtp?.fromEmail,
-    organization.thirdParties.smtp?.password,
-    organization.thirdParties.smtp?.port,
-    organization.thirdParties.smtp?.replyToEmail,
-    organization.thirdParties.smtp?.secure,
-    organization.thirdParties.smtp?.selected,
-    organization.thirdParties.smtp?.server,
-    organization.thirdParties.smtp?.username
+    organization.thirdParties?.smtp?.authentication,
+    organization.thirdParties?.smtp?.fromEmail,
+    organization.thirdParties?.smtp?.password,
+    organization.thirdParties?.smtp?.port,
+    organization.thirdParties?.smtp?.replyToEmail,
+    organization.thirdParties?.smtp?.secure,
+    organization.thirdParties?.smtp?.selected,
+    organization.thirdParties?.smtp?.server,
+    organization.thirdParties?.smtp?.username
   ]);
 
   const onSubmit = useCallback(

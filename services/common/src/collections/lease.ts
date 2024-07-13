@@ -7,11 +7,11 @@ const LeaseSchema = new mongoose.Schema<CollectionTypes.Lease>({
   name: String,
   description: String,
   numberOfTerms: Number,
-  timeRange: String, // days, weeks, months, years
+  timeRange: { type: String, enum: ['days', 'weeks', 'months', 'years'] },
   active: Boolean,
 
   // ui state
-  stepperMode: { type: Boolean, default: false },
+  stepperMode: { type: Boolean, default: false }
 });
 
 export default mongoose.model<CollectionTypes.Lease>('Lease', LeaseSchema);

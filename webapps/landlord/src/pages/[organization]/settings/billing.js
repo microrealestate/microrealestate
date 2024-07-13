@@ -32,7 +32,7 @@ function BillingSettings() {
     data?.[0];
 
   return (
-    <Page loading={isLoading}>
+    <Page loading={isLoading} dataCy="billingPage">
       <Card>
         <CardHeader>
           <CardTitle>{t('Billing')}</CardTitle>

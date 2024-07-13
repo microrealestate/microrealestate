@@ -3,26 +3,54 @@ import * as FD from './frontdata.js';
 import { Collections, Service } from '@microrealestate/common';
 import axios from 'axios';
 import { customAlphabet } from 'nanoid';
-import documentModel from '../models/document.js';
 import logger from 'winston';
 import moment from 'moment';
-import occupantModel from '../models/occupant.js';
-import propertyModel from '../models/property.js';
 
 const nanoid = customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', 12);
 
-function _buildPropertyMap(realm, callback) {
-  propertyModel.findAll(realm, (errors, properties) => {
-    const propertyMap = {};
-    if (properties) {
-      properties.reduce((acc, property) => {
-        property._id = property._id.toString();
-        acc[property._id] = property;
-        return acc;
-      }, propertyMap);
-    }
-    callback(errors, propertyMap);
-  });
+function _stringToDate(dateString) {
+  return dateString ? moment(dateString, 'DD/MM/YYYY').toDate() : undefined;
+}
+
+function _formatTenant(tenant) {
+  const formattedTenant = {
+    ...tenant,
+    beginDate: _stringToDate(tenant.beginDate),
+    endDate: _stringToDate(tenant.endDate),
+    terminationDate: _stringToDate(tenant.terminationDate),
+    properties: tenant.properties?.map((property) => ({
+      ...property,
+      entryDate:
+        _stringToDate(property.entryDate) || _stringToDate(tenant.beginDate),
+      exitDate:
+        _stringToDate(property.exitDate) || _stringToDate(tenant.endDate)
+    })),
+    reference: tenant.reference || nanoid()
+  };
+
+  if (!formattedTenant.isCompany) {
+    formattedTenant.company = null;
+    formattedTenant.legalForm = null;
+    formattedTenant.siret = null;
+    formattedTenant.capital = null;
+    formattedTenant.name = formattedTenant.name || formattedTenant.manager;
+  } else {
+    formattedTenant.name = formattedTenant.company;
+  }
+
+  return formattedTenant;
+}
+
+async function _buildPropertyMap(realm) {
+  const properties = await Collections.Property.find({
+    realmId: realm._id
+  }).lean();
+
+  return properties.reduce((acc, property) => {
+    property._id = String(property._id);
+    acc[property._id] = property;
+    return acc;
+  }, {});
 }
 
 async function _fetchTenants(realmId, tenantId) {
@@ -130,24 +158,21 @@ async function _fetchTenants(realmId, tenantId) {
   return tenants;
 }
 
+function _propertiesHaveRentData(properties) {
+  return (
+    properties?.length &&
+    properties.every(
+      ({ rent, entryDate, exitDate }) => rent && entryDate && exitDate
+    )
+  );
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Exported functions
 ////////////////////////////////////////////////////////////////////////////////
-export function add(req, res) {
+export async function add(req, res) {
   const realm = req.realm;
-  const occupant = occupantModel.schema.filter(req.body);
-
-  if (!occupant.isCompany) {
-    occupant.company = null;
-    occupant.legalForm = null;
-    occupant.siret = null;
-    occupant.capital = null;
-    occupant.name = occupant.name || occupant.manager;
-  } else {
-    occupant.name = occupant.company;
-  }
-
-  occupant.reference = occupant.reference || nanoid();
+  const { _id, ...occupant } = _formatTenant(req.body);
 
   if (!occupant.name) {
     return res.status(422).json({
@@ -155,197 +180,164 @@ export function add(req, res) {
     });
   }
 
-  _buildPropertyMap(realm, (errors, propertyMap) => {
-    if (errors && errors.length > 0) {
-      return res.status(404).json({
-        errors: errors
-      });
-    }
+  const propertyMap = await _buildPropertyMap(realm);
 
-    // Resolve proprerties
-    if (occupant.properties) {
-      occupant.properties.forEach((item) => {
-        item.property = propertyMap[item.propertyId];
-        item.entryDate =
-          (item.entryDate && moment(item.entryDate, 'DD/MM/YYYY').toDate()) ||
-          occupant.beginDate;
-        item.exitDate =
-          (item.exitDate && moment(item.exitDate, 'DD/MM/YYYY').toDate()) ||
-          occupant.endDate;
-        item.rent = item.rent || item.property.price;
-        item.expenses =
-          item.expenses ||
-          (item.property.expense && [
-            { title: 'general expense', amount: item.property.expense }
-          ]) ||
-          [];
-      });
-    }
-
-    // Build rents from contract
-    occupant.rents = [];
-    if (occupant.beginDate && occupant.endDate && occupant.properties) {
-      const contract = Contract.create({
-        begin: occupant.beginDate,
-        end: occupant.endDate,
-        frequency: occupant.frequency || 'months',
-        properties: occupant.properties
-      });
-
-      occupant.rents = contract.rents;
-    }
-
-    occupantModel.add(realm, occupant, async (errors, occupant) => {
-      if (errors) {
-        return res.status(500).json({
-          errors: errors
-        });
-      }
-      const tenants = await _fetchTenants(req.realm._id, occupant._id);
-      res.json(FD.toOccupantData(tenants.length ? tenants[0] : null));
-    });
+  // Resolve proprerties
+  occupant.properties?.forEach((property) => {
+    property.property = propertyMap[property.propertyId];
+    property.rent = property.rent || property.property.price;
+    property.expenses =
+      property.expenses ||
+      (property.property.expense && [
+        { title: 'general expense', amount: property.property.expense }
+      ]) ||
+      [];
   });
+
+  // Build rents from contract
+  occupant.rents = [];
+  if (
+    occupant.beginDate &&
+    occupant.endDate &&
+    _propertiesHaveRentData(occupant.properties)
+  ) {
+    const contract = Contract.create({
+      begin: occupant.beginDate,
+      end: occupant.endDate,
+      frequency: occupant.frequency || 'months',
+      properties: occupant.properties
+    });
+
+    occupant.rents = contract.rents;
+  }
+
+  const newOccupant = await Collections.Tenant.create({
+    ...occupant,
+    realmId: realm._id
+  });
+
+  const occupants = await _fetchTenants(req.realm._id, newOccupant._id);
+  res.json(FD.toOccupantData(occupants.length ? occupants[0] : null));
 }
 
-export function update(req, res) {
+export async function update(req, res) {
   const realm = req.realm;
   const occupantId = req.params.id;
-  const occupant = occupantModel.schema.filter(req.body);
+  const newOccupant = _formatTenant(req.body);
 
-  if (!occupant.isCompany) {
-    occupant.company = null;
-    occupant.legalForm = null;
-    occupant.siret = null;
-    occupant.capital = null;
-    occupant.name = occupant.name || occupant.manager;
-  } else {
-    occupant.name = occupant.company;
-  }
-
-  occupant.reference = occupant.reference || nanoid();
-
-  if (!occupant.name) {
+  if (!newOccupant.name) {
     return res.status(422).json({
       errors: ['Missing tenant name']
     });
   }
 
-  occupantModel.findOne(realm, occupantId, (errors, dbOccupant) => {
-    if (errors && errors.length > 0) {
-      return res.status(404).json({
-        errors: errors
-      });
-    }
+  const originalOccupant = await Collections.Tenant.findOne({
+    _id: occupantId,
+    realmId: realm._id
+  }).lean();
 
-    if (dbOccupant.documents) {
-      occupant.documents = dbOccupant.documents;
-    }
-
-    _buildPropertyMap(realm, (errors, propertyMap) => {
-      if (errors && errors.length > 0) {
-        return res.status(404).json({
-          errors: errors
-        });
-      }
-
-      // Resolve proprerties
-      if (occupant.properties) {
-        occupant.properties = occupant.properties.map((item) => {
-          let itemToKeep;
-          if (dbOccupant.properties) {
-            dbOccupant.properties.forEach((dbItem) => {
-              if (dbItem.propertyId === item.propertyId) {
-                itemToKeep = dbItem;
-                delete itemToKeep._id;
-              }
-            });
-          }
-          if (!itemToKeep) {
-            itemToKeep = {
-              propertyId: item.propertyId,
-              property: propertyMap[item.propertyId]
-            };
-          }
-          if (!itemToKeep.property) {
-            itemToKeep.property = propertyMap[itemToKeep.propertyId];
-          }
-          itemToKeep.property._id = String(itemToKeep.property._id);
-          itemToKeep.entryDate =
-            (item.entryDate && moment(item.entryDate, 'DD/MM/YYYY').toDate()) ||
-            occupant.beginDate;
-          itemToKeep.exitDate =
-            (item.exitDate && moment(item.exitDate, 'DD/MM/YYYY').toDate()) ||
-            occupant.endDate;
-          itemToKeep.rent = item.rent || itemToKeep.property.price;
-          itemToKeep.expenses =
-            item.expenses ||
-            (itemToKeep.property.expense && [
-              { title: 'general expense', amount: itemToKeep.property.expense }
-            ]) ||
-            [];
-          return itemToKeep;
-        });
-      }
-
-      // Build rents from contract
-      occupant.rents = [];
-      if (
-        occupant.beginDate &&
-        occupant.endDate &&
-        occupant.properties?.length
-      ) {
-        try {
-          const contract = {
-            begin: dbOccupant.beginDate,
-            end: dbOccupant.endDate,
-            frequency: occupant.frequency || 'months',
-            terms: Math.ceil(
-              moment(dbOccupant.endDate).diff(
-                moment(dbOccupant.beginDate),
-                'months',
-                true
-              )
-            ),
-            properties: dbOccupant.properties,
-            vatRate: dbOccupant.vatRatio,
-            discount: dbOccupant.discount,
-            rents: dbOccupant.rents
-          };
-
-          const modification = {
-            begin: occupant.beginDate,
-            end: occupant.endDate,
-            termination: occupant.terminationDate,
-            properties: occupant.properties,
-            frequency: occupant.frequency || 'months'
-          };
-          if (occupant.vatRatio !== undefined) {
-            modification.vatRate = occupant.vatRatio;
-          }
-          if (occupant.discount !== undefined) {
-            modification.discount = occupant.discount;
-          }
-
-          const newContract = Contract.update(contract, modification);
-          occupant.rents = newContract.rents;
-        } catch (e) {
-          logger.error(e);
-          return res.sendStatus(500);
-        }
-      }
-
-      occupantModel.update(realm, occupant, async (errors) => {
-        if (errors) {
-          return res.status(500).json({
-            errors: errors
-          });
-        }
-
-        const tenants = await _fetchTenants(req.realm._id, occupant._id);
-        res.json(FD.toOccupantData(tenants.length ? tenants[0] : null));
-      });
+  if (!originalOccupant) {
+    return res.status(404).json({
+      errors: ['Tenant not found']
     });
+  }
+
+  if (originalOccupant.documents) {
+    newOccupant.documents = originalOccupant.documents;
+  }
+
+  const propertyMap = await _buildPropertyMap(realm);
+
+  newOccupant.properties = newOccupant.properties.map((rentedProperty) => {
+    // Merge properties from originalOccupant to newOccupant
+    // copy property from db if not present in originalOccupant
+    if (!rentedProperty.property) {
+      const orignalProperty = originalOccupant.properties?.find(
+        ({ propertyId }) => propertyId === rentedProperty.propertyId
+      );
+
+      rentedProperty.property =
+        orignalProperty?.property || propertyMap[rentedProperty.propertyId];
+    }
+
+    return rentedProperty;
   });
+
+  // Build rents from contract
+  if (
+    newOccupant.beginDate &&
+    newOccupant.endDate &&
+    _propertiesHaveRentData(newOccupant.properties)
+  ) {
+    try {
+      const termFrequency = newOccupant.frequency || 'months';
+
+      const contract = {
+        begin: originalOccupant.beginDate,
+        end: originalOccupant.endDate,
+        frequency: termFrequency,
+        terms: Math.ceil(
+          moment(originalOccupant.endDate).diff(
+            moment(originalOccupant.beginDate),
+            termFrequency,
+            true
+          )
+        ),
+        properties: originalOccupant.properties,
+        vatRate: originalOccupant.vatRatio,
+        discount: originalOccupant.discount,
+        rents: originalOccupant.rents
+      };
+
+      const modification = {
+        begin: newOccupant.beginDate,
+        end: newOccupant.endDate,
+        termination: newOccupant.terminationDate,
+        properties: newOccupant.properties,
+        frequency: termFrequency
+      };
+      if (newOccupant.vatRatio !== undefined) {
+        modification.vatRate = newOccupant.vatRatio;
+      }
+      if (newOccupant.discount !== undefined) {
+        modification.discount = newOccupant.discount;
+      }
+
+      const newContract = Contract.update(contract, modification);
+      newOccupant.rents = newContract.rents;
+    } catch (e) {
+      logger.error(e);
+      return res.status(409).json({
+        errors: [e.message]
+      });
+    }
+  } else {
+    const paidRents =
+      newOccupant.rents?.some(
+        (rent) =>
+          (rent.payments &&
+            rent.payments.some((payment) => payment.amount > 0)) ||
+          rent.discounts.some((discount) => discount.origin === 'settlement')
+      ) || [];
+
+    if (paidRents.length) {
+      return res.status(409).json({
+        errors: ['impossible to update tenant some rents have been paid']
+      });
+    }
+    newOccupant.rents = [];
+  }
+
+  await Collections.Tenant.updateOne(
+    {
+      realmId: realm._id,
+      _id: occupantId
+    },
+    newOccupant
+  );
+
+  const newOccupants = await _fetchTenants(req.realm._id, newOccupant._id);
+  res.json(FD.toOccupantData(newOccupants.length ? newOccupants[0] : null));
 }
 
 export async function remove(req, res) {
@@ -356,72 +348,51 @@ export async function remove(req, res) {
     return res.sendStatus(404);
   }
 
+  const occupants = await Collections.Tenant.find({
+    realmId: realm._id,
+    _id: { $in: occupantIds }
+  });
+
+  if (!occupants.length) {
+    return res.sendStatus(404);
+  }
+
+  const occupantsWithPaidRents = occupants.filter((occupant) => {
+    return occupant.rents.some(
+      (rent) =>
+        (rent.payments &&
+          rent.payments.some((payment) => payment.amount > 0)) ||
+        rent.discounts.some((discount) => discount.origin === 'settlement')
+    );
+  });
+
+  if (occupantsWithPaidRents.length) {
+    return res.status(409).json({
+      errors: [
+        `impossible to remove ${occupantsWithPaidRents[0].name} some rents have been paid`
+      ]
+    });
+  }
+
+  const session = await Collections.startSession();
+  session.startTransaction();
   try {
-    const occupants = await new Promise((resolve, reject) => {
-      occupantModel.findFilter(
-        realm,
-        {
-          $query: {
-            $or: occupantIds.map((_id) => {
-              return { _id };
-            })
-          }
-        },
-        (errors, occupants) => {
-          if (errors) {
-            return reject({
-              errors
-            });
-          }
-
-          resolve(occupants || []);
-        }
-      );
-    });
-
-    if (!occupants.length) {
-      return res.sendStatus(404);
-    }
-
-    const occupantsWithPaidRents = occupants.filter((occupant) => {
-      return occupant.rents.some(
-        (rent) =>
-          (rent.payments &&
-            rent.payments.some((payment) => payment.amount > 0)) ||
-          rent.discounts.some((discount) => discount.origin === 'settlement')
-      );
-    });
-
-    if (occupantsWithPaidRents.length) {
-      return res.status(422).json({
-        errors: [
-          `impossible to remove ${occupantsWithPaidRents[0].name}. Rents have been recorded.`
-        ]
-      });
-    }
-
     // remove documents
+    const documents = await Collections.Document.find(
+      {
+        realmId: realm._id,
+        tenantId: { $in: occupantIds }
+      },
+      {
+        _id: 1
+      }
+    );
+
+    const { PDFGENERATOR_URL } = Service.getInstance().envConfig.getValues();
+    const documentsEndPoint = `${PDFGENERATOR_URL}/documents/${documents
+      .map(({ _id }) => _id)
+      .join(',')}`;
     try {
-      const documents = await new Promise((resolve, reject) => {
-        documentModel.findAll(realm, async (errors, dbDocuments) => {
-          if (errors && errors.length > 0) {
-            return reject({
-              errors: errors
-            });
-          }
-          resolve(
-            dbDocuments?.filter((document) =>
-              occupantIds.includes(document.tenantId)
-            ) || []
-          );
-        });
-      });
-
-      const { PDFGENERATOR_URL } = Service.getInstance().envConfig.getValues();
-      const documentsEndPoint = `${PDFGENERATOR_URL}/documents/${documents
-        .map(({ _id }) => _id)
-        .join(',')}`;
-
       await axios.delete(documentsEndPoint, {
         headers: {
           authorization: req.headers.authorization,
@@ -435,28 +406,22 @@ export async function remove(req, res) {
       logger.error(errorMessage);
     }
 
-    await new Promise((resolve, reject) => {
-      occupantModel.remove(
-        realm,
-        occupants.map((occupant) => occupant._id.toString()),
-        (errors) => {
-          if (errors) {
-            return reject({
-              errors
-            });
-          }
-          resolve();
-        }
-      );
+    // remove tenants in db
+    await Collections.Tenant.deleteMany({
+      realmId: realm._id,
+      _id: { $in: occupantIds }
     });
-
-    res.sendStatus(200);
+    await session.commitTransaction();
   } catch (error) {
     logger.error(error);
-    res.status(500).json({
+    await session.abortTransaction();
+    return res.status(500).json({
       errors: ['a problem occured when deleting tenants']
     });
+  } finally {
+    session.endSession();
   }
+  res.sendStatus(200);
 }
 
 export async function all(req, res) {
@@ -483,34 +448,29 @@ export async function one(req, res) {
   }
 }
 
-export function overview(req, res) {
+export async function overview(req, res) {
   const realm = req.realm;
+  const currentDate = moment();
+
+  const occupants = await Collections.Tenant.find({
+    realmId: realm._id
+  }).lean();
+
   let result = {
-    countAll: 0,
+    countAll: occupants?.length || 0,
     countActive: 0,
     countInactive: 0
   };
-  const currentDate = moment();
 
-  occupantModel.findAll(realm, (errors, occupants) => {
-    if (errors && errors.length > 0) {
-      return res.status(404).json({
-        errors: errors
-      });
+  result = occupants.reduce((acc, occupant) => {
+    const endMoment = moment(occupant.terminationDate || occupant.endDate);
+    if (endMoment.isBefore(currentDate, 'day')) {
+      acc.countInactive++;
+    } else {
+      acc.countActive++;
     }
+    return acc;
+  }, result);
 
-    if (occupants) {
-      result.countAll = occupants.length;
-      result = occupants.reduce((acc, occupant) => {
-        const endMoment = moment(occupant.terminationDate || occupant.endDate);
-        if (endMoment.isBefore(currentDate, 'day')) {
-          acc.countInactive++;
-        } else {
-          acc.countActive++;
-        }
-        return acc;
-      }, result);
-    }
-    res.json(result);
-  });
+  res.json(result);
 }

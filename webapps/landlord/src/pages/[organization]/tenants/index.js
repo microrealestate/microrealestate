@@ -93,7 +93,7 @@ function Tenants() {
   }
 
   return (
-    <Page loading={isLoading}>
+    <Page loading={isLoading} dataCy="tenantsPage">
       <List
         data={data}
         filters={[

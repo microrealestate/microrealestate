@@ -18,7 +18,7 @@ function AccountSettings() {
   const store = useContext(StoreContext);
 
   return (
-    <Page>
+    <Page dataCy="accountPage">
       <Card>
         <CardHeader>
           <CardTitle>{t('Account')}</CardTitle>

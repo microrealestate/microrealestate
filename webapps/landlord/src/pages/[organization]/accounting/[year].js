@@ -119,7 +119,7 @@ function Accounting() {
   );
 
   return (
-    <Page loading={fetching}>
+    <Page loading={fetching} dataCy="accountingPage">
       <Card className="px-4 py-2 mb-6">
         <TopBar onSearch={handleSearch} />
       </Card>

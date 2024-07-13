@@ -31,7 +31,7 @@ function LandlordSettings() {
     data?.[0];
 
   return (
-    <Page loading={isLoading}>
+    <Page loading={isLoading} dataCy="landlordPage">
       <Card>
         <CardHeader>
           <CardTitle>{t('Landlord')}</CardTitle>

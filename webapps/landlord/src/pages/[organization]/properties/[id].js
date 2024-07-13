@@ -190,9 +190,11 @@ function Property() {
             Icon={TrashIcon}
             onClick={onConfirmDeleteProperty}
             className="col-start-2 col-end-2"
+            dataCy="removeResourceButton"
           />
         </div>
       }
+      dataCy="propertyPage"
     >
       <>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

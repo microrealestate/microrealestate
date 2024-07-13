@@ -45,7 +45,7 @@ function Dashboard() {
   ]);
 
   return (
-    <Page loading={isLoading}>
+    <Page loading={isLoading} dataCy="dashboardPage">
       <div className="flex flex-col gap-4">
         <Welcome className="mb-6" />
         {isFirstConnection ? (

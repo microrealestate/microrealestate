@@ -149,6 +149,7 @@ export default function SearchFilterBar({ filters = [], onSearch, className }) {
         placeholder={t('Search')}
         onChange={handleTextChange}
         className="md:w-60"
+        data-cy="globalSearchField"
       />
       {filters?.length ? (
         <FilterBar

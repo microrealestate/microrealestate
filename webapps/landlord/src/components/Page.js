@@ -2,9 +2,10 @@ import { Card } from './ui/card';
 import { cn } from '../utils';
 import Loading from './Loading';
 
-function Page({ children, ActionBar, loading = false, className }) {
+function Page({ children, ActionBar, loading = false, dataCy, className }) {
   return (
     <div
+      data-cy={dataCy}
       className={cn(
         'md:container md:mx-auto p-2 mt-4 mb-24 md:mb-4',
         className

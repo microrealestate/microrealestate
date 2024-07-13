@@ -32,7 +32,7 @@ function Settings() {
   const store = useContext(StoreContext);
 
   return (
-    <Page>
+    <Page dataCy="settingsPage">
       <Card>
         <CardHeader>
           <CardTitle>{t('Settings')}</CardTitle>

@@ -20,7 +20,7 @@ const DocumentSchema = new mongoose.Schema<CollectionTypes.Document>({
   url: String, // used only when type === "file"
   versionId: String, // used only when type === "file"
   createdDate: Date,
-  updatedDate: Date,
+  updatedDate: Date
 });
 
 DocumentSchema.pre('save', function (next) {

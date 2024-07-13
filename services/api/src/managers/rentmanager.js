@@ -1,64 +1,52 @@
 import * as Contract from './contract.js';
 import * as FD from './frontdata.js';
+import { Collections, Service } from '@microrealestate/common';
 import axios from 'axios';
 import logger from 'winston';
 import moment from 'moment';
-import occupantModel from '../models/occupant.js';
-import rentModel from '../models/rent.js';
-import { Service } from '@microrealestate/common';
 
-const _findOccupants = (realm, occupantId, startTerm, endTerm) => {
-  return new Promise((resolve, reject) => {
-    const filter = {
-      $query: {
-        $and: []
-      }
-    };
-    if (occupantId) {
-      filter['$query']['$and'].push({ _id: occupantId });
+async function _findOccupants(realm, tenantId, startTerm, endTerm) {
+  const filter = {
+    $query: {
+      $and: [{ realmId: realm._id }]
     }
+  };
+  if (tenantId) {
+    filter['$query']['$and'].push({ _id: tenantId });
+  }
+  if (startTerm && endTerm) {
+    filter['$query']['$and'].push({ 'rents.term': { $gte: startTerm } });
+    filter['$query']['$and'].push({ 'rents.term': { $lte: endTerm } });
+  } else if (startTerm) {
+    filter['$query']['$and'].push({ 'rents.term': startTerm });
+  }
+
+  const dbTenants = await Collections.Tenant.find(filter.$query)
+    .sort({
+      name: 1
+    })
+    .lean();
+
+  return dbTenants.map((tenant) => {
+    tenant._id = String(tenant._id);
     if (startTerm && endTerm) {
-      filter['$query']['$and'].push({ 'rents.term': { $gte: startTerm } });
-      filter['$query']['$and'].push({ 'rents.term': { $lte: endTerm } });
-    } else if (startTerm) {
-      filter['$query']['$and'].push({ 'rents.term': startTerm });
-    }
-    occupantModel.findFilter(realm, filter, (errors, occupants) => {
-      if (errors && errors.length > 0) {
-        return reject(errors);
-      }
-      resolve(
-        occupants
-          .map((occupant) => {
-            if (startTerm && endTerm) {
-              occupant.rents = occupant.rents.filter(
-                (rent) => rent.term >= startTerm && rent.term <= endTerm
-              );
-            } else if (startTerm) {
-              occupant.rents = occupant.rents.filter(
-                (rent) => rent.term === startTerm
-              );
-            }
-            return occupant;
-          })
-          .sort((o1, o2) => {
-            const name1 = o1.isCompany ? o1.company : o1.name;
-            const name2 = o2.isCompany ? o2.company : o2.name;
-
-            return name1.localeCompare(name2);
-          })
+      tenant.rents = tenant.rents.filter(
+        (rent) => rent.term >= startTerm && rent.term <= endTerm
       );
-    });
+    } else if (startTerm) {
+      tenant.rents = tenant.rents.filter((rent) => rent.term === startTerm);
+    }
+    return tenant;
   });
-};
+}
 
-const _getEmailStatus = async (
+async function _getEmailStatus(
   authorizationHeader,
   locale,
   realm,
   startTerm,
   endTerm
-) => {
+) {
   const { DEMO_MODE, EMAILER_URL } =
     Service.getInstance().envConfig.getValues();
   try {
@@ -99,15 +87,15 @@ const _getEmailStatus = async (
       throw error.data;
     }
   }
-};
+}
 
-const _getRentsDataByTerm = async (
+async function _getRentsDataByTerm(
   authorizationHeader,
   locale,
   realm,
   currentDate,
   frequency
-) => {
+) {
   const startTerm = Number(currentDate.startOf(frequency).format('YYYYMMDDHH'));
   const endTerm = Number(currentDate.endOf(frequency).format('YYYYMMDDHH'));
 
@@ -160,7 +148,7 @@ const _getRentsDataByTerm = async (
   }, overview);
 
   return { overview, rents };
-};
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Exported functions
@@ -169,7 +157,7 @@ export async function update(req, res) {
   const realm = req.realm;
   const authorizationHeader = req.headers.authorization;
   const locale = req.headers['accept-language'];
-  const paymentData = rentModel.paymentSchema.filter(req.body);
+  const paymentData = req.body;
   const term = `${paymentData.year}${paymentData.month}0100`;
 
   try {
@@ -187,7 +175,7 @@ export async function updateByTerm(req, res) {
   const term = req.params.term;
   const authorizationHeader = req.headers.authorization;
   const locale = req.headers['accept-language'];
-  const paymentData = rentModel.paymentSchema.filter(req.body);
+  const paymentData = req.body;
 
   try {
     res.json(
@@ -199,13 +187,13 @@ export async function updateByTerm(req, res) {
   }
 }
 
-const _updateByTerm = async (
+async function _updateByTerm(
   authorizationHeader,
   locale,
   realm,
   term,
   paymentData
-) => {
+) {
   if (!paymentData.promo && paymentData.promo <= 0) {
     paymentData.promo = 0;
     paymentData.notepromo = null;
@@ -216,23 +204,19 @@ const _updateByTerm = async (
     paymentData.noteextracharge = null;
   }
 
-  const dbOccupant = await new Promise((resolve, reject) => {
-    occupantModel.findOne(realm, paymentData._id, (errors, dbOccupant) => {
-      if (errors && errors.length > 0) {
-        return reject({ errors });
-      }
-      resolve(dbOccupant);
-    });
-  });
+  const occupant = await Collections.Tenant.findOne({
+    _id: paymentData._id,
+    realmId: realm._id
+  }).lean();
 
   const contract = {
-    frequency: dbOccupant.frequency || 'months',
-    begin: dbOccupant.beginDate,
-    end: dbOccupant.endDate,
-    discount: dbOccupant.discount || 0,
-    vatRate: dbOccupant.vatRatio,
-    properties: dbOccupant.properties,
-    rents: dbOccupant.rents
+    frequency: occupant.frequency || 'months',
+    begin: occupant.beginDate,
+    end: occupant.endDate,
+    discount: occupant.discount || 0,
+    vatRate: occupant.vatRatio,
+    properties: occupant.properties,
+    rents: occupant.rents
   };
 
   const settlements = {
@@ -279,7 +263,7 @@ const _updateByTerm = async (
     }
   }
 
-  dbOccupant.rents = Contract.payTerm(contract, term, settlements).rents;
+  occupant.rents = Contract.payTerm(contract, term, settlements).rents;
 
   const emailStatus =
     (await _getEmailStatus(
@@ -289,19 +273,25 @@ const _updateByTerm = async (
       Number(term)
     ).catch(logger.error)) || {};
 
-  return await new Promise((resolve, reject) => {
-    const termAsNumber = Number(term);
-    occupantModel.update(realm, dbOccupant, (errors) => {
-      if (errors) {
-        return reject({ errors });
-      }
-      const rent = dbOccupant.rents.filter(
-        (rent) => rent.term === termAsNumber
-      )[0];
-      resolve(FD.toRentData(rent, dbOccupant, emailStatus?.[dbOccupant._id]));
-    });
-  });
-};
+  const savedOccupant = await Collections.Tenant.findOneAndUpdate(
+    {
+      _id: occupant._id,
+      realmId: realm._id
+    },
+    occupant,
+    { new: true }
+  ).lean();
+
+  const rent = savedOccupant.rents.filter(
+    (rent) => rent.term === Number(term)
+  )[0];
+
+  return FD.toRentData(
+    rent,
+    savedOccupant,
+    emailStatus?.[String(savedOccupant._id)]
+  );
+}
 
 export async function rentsOfOccupant(req, res) {
   const realm = req.realm;
@@ -334,28 +324,6 @@ export async function rentsOfOccupant(req, res) {
   }
 }
 
-export async function rentOfOccupant(req, res) {
-  const realm = req.realm;
-  const { id, month, year } = req.params;
-  const term = Number(
-    moment(`${month}/${year}`, 'MM/YYYY').startOf('month').format('YYYYMMDDHH')
-  );
-  try {
-    res.json(
-      await _rentOfOccupant(
-        req.headers.authorization,
-        req.headers['accept-language'],
-        realm,
-        id,
-        term
-      )
-    );
-  } catch (errors) {
-    logger.error(errors);
-    res.status(errors.status || 500).json({ errors });
-  }
-}
-
 export async function rentOfOccupantByTerm(req, res) {
   const realm = req.realm;
   const { id, term } = req.params;
@@ -374,13 +342,13 @@ export async function rentOfOccupantByTerm(req, res) {
   }
 }
 
-const _rentOfOccupant = async (
+async function _rentOfOccupant(
   authorizationHeader,
   locale,
   realm,
   tenantId,
   term
-) => {
+) {
   const [dbOccupants = [], emailStatus = {}] = await Promise.all([
     _findOccupants(realm, tenantId, Number(term)).catch(logger.error),
     _getEmailStatus(authorizationHeader, locale, realm, Number(term)).catch(
@@ -407,7 +375,7 @@ const _rentOfOccupant = async (
   rent.vatRatio = dbOccupant.vatRatio;
 
   return rent;
-};
+}
 
 export async function all(req, res) {
   const realm = req.realm;

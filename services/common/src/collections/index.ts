@@ -9,3 +9,4 @@ export { default as Realm } from './realm.js';
 export { default as Template } from './template.js';
 export { default as Tenant } from './tenant.js';
 export const ObjectId = mongoose.Types.ObjectId;
+export const startSession = mongoose.startSession;

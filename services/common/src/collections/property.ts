@@ -4,8 +4,6 @@ import Realm from './realm.js';
 
 const PropertySchema = new mongoose.Schema<CollectionTypes.Property>({
   realmId: { type: String, ref: Realm },
-  //occupant: ObjectId,
-  //occupantLabel: String,
 
   type: String,
   name: String,
@@ -20,18 +18,10 @@ const PropertySchema = new mongoose.Schema<CollectionTypes.Property>({
     zipCode: String,
     city: String,
     state: String,
-    country: String,
+    country: String
   },
 
-  price: Number,
-
-  // TODO moved in Occupant.properties model
-  // expense: Number,
-
-  // TODO to remove, replaced by address
-  building: String,
-  level: String,
-  location: String,
+  price: Number
 });
 export default mongoose.model<CollectionTypes.Property>(
   'Property',

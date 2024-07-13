@@ -94,10 +94,11 @@ function Tenant() {
         isVat: false,
         ...tenant,
         properties: tenant.properties.map(
-          ({ propertyId, entryDate, exitDate, expenses }) => ({
+          ({ propertyId, entryDate, exitDate, rent, expenses }) => ({
             propertyId,
             entryDate,
             exitDate,
+            rent,
             expenses
           })
         ),
@@ -201,6 +202,7 @@ function Tenant() {
             Icon={TrashIcon}
             disabled={store.tenant.selected.hasPayments}
             onClick={handleDeleteTenant}
+            dataCy="removeResourceButton"
           />
           {showTerminateLeaseButton ? (
             <ShortcutButton
@@ -225,6 +227,7 @@ function Tenant() {
           ) : null}
         </div>
       }
+      dataCy="tenantPage"
     >
       {store.tenant.selected.stepperMode ? (
         <Card>

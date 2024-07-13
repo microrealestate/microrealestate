@@ -239,7 +239,7 @@ function Rents() {
   }
 
   return (
-    <Page loading={isLoading}>
+    <Page loading={isLoading} dataCy="rentsPage">
       <div className="my-4">
         <RentOverview data={{ period, ...data?.overview }} />
       </div>

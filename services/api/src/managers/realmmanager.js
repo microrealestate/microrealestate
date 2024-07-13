@@ -1,5 +1,4 @@
 import { Collections, Crypto } from '@microrealestate/common';
-import accountModel from '../models/account.js';
 import logger from 'winston';
 
 const SECRET_PLACEHOLDER = '**********';
@@ -187,24 +186,14 @@ export async function update(req, res) {
     }
   }
 
-  const usernameMap = {};
-  try {
-    await new Promise((resolve, reject) => {
-      accountModel.findAll((errors, accounts = []) => {
-        if (errors) {
-          return reject(errors);
-        }
-        resolve(
-          accounts.reduce((acc, { email, firstname, lastname }) => {
-            acc[email] = `${firstname} ${lastname}`;
-            return acc;
-          }, usernameMap)
-        );
-      });
-    });
-  } catch (error) {
-    logger.error(error);
-  }
+  const dbAccounts = await Collections.Account.find().lean();
+  const usernameMap = dbAccounts.reduce(
+    (acc, { email, firstname, lastname }) => {
+      acc[email] = `${firstname} ${lastname}`;
+      return acc;
+    },
+    {}
+  );
 
   updatedRealm.members.forEach((member) => {
     const name = usernameMap[member.email];
@@ -234,8 +223,6 @@ export async function update(req, res) {
     res.sendStatus(500).json({ errors: error });
   }
 }
-
-export function remove(/*req, res*/) {}
 
 export function one(req, res) {
   const realmId = req.params.id;

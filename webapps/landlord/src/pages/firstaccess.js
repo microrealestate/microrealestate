@@ -20,7 +20,10 @@ function FirstAccess() {
   }
 
   return (
-    <div className="mt-10 mx-4 text-center sm:text-left sm:container sm:w-[36rem]">
+    <div
+      className="mt-10 mx-4 text-center sm:text-left sm:container sm:w-[36rem]"
+      data-cy="firstaccessPage"
+    >
       <div className="py-5">
         <Welcome className="text-center sm:text-left" />
       </div>

@@ -1,4 +1,3 @@
-import * as Db from './models/db.js';
 import { EnvironmentConfig, Service } from '@microrealestate/common';
 import { fileURLToPath } from 'url';
 import i18n from 'i18n';
@@ -17,9 +16,6 @@ i18n.configure({
 });
 
 async function onStartUp(application) {
-  // init mongojs
-  await Db.init();
-
   const { RESTORE_DB } = Service.getInstance().envConfig.getValues();
   if (RESTORE_DB) {
     logger.debug('restoring database from backup');

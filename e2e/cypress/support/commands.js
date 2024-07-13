@@ -3,6 +3,7 @@
 // commands please read more here:
 // https://on.cypress.io/custom-commands
 // ***********************************************
+import i18n from './i18n';
 
 Cypress.Commands.add('resetAppData', () => {
   const apiBaseUrl = Cypress.env('GATEWAY_BASEURL');
@@ -231,9 +232,16 @@ Cypress.Commands.add(
   }
 );
 
-Cypress.Commands.add('navToPage', (pageName) => {
+Cypress.Commands.add('navAppMenu', (pageName) => {
   cy.get('[data-cy=appMenu]').click();
   cy.get(`[data-cy=${pageName}Nav]`).click();
+  cy.checkPage(pageName);
+});
+
+Cypress.Commands.add('navOrgMenu', (pageName) => {
+  cy.get('[data-cy=orgMenu]').click();
+  cy.get(`[data-cy=${pageName}Nav]`).click();
+  cy.checkPage(pageName);
 });
 
 Cypress.Commands.add('muiSelect', (name, value) => {
@@ -248,4 +256,26 @@ Cypress.Commands.add('muiSelectText', (name, text) => {
 
 Cypress.Commands.add('checkUrl', (url) => {
   cy.url({ timeout: 8000 }).should('include', url);
+});
+
+Cypress.Commands.add('checkPage', (pageName) => {
+  cy.get(`[data-cy=${pageName}Page]`).should('be.visible');
+});
+
+Cypress.Commands.add('searchResource', (text) => {
+  cy.get('[data-cy=globalSearchField]').click();
+  cy.get('[data-cy=globalSearchField]').clear();
+  cy.get('[data-cy=globalSearchField]').type(text);
+});
+
+Cypress.Commands.add('openResource', (resourceName) => {
+  cy.get('button[data-cy=openResourceButton]').contains(resourceName).click();
+});
+
+Cypress.Commands.add('removeResource', () => {
+  cy.get('button[data-cy=removeResourceButton]').click();
+  cy.get('[role=dialog]')
+    .get('button')
+    .contains(i18n.getFixedT('fr-FR')('Continue'))
+    .click();
 });

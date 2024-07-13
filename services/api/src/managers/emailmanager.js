@@ -1,9 +1,7 @@
+import { Collections, Service } from '@microrealestate/common';
 import axios from 'axios';
 import logger from 'winston';
 import moment from 'moment';
-import occupantModel from '../models/occupant.js';
-import { promisify } from 'util';
-import { Service } from '@microrealestate/common';
 
 async function _sendEmail(req, message) {
   const { EMAILER_URL } = Service.getInstance().envConfig.getValues();
@@ -52,61 +50,47 @@ export async function send(req, res) {
     const defaultTerm = moment(`${year}/${month}/01`, 'YYYY/MM/DD').format(
       'YYYYMMDDHH'
     );
-    const findTenant = promisify(occupantModel.findOne).bind(occupantModel);
 
-    // TODO: send emails in parallel not sequentially for better perf
-    const statusList = [];
-    for (let i = 0; i < tenantIds.length; i++) {
-      const tenantId = tenantIds[i];
-      const term = Number((terms && terms[i]) || defaultTerm);
+    const tenants = await Collections.Tenant.find({
+      _id: { $in: tenantIds },
+      realmId: realm._id
+    }).lean();
 
-      // Find tenant recipient
-      let tenant;
-      try {
-        tenant = await findTenant(realm, tenantId);
-      } catch (error) {
-        logger.error(error);
-        statusList.push({
-          tenantId,
-          document,
-          term,
-          error: {
-            status: 404,
-            message: `tenant ${tenantId} not found`
-          }
-        });
-        continue;
-      }
+    const statusList = await Promise.all(
+      tenants.map(async (tenant, index) => {
+        const tenantId = String(tenant._id);
+        const term = Number((terms && terms[index]) || defaultTerm);
 
-      // Send email to tenant
-      try {
-        const status = await _sendEmail(req, {
-          name: tenant.name,
-          tenantId,
-          document,
-          term
-        });
-        statusList.push({
-          name: tenant.name,
-          tenantId,
-          document,
-          term,
-          ...status
-        });
-      } catch (error) {
-        logger.error(error);
-        statusList.push({
-          name: tenant.name,
-          tenantId,
-          document,
-          term,
-          error: error.response?.data || {
-            status: 500,
-            message: `Something went wrong when sending the email to ${tenant.name}`
-          }
-        });
-      }
-    }
+        // Send email to tenant
+        try {
+          const status = await _sendEmail(req, {
+            name: tenant.name,
+            tenantId,
+            document,
+            term
+          });
+          return {
+            name: tenant.name,
+            tenantId,
+            document,
+            term,
+            ...status
+          };
+        } catch (error) {
+          logger.error(error);
+          return {
+            name: tenant.name,
+            tenantId,
+            document,
+            term,
+            error: error.response?.data || {
+              status: 500,
+              message: `Something went wrong when sending the email to ${tenant.name}`
+            }
+          };
+        }
+      })
+    );
 
     res.json(statusList);
   } catch (error) {

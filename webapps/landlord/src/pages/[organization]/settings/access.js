@@ -69,6 +69,7 @@ function AccessSettings() {
           />
         </div>
       }
+      dataCy="accessPage"
     >
       <Card>
         <CardHeader>

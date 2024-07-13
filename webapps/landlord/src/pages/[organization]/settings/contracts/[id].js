@@ -88,7 +88,7 @@ function Contract() {
           return toast.error(t('Something went wrong'));
       }
     }
-    router.push(`/${store.organization.selected.name}/settings#leases`);
+    router.push(`/${store.organization.selected.name}/settings/contracts`);
   }, [store, t]);
 
   return (
@@ -110,9 +110,11 @@ function Contract() {
               store.user.role !== ADMIN_ROLE
             }
             className="col-start-2 col-end-2"
+            dataCy="removeResourceButton"
           />
         </div>
       }
+      dataCy="contractPage"
     >
       <Card>
         {store.lease.selected?.stepperMode ? (

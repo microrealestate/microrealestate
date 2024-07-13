@@ -31,6 +31,7 @@ export default function PropertyListItem({ property }) {
           <Button
             variant="link"
             className="flex items-center font-normal gap-2 p-0 mt-2"
+            data-cy="openResourceButton"
           >
             <PropertyIcon type={property.type} />
             <span className="text-xl">{property.name}</span>
