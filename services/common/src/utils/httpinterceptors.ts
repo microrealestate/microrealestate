@@ -1,5 +1,5 @@
 import * as axios from 'axios';
-import logger from 'winston';
+import logger from './logger.js';
 
 export default function httpInterceptors() {
   // For logging purposes

@@ -1,10 +1,9 @@
+// eslint-disable-next-line import/no-unresolved
+import { logger, Service } from '@microrealestate/common';
 import fileUrl from 'file-url';
 import fs from 'fs';
-import logger from 'winston';
 import path from 'path';
 import puppeteer from 'puppeteer';
-// eslint-disable-next-line import/no-unresolved
-import { Service } from '@microrealestate/common';
 
 let browserWSEndpoint;
 

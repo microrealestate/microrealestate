@@ -1,8 +1,7 @@
 import * as Contract from './contract.js';
 import * as FD from './frontdata.js';
-import { Collections, Service } from '@microrealestate/common';
+import { Collections, logger, Service } from '@microrealestate/common';
 import axios from 'axios';
-import logger from 'winston';
 import moment from 'moment';
 
 async function _findOccupants(realm, tenantId, startTerm, endTerm) {

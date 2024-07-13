@@ -27,8 +27,7 @@
     "format": "prettier --write '**/*.{js,jsx,ts,tsx,json,css}'"
   },
   "dependencies": {
-    "@microrealestate/common": "*",
-    "winston": "2.4.7"
+    "@microrealestate/common": "*"
   },
   "devDependencies": {
     "@microrealestate/types": "*",

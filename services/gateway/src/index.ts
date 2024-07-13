@@ -1,9 +1,13 @@
 import * as Express from 'express';
-import { EnvironmentConfig, Service, URLUtils } from '@microrealestate/common';
+import {
+  EnvironmentConfig,
+  logger,
+  Service,
+  URLUtils
+} from '@microrealestate/common';
 import axios from 'axios';
 import cors from 'cors';
 import { createProxyMiddleware } from 'http-proxy-middleware';
-import logger from 'winston';
 
 Main();
 

@@ -1,5 +1,4 @@
-import { Collections, Crypto } from '@microrealestate/common';
-import logger from 'winston';
+import { Collections, Crypto, logger } from '@microrealestate/common';
 
 const SECRET_PLACEHOLDER = '**********';
 

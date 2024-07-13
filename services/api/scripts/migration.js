@@ -1,10 +1,10 @@
 import {
   Collections,
   EnvironmentConfig,
+  logger,
   MongoClient
 } from '@microrealestate/common';
 import { fileURLToPath } from 'url';
-import logger from 'winston';
 
 async function updateThirdPartyConfiguration() {
   const landlords = await Collections.Realm.find({});

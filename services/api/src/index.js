@@ -1,7 +1,6 @@
-import { EnvironmentConfig, Service } from '@microrealestate/common';
+import { EnvironmentConfig, logger, Service } from '@microrealestate/common';
 import { fileURLToPath } from 'url';
 import i18n from 'i18n';
-import logger from 'winston';
 import migratedb from '../scripts/migration.js';
 import path from 'path';
 import { restoreDB } from '../scripts/dbbackup.js';

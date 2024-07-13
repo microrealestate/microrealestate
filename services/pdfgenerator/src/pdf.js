@@ -1,11 +1,10 @@
 import * as PdfEngine from './engine/chromeheadless.js';
+// eslint-disable-next-line import/no-unresolved
+import { logger, Service } from '@microrealestate/common';
 import dataPicker from './datapicker.js';
 import ejs from 'ejs';
 import fs from 'fs';
-import logger from 'winston';
 import path from 'path';
-// eslint-disable-next-line import/no-unresolved
-import { Service } from '@microrealestate/common';
 import templateFunctions from './utils/templatefunctions.js';
 
 const settings = {

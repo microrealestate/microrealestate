@@ -1,9 +1,8 @@
 import * as pdf from './pdf.js';
 // eslint-disable-next-line import/no-unresolved
-import { EnvironmentConfig, Service } from '@microrealestate/common';
+import { EnvironmentConfig, logger, Service } from '@microrealestate/common';
 import { fileURLToPath } from 'url';
 import locale from 'locale';
-import logger from 'winston';
 import path from 'path';
 import routes from './routes/index.js';
 

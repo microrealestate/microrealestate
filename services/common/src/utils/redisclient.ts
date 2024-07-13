@@ -1,5 +1,5 @@
 import EnvironmentConfig from './environmentconfig.js';
-import logger from 'winston';
+import logger from './logger.js';
 import redis from 'redis';
 import { RedisClientTypes } from '@microrealestate/types';
 

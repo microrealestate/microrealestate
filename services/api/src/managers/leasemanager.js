@@ -1,5 +1,4 @@
-import { Collections } from '@microrealestate/common';
-import logger from 'winston';
+import { Collections, logger } from '@microrealestate/common';
 
 /**
  * @returns a Set of leaseId (_id)

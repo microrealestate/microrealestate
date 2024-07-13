@@ -11,7 +11,7 @@ import Express from 'express';
 import expressWinston from 'express-winston'; // TODO bump to version 4
 import httpInterceptors from './httpinterceptors.js';
 import jwt from 'jsonwebtoken';
-import logger from 'winston';
+import logger from './logger.js';
 import MongoClient from './mongoclient.js';
 import RedisClient from './redisclient.js';
 
@@ -55,14 +55,6 @@ export default class Service {
 
   private constructor(envConfig: EnvironmentConfig) {
     this.envConfig = envConfig;
-
-    // configure default logger
-    logger.remove(logger.transports.Console);
-    logger.add(logger.transports.Console, {
-      level: envConfig.getValues().LOGGER_LEVEL,
-      colorize: false
-    });
-
     this.expressServer = Express();
   }
 
@@ -107,12 +99,7 @@ export default class Service {
 
     this.expressServer.use(
       expressWinston.logger({
-        transports: [
-          new logger.transports.Console({
-            json: false,
-            colorize: false
-          })
-        ],
+        transports: [logger],
         meta: false, // optional: control whether you want to log the meta data about the request (default to true)
         msg: String, //'HTTP {{req.method}} {{req.url}}', // optional: customize the default logging message. E.g. "{{res.statusCode}} {{req.method}} {{res.responseTime}}ms {{req.url}}"
         expressFormat: true, // Use the default Express/morgan request formatting, with the same colors. Enabling this will override any msg and colorStatus if false. Will only output colors on transports with colorize set to true
@@ -125,12 +112,7 @@ export default class Service {
 
     this.expressServer.use(
       expressWinston.errorLogger({
-        transports: [
-          new logger.transports.Console({
-            json: false,
-            colorize: false
-          })
-        ]
+        transports: [logger]
       })
     );
   }

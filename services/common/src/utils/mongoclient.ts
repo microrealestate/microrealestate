@@ -1,6 +1,6 @@
 import mongoose, { Mongoose } from 'mongoose';
 import EnvironmentConfig from './environmentconfig.js';
-import logger from 'winston';
+import logger from './logger.js';
 
 process.on('SIGINT', async () => {
   try {

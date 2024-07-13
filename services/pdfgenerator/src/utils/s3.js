@@ -1,8 +1,7 @@
-import AWS from 'aws-sdk';
 // eslint-disable-next-line import/no-unresolved
-import { Crypto } from '@microrealestate/common';
+import { Crypto, logger } from '@microrealestate/common';
+import AWS from 'aws-sdk';
 import fs from 'fs-extra';
-import logger from 'winston';
 
 function _initS3(b2Config) {
   const credentials = new AWS.Credentials(

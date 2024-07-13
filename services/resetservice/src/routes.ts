@@ -1,6 +1,5 @@
 import * as Express from 'express';
-import logger from 'winston';
-import { Service } from '@microrealestate/common';
+import { logger, Service } from '@microrealestate/common';
 
 const routes = Express.Router();
 routes.delete('/reset', (req: Express.Request, res: Express.Response) => {

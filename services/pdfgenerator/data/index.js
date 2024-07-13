@@ -1,6 +1,5 @@
 // eslint-disable-next-line import/no-unresolved
-import { Collections } from '@microrealestate/common';
-import logger from 'winston';
+import { Collections, logger } from '@microrealestate/common';
 import moment from 'moment';
 
 export async function getRentsData(params) {

@@ -6,3 +6,4 @@ export * as Middlewares from './utils/middlewares.js';
 export { default as MongoClient } from './utils/mongoclient.js';
 export * as URLUtils from './utils/url.js';
 export * as Collections from './collections/index.js';
+export { default as logger } from './utils/logger.js';

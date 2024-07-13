@@ -1,11 +1,10 @@
 import * as pdf from '../pdf.js';
 import * as s3 from '../utils/s3.js';
 // eslint-disable-next-line import/no-unresolved
-import { Collections, Format, Service } from '@microrealestate/common';
+import { Collections, Format, logger, Service } from '@microrealestate/common';
 import express from 'express';
 import fs from 'fs-extra';
 import Handlebars from 'handlebars';
-import logger from 'winston';
 import moment from 'moment';
 import multer from 'multer';
 import path from 'path';

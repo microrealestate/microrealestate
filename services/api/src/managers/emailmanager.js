@@ -1,6 +1,5 @@
-import { Collections, Service } from '@microrealestate/common';
+import { Collections, logger, Service } from '@microrealestate/common';
 import axios from 'axios';
-import logger from 'winston';
 import moment from 'moment';
 
 async function _sendEmail(req, message) {

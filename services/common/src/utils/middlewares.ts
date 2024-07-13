@@ -11,7 +11,7 @@ import {
   ServiceResponse,
   UserServicePrincipal
 } from '@microrealestate/types';
-import logger from 'winston';
+import logger from './logger.js';
 import Realm from '../collections/realm.js';
 
 export function needAccessToken(

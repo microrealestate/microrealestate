@@ -1,9 +1,8 @@
 // eslint-disable-next-line import/no-unresolved
-import { Collections, Service } from '@microrealestate/common';
+import { Collections, logger, Service } from '@microrealestate/common';
 import axios from 'axios';
 import express from 'express';
 import jwt from 'jsonwebtoken';
-import logger from 'winston';
 
 export default function () {
   const {

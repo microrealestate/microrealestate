@@ -1,11 +1,15 @@
-import { Collections, Middlewares, Service } from '@microrealestate/common';
+import {
+  Collections,
+  logger,
+  Middlewares,
+  Service
+} from '@microrealestate/common';
 import axios from 'axios';
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 import express from 'express';
 import jwt from 'jsonwebtoken';
 import locale from 'locale';
-import logger from 'winston';
 
 const _generateTokens = async (dbAccount) => {
   const { REFRESH_TOKEN_SECRET, ACCESS_TOKEN_SECRET, PRODUCTION } =

@@ -1,8 +1,7 @@
 // eslint-disable-next-line import/no-unresolved
-import { EnvironmentConfig, Service } from '@microrealestate/common';
+import { EnvironmentConfig, logger, Service } from '@microrealestate/common';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
-import logger from 'winston';
 import path from 'path';
 import routes from './routes.js';
 

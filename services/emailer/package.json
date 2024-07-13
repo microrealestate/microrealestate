@@ -39,8 +39,7 @@
     "locale": "0.1.0",
     "mailgun.js": "8.2.1",
     "moment": "2.29.4",
-    "nodemailer": "6.9.14",
-    "winston": "2.4.7"
+    "nodemailer": "6.9.14"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "7.15.0",

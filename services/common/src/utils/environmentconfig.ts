@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import { EnvironmentValues } from '@microrealestate/types';
-import logger from 'winston';
+import logger from './logger.js';
 
 const baseEnvironmentValues = {
   LOGGER_LEVEL: process.env.LOGGER_LEVEL || 'debug',

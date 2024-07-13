@@ -1,6 +1,5 @@
 import * as FD from './frontdata.js';
-import { Collections } from '@microrealestate/common';
-import logger from 'winston';
+import { Collections, logger } from '@microrealestate/common';
 
 async function _toPropertiesData(realm, inputProperties) {
   const allTenants = await Collections.Tenant.find({
