@@ -19,22 +19,10 @@
   "scripts": {
     "lint": "eslint .",
     "format": "prettier --write '**/*.{js,jsx,ts,tsx,json,css}'",
-    "generateStrings": "node scripts/extractlocalizedstrings.js",
-    "storybook": "start-storybook -p 6006",
-    "build-storybook": "build-storybook"
+    "generateStrings": "node scripts/extractlocalizedstrings.js"
   },
   "devDependencies": {
     "@babel/core": "7.21.3",
-    "@storybook/addon-actions": "6.5.16",
-    "@storybook/addon-essentials": "6.5.16",
-    "@storybook/addon-interactions": "6.5.16",
-    "@storybook/addon-links": "6.5.16",
-    "@storybook/addons": "6.5.16",
-    "@storybook/builder-webpack5": "6.5.16",
-    "@storybook/cli": "6.5.16",
-    "@storybook/manager-webpack5": "6.5.16",
-    "@storybook/react": "6.5.16",
-    "@storybook/testing-library": "0.0.13",
     "eslint": "8.57.0",
     "eslint-config-prettier": "9.1.0",
     "eslint-plugin-import": "2.29.1",
@@ -42,7 +30,6 @@
     "eslint-plugin-react-hooks": "4.6.0",
     "next-translate-plugin": "2.6.2",
     "prop-types": "15.8.1",
-    "require-from-string": "2.0.2",
-    "storybook-addon-material-ui": "0.9.0-alpha.24"
+    "require-from-string": "2.0.2"
   }
 }
