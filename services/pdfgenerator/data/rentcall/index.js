@@ -2,7 +2,6 @@ import * as utils from '../index.js';
 import fileUrl from 'file-url';
 import moment from 'moment';
 import path from 'path';
-// eslint-disable-next-line import/no-unresolved
 import { Service } from '@microrealestate/common';
 
 export async function get(params) {

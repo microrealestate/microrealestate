@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-unresolved
 import { Collections, logger } from '@microrealestate/common';
 import moment from 'moment';
 

@@ -1,5 +1,4 @@
 import * as PdfEngine from './engine/chromeheadless.js';
-// eslint-disable-next-line import/no-unresolved
 import { logger, Service } from '@microrealestate/common';
 import dataPicker from './datapicker.js';
 import ejs from 'ejs';

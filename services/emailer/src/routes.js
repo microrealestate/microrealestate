@@ -1,5 +1,4 @@
 import * as Emailer from './emailer.js';
-// eslint-disable-next-line import/no-unresolved
 import { logger, Middlewares, Service } from '@microrealestate/common';
 import express from 'express';
 import locale from 'locale';

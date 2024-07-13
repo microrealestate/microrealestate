@@ -3,7 +3,6 @@ import * as EmailContent from './emailcontent.js';
 import * as EmailData from './emaildata.js';
 import * as EmailEngine from './emailengine.js';
 import * as EmailRecipients from './emailrecipients.js';
-// eslint-disable-next-line import/no-unresolved
 import { Collections, logger, Service } from '@microrealestate/common';
 
 export async function status(recordId, startTerm, endTerm) {

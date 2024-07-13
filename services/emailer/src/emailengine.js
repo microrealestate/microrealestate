@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-unresolved
 import { Crypto, Service } from '@microrealestate/common';
 import formData from 'form-data';
 import Mailgun from 'mailgun.js';

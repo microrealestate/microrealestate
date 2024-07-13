@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-unresolved
 import { Crypto, logger } from '@microrealestate/common';
 import AWS from 'aws-sdk';
 import fs from 'fs-extra';

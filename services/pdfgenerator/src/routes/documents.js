@@ -1,6 +1,5 @@
 import * as pdf from '../pdf.js';
 import * as s3 from '../utils/s3.js';
-// eslint-disable-next-line import/no-unresolved
 import { Collections, Format, logger, Service } from '@microrealestate/common';
 import express from 'express';
 import fs from 'fs-extra';

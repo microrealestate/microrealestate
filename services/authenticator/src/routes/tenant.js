@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-unresolved
 import { Collections, logger, Service } from '@microrealestate/common';
 import axios from 'axios';
 import express from 'express';

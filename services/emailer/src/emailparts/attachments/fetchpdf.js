@@ -1,7 +1,6 @@
 import axios from 'axios';
 import fs from 'fs';
 import path from 'path';
-// eslint-disable-next-line import/no-unresolved
 import { Service } from '@microrealestate/common';
 
 export default function (

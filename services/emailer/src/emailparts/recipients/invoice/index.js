@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-unresolved
 import { Service } from '@microrealestate/common';
 
 export function get(recordId, params, data) {

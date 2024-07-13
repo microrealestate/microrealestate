@@ -1,5 +1,4 @@
 import * as pdf from './pdf.js';
-// eslint-disable-next-line import/no-unresolved
 import { EnvironmentConfig, logger, Service } from '@microrealestate/common';
 import { fileURLToPath } from 'url';
 import locale from 'locale';

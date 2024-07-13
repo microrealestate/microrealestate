@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-unresolved
 import { logger, Service } from '@microrealestate/common';
 import fileUrl from 'file-url';
 import fs from 'fs';

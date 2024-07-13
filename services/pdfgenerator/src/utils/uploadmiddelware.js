@@ -3,7 +3,6 @@ import fs from 'fs-extra';
 import multer from 'multer';
 import os from 'os';
 import path from 'path';
-// eslint-disable-next-line import/no-unresolved
 import { Service } from '@microrealestate/common';
 
 export default function () {
