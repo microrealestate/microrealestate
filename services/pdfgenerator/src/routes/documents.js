@@ -1,39 +1,41 @@
 import * as pdf from '../pdf.js';
 import * as s3 from '../utils/s3.js';
-import { Collections, Format, logger, Service } from '@microrealestate/common';
+import {
+  Collections,
+  Format,
+  logger,
+  Middlewares,
+  Service,
+  ServiceError
+} from '@microrealestate/common';
 import express from 'express';
 import fs from 'fs-extra';
 import Handlebars from 'handlebars';
 import moment from 'moment';
-import multer from 'multer';
 import path from 'path';
 import uploadMiddleware from '../utils/uploadmiddelware.js';
 
 async function _getTempate(organization, templateId) {
-  const template = (
-    await Collections.Template.findOne({
-      _id: templateId,
-      realmId: organization._id
-    })
-  )?.toObject();
+  const template = await Collections.Template.findOne({
+    _id: templateId,
+    realmId: organization._id
+  }).lean();
 
   return template;
 }
 
 async function _getTemplateValues(organization, tenantId, leaseId) {
-  const tenant = (
-    await Collections.Tenant.findOne({
-      _id: tenantId,
-      realmId: organization._id
-    }).populate('properties.propertyId')
-  )?.toObject();
+  const tenant = await Collections.Tenant.findOne({
+    _id: tenantId,
+    realmId: organization._id
+  })
+    .populate('properties.propertyId')
+    .lean();
 
-  const lease = (
-    await Collections.Lease.findOne({
-      _id: leaseId,
-      realmId: organization._id
-    })
-  )?.toObject();
+  const lease = await Collections.Lease.findOne({
+    _id: leaseId,
+    realmId: organization._id
+  }).lean();
 
   // compute rent, expenses and surface from properties
   const PropertyGlobals = tenant.properties.reduce(
@@ -209,91 +211,93 @@ export default function () {
   const { UPLOADS_DIRECTORY } = Service.getInstance().envConfig.getValues();
   const documentsApi = express.Router();
 
-  documentsApi.get('/:document/:id/:term', async (req, res) => {
-    try {
-      logger.debug(`generate pdf file for ${JSON.stringify(req.params)}`);
-      const pdfFile = await pdf.generate(req.params.document, req.params);
-      return res.download(pdfFile);
-    } catch (error) {
-      logger.error(error);
-      return res.sendStatus(404);
-    }
-  });
+  documentsApi.get(
+    '/:document/:id/:term',
+    Middlewares.asyncWrapper(async (req, res) => {
+      try {
+        logger.debug(`generate pdf file for ${JSON.stringify(req.params)}`);
+        const pdfFile = await pdf.generate(req.params.document, req.params);
+        return res.download(pdfFile);
+      } catch (error) {
+        throw new ServiceError(error, 404);
+      }
+    })
+  );
 
-  documentsApi.get('/', async (req, res) => {
-    const organizationId = req.headers.organizationid;
+  documentsApi.get(
+    '/',
+    Middlewares.asyncWrapper(async (req, res) => {
+      const organizationId = req.headers.organizationid;
 
-    const documentsFound = await Collections.Document.find({
-      realmId: organizationId
-    });
-    if (!documentsFound) {
-      return res.sendStatus(404);
-    }
-
-    return res.status(200).json(documentsFound);
-  });
-
-  documentsApi.get('/:id', async (req, res) => {
-    const documentId = req.params.id;
-
-    if (!documentId) {
-      return res.status(422).send({ errors: ['Document id required'] });
-    }
-
-    let documentFound = await Collections.Document.findOne({
-      _id: documentId,
-      realmId: req.realm._id
-    });
-
-    if (!documentFound) {
-      logger.warn(`document ${documentId} not found`);
-      return res
-        .status(404)
-        .send({ errors: [`Document ${documentId} not found`] });
-    }
-
-    if (documentFound.type === 'text') {
-      return res.status(200).json(documentFound);
-    }
-
-    if (documentFound.type === 'file') {
-      if (!documentFound?.url) {
-        return res.status(404).send({ errors: ['Document url required'] });
+      const documentsFound = await Collections.Document.find({
+        realmId: organizationId
+      });
+      if (!documentsFound) {
+        throw new ServiceError('document not found', 404);
       }
 
-      if (documentFound.url.indexOf('..') !== -1) {
-        return res.status(404).send({ errors: ['Document url invalid'] });
+      return res.status(200).json(documentsFound);
+    })
+  );
+
+  documentsApi.get(
+    '/:id',
+    Middlewares.asyncWrapper(async (req, res) => {
+      const documentId = req.params.id;
+
+      if (!documentId) {
+        logger.error('missing document id');
+        throw new ServiceError('missing fields', 422);
       }
 
-      // first try to download from file system
-      const filePath = path.join(UPLOADS_DIRECTORY, documentFound.url);
-      if (fs.existsSync(filePath)) {
-        return fs.createReadStream(filePath).pipe(res);
+      let documentFound = await Collections.Document.findOne({
+        _id: documentId,
+        realmId: req.realm._id
+      });
+
+      if (!documentFound) {
+        logger.warn(`document ${documentId} not found`);
+        throw new ServiceError('document not found', 404);
       }
 
-      // otherwise download from s3
-      if (s3.isEnabled(req.realm.thirdParties.b2)) {
-        return s3
-          .downloadFile(req.realm.thirdParties.b2, documentFound.url)
-          .pipe(res);
+      if (documentFound.type === 'text') {
+        return res.status(200).json(documentFound);
       }
-    }
 
-    return res
-      .status(404)
-      .send({ errors: [`Document ${documentId} not found`] });
-  });
-
-  documentsApi.post('/upload', (req, res) => {
-    uploadMiddleware()(req, res, async (err) => {
-      if (err) {
-        logger.error(err);
-        if (err instanceof multer.MulterError) {
-          return res.status(500).send({ errors: [err.message] });
+      if (documentFound.type === 'file') {
+        if (!documentFound?.url) {
+          logger.error('document url required');
+          throw new ServiceError('missing fields', 422);
         }
-        return res.status(500).send({ errors: ['Cannot store file on disk'] });
+
+        if (documentFound.url.indexOf('..') !== -1) {
+          logger.error('document url invalid containing ".."');
+          throw new ServiceError('missing fields', 422);
+        }
+
+        // first try to download from file system
+        const filePath = path.join(UPLOADS_DIRECTORY, documentFound.url);
+        if (fs.existsSync(filePath)) {
+          return fs.createReadStream(filePath).pipe(res);
+        }
+
+        // otherwise download from s3
+        if (s3.isEnabled(req.realm.thirdParties.b2)) {
+          return s3
+            .downloadFile(req.realm.thirdParties.b2, documentFound.url)
+            .pipe(res);
+        }
       }
 
+      logger.error(`document ${documentId} not found`);
+      throw new ServiceError('document not found', 404);
+    })
+  );
+
+  documentsApi.post(
+    '/upload',
+    uploadMiddleware(),
+    Middlewares.asyncWrapper(async (req, res) => {
       const key = [req.body.s3Dir, req.body.fileName].join('/');
       if (s3.isEnabled(req.realm.thirdParties.b2)) {
         try {
@@ -304,13 +308,12 @@ export default function () {
           });
           return res.status(201).send(data);
         } catch (error) {
-          logger.error(error);
-          return res.status(500).send({ errors: ['Cannot store file in s3'] });
+          throw new ServiceError(error, 500);
         } finally {
           try {
             fs.removeSync(req.file.path);
           } catch (err) {
-            // catch error
+            // catch error and do nothing
           }
         }
       } else {
@@ -319,53 +322,43 @@ export default function () {
           key
         });
       }
-    });
-  });
+    })
+  );
 
-  documentsApi.post('/', async (req, res) => {
-    const dataSet = req.body || {};
+  documentsApi.post(
+    '/',
+    Middlewares.asyncWrapper(async (req, res) => {
+      const dataSet = req.body || {};
 
-    if (!dataSet.tenantId) {
-      return res.status(422).json({
-        errors: ['Missing tenant Id to generate document']
-      });
-    }
+      if (!dataSet.tenantId) {
+        logger.error('missing tenant Id to generate document');
+        throw new ServiceError('missing fields', 422);
+      }
 
-    if (!dataSet.leaseId) {
-      return res.status(422).json({
-        errors: ['Missing lease Id to generate document']
-      });
-    }
+      if (!dataSet.leaseId) {
+        logger.error('missing lease Id to generate document');
+        throw new ServiceError('missing fields', 422);
+      }
 
-    let template;
-    if (dataSet.templateId) {
-      try {
+      let template;
+      if (dataSet.templateId) {
         template = await _getTempate(req.realm, dataSet.templateId);
         if (!template) {
-          return res.status(404).json({
-            errors: ['Template not found']
-          });
+          throw new ServiceError('template not found', 404);
         }
-      } catch (error) {
-        logger.error(error);
-        return res.status(500).json({
-          errors: ['Fail to fetch template']
-        });
       }
-    }
 
-    const documentToCreate = {
-      realmId: req.realm._id,
-      tenantId: dataSet.tenantId,
-      leaseId: dataSet.leaseId,
-      templateId: dataSet.templateId,
-      type: dataSet.type || template.type,
-      name: dataSet.name || template.name,
-      description: dataSet.description || ''
-    };
+      const documentToCreate = {
+        realmId: req.realm._id,
+        tenantId: dataSet.tenantId,
+        leaseId: dataSet.leaseId,
+        templateId: dataSet.templateId,
+        type: dataSet.type || template.type,
+        name: dataSet.name || template.name,
+        description: dataSet.description || ''
+      };
 
-    if (documentToCreate.type === 'text') {
-      try {
+      if (documentToCreate.type === 'text') {
         documentToCreate.contents = '';
         documentToCreate.html = '';
         if (template) {
@@ -380,111 +373,105 @@ export default function () {
             templateValues
           );
         }
-      } catch (error) {
-        logger.error(error);
-        return res.status(500).json({
-          errors: ['Fail to create document from template']
-        });
       }
-    }
 
-    if (documentToCreate.type === 'file') {
-      documentToCreate.mimeType = dataSet.mimeType || '';
-      documentToCreate.expiryDate = dataSet.expiryDate || '';
-      documentToCreate.url = dataSet.url || '';
-      if (dataSet.versionId) {
-        documentToCreate.versionId = dataSet.versionId;
+      if (documentToCreate.type === 'file') {
+        documentToCreate.mimeType = dataSet.mimeType || '';
+        documentToCreate.expiryDate = dataSet.expiryDate || '';
+        documentToCreate.url = dataSet.url || '';
+        if (dataSet.versionId) {
+          documentToCreate.versionId = dataSet.versionId;
+        }
       }
-    }
 
-    try {
       const createdDocument =
         await Collections.Document.create(documentToCreate);
       return res.status(201).json(createdDocument);
-    } catch (error) {
-      logger.error(error);
-      return res.status(500).json({
-        errors: ['Fail to create document']
-      });
-    }
-  });
+    })
+  );
 
-  documentsApi.patch('/', async (req, res) => {
-    const organizationId = req.headers.organizationid;
-    if (!req.body._id) {
-      return res.status(422).json({ errors: ['Document id is missing'] });
-    }
+  documentsApi.patch(
+    '/',
+    Middlewares.asyncWrapper(async (req, res) => {
+      const organizationId = req.headers.organizationid;
+      if (!req.body._id) {
+        logger.error('document id is missing');
+        throw new ServiceError('missing fields', 422);
+      }
 
-    const doc = req.body || {};
+      const doc = req.body || {};
 
-    if (!['text'].includes(doc.type)) {
-      return res.status(405).json({ errors: ['Document cannot be modified'] });
-    }
+      if (!['text'].includes(doc.type)) {
+        throw new ServiceError('document cannot be modified', 405);
+      }
 
-    const updatedDocument = await Collections.Document.findOneAndUpdate(
-      {
-        _id: doc._id,
-        realmId: organizationId
-      },
-      {
-        $set: {
-          ...doc,
+      const updatedDocument = await Collections.Document.findOneAndUpdate(
+        {
+          _id: doc._id,
           realmId: organizationId
+        },
+        {
+          $set: {
+            ...doc,
+            realmId: organizationId
+          }
+        },
+        { new: true }
+      );
+
+      if (!updatedDocument) {
+        throw new ServiceError('document not found', 404);
+      }
+
+      return res.status(201).json(updatedDocument);
+    })
+  );
+
+  documentsApi.delete(
+    '/:ids',
+    Middlewares.asyncWrapper(async (req, res) => {
+      const organizationId = req.headers.organizationid;
+      const documentIds = req.params.ids.split(',');
+
+      // fetch documents
+      const documents = await Collections.Document.find({
+        _id: { $in: documentIds },
+        realmId: organizationId
+      });
+
+      // delete documents from file systems
+      documents.forEach((doc) => {
+        if (doc.type !== 'file' || doc.url.indexOf('..') !== -1) {
+          return;
         }
-      },
-      { new: true }
-    );
+        const filePath = path.join(UPLOADS_DIRECTORY, doc.url);
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        }
+      });
 
-    if (!updatedDocument) {
-      return res.sendStatus(404);
-    }
+      // delete document from s3
+      if (s3.isEnabled(req.realm.thirdParties?.b2)) {
+        const urlsIds = documents
+          .filter((doc) => doc.type === 'file')
+          .map(({ url, versionId }) => ({ url, versionId }));
 
-    return res.status(201).json(updatedDocument);
-  });
-
-  documentsApi.delete('/:ids', async (req, res) => {
-    const organizationId = req.headers.organizationid;
-    const documentIds = req.params.ids.split(',');
-
-    // fetch documents
-    const documents = await Collections.Document.find({
-      _id: { $in: documentIds },
-      realmId: organizationId
-    });
-
-    // delete documents from file systems
-    documents.forEach((doc) => {
-      if (doc.type !== 'file' || doc.url.indexOf('..') !== -1) {
-        return;
+        s3.deleteFiles(req.realm.thirdParties.b2, urlsIds);
       }
-      const filePath = path.join(UPLOADS_DIRECTORY, doc.url);
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
+
+      // delete documents from mongo
+      const result = await Collections.Document.deleteMany({
+        _id: { $in: documentIds },
+        realmId: organizationId
+      });
+
+      if (!result.acknowledged) {
+        throw new ServiceError('document not found', 404);
       }
-    });
 
-    // delete document from s3
-    if (s3.isEnabled(req.realm.thirdParties?.b2)) {
-      const urlsIds = documents
-        .filter((doc) => doc.type === 'file')
-        .map(({ url, versionId }) => ({ url, versionId }));
-
-      s3.deleteFiles(req.realm.thirdParties.b2, urlsIds);
-    }
-
-    // delete documents from mongo
-    const result = await Collections.Document.deleteMany({
-      _id: { $in: documentIds },
-      realmId: organizationId
-    });
-
-    if (!result.acknowledged) {
-      logger.warn(`documents ${req.params.ids} not found`);
-      return res.sendStatus(404);
-    }
-
-    return res.sendStatus(204);
-  });
+      return res.sendStatus(204);
+    })
+  );
 
   return documentsApi;
 }

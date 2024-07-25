@@ -1,10 +1,11 @@
 import * as Express from 'express';
-import { logger, Service } from '@microrealestate/common';
+import { Middlewares, Service } from '@microrealestate/common';
 
 const routes = Express.Router();
-routes.delete('/reset', (req: Express.Request, res: Express.Response) => {
-  const dropDB = async () => {
-    try {
+routes.delete(
+  '/reset',
+  Middlewares.asyncWrapper(
+    async (req: Express.Request, res: Express.Response<string>) => {
       const mongoClient = Service.getInstance().mongoClient;
       await Promise.all(
         [
@@ -29,17 +30,9 @@ routes.delete('/reset', (req: Express.Request, res: Express.Response) => {
       if (keys?.length) {
         await Promise.all(keys.map((key) => redis?.del(key)));
       }
-    } catch (error) {
-      logger.error(String(error));
-      return res
-        .status(500)
-        .send('unexpected error when reseting the databases');
+      return res.status(200).send('success');
     }
-
-    return res.status(200).send('success');
-  };
-
-  dropDB();
-});
+  )
+);
 
 export default routes;

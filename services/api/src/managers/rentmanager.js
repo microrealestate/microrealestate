@@ -1,6 +1,11 @@
 import * as Contract from './contract.js';
 import * as FD from './frontdata.js';
-import { Collections, logger, Service } from '@microrealestate/common';
+import {
+  Collections,
+  logger,
+  Service,
+  ServiceError
+} from '@microrealestate/common';
 import axios from 'axios';
 import moment from 'moment';
 
@@ -159,14 +164,9 @@ export async function update(req, res) {
   const paymentData = req.body;
   const term = `${paymentData.year}${paymentData.month}0100`;
 
-  try {
-    res.json(
-      await _updateByTerm(authorizationHeader, locale, realm, term, paymentData)
-    );
-  } catch (errors) {
-    logger.error(errors);
-    res.status(500).json({ errors });
-  }
+  res.json(
+    await _updateByTerm(authorizationHeader, locale, realm, term, paymentData)
+  );
 }
 
 export async function updateByTerm(req, res) {
@@ -176,14 +176,9 @@ export async function updateByTerm(req, res) {
   const locale = req.headers['accept-language'];
   const paymentData = req.body;
 
-  try {
-    res.json(
-      await _updateByTerm(authorizationHeader, locale, realm, term, paymentData)
-    );
-  } catch (errors) {
-    logger.error(errors);
-    res.status(500).json({ errors });
-  }
+  res.json(
+    await _updateByTerm(authorizationHeader, locale, realm, term, paymentData)
+  );
 }
 
 async function _updateByTerm(
@@ -297,48 +292,40 @@ export async function rentsOfOccupant(req, res) {
   const { id } = req.params;
   const term = Number(moment().format('YYYYMMDDHH'));
 
-  try {
-    const dbOccupants = await _findOccupants(realm, id);
-    if (!dbOccupants.length) {
-      return res.sendStatus(404);
-    }
-
-    const dbOccupant = dbOccupants[0];
-    const rentsToReturn = dbOccupant.rents.map((currentRent) => {
-      const rent = FD.toRentData(currentRent);
-      if (currentRent.term === term) {
-        rent.active = 'active';
-      }
-      rent.vatRatio = dbOccupant.vatRatio;
-      return rent;
-    });
-
-    res.json({
-      occupant: FD.toOccupantData(dbOccupant),
-      rents: rentsToReturn
-    });
-  } catch (errors) {
-    logger.error(errors);
-    res.status(500).json({ errors });
+  const dbOccupants = await _findOccupants(realm, id);
+  if (!dbOccupants.length) {
+    return res.sendStatus(404);
   }
+
+  const dbOccupant = dbOccupants[0];
+  const rentsToReturn = dbOccupant.rents.map((currentRent) => {
+    const rent = FD.toRentData(currentRent);
+    if (currentRent.term === term) {
+      rent.active = 'active';
+    }
+    rent.vatRatio = dbOccupant.vatRatio;
+    return rent;
+  });
+
+  res.json({
+    occupant: FD.toOccupantData(dbOccupant),
+    rents: rentsToReturn
+  });
 }
 
 export async function rentOfOccupantByTerm(req, res) {
   const realm = req.realm;
   const { id, term } = req.params;
-  try {
-    res.json(
-      await _rentOfOccupant(
-        req.headers.authorization,
-        req.headers['accept-language'],
-        realm,
-        id,
-        term
-      )
-    );
-  } catch (errors) {
-    res.status(errors.status || 500).json({ errors });
-  }
+
+  res.json(
+    await _rentOfOccupant(
+      req.headers.authorization,
+      req.headers['accept-language'],
+      realm,
+      id,
+      term
+    )
+  );
 }
 
 async function _rentOfOccupant(
@@ -356,12 +343,12 @@ async function _rentOfOccupant(
   ]);
 
   if (!dbOccupants.length) {
-    throw { status: 404, error: 'tenant not found' };
+    throw new ServiceError('tenant not found', 404);
   }
   const dbOccupant = dbOccupants[0];
 
   if (!dbOccupant.rents.length) {
-    throw { status: 404, error: 'rent not found' };
+    throw new ServiceError('rent not found', 404);
   }
   const rent = FD.toRentData(
     dbOccupant.rents[0],
@@ -384,40 +371,13 @@ export async function all(req, res) {
     currentDate = moment(`${req.params.month}/${req.params.year}`, 'MM/YYYY');
   }
 
-  try {
-    res.json(
-      await _getRentsDataByTerm(
-        req.headers.authorization,
-        req.headers['accept-language'],
-        realm,
-        currentDate,
-        'months'
-      )
-    );
-  } catch (errors) {
-    logger.error(errors);
-    res.status(500).json({ errors });
-  }
-}
-
-export async function overview(req, res) {
-  try {
-    const realm = req.realm;
-    let currentDate = moment().startOf('month');
-    if (req.params.year && req.params.month) {
-      currentDate = moment(`${req.params.month}/${req.params.year}`, 'MM/YYYY');
-    }
-
-    const { overview } = await _getRentsDataByTerm(
+  res.json(
+    await _getRentsDataByTerm(
       req.headers.authorization,
       req.headers['accept-language'],
       realm,
       currentDate,
       'months'
-    );
-    res.json(overview);
-  } catch (errors) {
-    logger.error(errors);
-    res.status(500).json({ errors });
-  }
+    )
+  );
 }

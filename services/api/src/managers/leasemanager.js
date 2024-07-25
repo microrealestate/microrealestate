@@ -1,4 +1,4 @@
-import { Collections, logger } from '@microrealestate/common';
+import { Collections, logger, ServiceError } from '@microrealestate/common';
 
 /**
  * @returns a Set of leaseId (_id)
@@ -14,32 +14,23 @@ async function _leaseUsedByTenant(realm) {
   }, new Set());
 }
 
-function _rejectMissingFields(lease, res) {
-  if (!lease.name) {
-    res.status(422).json({
-      errors: ['"name" field is required']
-    });
-    return true;
-  }
-  return false;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // Exported functions
 ////////////////////////////////////////////////////////////////////////////////
 export async function add(req, res) {
-  if (_rejectMissingFields(req.body, res)) {
-    return;
+  const lease = req.body;
+  if (!lease.name) {
+    logger.error('missing lease name');
+    throw new ServiceError('missing fields', 422);
   }
 
   const realm = req.realm;
-  const lease = new Collections.Lease({
-    ...req.body,
-    active:
-      !!req.body.active && !!req.body.numberOfTerms && !!req.body.timeRange,
+  const dbLease = new Collections.Lease({
+    ...lease,
+    active: !!lease.active && !!lease.numberOfTerms && !!lease.timeRange,
     realmId: realm._id
   });
-  const savedLease = await lease.save();
+  const savedLease = await dbLease.save();
   const setOfUsedLeases = await _leaseUsedByTenant(realm);
   savedLease.usedByTenants = setOfUsedLeases.has(savedLease._id);
   res.json(savedLease);
@@ -49,8 +40,9 @@ export async function update(req, res) {
   const realm = req.realm;
   const lease = req.body;
 
-  if (_rejectMissingFields(lease, res)) {
-    return;
+  if (!lease.name) {
+    logger.error('missing lease name');
+    throw new ServiceError('missing fields', 422);
   }
 
   if (lease.active === undefined) {
@@ -77,7 +69,7 @@ export async function update(req, res) {
   ).lean();
 
   if (!dbLease) {
-    return res.sendStatus(404);
+    throw new ServiceError('lease not found', 404);
   }
 
   dbLease.usedByTenants = setOfUsedLeases.has(dbLease._id);
@@ -89,14 +81,14 @@ export async function remove(req, res) {
   const leaseIds = req.params.ids.split(',') || [];
 
   if (!leaseIds.length) {
-    return res.sendStatus(404);
+    logger.error('missing lease ids');
+    throw new ServiceError('missing fields', 422);
   }
 
   const setOfUsedLeases = await _leaseUsedByTenant(realm);
   if (leaseIds.some((leaseId) => setOfUsedLeases.has(leaseId))) {
-    return res.status(422).json({
-      errors: ['One lease is used by tenants. It cannot be removed']
-    });
+    logger.error('lease used by tenants and cannot be removed');
+    throw new ServiceError('missing fields', 422);
   }
 
   const leases = await Collections.Lease.find({
@@ -105,7 +97,7 @@ export async function remove(req, res) {
   });
 
   if (!leases.length) {
-    return res.sendStatus(404);
+    throw new ServiceError('lease not found', 404);
   }
 
   const templates = await Collections.Template.find({
@@ -142,9 +134,8 @@ export async function remove(req, res) {
     ]);
     await session.commitTransaction();
   } catch (error) {
-    logger.error(error);
     await session.abortTransaction();
-    return res.sendStatus(500);
+    throw new ServiceError(error, 500);
   } finally {
     session.endSession();
   }
@@ -178,7 +169,7 @@ export async function one(req, res) {
   }).lean();
 
   if (!dbLease) {
-    return res.sendStatus(404);
+    throw new ServiceError('lease not found', 404);
   }
 
   const setOfUsedLeases = await _leaseUsedByTenant(realm);

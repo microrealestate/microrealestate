@@ -1,90 +1,76 @@
 import * as Express from 'express';
+import { Collections, logger, ServiceError } from '@microrealestate/common';
 import {
   CollectionTypes,
   MongooseDocument,
   TenantAPI,
   UserServicePrincipal
 } from '@microrealestate/types';
-import { Collections } from '@microrealestate/common';
 import moment from 'moment';
 
 export async function getOneTenant(
   request: Express.Request,
   response: Express.Response
 ) {
-  try {
-    const req = request as TenantAPI.GetOneTenant.Request;
-    const res = response as TenantAPI.GetOneTenant.Response;
-    const email = (req.user as UserServicePrincipal).email;
-    if (!email) {
-      return res.status(400).json({
-        error: 'email is required'
-      });
-    }
-    const tenantId = req.params.tenantId;
-
-    const dbTenant = await Collections.Tenant.findOne<
-      MongooseDocument<CollectionTypes.Tenant>
-    >({
-      _id: tenantId,
-      'contacts.email': { $regex: new RegExp(email, 'i') }
-    }).populate<{
-      realmId: CollectionTypes.Realm;
-      leaseId: CollectionTypes.Lease;
-    }>(['realmId', 'leaseId']);
-
-    if (!dbTenant) {
-      return res.status(404).json({
-        error: 'tenant not found'
-      });
-    }
-
-    const now = moment();
-    const lastTerm = Number(now.format('YYYYMMDDHH'));
-
-    res.json({
-      results: [_toTenantResponse(dbTenant, lastTerm)]
-    });
-  } catch (error) {
-    console.error(error);
-    response.sendStatus(500);
+  const req = request as TenantAPI.GetOneTenant.Request;
+  const res = response as TenantAPI.GetOneTenant.Response;
+  const email = (req.user as UserServicePrincipal).email;
+  if (!email) {
+    logger.error('missing email field');
+    throw new ServiceError('unauthorized', 401);
   }
+  const tenantId = req.params.tenantId;
+
+  const dbTenant = await Collections.Tenant.findOne<
+    MongooseDocument<CollectionTypes.Tenant>
+  >({
+    _id: tenantId,
+    'contacts.email': { $regex: new RegExp(email, 'i') }
+  }).populate<{
+    realmId: CollectionTypes.Realm;
+    leaseId: CollectionTypes.Lease;
+  }>(['realmId', 'leaseId']);
+
+  if (!dbTenant) {
+    throw new ServiceError('tenant not found', 404);
+  }
+
+  const now = moment();
+  const lastTerm = Number(now.format('YYYYMMDDHH'));
+
+  res.json({
+    results: [_toTenantResponse(dbTenant, lastTerm)]
+  });
 }
 
 export async function getAllTenants(
   request: Express.Request,
   response: Express.Response
 ) {
-  try {
-    const req = request as TenantAPI.GetAllTenants.Request;
-    const res = response as TenantAPI.GetAllTenants.Response;
-    const email = (req.user as UserServicePrincipal).email;
-    if (!email) {
-      return res.status(400).json({
-        error: 'email is required'
-      });
-    }
-
-    // find tenants from mongo which has a given email contact
-    const dbTenants = await Collections.Tenant.find<
-      MongooseDocument<CollectionTypes.Tenant>
-    >({
-      'contacts.email': { $regex: new RegExp(email, 'i') }
-    }).populate<{
-      realmId: CollectionTypes.Realm;
-      leaseId: CollectionTypes.Lease;
-    }>(['realmId', 'leaseId']);
-
-    // the last term considering the current date
-    const lastTerm = Number(moment().format('YYYYMMDDHH'));
-
-    res.json({
-      results: dbTenants.map((tenant) => _toTenantResponse(tenant, lastTerm))
-    });
-  } catch (error) {
-    console.error(error);
-    response.sendStatus(500);
+  const req = request as TenantAPI.GetAllTenants.Request;
+  const res = response as TenantAPI.GetAllTenants.Response;
+  const email = (req.user as UserServicePrincipal).email;
+  if (!email) {
+    logger.error('missing email field');
+    throw new ServiceError('unauthorized', 401);
   }
+
+  // find tenants from mongo which has a given email contact
+  const dbTenants = await Collections.Tenant.find<
+    MongooseDocument<CollectionTypes.Tenant>
+  >({
+    'contacts.email': { $regex: new RegExp(email, 'i') }
+  }).populate<{
+    realmId: CollectionTypes.Realm;
+    leaseId: CollectionTypes.Lease;
+  }>(['realmId', 'leaseId']);
+
+  // the last term considering the current date
+  const lastTerm = Number(moment().format('YYYYMMDDHH'));
+
+  res.json({
+    results: dbTenants.map((tenant) => _toTenantResponse(tenant, lastTerm))
+  });
 }
 
 function _toTenantResponse(

@@ -1,24 +1,41 @@
-import { Collections, Crypto, logger } from '@microrealestate/common';
+import {
+  Collections,
+  Crypto,
+  logger,
+  ServiceError
+} from '@microrealestate/common';
 
 const SECRET_PLACEHOLDER = '**********';
 
-const _hasRequiredFields = (realm) => {
-  return (
-    realm.name &&
-    realm.members &&
-    realm.members.find(({ role }) => role === 'administrator') &&
-    realm.locale &&
-    realm.currency
-  );
-};
+function _hasRequiredFields(realm) {
+  [
+    { name: 'name', provided: !!realm.name },
+    { name: 'members', provided: !!realm.members },
+    { name: 'currency', provided: !!realm.currency },
+    {
+      name: 'member with administator role',
+      provided: !!realm.members.find(({ role }) => role === 'administrator')
+    },
+    { name: 'locale', provided: !!realm.locale }
+  ].forEach((field) => {
+    if (!field.provided) {
+      logger.error(`missing landlord ${field.name}`);
+      throw new ServiceError('missing fields', 422);
+    }
+  });
+}
 
-const _isNameAlreadyTaken = (realm, realms = []) => {
-  return realms
-    .map(({ name }) => name.trim().toLowerCase())
-    .includes(realm.name.trim().toLowerCase());
-};
+function _isNameAlreadyTaken(realm, realms = []) {
+  if (
+    realms
+      .map(({ name }) => name.trim().toLowerCase())
+      .includes(realm.name.trim().toLowerCase())
+  ) {
+    throw new ServiceError('landlord name already taken', 409);
+  }
+}
 
-const _escapeSecrets = (realm) => {
+function _escapeSecrets(realm) {
   if (realm.thirdParties?.gmail?.appPassword) {
     realm.thirdParties.gmail.appPassword = SECRET_PLACEHOLDER;
   }
@@ -38,18 +55,13 @@ const _escapeSecrets = (realm) => {
     app.clientSecret = SECRET_PLACEHOLDER;
   }
   return realm;
-};
+}
 
 export async function add(req, res) {
   const newRealm = new Collections.Realm(req.body);
 
-  if (!_hasRequiredFields(newRealm)) {
-    return res.status(422).json({ error: 'missing fields' });
-  }
-
-  if (_isNameAlreadyTaken(newRealm, req.realms)) {
-    return res.status(409).json({ error: 'organization name already exists' });
-  }
+  _hasRequiredFields(newRealm);
+  _isNameAlreadyTaken(newRealm, req.realms);
 
   if (newRealm.thirdParties?.gmail?.appPassword) {
     newRealm.thirdParties.gmail.appPassword = Crypto.encrypt(
@@ -81,12 +93,7 @@ export async function add(req, res) {
     );
   }
 
-  try {
-    res.status(201).json(_escapeSecrets(await newRealm.save()));
-  } catch (error) {
-    logger.error(error);
-    res.sendStatus(500).json({ errors: error });
-  }
+  res.json(_escapeSecrets(await newRealm.save()));
 }
 
 export async function update(req, res) {
@@ -99,17 +106,19 @@ export async function update(req, res) {
     !!req.body.thirdParties?.b2?.applicationKeyUpdated;
 
   if (req.realm._id !== req.body?._id) {
-    return res
-      .status(403)
-      .json({ error: 'only current selected organization can be updated' });
+    throw new ServiceError(
+      'only current selected organization can be updated',
+      403
+    );
   }
 
   // No need to check wether user is part of org as it is already done by
   // the middleware
   if (req.user.role !== 'administrator') {
-    return res.status(403).json({
-      error: 'only administrator member can update the organization'
-    });
+    throw new ServiceError(
+      'only administrator member can update the organization',
+      403
+    );
   }
 
   // retrieve the document from mongo & update it
@@ -118,17 +127,8 @@ export async function update(req, res) {
   });
   const updatedRealm = { ...previousRealm.toObject(), ...req.body };
 
-  if (!_hasRequiredFields(updatedRealm)) {
-    return res.status(422).json({ error: 'missing fields' });
-  }
-
-  if (
-    updatedRealm.name.trim().toLowerCase() !==
-      req.realm.name.trim().toLowerCase() &&
-    _isNameAlreadyTaken(updatedRealm, req.realms)
-  ) {
-    return res.status(409).json({ error: 'organization name already exists' });
-  }
+  _hasRequiredFields(updatedRealm);
+  _isNameAlreadyTaken(updatedRealm, req.realms);
 
   if (req.body.thirdParties?.gmail) {
     logger.debug('realm update with Gmail third party emailer');
@@ -214,24 +214,20 @@ export async function update(req, res) {
     return app;
   });
 
-  try {
-    previousRealm.set(updatedRealm);
-    res.status(201).json(_escapeSecrets(await previousRealm.save()));
-  } catch (error) {
-    logger.error(error);
-    res.sendStatus(500).json({ errors: error });
-  }
+  previousRealm.set(updatedRealm);
+  res.json(_escapeSecrets(await previousRealm.save()));
 }
 
 export function one(req, res) {
   const realmId = req.params.id;
   if (!realmId) {
-    return res.sendStatus(404);
+    logger.error('missing landlord id');
+    throw new ServiceError('missing fields', 422);
   }
 
   const realm = req.realms.find(({ _id }) => _id.toString() === realmId);
   if (!realm) {
-    return res.sendStatus(404);
+    throw new ServiceError('landlord not found', 404);
   }
 
   res.json(_escapeSecrets(realm));

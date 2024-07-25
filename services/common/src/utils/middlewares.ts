@@ -13,6 +13,45 @@ import {
 } from '@microrealestate/types';
 import logger from './logger.js';
 import Realm from '../collections/realm.js';
+import ServiceError from './serviceerror.js';
+
+type ErrorBodyType = {
+  status: number;
+  message: string;
+  stack?: string;
+};
+
+interface AsyncRequestHandler {
+  (
+    req: Express.Request,
+    res: Express.Response,
+    next: Express.NextFunction
+  ): Promise<void | never | Express.Response>;
+}
+
+export function asyncWrapper(cb: AsyncRequestHandler): Express.Handler {
+  return (req, res, next) => cb(req, res, next).catch(next);
+}
+
+export function errorHandler(
+  error: ServiceError | Error,
+  req: Express.Request,
+  res: Express.Response<ErrorBodyType>,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  next: Express.NextFunction
+) {
+  const responseBody: ErrorBodyType = {
+    status: error instanceof ServiceError ? error.statusCode || 500 : 500,
+    message: error.message
+  };
+
+  if (process.env.NODE_ENV !== 'production') {
+    responseBody.stack = error.stack;
+  }
+
+  logger.error(String(error));
+  res.status(responseBody.status).json(responseBody);
+}
 
 export function needAccessToken(
   accessTokenSecret: string | undefined

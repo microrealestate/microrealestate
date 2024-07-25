@@ -24,58 +24,85 @@ export default function routes() {
   const realmsRouter = express.Router();
   realmsRouter.get('/', realmManager.all);
   realmsRouter.get('/:id', realmManager.one);
-  realmsRouter.post('/', realmManager.add);
-  realmsRouter.patch('/:id', realmManager.update);
+  realmsRouter.post('/', Middlewares.asyncWrapper(realmManager.add));
+  realmsRouter.patch('/:id', Middlewares.asyncWrapper(realmManager.update));
   router.use('/realms', realmsRouter);
 
   const dashboardRouter = express.Router();
-  dashboardRouter.get('/', dashboardManager.all);
+  dashboardRouter.get('/', Middlewares.asyncWrapper(dashboardManager.all));
   router.use('/dashboard', dashboardRouter);
 
   const leasesRouter = express.Router();
-  leasesRouter.get('/', leaseManager.all);
-  leasesRouter.get('/:id', leaseManager.one);
-  leasesRouter.post('/', leaseManager.add);
-  leasesRouter.patch('/:id', leaseManager.update);
-  leasesRouter.delete('/:ids', leaseManager.remove);
+  leasesRouter.get('/', Middlewares.asyncWrapper(leaseManager.all));
+  leasesRouter.get('/:id', Middlewares.asyncWrapper(leaseManager.one));
+  leasesRouter.post('/', Middlewares.asyncWrapper(leaseManager.add));
+  leasesRouter.patch('/:id', Middlewares.asyncWrapper(leaseManager.update));
+  leasesRouter.delete('/:ids', Middlewares.asyncWrapper(leaseManager.remove));
   router.use('/leases', leasesRouter);
 
   const occupantsRouter = express.Router();
-  occupantsRouter.get('/', occupantManager.all);
-  occupantsRouter.get('/:id', occupantManager.one);
-  occupantsRouter.post('/', occupantManager.add);
-  occupantsRouter.patch('/:id', occupantManager.update);
-  occupantsRouter.delete('/:ids', occupantManager.remove);
+  occupantsRouter.get('/', Middlewares.asyncWrapper(occupantManager.all));
+  occupantsRouter.get('/:id', Middlewares.asyncWrapper(occupantManager.one));
+  occupantsRouter.post('/', Middlewares.asyncWrapper(occupantManager.add));
+  occupantsRouter.patch(
+    '/:id',
+    Middlewares.asyncWrapper(occupantManager.update)
+  );
+  occupantsRouter.delete(
+    '/:ids',
+    Middlewares.asyncWrapper(occupantManager.remove)
+  );
   router.use('/tenants', occupantsRouter);
 
   const rentsRouter = express.Router();
-  rentsRouter.patch('/payment/:id/:term', rentManager.updateByTerm);
-  rentsRouter.get('/tenant/:id', rentManager.rentsOfOccupant);
-  rentsRouter.get('/tenant/:id/:term', rentManager.rentOfOccupantByTerm);
-  rentsRouter.get('/:year/:month', rentManager.all);
+  rentsRouter.patch(
+    '/payment/:id/:term',
+    Middlewares.asyncWrapper(rentManager.updateByTerm)
+  );
+  rentsRouter.get(
+    '/tenant/:id',
+    Middlewares.asyncWrapper(rentManager.rentsOfOccupant)
+  );
+  rentsRouter.get(
+    '/tenant/:id/:term',
+    Middlewares.asyncWrapper(rentManager.rentOfOccupantByTerm)
+  );
+  rentsRouter.get('/:year/:month', Middlewares.asyncWrapper(rentManager.all));
   router.use('/rents', rentsRouter);
 
   const propertiesRouter = express.Router();
-  propertiesRouter.get('/', propertyManager.all);
-  propertiesRouter.get('/:id', propertyManager.one);
-  propertiesRouter.post('/', propertyManager.add);
-  propertiesRouter.patch('/:id', propertyManager.update);
-  propertiesRouter.delete('/:ids', propertyManager.remove);
+  propertiesRouter.get('/', Middlewares.asyncWrapper(propertyManager.all));
+  propertiesRouter.get('/:id', Middlewares.asyncWrapper(propertyManager.one));
+  propertiesRouter.post('/', Middlewares.asyncWrapper(propertyManager.add));
+  propertiesRouter.patch(
+    '/:id',
+    Middlewares.asyncWrapper(propertyManager.update)
+  );
+  propertiesRouter.delete(
+    '/:ids',
+    Middlewares.asyncWrapper(propertyManager.remove)
+  );
   router.use('/properties', propertiesRouter);
 
-  router.get('/accounting/:year', accountingManager.all);
+  router.get(
+    '/accounting/:year',
+    Middlewares.asyncWrapper(accountingManager.all)
+  );
   router.get(
     '/csv/tenants/incoming/:year',
-    accountingManager.csv.incomingTenants
+    Middlewares.asyncWrapper(accountingManager.csv.incomingTenants)
   );
   router.get(
     '/csv/tenants/outgoing/:year',
-    accountingManager.csv.outgoingTenants
+    Middlewares.asyncWrapper(accountingManager.csv.outgoingTenants)
   );
-  router.get('/csv/settlements/:year', accountingManager.csv.settlements);
+  router.get(
+    '/csv/settlements/:year',
+    Middlewares.asyncWrapper(accountingManager.csv.settlements)
+  );
 
   const emailRouter = express.Router();
-  emailRouter.post('/', emailManager.send);
+  emailRouter.post('/', Middlewares.asyncWrapper(emailManager.send));
   router.use('/emails', emailRouter);
 
   const apiRouter = express.Router();

@@ -1,5 +1,5 @@
 import * as FD from './frontdata.js';
-import { Collections, logger } from '@microrealestate/common';
+import { Collections } from '@microrealestate/common';
 
 async function _toPropertiesData(realm, inputProperties) {
   const allTenants = await Collections.Tenant.find({
@@ -29,19 +29,14 @@ async function _toPropertiesData(realm, inputProperties) {
 // Exported functions
 ////////////////////////////////////////////////////////////////////////////////
 export async function add(req, res) {
-  try {
-    const realm = req.realm;
-    const property = new Collections.Property({
-      ...req.body,
-      realmId: realm._id
-    });
-    await property.save();
-    const properties = await _toPropertiesData(realm, [property]);
-    return res.json(properties[0]);
-  } catch (error) {
-    logger.error(error);
-    return res.status(500).json({ errors: ['cannot add the property'] });
-  }
+  const realm = req.realm;
+  const property = new Collections.Property({
+    ...req.body,
+    realmId: realm._id
+  });
+  await property.save();
+  const properties = await _toPropertiesData(realm, [property]);
+  return res.json(properties[0]);
 }
 
 export async function update(req, res) {

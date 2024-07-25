@@ -1,3 +1,4 @@
+import * as Logger from './logger.js';
 import {
   ConnectionRole,
   InternalServicePrincipal,
@@ -7,13 +8,13 @@ import _cookieParser from 'cookie-parser';
 import _methodOverride from 'method-override';
 import EnvironmentConfig from './environmentconfig.js';
 import Express from 'express';
-/* @ts-ignore */
-import expressWinston from 'express-winston'; // TODO bump to version 4
+import expressWinston from 'express-winston';
 import httpInterceptors from './httpinterceptors.js';
 import jwt from 'jsonwebtoken';
-import logger from './logger.js';
+import { Middlewares } from '../index.js';
 import MongoClient from './mongoclient.js';
 import RedisClient from './redisclient.js';
+import winston from 'winston';
 
 process.on('SIGINT', async () => {
   try {
@@ -99,54 +100,58 @@ export default class Service {
 
     this.expressServer.use(
       expressWinston.logger({
-        transports: [logger],
+        transports: Logger.transports,
+        format: winston.format.simple(),
         meta: false, // optional: control whether you want to log the meta data about the request (default to true)
-        msg: String, //'HTTP {{req.method}} {{req.url}}', // optional: customize the default logging message. E.g. "{{res.statusCode}} {{req.method}} {{res.responseTime}}ms {{req.url}}"
-        expressFormat: true, // Use the default Express/morgan request formatting, with the same colors. Enabling this will override any msg and colorStatus if false. Will only output colors on transports with colorize set to true
-        colorStatus: false // Color the status code, using the Express/morgan color palette (default green, 3XX cyan, 4XX yellow, 5XX red). Will not be recognized falsef expressFormat is true
-        //ignoreRoute: function( /*req, res*/ ) {
-        //    return false;
-        //} // optional: allows to skip some log messages based on request and/or response
+        msg: '{{req.method}} {{res.statusCode}} {{res.responseTime}}ms {{req.url}}', //'HTTP {{req.method}} {{req.url}}', // optional: customize the default logging message. E.g. "{{res.statusCode}} {{req.method}} {{res.responseTime}}ms {{req.url}}"
+        expressFormat: false, // Use the default Express/morgan request formatting. Enabling this will override any msg if true. Will only output colors with colorize set to true
+        colorize: false // Color the text and status code, using the Express/morgan color palette (text: gray, status: default green, 3XX cyan, 4XX yellow, 5XX red).
+        // ignoreRoute: function (req, res) {
+        //   return false;
+        // } // optional: allows to skip some log messages based on request and/or response
       })
     );
 
     this.expressServer.use(
       expressWinston.errorLogger({
-        transports: [logger]
+        transports: Logger.transports,
+        format: winston.format.simple()
       })
     );
   }
 
+  private async startService() {
+    return new Promise<void>((resolve, reject) => {
+      this.expressServer
+        .listen(this.port, () => {
+          Logger.default.info(
+            `${this.name} ready and listening on port ${this.port}`
+          );
+          resolve();
+        })
+        .on('error', async (err) => {
+          Logger.default.error(String(err));
+          if (this.mongoClient) {
+            try {
+              await this.mongoClient.disconnect();
+            } catch (error) {
+              Logger.default.error(String(error));
+            }
+          }
+          if (this.redisClient) {
+            try {
+              await this.redisClient.disconnect();
+            } catch (error) {
+              Logger.default.error(String(error));
+            }
+          }
+          reject(err);
+        });
+    });
+  }
+
   async startUp() {
-    const startService = () =>
-      new Promise<void>((resolve, reject) => {
-        this.expressServer
-          .listen(this.port, () => {
-            logger.info(
-              `Service ${this.name} ready and listening on port ${this.port}`
-            );
-            resolve();
-          })
-          .on('error', async (err) => {
-            logger.error(String(err));
-            if (this.mongoClient) {
-              try {
-                await this.mongoClient.disconnect();
-              } catch (error) {
-                logger.error(String(error));
-              }
-            }
-            if (this.redisClient) {
-              try {
-                await this.redisClient.disconnect();
-              } catch (error) {
-                logger.error(String(error));
-              }
-            }
-            reject(err);
-          });
-      });
-    logger.info(`Starting service ${this.name}...`);
+    Logger.default.info(`Starting ${this.name}...`);
     this.envConfig.log();
     if (this.mongoClient) {
       await this.mongoClient.connect();
@@ -163,7 +168,10 @@ export default class Service {
     }
 
     await this.onStartUp?.(this.expressServer);
-    await startService();
+
+    // add error middleware
+    this.expressServer.use(Middlewares.errorHandler);
+    await this.startService();
   }
 
   async shutDown(errCode: number) {
@@ -171,14 +179,14 @@ export default class Service {
       try {
         await this.mongoClient.disconnect();
       } catch (error) {
-        logger.error(String(error));
+        Logger.default.error(String(error));
       }
     }
     if (this.redisClient) {
       try {
         await this.redisClient.disconnect();
       } catch (error) {
-        logger.error(String(error));
+        Logger.default.error(String(error));
       }
     }
     await this.onShutDown?.();

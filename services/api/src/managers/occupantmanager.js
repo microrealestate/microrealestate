@@ -1,6 +1,11 @@
 import * as Contract from './contract.js';
 import * as FD from './frontdata.js';
-import { Collections, logger, Service } from '@microrealestate/common';
+import {
+  Collections,
+  logger,
+  Service,
+  ServiceError
+} from '@microrealestate/common';
 import axios from 'axios';
 import { customAlphabet } from 'nanoid';
 import moment from 'moment';
@@ -174,9 +179,8 @@ export async function add(req, res) {
   const { _id, ...occupant } = _formatTenant(req.body);
 
   if (!occupant.name) {
-    return res.status(422).json({
-      errors: ['Missing tenant name']
-    });
+    logger.error('missing tenant name');
+    throw new ServiceError('missing fields', 422);
   }
 
   const propertyMap = await _buildPropertyMap(realm);
@@ -194,20 +198,24 @@ export async function add(req, res) {
   });
 
   // Build rents from contract
-  occupant.rents = [];
-  if (
-    occupant.beginDate &&
-    occupant.endDate &&
-    _propertiesHaveRentData(occupant.properties)
-  ) {
-    const contract = Contract.create({
-      begin: occupant.beginDate,
-      end: occupant.endDate,
-      frequency: occupant.frequency || 'months',
-      properties: occupant.properties
-    });
+  try {
+    occupant.rents = [];
+    if (
+      occupant.beginDate &&
+      occupant.endDate &&
+      _propertiesHaveRentData(occupant.properties)
+    ) {
+      const contract = Contract.create({
+        begin: occupant.beginDate,
+        end: occupant.endDate,
+        frequency: occupant.frequency || 'months',
+        properties: occupant.properties
+      });
 
-    occupant.rents = contract.rents;
+      occupant.rents = contract.rents;
+    }
+  } catch (error) {
+    throw new ServiceError(error, 409);
   }
 
   const newOccupant = await Collections.Tenant.create({
@@ -225,9 +233,8 @@ export async function update(req, res) {
   const newOccupant = _formatTenant(req.body);
 
   if (!newOccupant.name) {
-    return res.status(422).json({
-      errors: ['Missing tenant name']
-    });
+    logger.error('missing tenant name');
+    throw new ServiceError('missing fields', 422);
   }
 
   const originalOccupant = await Collections.Tenant.findOne({
@@ -236,9 +243,7 @@ export async function update(req, res) {
   }).lean();
 
   if (!originalOccupant) {
-    return res.status(404).json({
-      errors: ['Tenant not found']
-    });
+    throw new ServiceError('tenant not found', 404);
   }
 
   if (originalOccupant.documents) {
@@ -305,10 +310,7 @@ export async function update(req, res) {
       const newContract = Contract.update(contract, modification);
       newOccupant.rents = newContract.rents;
     } catch (e) {
-      logger.error(e);
-      return res.status(409).json({
-        errors: [e.message]
-      });
+      throw new ServiceError(e, 409);
     }
   } else {
     const paidRents =
@@ -320,9 +322,10 @@ export async function update(req, res) {
       ) || [];
 
     if (paidRents.length) {
-      return res.status(409).json({
-        errors: ['impossible to update tenant some rents have been paid']
-      });
+      throw new ServiceError(
+        'impossible to update tenant some rents have been paid',
+        409
+      );
     }
     newOccupant.rents = [];
   }
@@ -344,7 +347,7 @@ export async function remove(req, res) {
   const occupantIds = req.params?.ids.split(',') || [];
 
   if (!occupantIds.length) {
-    return res.sendStatus(404);
+    throw new ServiceError('tenant not found', 404);
   }
 
   const occupants = await Collections.Tenant.find({
@@ -353,7 +356,7 @@ export async function remove(req, res) {
   });
 
   if (!occupants.length) {
-    return res.sendStatus(404);
+    throw new ServiceError('tenant not found', 404);
   }
 
   const occupantsWithPaidRents = occupants.filter((occupant) => {
@@ -366,11 +369,10 @@ export async function remove(req, res) {
   });
 
   if (occupantsWithPaidRents.length) {
-    return res.status(409).json({
-      errors: [
-        `impossible to remove ${occupantsWithPaidRents[0].name} some rents have been paid`
-      ]
-    });
+    throw new ServiceError(
+      `impossible to remove ${occupantsWithPaidRents[0].name} some rents have been paid`,
+      409
+    );
   }
 
   const session = await Collections.startSession();
@@ -412,11 +414,8 @@ export async function remove(req, res) {
     });
     await session.commitTransaction();
   } catch (error) {
-    logger.error(error);
     await session.abortTransaction();
-    return res.status(500).json({
-      errors: ['a problem occured when deleting tenants']
-    });
+    throw new ServiceError(error, 500);
   } finally {
     session.endSession();
   }
@@ -424,27 +423,14 @@ export async function remove(req, res) {
 }
 
 export async function all(req, res) {
-  try {
-    const tenants = await _fetchTenants(req.realm._id);
-    res.json(tenants.map((tenant) => FD.toOccupantData(tenant)));
-  } catch (error) {
-    logger.error(error);
-    res.status(500).json({
-      errors: ['an error occurred when fetching the tenants in db']
-    });
-  }
+  const tenants = await _fetchTenants(req.realm._id);
+  res.json(tenants.map((tenant) => FD.toOccupantData(tenant)));
 }
 
 export async function one(req, res) {
   const occupantId = req.params.id;
-  try {
-    const tenants = await _fetchTenants(req.realm._id, occupantId);
-    res.json(FD.toOccupantData(tenants.length ? tenants[0] : null));
-  } catch (error) {
-    return res.status(500).json({
-      errors: ['an error occurred when fetching a tenant from db']
-    });
-  }
+  const tenants = await _fetchTenants(req.realm._id, occupantId);
+  res.json(FD.toOccupantData(tenants.length ? tenants[0] : null));
 }
 
 export async function overview(req, res) {

@@ -2,7 +2,9 @@ import * as Express from 'express';
 import {
   EnvironmentConfig,
   logger,
+  Middlewares,
   Service,
+  ServiceError,
   URLUtils
 } from '@microrealestate/common';
 import axios from 'axios';
@@ -152,51 +154,55 @@ function exposeServices(application: Express.Application) {
 }
 
 function exposeHealthCheck(application: Express.Application) {
-  application.get('/health', async (req, res) => {
-    const config = Service.getInstance().envConfig.getValues();
+  application.get(
+    '/health',
+    Middlewares.asyncWrapper(async (req, res) => {
+      const config = Service.getInstance().envConfig.getValues();
 
-    const serviceEndpoints = [
-      config.AUTHENTICATOR_URL,
-      config.API_URL,
-      config.TENANTAPI_URL,
-      config.PDFGENERATOR_URL,
-      config.EMAILER_URL
-    ];
+      const serviceEndpoints = [
+        config.AUTHENTICATOR_URL,
+        config.API_URL,
+        config.TENANTAPI_URL,
+        config.PDFGENERATOR_URL,
+        config.EMAILER_URL
+      ];
 
-    if (!config.PRODUCTION) {
-      serviceEndpoints.push(config.RESETSERVICE_URL);
-    }
-
-    const notDefinedEnpoints = serviceEndpoints.filter((endpoint) => !endpoint);
-    if (notDefinedEnpoints.length) {
-      const error = `${notDefinedEnpoints.join(', ')} env ${
-        notDefinedEnpoints.length > 1 ? 'are' : 'is'
-      } not defined`;
-      logger.error(error);
-      res.status(500).send(error);
-    }
-
-    const endpoints = serviceEndpoints.map((endpoint) => {
-      const url = new URL(endpoint as string);
-      return `${url.origin}/health`;
-    });
-
-    if (config.EXPOSE_FRONTENDS) {
-      if (!config.LANDLORD_BASE_PATH || !config.TENANT_BASE_PATH) {
-        const error =
-          'LANDLORD_BASE_PATH or TENANT_BASE_PATH env is not defined';
-        logger.error(error);
-        res.status(500).send(error);
+      if (!config.PRODUCTION) {
+        serviceEndpoints.push(config.RESETSERVICE_URL);
       }
-      endpoints.push(
-        `${config.LANDLORD_FRONTEND_URL}${config.LANDLORD_BASE_PATH}/health`
-      );
-      endpoints.push(
-        `${config.TENANT_FRONTEND_URL}${config.TENANT_BASE_PATH}/health`
-      );
-    }
 
-    try {
+      const notDefinedEnpoints = serviceEndpoints.filter(
+        (endpoint) => !endpoint
+      );
+      if (notDefinedEnpoints.length) {
+        throw new ServiceError(
+          `${notDefinedEnpoints.join(', ')} env ${
+            notDefinedEnpoints.length > 1 ? 'are' : 'is'
+          } not defined`,
+          500
+        );
+      }
+
+      const endpoints = serviceEndpoints.map((endpoint) => {
+        const url = new URL(endpoint as string);
+        return `${url.origin}/health`;
+      });
+
+      if (config.EXPOSE_FRONTENDS) {
+        if (!config.LANDLORD_BASE_PATH || !config.TENANT_BASE_PATH) {
+          throw new ServiceError(
+            'LANDLORD_BASE_PATH or TENANT_BASE_PATH env is not defined',
+            500
+          );
+        }
+        endpoints.push(
+          `${config.LANDLORD_FRONTEND_URL}${config.LANDLORD_BASE_PATH}/health`
+        );
+        endpoints.push(
+          `${config.TENANT_FRONTEND_URL}${config.TENANT_BASE_PATH}/health`
+        );
+      }
+
       const results = await Promise.all(
         endpoints.map(async (endpoint) => {
           try {
@@ -217,13 +223,10 @@ function exposeHealthCheck(application: Express.Application) {
         }
       });
       if (results.some((result) => result.status !== 200)) {
-        return res.status(500).send('Some services are down');
+        throw new ServiceError('Some services are down', 500);
       }
-    } catch (error) {
-      logger.error('health status', error);
-      return res.status(500).send('Some services are down');
-    }
 
-    res.status(200).send('OK');
-  });
+      res.status(200).send('OK');
+    })
+  );
 }

@@ -3,7 +3,12 @@ import * as EmailContent from './emailcontent.js';
 import * as EmailData from './emaildata.js';
 import * as EmailEngine from './emailengine.js';
 import * as EmailRecipients from './emailrecipients.js';
-import { Collections, logger, Service } from '@microrealestate/common';
+import {
+  Collections,
+  logger,
+  Service,
+  ServiceError
+} from '@microrealestate/common';
 
 export async function status(recordId, startTerm, endTerm) {
   const query = {};
@@ -32,7 +37,7 @@ export async function status(recordId, startTerm, endTerm) {
       sentDate: true
     },
     { sort: { sentDate: -1 } }
-  );
+  ).lean();
 }
 
 // TODO: pass some args in params
@@ -58,15 +63,10 @@ export async function send(
     data = await EmailData.build(templateName, recordId, params);
   } catch (error) {
     logger.error(error);
-    return [
-      {
-        ...result,
-        error: {
-          status: 404,
-          message: `no data found for ${templateName} recordId: ${recordId}`
-        }
-      }
-    ];
+    throw new ServiceError(
+      `no data found for ${templateName} recordId: ${recordId}`,
+      404
+    );
   }
   logger.debug(data);
 
@@ -82,15 +82,15 @@ export async function send(
     );
   } catch (error) {
     logger.error(error);
-    return [
-      {
-        ...result,
-        error: {
-          status: 422,
-          message: `cannot get recipients for ${templateName}`
-        }
-      }
-    ];
+    throw new ServiceError(`missing recipients for ${templateName}`, 422);
+  }
+
+  if (!recipientsList?.length) {
+    throw new ServiceError(`missing recipient list for ${templateName}`, 422);
+  }
+
+  if (recipientsList.some((r) => !r.to)) {
+    throw new ServiceError(`missing recipient email for ${templateName}`, 422);
   }
   logger.debug(recipientsList);
 
@@ -108,15 +108,7 @@ export async function send(
     );
   } catch (error) {
     logger.error(error);
-    return [
-      {
-        ...result,
-        error: {
-          status: 404,
-          message: `cannot add attachments for ${templateName}`
-        }
-      }
-    ];
+    throw new ServiceError(`attachment not found ${templateName}`, 404);
   }
 
   let content;
@@ -132,29 +124,11 @@ export async function send(
     );
   } catch (error) {
     logger.error(error);
-    return [
-      {
-        ...result,
-        error: {
-          status: 422,
-          message: `cannot get email content for ${templateName}`
-        }
-      }
-    ];
+    throw new ServiceError(`missing content for ${templateName}`, 422);
   }
 
   return await Promise.all(
     recipientsList.map(async (recipients) => {
-      if (!recipients.to) {
-        return {
-          ...result,
-          error: {
-            status: 422,
-            message: 'email not set'
-          }
-        };
-      }
-
       const email = {
         ...recipients,
         ...content,

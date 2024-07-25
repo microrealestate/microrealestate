@@ -43,57 +43,52 @@ async function _sendEmail(req, message) {
 }
 
 export async function send(req, res) {
-  try {
-    const realm = req.realm;
-    const { document, tenantIds, terms, year, month } = req.body;
-    const defaultTerm = moment(`${year}/${month}/01`, 'YYYY/MM/DD').format(
-      'YYYYMMDDHH'
-    );
+  const realm = req.realm;
+  const { document, tenantIds, terms, year, month } = req.body;
+  const defaultTerm = moment(`${year}/${month}/01`, 'YYYY/MM/DD').format(
+    'YYYYMMDDHH'
+  );
 
-    const tenants = await Collections.Tenant.find({
-      _id: { $in: tenantIds },
-      realmId: realm._id
-    }).lean();
+  const tenants = await Collections.Tenant.find({
+    _id: { $in: tenantIds },
+    realmId: realm._id
+  }).lean();
 
-    const statusList = await Promise.all(
-      tenants.map(async (tenant, index) => {
-        const tenantId = String(tenant._id);
-        const term = Number((terms && terms[index]) || defaultTerm);
+  const statusList = await Promise.all(
+    tenants.map(async (tenant, index) => {
+      const tenantId = String(tenant._id);
+      const term = Number((terms && terms[index]) || defaultTerm);
 
-        // Send email to tenant
-        try {
-          const status = await _sendEmail(req, {
-            name: tenant.name,
-            tenantId,
-            document,
-            term
-          });
-          return {
-            name: tenant.name,
-            tenantId,
-            document,
-            term,
-            ...status
-          };
-        } catch (error) {
-          logger.error(error);
-          return {
-            name: tenant.name,
-            tenantId,
-            document,
-            term,
-            error: error.response?.data || {
-              status: 500,
-              message: `Something went wrong when sending the email to ${tenant.name}`
-            }
-          };
-        }
-      })
-    );
+      // Send email to tenant
+      try {
+        const status = await _sendEmail(req, {
+          name: tenant.name,
+          tenantId,
+          document,
+          term
+        });
+        return {
+          name: tenant.name,
+          tenantId,
+          document,
+          term,
+          ...status
+        };
+      } catch (error) {
+        logger.error(error);
+        return {
+          name: tenant.name,
+          tenantId,
+          document,
+          term,
+          error: error.response?.data || {
+            status: 500,
+            message: `Something went wrong when sending the email to ${tenant.name}`
+          }
+        };
+      }
+    })
+  );
 
-    res.json(statusList);
-  } catch (error) {
-    logger.error(error);
-    res.status(500).send('an unexpected error occured when sending emails');
-  }
+  res.json(statusList);
 }

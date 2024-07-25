@@ -1,64 +1,56 @@
 import * as Emailer from './emailer.js';
-import { logger, Middlewares, Service } from '@microrealestate/common';
+import {
+  logger,
+  Middlewares,
+  Service,
+  ServiceError
+} from '@microrealestate/common';
 import express from 'express';
 import locale from 'locale';
 
 async function _send(req, res) {
-  try {
-    const { templateName, recordId, params } = req.body;
-    let allowedTemplates;
-    switch (req.path) {
-      case '/emailer/resetpassword':
-        allowedTemplates = ['reset_password'];
-        break;
-      case '/emailer/magiclink':
-        allowedTemplates = ['magic_link'];
-        break;
-      default:
-        allowedTemplates = [
-          'invoice',
-          'rentcall',
-          'rentcall_last_reminder',
-          'rentcall_reminder'
-        ];
-        break;
-    }
-    if (!allowedTemplates.includes(templateName)) {
-      logger.warn(`template not found ${templateName}`);
-      return res.sendStatus(404);
-    }
-
-    // TODO: pass headers in params
-    const results = await Emailer.send(
-      req.headers.authorization,
-      req.realm?.locale || req.rawLocale.code,
-      req.realm?.currency || '',
-      req.realm?._id || req.headers.organizationid,
-      templateName,
-      recordId,
-      params
-    );
-
-    if (!results || !results.length) {
-      logger.warn(
-        `no results returned by the email engine after sending the email ${templateName}`
-      );
-      return res.sendStatus(404);
-    }
-
-    if (results.length === 1 && results[0].error) {
-      logger.error(results);
-      return res.status(results[0].error.status).json(results[0].error);
-    }
-
-    res.json(results);
-  } catch (error) {
-    logger.error(error);
-    res.status(500).json({
-      status: 500,
-      message: 'unexpected error occured when sending the email'
-    });
+  const { templateName, recordId, params } = req.body;
+  let allowedTemplates;
+  switch (req.path) {
+    case '/emailer/resetpassword':
+      allowedTemplates = ['reset_password'];
+      break;
+    case '/emailer/magiclink':
+      allowedTemplates = ['magic_link'];
+      break;
+    default:
+      allowedTemplates = [
+        'invoice',
+        'rentcall',
+        'rentcall_last_reminder',
+        'rentcall_reminder'
+      ];
+      break;
   }
+  if (!allowedTemplates.includes(templateName)) {
+    logger.warn(`template not found ${templateName}`);
+    throw new ServiceError('template not found', 404);
+  }
+
+  // TODO: pass headers in params
+  const results = await Emailer.send(
+    req.headers.authorization,
+    req.realm?.locale || req.rawLocale.code,
+    req.realm?.currency || '',
+    req.realm?._id || req.headers.organizationid,
+    templateName,
+    recordId,
+    params
+  );
+
+  if (!results || !results.length) {
+    throw new ServiceError(
+      `no results returned by the email engine after sending the email ${templateName}`,
+      500
+    );
+  }
+
+  res.json(results);
 }
 
 export default function routes() {
@@ -66,8 +58,8 @@ export default function routes() {
   const apiRouter = express.Router();
   // parse locale
   apiRouter.use(locale(['fr-FR', 'en', 'pt-BR', 'de-DE'], 'en')); // used when organization is not set
-  apiRouter.post('/emailer/resetpassword', _send); // allow this route even there is no access token
-  apiRouter.post('/emailer/magiclink', _send); // allow this route even there is no access token
+  apiRouter.post('/emailer/resetpassword', Middlewares.asyncWrapper(_send)); // allow this route even there is no access token
+  apiRouter.post('/emailer/magiclink', Middlewares.asyncWrapper(_send)); // allow this route even there is no access token
   apiRouter.use(
     Middlewares.needAccessToken(ACCESS_TOKEN_SECRET),
     Middlewares.checkOrganization(),
@@ -77,8 +69,9 @@ export default function routes() {
   //     recordId,      // DB record Id
   //     startTerm      // ex. { term: 2018030100 })
   //     endTerm        // ex. { term: 2018040100 })
-  apiRouter.get('/emailer/status/:startTerm/:endTerm?', async (req, res) => {
-    try {
+  apiRouter.get(
+    '/emailer/status/:startTerm/:endTerm?',
+    Middlewares.asyncWrapper(async (req, res) => {
       const { startTerm, endTerm } = req.params;
       const result = await Emailer.status(
         null,
@@ -86,21 +79,15 @@ export default function routes() {
         endTerm ? Number(endTerm) : null
       );
       res.json(result);
-    } catch (error) {
-      logger.error(error);
-      res.status(500).send({
-        status: 500,
-        message: error.message
-      });
-    }
-  });
+    })
+  );
 
   // body = {
   //     templateName,  // email template name (invoice, rentcall, rentcall-reminder...)
   //     recordId,      // DB record Id
   //     params         // extra parameters (ex. { term: 2018030100 })
   // }
-  apiRouter.post('/emailer', _send);
+  apiRouter.post('/emailer', Middlewares.asyncWrapper(_send));
 
   return apiRouter;
 }
