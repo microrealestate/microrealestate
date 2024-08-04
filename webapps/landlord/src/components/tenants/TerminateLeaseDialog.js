@@ -121,7 +121,9 @@ export default function TerminateLeaseDialog({ open, setOpen, tenantList }) {
           case 403:
             return toast.error(t('You are not allowed to update the tenant'));
           case 409:
-            return toast.error(t('The tenant already exists'));
+            return toast.error(
+              t('Termination date is out of the contract time frame')
+            );
           default:
             return toast.error(t('Something went wrong'));
         }
