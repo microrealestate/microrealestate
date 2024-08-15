@@ -2,10 +2,12 @@ import {
   Collections,
   logger,
   Middlewares,
+  Service,
   ServiceError
 } from '@microrealestate/common';
 import express from 'express';
 import fs from 'fs';
+import path from 'path';
 
 /**
  * route: /templates
@@ -40,7 +42,10 @@ const _checkTemplateParameters = ({
 };
 
 export default function () {
-  const FIELDS = JSON.parse(fs.readFileSync('./templates/fields.json'));
+  const { TEMPLATES_DIRECTORY } = Service.getInstance().envConfig.getValues();
+  const FIELDS = JSON.parse(
+    fs.readFileSync(path.join(TEMPLATES_DIRECTORY, 'fields.json'))
+  );
   const templatesApi = express.Router();
 
   templatesApi.get('/fields', (req, res) => {
