@@ -25,6 +25,7 @@ const TenantSchema = new mongoose.Schema<CollectionTypes.Tenant>({
   street2: String,
   zipCode: String,
   city: String,
+  country: String,
 
   // contacts
   contacts: [

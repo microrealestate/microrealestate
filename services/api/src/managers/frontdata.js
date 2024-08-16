@@ -248,6 +248,7 @@ export function toOccupantData(inputOccupant) {
     street2: occupant.street2 || '',
     zipCode: occupant.zipCode || '',
     city: occupant.city || '',
+    country: occupant.country || '',
     legalForm: occupant.legalForm || '',
     siret: occupant.siret || '',
     contract: occupant.contract || '',

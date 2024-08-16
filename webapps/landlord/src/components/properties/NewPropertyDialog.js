@@ -1,33 +1,30 @@
 import * as Yup from 'yup';
+import { CheckboxField, TextField } from '@microrealestate/commonui/components';
 import { Form, Formik } from 'formik';
-import { NumberField, TextField } from '@microrealestate/commonui/components';
-import React, {
-  useCallback,
-  useContext,
-  useMemo,
-  useRef,
-  useState
-} from 'react';
+import React, { useCallback, useContext, useRef, useState } from 'react';
 import { Button } from '../ui/button';
 import PropertyIcon from './PropertyIcon';
 import ResponsiveDialog from '../ResponsiveDialog';
 import { SelectField } from '../formfields/SelectField';
 import { StoreContext } from '../../store';
 import { toast } from 'sonner';
-import types from './types';
+import { toJS } from 'mobx';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 
 const validationSchema = Yup.object().shape({
-  type: Yup.string().required(),
   name: Yup.string().required(),
-  rent: Yup.number().min(0).required()
+  isCopyFrom: Yup.boolean(),
+  copyFrom: Yup.mixed().when('isCopyFrom', {
+    is: true,
+    then: Yup.string().required()
+  })
 });
 
 const initialValues = {
-  type: '',
   name: '',
-  rent: ''
+  copyFrom: '',
+  isCopyFrom: false
 };
 
 export default function NewPropertyDialog({ open, setOpen }) {
@@ -44,9 +41,21 @@ export default function NewPropertyDialog({ open, setOpen }) {
       try {
         setIsLoading(true);
         let property = {
-          ...propertyPart,
-          price: propertyPart.rent
+          ...propertyPart
         };
+
+        if (propertyPart.isCopyFrom) {
+          const { _id, ...originalProperty } = toJS(
+            store.property.items.find(
+              ({ _id }) => propertyPart.copyFrom === _id
+            )
+          );
+
+          property = {
+            ...originalProperty,
+            ...property
+          };
+        }
 
         const { status, data } = await store.property.create(property);
         if (status !== 200) {
@@ -76,16 +85,15 @@ export default function NewPropertyDialog({ open, setOpen }) {
     [store, handleClose, router, t]
   );
 
-  const propertyTypes = useMemo(
-    () =>
-      types.map((type) => ({
-        id: type.id,
-        value: type.id,
-        label: t(type.labelId),
-        renderIcon: () => <PropertyIcon type={type.id} />
-      })),
-    [t]
-  );
+  // transform to use it in select field
+  const properties = store.property.items.map(({ _id, name, type }) => {
+    return {
+      id: _id,
+      label: name,
+      value: _id,
+      renderIcon: () => <PropertyIcon type={type} />
+    };
+  });
 
   return (
     <ResponsiveDialog
@@ -100,19 +108,25 @@ export default function NewPropertyDialog({ open, setOpen }) {
           onSubmit={_onSubmit}
           innerRef={formRef}
         >
-          {() => {
+          {({ values }) => {
             return (
               <Form autoComplete="off">
-                <SelectField
-                  label={t('Property Type')}
-                  name="type"
-                  values={propertyTypes}
-                />
                 <TextField label={t('Name')} name="name" />
-                <NumberField
-                  label={t('Rent excluding tax and expenses')}
-                  name="rent"
-                />
+                {properties?.length ? (
+                  <>
+                    <CheckboxField
+                      name="isCopyFrom"
+                      label={t('Copy from an existing property')}
+                      aria-label={t('Copy from an existing property')}
+                    />
+                    <SelectField
+                      name="copyFrom"
+                      label={t('Property')}
+                      values={properties}
+                      disabled={!values.isCopyFrom}
+                    />
+                  </>
+                ) : null}
               </Form>
             );
           }}

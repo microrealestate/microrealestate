@@ -20,6 +20,10 @@ All notable changes to this project will be documented here.
 
 - Added responsiveness to the Landlord application
 
+- Added german translation
+
+- Added feature to create a property from an existing one #192
+
 ### Changed
 
 - Changed `authenticator/landlord/signin` API endpoint to support both user credentials (email/password) and application credentials (clientId/clientSecret).
@@ -46,7 +50,9 @@ All notable changes to this project will be documented here.
 
 - [@camelaissani](https://github.com/camelaissani)
 
-- @zeronounours
+- [@zeronounours](https://github.com/zeronounours)
+
+- [@MrTob](https://github.com/MrTob)
 
 
 ## 1.0.0-alpha.1

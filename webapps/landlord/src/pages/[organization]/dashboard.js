@@ -1,6 +1,7 @@
 import {
   fetchDashboard,
   fetchLeases,
+  fetchProperties,
   fetchTenants,
   QueryKeys
 } from '../../utils/restcalls';
@@ -25,22 +26,31 @@ function Dashboard() {
     queryKey: [QueryKeys.TENANTS],
     queryFn: () => fetchTenants(store)
   });
+  const propertiesQuery = useQuery({
+    queryKey: [QueryKeys.PROPERTIES],
+    queryFn: () => fetchProperties(store)
+  });
   const leasesQuery = useQuery({
     queryKey: [QueryKeys.LEASES],
     queryFn: () => fetchLeases(store)
   });
   const isLoading =
-    dashboardQuery.isLoading || tenantsQuery.isLoading || leasesQuery.isLoading;
+    dashboardQuery.isLoading ||
+    tenantsQuery.isLoading ||
+    propertiesQuery.isLoading ||
+    leasesQuery.isLoading;
 
   const isFirstConnection = useMemo(() => {
     return (
       !leasesQuery?.data?.length ||
       !dashboardQuery?.data?.overview?.propertyCount ||
-      !tenantsQuery?.data?.length
+      !tenantsQuery?.data?.length ||
+      !propertiesQuery?.data?.length
     );
   }, [
     dashboardQuery?.data?.overview?.propertyCount,
     leasesQuery?.data?.length,
+    propertiesQuery?.data?.length,
     tenantsQuery?.data?.length
   ]);
 

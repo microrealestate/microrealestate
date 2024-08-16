@@ -1,10 +1,12 @@
 import {
+  BedSingleIcon,
   BuildingIcon,
   HomeIcon,
   MailboxIcon,
   MountainIcon,
   ParkingSquareIcon,
-  StoreIcon
+  StoreIcon,
+  WarehouseIcon
 } from 'lucide-react';
 
 export default function PropertyIcon({ type }) {
@@ -16,12 +18,16 @@ export default function PropertyIcon({ type }) {
     case 'apartment':
       TypeIcon = HomeIcon;
       break;
-    case 'building':
     case 'room':
+      TypeIcon = BedSingleIcon;
+      break;
+    case 'building':
     case 'office':
       TypeIcon = BuildingIcon;
       break;
     case 'garage':
+      TypeIcon = WarehouseIcon;
+      break;
     case 'parking':
       TypeIcon = ParkingSquareIcon;
       break;

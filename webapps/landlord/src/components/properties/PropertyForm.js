@@ -6,13 +6,14 @@ import {
   Section,
   SelectField,
   SubmitButton,
-  TextField,
+  TextField
 } from '@microrealestate/commonui/components';
 import { Form, Formik } from 'formik';
 import { useContext, useMemo } from 'react';
 
 import { Grid } from '@material-ui/core';
 import { observer } from 'mobx-react-lite';
+import PropertyIcon from './PropertyIcon';
 import { StoreContext } from '../../store';
 import types from './types';
 import useTranslation from 'next-translate/useTranslation';
@@ -29,9 +30,9 @@ const validationSchema = Yup.object().shape({
     city: Yup.string(),
     zipCode: Yup.string(),
     state: Yup.string(),
-    country: Yup.string(),
+    country: Yup.string()
   }),
-  rent: Yup.number().min(0).required(),
+  rent: Yup.number().min(0).required()
 });
 
 const PropertyForm = observer(({ onSubmit }) => {
@@ -52,9 +53,9 @@ const PropertyForm = observer(({ onSubmit }) => {
         city: '',
         zipCode: '',
         state: '',
-        country: '',
+        country: ''
       },
-      rent: store.property.selected?.price || '',
+      rent: store.property.selected?.price || ''
     }),
     [store.property.selected]
   );
@@ -65,6 +66,7 @@ const PropertyForm = observer(({ onSubmit }) => {
         id: type.id,
         value: type.id,
         label: t(type.labelId),
+        renderIcon: () => <PropertyIcon type={type.id} />
       })),
     [t]
   );
@@ -100,7 +102,7 @@ const PropertyForm = observer(({ onSubmit }) => {
                   'apartment',
                   'room',
                   'office',
-                  'garage',
+                  'garage'
                 ].includes(values.type) && (
                   <>
                     <Grid item xs={12} md={4}>

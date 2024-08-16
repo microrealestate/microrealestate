@@ -234,6 +234,7 @@ export namespace CollectionTypes {
     street2: string;
     zipCode: string;
     city: string;
+    country: string;
     contacts: {
       contact: string;
       phone: string;

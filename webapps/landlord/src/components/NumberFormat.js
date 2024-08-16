@@ -4,14 +4,14 @@ import { withStyles } from '@material-ui/core/styles';
 
 const PositiveNumber = withStyles((theme) => ({
   root: {
-    color: theme.palette.success.dark,
-  },
+    color: theme.palette.success.dark
+  }
 }))(Box);
 
 const NegativeNumber = withStyles((theme) => ({
   root: {
-    color: theme.palette.warning.dark,
-  },
+    color: theme.palette.warning.dark
+  }
 }))(Box);
 
 export default function NumberFormat({
@@ -26,9 +26,17 @@ export default function NumberFormat({
   ...props
 }) {
   const formatNumber = useFormatNumber();
-  const value = abs ? Math.abs(rawValue) : rawValue;
 
-  if (value === undefined || value === null || rawValue === 0) {
+  if (rawValue === undefined || rawValue === null || Number.isNaN(rawValue)) {
+    return (
+      <Box whiteSpace="nowrap" {...props}>
+        {formatNumber(0, style, minimumFractionDigits).replaceAll('0', '-')}
+      </Box>
+    );
+  }
+
+  const value = abs ? Math.abs(rawValue) : rawValue;
+  if (rawValue === 0) {
     return (
       <Box whiteSpace="nowrap" {...props}>
         {showZero ? formatNumber(value, style, minimumFractionDigits) : '--'}

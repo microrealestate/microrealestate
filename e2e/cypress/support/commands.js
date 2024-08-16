@@ -109,10 +109,14 @@ Cypress.Commands.add(
   'addPropertyFromStepper',
   ({ name, type, description, surface, phone, digiCode, address, rent }) => {
     cy.get('[data-cy=shortcutAddProperty]').click();
-    cy.get('select[name=type]').select(type, { force: true });
     cy.get('input[name=name]').type(name);
-    cy.get('input[name=rent]').type(rent);
     cy.get('[data-cy=submitProperty]').click();
+    cy.contains(i18n.getFixedT('fr-FR')('Property information'));
+    cy.muiSelectText(
+      'type',
+      i18n.getFixedT('fr-FR')(type.replace(/^./, type[0].toUpperCase()))
+    );
+    cy.get('input[name=rent]').type(rent);
     cy.get('input[name=description]').type(description);
     cy.get('input[name=surface]').type(surface);
     cy.get('input[name=phone]').type(phone);
