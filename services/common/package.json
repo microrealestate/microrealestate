@@ -22,7 +22,7 @@
     "format": "prettier --write '**/*.{js,jsx,ts,tsx,json,css}'"
   },
   "dependencies": {
-    "axios": "1.6.2",
+    "axios": "1.7.4",
     "bcrypt": "5.1.1",
     "cookie-parser": "1.4.5",
     "express": "4.19.2",

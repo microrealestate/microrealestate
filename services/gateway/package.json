@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "@microrealestate/common": "*",
-    "axios": "1.6.2",
+    "axios": "1.7.4",
     "cors": "2.8.5",
     "http-proxy-middleware": "2.0.6"
   },

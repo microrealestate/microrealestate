@@ -65,8 +65,16 @@ export default function PdfViewer({ open, setOpen, pdfDoc }) {
           </DrawerHeader>
           <div className="overflow-auto">
             <div className="max-w-4xl md:mx-auto">
-              <Worker workerUrl="https://unpkg.com/pdfjs-dist@2.14.305/legacy/build/pdf.worker.js">
-                <Viewer fileUrl={pdfSrc} plugins={[printPluginInstance]} />
+              <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.js">
+                <Viewer
+                  fileUrl={pdfSrc}
+                  plugins={[printPluginInstance]}
+                  transformGetDocumentParams={(options) =>
+                    Object.assign({}, options, {
+                      isEvalSupported: false
+                    })
+                  }
+                />
               </Worker>
             </div>
           </div>
