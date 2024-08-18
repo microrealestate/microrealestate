@@ -58,6 +58,7 @@
     "prettier": "3.1.1"
   },
   "resolutions": {
+    "axios": "^1.7.4",
     "braces": "^3.0.3"
   },
   "packageManager": "yarn@3.3.0"
