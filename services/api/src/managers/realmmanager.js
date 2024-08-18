@@ -128,7 +128,12 @@ export async function update(req, res) {
   const updatedRealm = { ...previousRealm.toObject(), ...req.body };
 
   _hasRequiredFields(updatedRealm);
-  _isNameAlreadyTaken(updatedRealm, req.realms);
+  if (
+    updatedRealm.name.trim().toLowerCase() !==
+    req.realm.name.trim().toLowerCase()
+  ) {
+    _isNameAlreadyTaken(updatedRealm, req.realms);
+  }
 
   if (req.body.thirdParties?.gmail) {
     logger.debug('realm update with Gmail third party emailer');

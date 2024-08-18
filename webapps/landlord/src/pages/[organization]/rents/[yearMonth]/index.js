@@ -191,22 +191,24 @@ function Actions({ values, onDone }) {
         </div>
       )}
 
-      <ConfirmDialog
-        title={t('Are you sure to send "{{docName}}"?', {
-          docName: t(selectedDocumentName)
-        })}
-        open={showConfirmDlg}
-        setOpen={setShowConfirmDlg}
-        data={selectedDocumentName}
-        onConfirm={handleConfirm}
-      >
-        <div className="mb-2">{t('Tenants selected')}</div>
-        <div className="flex flex-col gap-1 pl-4 text-sm max-h-48 overflow-auto">
-          {values.map((tenant) => (
-            <div key={tenant._id}>{tenant.occupant.name}</div>
-          ))}
-        </div>
-      </ConfirmDialog>
+      {selectedDocumentName ? (
+        <ConfirmDialog
+          title={t('Are you sure to send "{{docName}}"?', {
+            docName: t(selectedDocumentName)
+          })}
+          open={showConfirmDlg}
+          setOpen={setShowConfirmDlg}
+          data={selectedDocumentName}
+          onConfirm={handleConfirm}
+        >
+          <div className="mb-2">{t('Tenants selected')}</div>
+          <div className="flex flex-col gap-1 pl-4 text-sm max-h-48 overflow-auto">
+            {values.map((tenant) => (
+              <div key={tenant._id}>{tenant.occupant.name}</div>
+            ))}
+          </div>
+        </ConfirmDialog>
+      ) : null}
     </>
   );
 }
