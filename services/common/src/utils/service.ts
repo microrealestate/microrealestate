@@ -13,6 +13,7 @@ import httpInterceptors from './httpinterceptors.js';
 import jwt from 'jsonwebtoken';
 import { Middlewares } from '../index.js';
 import MongoClient from './mongoclient.js';
+import mongoSanitize from 'express-mongo-sanitize';
 import RedisClient from './redisclient.js';
 import winston from 'winston';
 
@@ -96,6 +97,15 @@ export default class Service {
       this.expressServer.use(Express.urlencoded({ extended: true }));
       this.expressServer.use(Express.json());
       this.expressServer.use(_methodOverride());
+      if (this.useMongo) {
+        mongoSanitize({
+          allowDots: true,
+          replaceWith: '_',
+          onSanitize: ({ req, key }: { req: Express.Request; key: string }) => {
+            console.warn(`request[${key}] has been sanitized`, req);
+          }
+        });
+      }
     }
 
     this.expressServer.use(

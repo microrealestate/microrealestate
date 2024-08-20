@@ -26,6 +26,7 @@
     "bcrypt": "5.1.1",
     "cookie-parser": "1.4.5",
     "express": "4.19.2",
+    "express-mongo-sanitize": "2.2.0",
     "express-winston": "4.2.0",
     "jsonwebtoken": "9.0.0",
     "lodash": "4.17.21",

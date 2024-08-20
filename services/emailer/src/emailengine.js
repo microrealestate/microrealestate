@@ -1,15 +1,36 @@
 import { Crypto, Service } from '@microrealestate/common';
-import formData from 'form-data';
-import Mailgun from 'mailgun.js';
+import mailgun from 'nodemailer-mailgun-transport';
 import nodemailer from 'nodemailer';
 
 async function _sendWithMailgun(config, email) {
-  const mailgun = new Mailgun(formData);
-  const mg = mailgun.client({ username: 'api', key: config.apiKey });
-  return await mg.messages.create(config.domain, {
-    ...email,
-    'h:Reply-To': email.replyTo
+  const { replyTo, from, to, bcc, subject, text, html, attachment } = email;
+  const auth = {
+    auth: {
+      api_key: config.apiKey,
+      domain: config.domain
+    }
+  };
+
+  const transporter = nodemailer.createTransport(mailgun(auth));
+
+  const result = await transporter.sendMail({
+    from,
+    replyTo,
+    to,
+    bcc,
+    subject,
+    text,
+    html,
+    attachments: attachment.map(({ filename, data }) => ({
+      filename,
+      content: data
+    }))
   });
+
+  return {
+    id: result.messageId,
+    message: result.response
+  };
 }
 
 async function _sendWithSmtp(config, email) {
