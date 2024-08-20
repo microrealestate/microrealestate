@@ -90,5 +90,9 @@ export async function send(req, res) {
     })
   );
 
-  res.json(statusList);
+  if (statusList.some((status) => !!status.error)) {
+    res.status(500).json(statusList);
+  } else {
+    res.json(statusList);
+  }
 }
