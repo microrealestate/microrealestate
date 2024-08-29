@@ -382,6 +382,7 @@
   "Terminated": "Résilié",
   "Termination": "Résiliation",
   "Termination date": "Date de résiliation",
+  "Termination date is out of the contract time frame": "La date de résiliation ne correspond pas aux dates du bail",
   "Text documents": "Documents texte",
   "Text template": "Modèle de texte",
   "The contacts will receive the invoices and will be able to access the tenant's portal": "Les contacts recevront les factures et pourront accéder au portail du locataire",
