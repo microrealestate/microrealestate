@@ -31,6 +31,7 @@ async function Main() {
     service = Service.getInstance(
       new EnvironmentConfig({
         PORT: Number(process.env.PORT || 8082),
+        CHROMIUM_BIN: process.env.CHROMIUM_BIN || '/usr/bin/chromium', 
         DATA_DIRECTORY:
           process.env.DATA_DIRECTORY || path.join(root_dir, '/data'),
         TEMPLATES_DIRECTORY:

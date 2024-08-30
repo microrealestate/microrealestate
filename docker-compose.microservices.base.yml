@@ -1,10 +1,9 @@
-version: '3.3'
 services:
   ###############################################################################
   # Redis
   ###############################################################################
   redis:
-    image: redis:7
+    image: redis:7.4-bookworm
     expose:
       - '$REDIS_PORT'
     volumes:
@@ -192,10 +191,6 @@ services:
   # Landlord frontend
   ###############################################################################
   landlord-frontend:
-    # base path cannot be set at runtime: https://github.com/vercel/next.js/discussions/41769
-    build:
-      args:
-        - BASE_PATH=$LANDLORD_BASE_PATH
     image: 'ghcr.io/microrealestate/microrealestate/landlord-frontend:${MRE_VERSION:-latest}'
     environment:
       - BASE_PATH=$LANDLORD_BASE_PATH
@@ -217,10 +212,6 @@ services:
   # Tenant frontend
   ###############################################################################
   tenant-frontend:
-    # base path cannot be set at runtime: https://github.com/vercel/next.js/discussions/41769
-    build:
-      args:
-        - BASE_PATH=$TENANT_BASE_PATH
     image: 'ghcr.io/microrealestate/microrealestate/tenant-frontend:${MRE_VERSION:-latest}'
     environment:
       - BASE_PATH=$TENANT_BASE_PATH

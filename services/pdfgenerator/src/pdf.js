@@ -25,12 +25,12 @@ export async function start() {
   if (!fs.existsSync(TEMPORARY_DIRECTORY)) {
     fs.mkdirSync(TEMPORARY_DIRECTORY);
   }
-
-  await settings['pdf engine'].start();
 }
 
 export async function exit() {
-  await settings['pdf engine'].exit();
+  const { TEMPORARY_DIRECTORY } =
+    Service.getInstance().envConfig.getValues();
+  fs.rmSync(TEMPORARY_DIRECTORY);
 }
 
 export async function generate(documentId, params) {

@@ -1,9 +1,6 @@
-FROM node:20-alpine AS base
+FROM node:20-bookworm-slim AS base
 
 FROM base AS deps
-RUN apk --no-cache add build-base python3
-RUN corepack enable && \
-    corepack prepare yarn@3.3.0 --activate
 WORKDIR /usr/app
 COPY package.json .
 COPY .yarnrc.yml .

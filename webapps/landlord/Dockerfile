@@ -1,9 +1,6 @@
-FROM node:20-alpine AS base
+FROM node:20-bookworm-slim AS base
 
 FROM base AS deps
-RUN apk --no-cache add libc6-compat
-RUN corepack enable && \
-    corepack prepare yarn@3.3.0 --activate
 WORKDIR /usr/app
 COPY package.json .
 COPY .yarnrc.yml .
@@ -37,13 +34,14 @@ COPY webapps/landlord/tailwind.config.js webapps/landlord
 COPY webapps/landlord/tsconfig.json webapps/landlord
 RUN  yarn workspace @microrealestate/landlord run build
 
-FROM base
+FROM gcr.io/distroless/nodejs20-debian12
 WORKDIR /usr/app
 ENV NEXT_TELEMETRY_DISABLED=1
 COPY --from=build /usr/app/webapps/landlord/public ./public
 COPY --from=build /usr/app/webapps/landlord/.next/standalone/node_modules ./node_modules
 COPY --from=build /usr/app/webapps/landlord/.next/standalone/webapps/landlord ./
 COPY --from=build /usr/app/webapps/landlord/.next/static ./.next/static
-COPY --from=build /usr/app/webapps/commonui/scripts/generateruntimeenvfile.js ./generateruntimeenvfile.js
-COPY --from=build /usr/app/webapps/commonui/scripts/replacebasepath.js ./replacebasepath.js
-CMD ["/bin/sh", "-c", "node replacebasepath;node generateruntimeenvfile.js;node server.js"]
+COPY --from=build /usr/app/webapps/commonui/scripts/generateruntimeenvfile.js ./
+COPY --from=build /usr/app/webapps/commonui/scripts/replacebasepath.js ./
+COPY --from=build /usr/app/webapps/commonui/scripts/runner.js ./
+CMD ["runner.js"]

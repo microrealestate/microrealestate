@@ -1,4 +1,4 @@
-FROM node:20-alpine AS base
+FROM node:20.17-alpine3.20 AS base
 
 FROM base AS deps
 RUN apk --no-cache add build-base python3

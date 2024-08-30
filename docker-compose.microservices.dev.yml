@@ -1,4 +1,3 @@
-version: '3.3'
 services:
   ###############################################################################
   # Mongo
@@ -184,6 +183,9 @@ services:
     build:
       context: .
       dockerfile: webapps/landlord/dev.Dockerfile
+      # base path cannot be set at runtime: https://github.com/vercel/next.js/discussions/41769
+      args:
+        - BASE_PATH=$LANDLORD_BASE_PATH
     volumes:
       - ./package.json:/usr/app/package.json
       - ./webapps/commonui/components:/usr/app/webapps/commonui/components
@@ -208,6 +210,9 @@ services:
     build:
       context: .
       dockerfile: webapps/tenant/dev.Dockerfile
+      # base path cannot be set at runtime: https://github.com/vercel/next.js/discussions/41769
+      args:
+        - BASE_PATH=$TENANT_BASE_PATH
     volumes:
       - ./package.json:/usr/app/package.json
       - ./types/src:/usr/app/types/src

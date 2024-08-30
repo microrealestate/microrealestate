@@ -34,6 +34,7 @@ export type EnvironmentValues = {
   APP_NAME?: string;
   LANDLORD_APP_URL?: string;
   TENANT_APP_URL?: string;
+  CHROMIUM_BIN?: string;
   GMAIL?: {
     email: string;
     appPassword: string;

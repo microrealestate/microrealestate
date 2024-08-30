@@ -1,10 +1,10 @@
-FROM node:20-alpine AS base
+FROM node:20.17-alpine3.20 AS base
 
 FROM base AS deps
 RUN apk --no-cache add build-base python3
 RUN corepack enable && \
     corepack prepare yarn@3.3.0 --activate
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD 1
 WORKDIR /usr/app
 COPY package.json .
 COPY yarn.lock .
@@ -18,8 +18,15 @@ RUN --mount=type=cache,id=node_modules,target=/root/.yarn YARN_CACHE_FOLDER=/roo
     yarn workspaces focus @microrealestate/pdfgenerator
 
 FROM base
-RUN apk --no-cache add chromium
-ENV CHROMIUM_BIN "/usr/bin/chromium-browser"
+RUN apk upgrade --no-cache --available \
+    && apk add --no-cache \
+      chromium-swiftshader \
+      ttf-freefont \
+      font-noto-emoji \
+    && apk add --no-cache \
+      --repository=https://dl-cdn.alpinelinux.org/alpine/edge/community \
+      font-wqy-zenhei
+ENV CHROMIUM_BIN /usr/bin/chromium-browser
 WORKDIR /usr/app
 COPY --from=deps /usr/app ./
 CMD ["yarn", "workspace", "@microrealestate/pdfgenerator", "run", "dev"]
