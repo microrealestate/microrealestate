@@ -92,7 +92,7 @@ Copy the link and paste into your preferred web browser to access the applicatio
 <details>
 <summary>Build and run the application from the latest source code</summary>
 
-**Follow the steps outlined in the documentation available [here](.documentation/DEVELOPER.md#run-the-application-from-source-code )**
+**Follow the steps outlined in the documentation available [here](./documentation/DEVELOPER.md#run-the-application-from-source-code)**
 
 The first run, you can expect a series of questions to configure the application. Answer the questions as prompted to tailor the application to your specific needs. Once you've completed this interactive configuration, a `.env` file will be generated, containing your settings.
 
