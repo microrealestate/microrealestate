@@ -83,14 +83,10 @@ async function start() {
 
   await runCompose('start', [], { runMode: 'prod' });
 
-  const healthcheckSuccess = await checkHealth();
-  if (!healthcheckSuccess) {
-    console.log(chalk.red('💣 Application did not start successfully'));
-    displayConfigWarningsAndErrors();
+  if (!await checkHealth()) {
     return;
   }
 
-  console.log(chalk.green('🚀 application started\n'));
   const landlordAppUrl = process.env.APP_URL || process.env.LANDLORD_APP_URL;
   console.log(
     chalk.dim('Landlord front-end ready on'),
@@ -143,8 +139,11 @@ async function ci() {
     runMode: 'ci'
   });
 
+  if (!await checkHealth()) {
+    return;
+  }
+
   const landlordAppUrl = process.env.APP_URL || process.env.LANDLORD_APP_URL;
-  console.log('application started\n');
   console.log(`Landlord front-end ready and accessible on ${landlordAppUrl}`);
   console.log(
     `Tenant front-end ready and accessible on ${process.env.TENANT_APP_URL}`
@@ -170,6 +169,7 @@ async function showConfig(runMode) {
 async function checkHealth() {
   let healthcheckSuccess = true;
   const maxAttempt = 10;
+  const delayAttemptInSecond = 2; 
   for await (const attempt of [...Array(maxAttempt).keys()]) {
     let response;
     try {
@@ -189,21 +189,36 @@ async function checkHealth() {
       }
     }
 
-    if (response.status !== 200) {
-      healthcheckSuccess = false;
-      if (attempt < maxAttempt - 1) {
-        console.log(chalk.dim('  retrying in 2 seconds...'));
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-      } else {
-        console.log(
-          chalk.red(`failed: ${response.status} ${response.statusText}`)
-        );
-      }
-    } else {
-      healthcheckSuccess = true;
+    healthcheckSuccess = response.status === 200;
+    if (healthcheckSuccess) {
+      await new Promise((resolve) => process.stdout.moveCursor(0, -1, resolve));
+      await new Promise((resolve) => process.stdout.clearLine(0,resolve));
       break;
     }
+
+    if (attempt === maxAttempt - 1) {
+      await new Promise((resolve) => process.stdout.moveCursor(0, -1, resolve));
+      await new Promise((resolve) => process.stdout.clearLine(0,resolve));
+      console.log(
+        chalk.red(`failed: ${response.status} ${response.statusText}`)
+      );
+    } else {
+      console.log(chalk.dim(`  retrying in ${delayAttemptInSecond} seconds...`));
+      await new Promise((resolve) => setTimeout(resolve, delayAttemptInSecond * 1000));
+      await new Promise((resolve) => process.stdout.moveCursor(0, -1, resolve));
+      await new Promise((resolve) => process.stdout.clearLine(0,resolve));
+      await new Promise((resolve) => process.stdout.moveCursor(0, -1, resolve));
+      await new Promise((resolve) => process.stdout.clearLine(0,resolve));
+    }
   }
+  
+  if (!healthcheckSuccess) {
+    console.log(chalk.red('💣 Application did not start successfully'));
+    displayConfigWarningsAndErrors();
+  } else {
+    console.log(chalk.green('🚀 application started\n'));
+  }
+
   return healthcheckSuccess;
 }
 

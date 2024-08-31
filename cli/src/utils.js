@@ -89,33 +89,25 @@ function getBackupPath() {
 }
 
 function getComposeActions(cri, action) {
-  switch (cri) {
-    case 'docker':
-    case 'docker-compose':
-      return {
-        start: ['up', '-d', '--force-recreate', '--remove-orphans'],
-        ci: ['up', '-d', '--force-recreate', '--remove-orphans'],
-        dev: ['up', '--build', '--force-recreate', '--remove-orphans'],
-        build: ['build', '--no-cache', '--force-rm'],
-        stop: ['rm', '--stop', '--force'],
-        status: ['ps'],
-        config: ['config'],
-        run: ['run']
-      }[action];
+  // default docker compose action commands
+  const composeActions = {
+    start: ['up', '-d', '--force-recreate', '--remove-orphans'],
+    ci: ['up', '-d', '--force-recreate', '--remove-orphans'],
+    dev: ['up', '--build', '--force-recreate', '--remove-orphans'],
+    build: ['build', '--no-cache'],
+    stop: ['down', '--remove-orphans', '--volumes'],
+    status: ['ps'],
+    config: ['config'],
+    run: ['run']
+  };
 
-    case 'podman':
-    case 'podman-compose':
-      return {
-        start: ['up', '-d', '--force-recreate', '--remove-orphans'],
-        ci: ['up', '-d', '--force-recreate', '--remove-orphans'],
-        dev: ['up', '--build', '--force-recreate', '--remove-orphans'],
-        build: ['build', '--no-cache'],
-        stop: ['down'],
-        status: ['ps'],
-        config: ['config'],
-        run: ['run']
-      }[action];
-  }
+  // Not useful for now
+  // overloading actions when different in podman
+  // if (['podman', 'podman-compose'].includes(cri)) {
+  //   composeActions['build'] = ['build', '--no-cache'];
+  // }
+
+  return composeActions[action];
 }
 
 async function runCompose(
@@ -165,7 +157,7 @@ async function runCompose(
   const baseCmd = await findCRI();
 
   const actionArgs = getComposeActions(baseCmd[0], composeAction);
-  if (actionArgs === undefined) {
+  if (!actionArgs) {
     return;
   }
 

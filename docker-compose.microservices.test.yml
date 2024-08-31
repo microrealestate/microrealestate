@@ -15,7 +15,7 @@ services:
     image: 'ghcr.io/microrealestate/microrealestate/resetservice:${MRE_VERSION:-latest}'
     build:
       context: .
-      dockerfile: services/resetservice/dev.Dockerfile
+      dockerfile: services/resetservice/Dockerfile
     environment:
       - NODE_ENV
       - PORT=$RESETSERVICE_PORT
