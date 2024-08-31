@@ -4,7 +4,7 @@
 
 MicroRealEstate is an open-source application designed to assist landlords in managing their properties and rentals. With a user-friendly interface and a range of helpful features, MicroRealEstate (MRE) serves as a centralized platform for landlords to streamline their property management tasks.
 
-MRE is designed to be customizable, allowing landlords to adapt the application to their unique property management needs. As an open-source project, MRE benefits from continuous improvement and community-driven enhancements.
+As an open-source project, MRE benefits from continuous improvement and community-driven enhancements.
 
 ## Key Features
 
@@ -37,35 +37,35 @@ Explore the application through these screenshots:
 
 ## Getting started
 
-Get started with the application by following these installation steps.
+<details>
+<summary>Install and run the last release of the application (jan 2024)</summary>
 
-> Prerequisite
+> **Prerequisite**
 >
-> - [Docker and docker-compose installed](https://docs.docker.com/compose/install/)
-
-### 1. Install the application
+> - [Install Docker and Compose](https://docs.docker.com/compose/install)
+> - [Run the Docker daemon as a non-root user](https://docs.docker.com/engine/security/rootless)
 
 Download the latest release from github. Copy paste and exectute this command in a terminal:
 
-#### On Linux
+**On Linux**
 
 ``` shell
 mkdir -p microrealestate; curl -L https://github.com/microrealestate/microrealestate/releases/latest/download/mre-linux-x64.tar.gz | tar -xz -C microrealestate
 ```
 
-#### On Mac
+**On Mac**
 
 ``` shell
 mkdir -p microrealestate; curl -L https://github.com/microrealestate/microrealestate/releases/latest/download/mre-macos-x64.tar.gz | tar -xz -C microrealestate
 ```
 
-#### On Windows PowerShell
+**On Windows PowerShell**
 
 ``` shell
 wget https://github.com/microrealestate/microrealestate/releases/latest/download/mre-win-x64.zip -Outfile microrealestate.zip; Expand-Archive microrealestate.zip -DestinationPath microrealestate; Remove-Item microrealestate.zip
 ```
 
-### 2. Start the application
+**Start the application**
 
 Go in the microrealestate directory and launch the application:
 
@@ -74,7 +74,7 @@ $ cd microrealestate
 $ ./mre start
 ```
 
-The first time, you can expect a series of questions to configure the application. Answer the questions as prompted to tailor the application to your specific needs. Once you've completed this interactive configuration, a `.env` file will be generated, containing your settings.
+The first run, you can expect a series of questions to configure the application. Answer the questions as prompted to tailor the application to your specific needs. Once you've completed this interactive configuration, a `.env` file will be generated, containing your settings.
 
 ```
 ? Do you want the database to be populated with? demonstration data
@@ -86,6 +86,27 @@ The first time, you can expect a series of questions to configure the applicatio
 Once the application has started successfully, you will find several links displayed in the console to access the landlord and tenant applications.
 
 Copy the link and paste into your preferred web browser to access the applications.
+</details>
+
+
+<details>
+<summary>Build and run the application from the latest source code</summary>
+
+**Follow the steps outlined in the documentation available [here](.documentation/DEVELOPER.md#run-the-application-from-source-code )**
+
+The first run, you can expect a series of questions to configure the application. Answer the questions as prompted to tailor the application to your specific needs. Once you've completed this interactive configuration, a `.env` file will be generated, containing your settings.
+
+```
+? Do you want the database to be populated with? demonstration data
+? Select your email delivery service? (required for password reset and tenant sign in) None
+? Enter the URL to access the landlord front-end: http://localhost:8080/landlord
+? Enter the URL to access the tenant front-end (it should share the same domain and port as the landlord front-end URL): http://localhost:8080/tenant
+```
+
+Once the application has started successfully, you will find several links displayed in the console to access the landlord and tenant applications.
+
+Copy the link and paste into your preferred web browser to access the applications.
+</details>
 
 ## Community
 
