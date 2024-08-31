@@ -5,7 +5,7 @@ const chalk = require('chalk');
 const figlet = require('figlet');
 const inquirer = require('inquirer');
 const moment = require('moment');
-const { buildUrl, destructUrl, fetch } = require('./utils');
+const { buildUrl, consoleMoveCursorToPrevLine, destructUrl, fetch } = require('./utils');
 const {
   generateRandomToken,
   runCompose,
@@ -139,10 +139,6 @@ async function ci() {
     runMode: 'ci'
   });
 
-  if (!await checkHealth()) {
-    return;
-  }
-
   const landlordAppUrl = process.env.APP_URL || process.env.LANDLORD_APP_URL;
   console.log(`Landlord front-end ready and accessible on ${landlordAppUrl}`);
   console.log(
@@ -170,7 +166,7 @@ async function checkHealth() {
   let healthcheckSuccess = true;
   const maxAttempt = 10;
   const delayAttemptInSecond = 2; 
-  for await (const attempt of [...Array(maxAttempt).keys()]) {
+  for (const attempt of [...Array(maxAttempt).keys()]) {
     let response;
     try {
       console.log(
@@ -191,24 +187,19 @@ async function checkHealth() {
 
     healthcheckSuccess = response.status === 200;
     if (healthcheckSuccess) {
-      await new Promise((resolve) => process.stdout.moveCursor(0, -1, resolve));
-      await new Promise((resolve) => process.stdout.clearLine(0,resolve));
+      await consoleMoveCursorToPrevLine(1);
       break;
     }
 
     if (attempt === maxAttempt - 1) {
-      await new Promise((resolve) => process.stdout.moveCursor(0, -1, resolve));
-      await new Promise((resolve) => process.stdout.clearLine(0,resolve));
+      await consoleMoveCursorToPrevLine(1);
       console.log(
         chalk.red(`failed: ${response.status} ${response.statusText}`)
       );
     } else {
       console.log(chalk.dim(`  retrying in ${delayAttemptInSecond} seconds...`));
       await new Promise((resolve) => setTimeout(resolve, delayAttemptInSecond * 1000));
-      await new Promise((resolve) => process.stdout.moveCursor(0, -1, resolve));
-      await new Promise((resolve) => process.stdout.clearLine(0,resolve));
-      await new Promise((resolve) => process.stdout.moveCursor(0, -1, resolve));
-      await new Promise((resolve) => process.stdout.clearLine(0,resolve));
+      await consoleMoveCursorToPrevLine(2);
     }
   }
   
