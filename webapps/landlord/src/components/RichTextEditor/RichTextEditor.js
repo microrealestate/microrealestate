@@ -29,7 +29,7 @@ const RichTextEditor = ({
   fields = [],
   showPrintButton,
   placeholder = '',
-  editable = true,
+  editable = true
 }) => {
   const { t } = useTranslation('common');
   const [title, setTitle] = useState(initialTitle || t('Untitled document'));
@@ -39,30 +39,30 @@ const RichTextEditor = ({
     extensions: [
       StarterKit,
       Placeholder.configure({
-        placeholder,
+        placeholder
       }),
       Underline,
       TextAlign.configure({
-        types: ['heading', 'paragraph'],
+        types: ['heading', 'paragraph']
       }),
       Superscript,
       Table.configure({
-        resizable: true,
+        resizable: true
       }),
       TableRow,
       TableHeader,
       TableCell,
       TemplateNode.configure({
         HTMLAttributes: {
-          class: 'template',
-        },
-      }),
+          class: 'template'
+        }
+      })
     ],
     onUpdate({ editor }) {
       setSaving(true);
       triggerSaveContents.start();
       handlePageBreaks(editor);
-    },
+    }
   });
 
   useEffect(() => {

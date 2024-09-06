@@ -1,83 +1,70 @@
-const A4 = {
-  heightMM: 297,
-  widthMM: 209.9,
-};
-
-const PAGE_BREAK_HEIGHT = 40; // px
-
-let INITIALIZED = false;
-let DPI;
+let A4_HEIGHT;
 let WRAPPER_ELEMENT;
 let EDITOR_ELEMENT;
 
 function _init(editor) {
-  DPI = _computeDPI();
-
-  A4.height = (A4.heightMM * DPI.y) / 25.4; // 25.4 inch in mm
-  A4.width = (A4.widthMM * DPI.x) / 25.4;
-
   WRAPPER_ELEMENT = editor.options.element;
+  if (WRAPPER_ELEMENT.getAttribute('class')) {
+    // already initiated
+    return;
+  }
   WRAPPER_ELEMENT.setAttribute('class', 'editor-wrapper');
   EDITOR_ELEMENT = WRAPPER_ELEMENT.getElementsByClassName('ProseMirror')[0];
-
-  // TODO optimized call of _init
-  // INITIALIZED = true;
+  A4_HEIGHT = _getStyleValue(EDITOR_ELEMENT, 'min-height');
 }
 
-function _computeDPI() {
-  const dpi = {};
-  if (window.screen.deviceXDPI != undefined) {
-    dpi.x = window.screen.deviceXDPI;
-    dpi.y = window.screen.deviceYDPI;
-  } else {
-    const tmpNode = document.createElement('div');
-    tmpNode.style.cssText =
-      'width:1in;height:1in;position:absolute;left:0px;top:0px;z-index:99;visibility:hidden';
-    document.body.appendChild(tmpNode);
-    dpi.x = parseInt(tmpNode.offsetWidth);
-    dpi.y = parseInt(tmpNode.offsetHeight);
-    tmpNode.parentNode.removeChild(tmpNode);
-  }
-  return dpi;
+function _getStyleValue(element, style) {
+  // const devicePixelRatio = window.devicePixelRatio || 1;
+  const value = Number(
+    window.getComputedStyle(element).getPropertyValue(style).replace('px', '')
+  );
+  // * devicePixelRatio;
+
+  return value;
 }
 
-const _removeAllPageBreaks = () => {
+function _removeAllPageBreaks() {
   const pageBreakElements = WRAPPER_ELEMENT.querySelectorAll('.page-break');
   pageBreakElements.forEach((pageBreakElement) => pageBreakElement.remove());
-};
+}
 
-export const handlePageBreaks = (editor) => {
-  if (!INITIALIZED) {
-    _init(editor);
-  }
-
-  // get editor height in pixels
-  const editorHeight = Number(
-    window
-      .getComputedStyle(EDITOR_ELEMENT)
-      .getPropertyValue('height')
-      .replace('px', '')
-  );
+export function handlePageBreaks(editor) {
+  _init(editor);
 
   // Remove all page breaks
   _removeAllPageBreaks();
 
-  // Add the page breaks
-  const pageCount = editorHeight / A4.height;
-  for (let i = 1; i <= pageCount; i++) {
-    const pageBreakElement = document.createElement('div');
-    pageBreakElement.setAttribute('class', 'page-break');
-    pageBreakElement.style.top = `${
-      (i * A4.heightMM * DPI.y) / 25.4 - PAGE_BREAK_HEIGHT / 2
-    }px`;
-    WRAPPER_ELEMENT.append(pageBreakElement);
-  }
-};
+  // reset editor min-height to one page to recompute it later
+  EDITOR_ELEMENT.style.minHeight = window
+    .getComputedStyle(document.body)
+    .getPropertyValue('--tiptap-page-height');
 
-export const handlePrint = async (editor) => {
-  if (!INITIALIZED) {
-    _init(editor);
+  const editorHeight = _getStyleValue(EDITOR_ELEMENT, 'height');
+  const editorTopMargin = _getStyleValue(
+    document.body,
+    '--tiptap-page-margin-top'
+  );
+  const pageCount = Math.ceil(editorHeight / A4_HEIGHT);
+  const pageBreakHeight = _getStyleValue(
+    document.body,
+    '--tiptap-page-break-height'
+  );
+
+  // Add the page breaks
+  if (pageCount > 1) {
+    EDITOR_ELEMENT.style.minHeight = `${pageCount * A4_HEIGHT}px`;
+    for (let i = 1; i < pageCount; i++) {
+      const top = i * A4_HEIGHT - pageBreakHeight / 2 + editorTopMargin;
+      const pageBreakElement = document.createElement('div');
+      pageBreakElement.setAttribute('class', 'page-break');
+      pageBreakElement.style.top = `${top}px`;
+      WRAPPER_ELEMENT.append(pageBreakElement);
+    }
   }
+}
+
+export async function handlePrint(editor) {
+  _init(editor);
 
   const clonededitorElement = WRAPPER_ELEMENT.cloneNode(true);
 
@@ -127,8 +114,10 @@ export const handlePrint = async (editor) => {
         }
 
         .ProseMirror {
+          margin-top: 0;
           box-shadow: none;
           background: none;
+          border: none;
         }
 
         .editor-wrapper {
@@ -152,20 +141,18 @@ export const handlePrint = async (editor) => {
   </html>
   `);
 
-  setTimeout(function () {
-    try {
-      iframe.focus();
-      // TODO: support of IE and EDGE
-      // try {
-      //   // IE or Edge
-      //   iframe.contentWindow.document.execCommand('print', false, null);
-      // } catch (e) {
-      iframe.contentWindow.print();
-      // }
-    } catch (error) {
-      console.error(error);
-    } finally {
-      iframe.parentNode.removeChild(iframe);
-    }
-  }, 1000);
-};
+  try {
+    iframe.focus();
+    // TODO: support of IE and EDGE
+    // try {
+    //   // IE or Edge
+    //   iframe.contentWindow.document.execCommand('print', false, null);
+    // } catch (e) {
+    iframe.contentWindow.print();
+    // }
+  } catch (error) {
+    console.error(error);
+  } finally {
+    iframe.parentNode.removeChild(iframe);
+  }
+}
