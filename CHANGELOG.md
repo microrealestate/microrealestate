@@ -30,6 +30,10 @@ All notable changes to this project will be documented here.
 
 - Updated the Docker images to run on Node.js version 20, now as the new minimum requirement for running the application.
 
+- Minimized size of the docker containers.
+
+- Improved A4 page breaks in the rich text editor.
+
 ### Deprecated
 
 - ...
@@ -40,11 +44,19 @@ All notable changes to this project will be documented here.
 
 ### Fixed
 
-- Fixed issue #162 - Cannot save Backblaze settings  
+- Fixed issue #162 - Cannot save Backblaze settings
+
+- Fixed issue #187 - SMTP Authentication
+
+- Fixed issue #190 - Terminate lease dialog error message
 
 ### Security
 
-- ...
+- Updated dependencies to avoid CVEs
+
+- Minimized docker containers using distroless images
+
+- Fixed CWEs
 
 ## Contributors
 
@@ -53,6 +65,8 @@ All notable changes to this project will be documented here.
 - [@zeronounours](https://github.com/zeronounours)
 
 - [@MrTob](https://github.com/MrTob)
+
+- [@gasp](https://github.com/gasp)
 
 
 ## 1.0.0-alpha.1
