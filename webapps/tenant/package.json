@@ -48,7 +48,7 @@
   "devDependencies": {
     "@microrealestate/types": "*",
     "@types/negotiator": "0.6.2",
-    "@types/node": "20.8.8",
+    "@types/node": "22.5.4",
     "@types/react": "18.2.32",
     "@types/react-dom": "18.2.14",
     "@typescript-eslint/eslint-plugin": "7.15.0",

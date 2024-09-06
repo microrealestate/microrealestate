@@ -51,16 +51,17 @@
   },
   "devDependencies": {
     "cross-env": "7.0.3",
-    "eslint-config-prettier": "9.1.0",
-    "eslint-plugin-import": "2.29.1",
-    "eslint-plugin-prettier": "5.0.1",
     "husky": "8.0.3",
     "lint-staged": "15.2.0",
     "prettier": "3.1.1"
   },
   "resolutions": {
     "axios": "^1.7.4",
-    "braces": "^3.0.3"
+    "braces": "^3.0.3",
+    "typescript": "5.5.4"
+  },
+  "engines": {
+    "node": "v20"
   },
   "packageManager": "yarn@3.3.0"
 }

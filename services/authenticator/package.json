@@ -38,8 +38,8 @@
     "eslint-plugin-import": "2.29.1",
     "nodemon": "3.1.4",
     "npm-run-all": "4.1.5",
-    "rimraf": "5.0.7",
-    "typescript": "5.5.3"
+    "rimraf": "6.0.1",
+    "typescript": "5.5.4"
   },
   "dependencies": {
     "@microrealestate/common": "*",
