@@ -1,12 +1,5 @@
 import * as Yup from 'yup';
-import {
-  Box,
-  Button,
-  Collapse,
-  Grid,
-  IconButton,
-  Link
-} from '@material-ui/core';
+import { Card, CardHeader } from '../ui/card';
 import { FieldArray, Form, Formik } from 'formik';
 import {
   forwardRef,
@@ -16,18 +9,18 @@ import {
   useRef,
   useState
 } from 'react';
-import {
-  NumberField,
-  SubmitButton,
-  TextField
-} from '@microrealestate/commonui/components';
 import _ from 'lodash';
+import { Button } from '../ui/button';
+import { CardContent } from '@material-ui/core';
+import { Collapse } from '../ui/collapse';
 import { DateField } from '../formfields/DateField';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import moment from 'moment';
+import { NumberField } from '../formfields/NumberField';
 import { QueryKeys } from '../../utils/restcalls';
 import { SelectField } from '../formfields/SelectField';
 import { StoreContext } from '../../store';
+import { TextAreaField } from '../formfields/TextAreaField';
+import { TextField } from '../formfields/TextField';
 import { toast } from 'sonner';
 import usePaymentTypes from '../../hooks/usePaymentTypes';
 import { useQueryClient } from '@tanstack/react-query';
@@ -81,73 +74,55 @@ function PaymentPartForm({ term, payments }) {
     <FieldArray name="payments">
       {({ form, ...arrayHelpers }) => {
         return payments.map((payment, index) => (
-          <Box
-            key={index}
-            p={2}
-            mb={2}
-            border={1}
-            borderColor="divider"
-            borderRadius="borderRadius"
-          >
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
+          <Card key={index}>
+            <CardHeader className="text-lg px-6 pt-3 pb-0">
+              {t('Settlement #{{count}}', { count: index + 1 })}
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-2 items-center grid-cols-1 md:grid-cols-2 lg:grid-cols-4 mb-2">
                 <DateField
                   label={t('Date')}
                   name={`payments[${index}].date`}
                   minDate={moment(momentTerm).startOf('month')}
                   maxDate={moment(momentTerm).endOf('month')}
                 />
-              </Grid>
-              <Grid item xs={12} sm={6}>
                 <SelectField
                   label={t('Type')}
                   name={`payments[${index}].type`}
                   values={paymentTypes.itemList}
                 />
-              </Grid>
-              {payments[index].type !== 'cash' ? (
-                <Grid item xs={12} sm={6}>
+                {payments[index].type !== 'cash' ? (
                   <TextField
                     label={t('Reference')}
                     name={`payments[${index}].reference`}
                     disabled={payments[index].type === 'cash'}
                   />
-                </Grid>
-              ) : null}
-              <Grid item xs={12} sm={6}>
+                ) : null}
                 <NumberField
-                  label={t('Settlement')}
+                  label={t('Amount')}
                   name={`payments[${index}].amount`}
                 />
-              </Grid>
-            </Grid>
-            <Box
-              display="flex"
-              justifyContent={
-                payments.length === index + 1 ? 'space-between' : 'flex-end'
-              }
-              mt={1}
-            >
+              </div>
               {payments.length === index + 1 && (
                 <Button
-                  color="primary"
-                  size="small"
+                  variant="link"
+                  size="sm"
                   onClick={() => arrayHelpers.push(emptyPayment)}
                 >
-                  {t('New settlement')}
+                  {t('Add a settlement')}
                 </Button>
               )}
               {payments.length > 1 && (
                 <Button
-                  color="primary"
-                  size="small"
+                  variant="link"
+                  size="sm"
                   onClick={() => arrayHelpers.remove(index)}
                 >
                   {t('Remove this settlement')}
                 </Button>
               )}
-            </Box>
-          </Box>
+            </CardContent>
+          </Card>
         ));
       }}
     </FieldArray>
@@ -155,8 +130,14 @@ function PaymentPartForm({ term, payments }) {
 }
 
 function NotePartForm({ description }) {
+  const { t } = useTranslation('common');
+
   return (
-    <TextField name="description" value={description} multiline maxRows={5} />
+    <TextAreaField
+      label={t('Note (visible to tenant)')}
+      name="description"
+      value={description}
+    />
   );
 }
 
@@ -164,44 +145,28 @@ function DiscountPartForm({ promo, notepromo }) {
   const { t } = useTranslation('common');
 
   return (
-    <Grid container spacing={2}>
-      <Grid item xs={12} sm={4}>
-        <NumberField label={t('Amount')} name="promo" value={promo} />
-      </Grid>
-      <Grid item xs={12} sm={8}>
-        <TextField
-          label={t('Description')}
-          name="notepromo"
-          value={notepromo}
-          multiline
-          maxRows={5}
-        />
-      </Grid>
-    </Grid>
+    <div className="space-y-2">
+      <NumberField label={t('Amount')} name="promo" value={promo} />
+      <TextAreaField
+        label={t('Description')}
+        name="notepromo"
+        value={notepromo}
+      />
+    </div>
   );
 }
 
 function AdditionalCostPartForm({ extracharge, noteextracharge }) {
   const { t } = useTranslation('common');
   return (
-    <Grid container spacing={2}>
-      <Grid item xs={12} sm={4}>
-        <NumberField
-          label={t('Amount')}
-          name="extracharge"
-          value={extracharge}
-        />
-      </Grid>
-      <Grid item xs={12} sm={8}>
-        <TextField
-          label={t('Description')}
-          name="noteextracharge"
-          value={noteextracharge}
-          multiline
-          maxRows={5}
-        />
-      </Grid>
-    </Grid>
+    <div className="space-y-2">
+      <NumberField label={t('Amount')} name="extracharge" value={extracharge} />
+      <TextAreaField
+        label={t('Description')}
+        name="noteextracharge"
+        value={noteextracharge}
+      />
+    </div>
   );
 }
 
@@ -317,119 +282,61 @@ function PaymentTabs({ rent, onSubmit }, ref) {
   );
 
   return (
-    <Box width="100%" borderRadius="borderRadius">
-      <Formik
-        innerRef={formRef}
-        initialValues={initialValues}
-        validationSchema={validationSchema}
-        onSubmit={handleSubmit}
-      >
-        {({
-          values: {
-            payments,
-            description,
-            promo,
-            notepromo,
-            extracharge,
-            noteextracharge
-          }
-        }) => {
-          return (
-            <Form autoComplete="off">
+    <Formik
+      innerRef={formRef}
+      initialValues={initialValues}
+      validationSchema={validationSchema}
+      onSubmit={handleSubmit}
+    >
+      {({
+        values: {
+          payments,
+          description,
+          promo,
+          notepromo,
+          extracharge,
+          noteextracharge
+        }
+      }) => {
+        return (
+          <Form autoComplete="off">
+            <div className="space-y-4">
               <PaymentPartForm term={rent.term} payments={payments} />
-
-              <Box
-                px={2}
-                py={expandedNote ? 2 : 0}
-                mb={1}
-                border={1}
-                borderColor="divider"
-                borderRadius="borderRadius"
+              <Collapse
+                title={t('Note')}
+                open={expandedNote}
+                onOpenChange={setExpandedNote}
               >
-                <Box
-                  display="flex"
-                  justifyContent="space-between"
-                  alignItems="center"
-                  onClick={handleChange({ note: true })}
-                >
-                  <Link color="inherit" underline="none" href="#">
-                    {t('Note')}
-                  </Link>
-                  <IconButton size="small">
-                    <ExpandMoreIcon />
-                  </IconButton>
-                </Box>
-                <Collapse in={expandedNote}>
-                  <NotePartForm description={description} />
-                </Collapse>
-              </Box>
-
-              <Box
-                px={2}
-                py={expandedDiscount ? 2 : 0}
-                mb={1}
-                border={1}
-                borderColor="divider"
-                borderRadius="borderRadius"
+                <NotePartForm description={description} />
+              </Collapse>
+              <Collapse
+                title={t('Discount')}
+                open={expandedDiscount}
+                onOpenChange={setExpandedDiscount}
               >
-                <Box
-                  display="flex"
-                  justifyContent="space-between"
-                  alignItems="center"
-                  onClick={handleChange({ discount: true })}
-                >
-                  <Link color="inherit" underline="none" href="#">
-                    {t('Discount')}
-                  </Link>
-                  <IconButton size="small">
-                    <ExpandMoreIcon />
-                  </IconButton>
-                </Box>
-                <Collapse in={expandedDiscount}>
-                  <DiscountPartForm promo={promo} notepromo={notepromo} />
-                </Collapse>
-              </Box>
-
-              <Box
-                px={2}
-                py={expandedAdditionalCost ? 2 : 0}
-                border={1}
-                borderColor="divider"
-                borderRadius="borderRadius"
+                <DiscountPartForm promo={promo} notepromo={notepromo} />
+              </Collapse>
+              <Collapse
+                title={t('Additional cost')}
+                open={expandedAdditionalCost}
+                onOpenChange={setExpandedAdditionalCost}
               >
-                <Box
-                  display="flex"
-                  justifyContent="space-between"
-                  alignItems="center"
-                  onClick={handleChange({ additionalCost: true })}
-                >
-                  <Link color="inherit" underline="none" href="#">
-                    {t('Additional cost')}
-                  </Link>
-                  <IconButton size="small">
-                    <ExpandMoreIcon />
-                  </IconButton>
-                </Box>
-                <Collapse in={expandedAdditionalCost}>
-                  <AdditionalCostPartForm
-                    extracharge={extracharge}
-                    noteextracharge={noteextracharge}
-                  />
-                </Collapse>
-              </Box>
-              {/* 
+                <AdditionalCostPartForm
+                  extracharge={extracharge}
+                  noteextracharge={noteextracharge}
+                />
+              </Collapse>
+            </div>
+
+            {/* 
                 Hack to workaround a formik issue when calling submitForm imperatively: form errors are not shown.
                 Imperativly clicking on the button makes the form behaving properly. 
               */}
-              <SubmitButton
-                ref={submitButtonRef}
-                style={{ visibility: 'hidden' }}
-              />
-            </Form>
-          );
-        }}
-      </Formik>
-    </Box>
+            <Button ref={submitButtonRef} className="hidden" type="submit" />
+          </Form>
+        );
+      }}
+    </Formik>
   );
 }
 

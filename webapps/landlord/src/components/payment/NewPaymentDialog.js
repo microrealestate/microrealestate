@@ -1,3 +1,10 @@
+import {
+  Drawer,
+  DrawerContent,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle
+} from '../ui/drawer';
 import React, {
   useCallback,
   useContext,
@@ -8,7 +15,6 @@ import React, {
 import { Button } from '../ui/button';
 import PaymentTabs from './PaymentTabs';
 import RentSelector from './RentSelector';
-import ResponsiveDialog from '../ResponsiveDialog';
 import { StoreContext } from '../../store';
 import { toast } from 'sonner';
 import useTranslation from 'next-translate/useTranslation';
@@ -63,19 +69,19 @@ export default function NewPaymentDialog({
   }, [handleClose, onClose, selectedRent]);
 
   return (
-    <ResponsiveDialog
-      open={open}
-      setOpen={setOpen}
-      renderHeader={() =>
-        rents?.length > 1 ? t('Pay a rent') : t('Enter a rent settlement')
-      }
-      renderContent={() => (
-        <div>
+    <Drawer open={open} onOpenChange={setOpen}>
+      <DrawerContent className="h-full w-full">
+        <DrawerHeader className="text-lg md:text-xl font-semibold leading-none tracking-tight px-4">
+          <DrawerTitle>
+            {rents?.length > 1 ? t('Pay a rent') : t('Enter a rent settlement')}
+          </DrawerTitle>
+        </DrawerHeader>
+
+        <div className="p-4 overflow-y-auto mx-auto w-full max-w-screen-lg space-y-2">
           <RentSelector
             value={selectedRent}
             rents={rents}
             onChange={handleRentChange}
-            className="mb-2"
           />
           {selectedRent?.term ? (
             <PaymentTabs
@@ -85,20 +91,21 @@ export default function NewPaymentDialog({
             />
           ) : null}
         </div>
-      )}
-      renderFooter={() => (
-        <>
-          <Button variant="outline" onClick={handleClose}>
-            {t('Cancel')}
-          </Button>
-          <Button
-            onClick={handleSave}
-            disabled={!!selectedRent?.occupant === false}
-          >
-            {t('Save')}
-          </Button>
-        </>
-      )}
-    />
+
+        <DrawerFooter className="px-4">
+          <div className="flex flex-col md:flex-row md:justify-end sm:gap-2">
+            <Button variant="outline" onClick={handleClose}>
+              {t('Cancel')}
+            </Button>
+            <Button
+              onClick={handleSave}
+              disabled={!!selectedRent?.occupant === false}
+            >
+              {t('Save')}
+            </Button>
+          </div>
+        </DrawerFooter>
+      </DrawerContent>
+    </Drawer>
   );
 }

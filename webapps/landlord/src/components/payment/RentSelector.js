@@ -44,6 +44,7 @@ function SelectRentItem({ rent, onClick, className }) {
 }
 
 export default function RentSelector({ value, rents, onChange, className }) {
+  const { t } = useTranslation('common');
   const [open, setOpen] = useState(false);
 
   const handleOpen = () => {
@@ -55,13 +56,17 @@ export default function RentSelector({ value, rents, onChange, className }) {
     setOpen(false);
   };
 
-  return (
+  if (!rents?.length) {
+    return null;
+  }
+
+  return rents?.length > 1 ? (
     <Popover modal={true} open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
           variant="outline"
           onClick={handleOpen}
-          className={cn('w-full h-fit', className)}
+          className={cn('w-full h-fit bg-card', className)}
         >
           <SelectRentItem rent={value} className="flex-grow mr-4" />
           <ChevronDownIcon />
@@ -69,28 +74,34 @@ export default function RentSelector({ value, rents, onChange, className }) {
       </PopoverTrigger>
       <PopoverContent
         align="center"
-        className="w-full max-h-72 overflow-y-auto"
+        className="flex flex-col gap-2 h-72 overflow-y-auto w-full"
       >
-        <div className="flex flex-col gap-2">
-          {rents
-            ?.sort(({ occupant: { name: n1 } }, { occupant: { name: n2 } }) => {
-              n1.localeCompare(n2);
-            })
-            .map((rent) => {
-              return (
-                <div
-                  key={rent._id}
-                  className="cursor-pointer hover:bg-accent/90 py-1 px-2"
-                >
-                  <SelectRentItem
-                    rent={rent}
-                    onClick={() => handleChange(rent)}
-                  />
-                </div>
-              );
-            })}
-        </div>
+        {rents
+          ?.sort(({ occupant: { name: n1 } }, { occupant: { name: n2 } }) => {
+            n1.localeCompare(n2);
+          })
+          .map((rent) => {
+            return (
+              <div
+                key={rent._id}
+                className="cursor-pointer hover:bg-accent py-2 px-2 odd:bg-background/25"
+              >
+                <SelectRentItem
+                  rent={rent}
+                  onClick={() => handleChange(rent)}
+                />
+              </div>
+            );
+          })}
       </PopoverContent>
     </Popover>
+  ) : (
+    <Button
+      variant="outline"
+      onClick={handleOpen}
+      className={cn('w-full h-fit bg-card', className)}
+    >
+      <SelectRentItem rent={value} className="flex-grow" />
+    </Button>
   );
 }

@@ -22,9 +22,9 @@ export function getRentAmounts(rent) {
     paymentReferences:
       rent.payments?.map(({ type, reference }) => ({
         type,
-        reference,
+        reference
       })) || [],
-    totalAmount: rent.totalAmount,
+    totalAmount: rent.totalAmount
   };
 }
 
@@ -120,18 +120,12 @@ export default function RentDetails({ rent }) {
       </CardRow>
       <Divider />
       <CardRow pt={1.5}>
-        <Box>
-          <Box pb={1}>{t('Note')}</Box>
-          <Box
-            height={60}
-            whiteSpace="pre"
-            fontSize="caption.fontSize"
-            color="text.secondary"
-            overflow="scroll"
-          >
+        <div className="flex flex-col gap-1">
+          <div>{t('Note')}</div>
+          <div className="h-14 break-words overflow-y-auto">
             {rent.description}
-          </Box>
-        </Box>
+          </div>
+        </div>
       </CardRow>
     </>
   );

@@ -8,9 +8,9 @@ import {
 } from '../ui/select';
 import { useField, useFormikContext } from 'formik';
 import { cn } from '../../utils';
-import { FormControl } from '@material-ui/core';
+import FormField from './FormField';
 
-export function SelectField({ label, values = [], disabled, ...props }) {
+export function SelectField({ values = [], disabled, ...props }) {
   const [field, meta] = useField(props);
   const { isSubmitting } = useFormikContext();
   const hasError = !!(meta.touched && meta.error);
@@ -23,15 +23,7 @@ export function SelectField({ label, values = [], disabled, ...props }) {
   };
 
   return (
-    <FormControl margin="normal" fullWidth>
-      <span
-        className={cn(
-          'text-muted-foreground mb-0.5',
-          hasError ? 'text-destructive' : ''
-        )}
-      >
-        {label}
-      </span>
+    <FormField {...props}>
       <Select
         disabled={disabled || isSubmitting}
         {...overridenField}
@@ -39,7 +31,6 @@ export function SelectField({ label, values = [], disabled, ...props }) {
       >
         <SelectTrigger
           className={cn(
-            'rounded-sm',
             hasError
               ? 'border-destructive border-2 focus:ring-0 focus:ring-offset-0'
               : ''
@@ -62,9 +53,6 @@ export function SelectField({ label, values = [], disabled, ...props }) {
           </SelectGroup>
         </SelectContent>
       </Select>
-      {hasError && (
-        <span className="text-destructive text-xs mt-0.5">{meta.error}</span>
-      )}
-    </FormControl>
+    </FormField>
   );
 }

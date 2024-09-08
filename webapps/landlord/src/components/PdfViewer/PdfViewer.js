@@ -1,4 +1,4 @@
-import { Drawer, DrawerContent, DrawerHeader } from '../ui/drawer';
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '../ui/drawer';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { Viewer, Worker } from '@react-pdf-viewer/core';
 
@@ -46,6 +46,7 @@ export default function PdfViewer({ open, setOpen, pdfDoc }) {
       <Drawer open={open} onOpenChange={setOpen} dismissible={false}>
         <DrawerContent className="w-full h-full p-4">
           <DrawerHeader className="flex items-center px-0">
+            <DrawerTitle className="hidden">{pdfDoc.title}</DrawerTitle>
             <div className="text-base md:text-xl font-semibold">
               {pdfDoc.title}
             </div>

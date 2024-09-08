@@ -2,13 +2,15 @@ import {
   Dialog,
   DialogContent,
   DialogFooter,
-  DialogHeader
+  DialogHeader,
+  DialogTitle
 } from '@/components/ui/dialog';
 import {
   Drawer,
   DrawerContent,
   DrawerFooter,
-  DrawerHeader
+  DrawerHeader,
+  DrawerTitle
 } from '@/components/ui/drawer';
 import Loading from './loading';
 import { useMediaQuery } from 'usehooks-ts';
@@ -64,6 +66,7 @@ export default function ResponsiveDialog({
         >
           {renderHeader ? (
             <DialogHeader className="text-lg font-semibold leading-none tracking-tight px-4">
+              <DialogTitle className="hidden">Dialog</DialogTitle>
               {renderHeader()}
             </DialogHeader>
           ) : null}
@@ -89,6 +92,7 @@ export default function ResponsiveDialog({
       <DrawerContent className={fullScreen ? 'w-full h-full' : 'w-full'}>
         {renderHeader ? (
           <DrawerHeader className="text-lg md:text-xl font-semibold leading-none tracking-tight px-4">
+            <DrawerTitle className="hidden">Dialog</DrawerTitle>
             {renderHeader()}
           </DrawerHeader>
         ) : null}

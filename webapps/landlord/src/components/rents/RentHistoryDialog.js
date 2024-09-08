@@ -7,7 +7,7 @@ import {
   IconButton,
   Typography
 } from '@material-ui/core';
-import { Drawer, DrawerContent, DrawerHeader } from '../ui/drawer';
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '../ui/drawer';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import BoxWithHover from '../../components/BoxWithHover';
 import { Button } from '../ui/button';
@@ -73,7 +73,7 @@ function YearRentList({ tenant, year, onClick }) {
     <Grid container spacing={2}>
       {rents?.map((rent) => {
         return (
-          <Grid item key={rent.term} xs={12} sm={12} md={6} lg={4} xl={2}>
+          <Grid item key={rent.term} xs={12} sm={12} md={6} lg={4} xl={3}>
             <RentListItem
               key={rent.term}
               rent={rent}
@@ -209,6 +209,7 @@ export default function RentHistoryDialog({ open, setOpen, data: tenant }) {
     <Drawer open={open} onOpenChange={setOpen} dismissible={false}>
       <DrawerContent className="w-full h-full p-4">
         <DrawerHeader className="flex justify-between p-0">
+          <DrawerTitle className="hidden">{t('Rent schedule')}</DrawerTitle>
           <span className="text-xl font-semibold">{t('Rent schedule')}</span>
           <Button variant="secondary" onClick={handleClose}>
             {t('Close')}

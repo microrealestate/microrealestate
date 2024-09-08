@@ -1,10 +1,11 @@
 import * as Yup from 'yup';
+import { Card, CardContent } from '../ui/card';
 import { Form, Formik } from 'formik';
 import React, { useContext, useMemo, useRef, useState } from 'react';
 import { Button } from '../ui/button';
 import { DateField } from '../formfields/DateField';
 import moment from 'moment';
-import { NumberField } from '@microrealestate/commonui/components';
+import { NumberField } from '../formfields/NumberField';
 import { QueryKeys } from '../../utils/restcalls';
 import ResponsiveDialog from '../ResponsiveDialog';
 import { SelectField } from '../formfields/SelectField';
@@ -154,23 +155,31 @@ export default function TerminateLeaseDialog({ open, setOpen, tenantList }) {
         >
           {() => {
             return (
-              <Form onChange={handleTenantChange} autoComplete="off">
-                <SelectField
-                  label={t('Tenant')}
-                  name="tenantId"
-                  values={tenants}
-                  disabled={tenants.length <= 1}
-                />
-                <DateField
-                  label={t('Termination date')}
-                  name="terminationDate"
-                  minDate={minMaxDates.minDate}
-                  maxDate={minMaxDates.maxDate}
-                />
-                <NumberField
-                  label={t('Amount of the deposit refund')}
-                  name="guarantyPayback"
-                />
+              <Form
+                onChange={handleTenantChange}
+                autoComplete="off"
+                className="w-full"
+              >
+                <Card>
+                  <CardContent className="pt-6 space-y-4">
+                    <SelectField
+                      label={t('Tenant')}
+                      name="tenantId"
+                      values={tenants}
+                      disabled={tenants.length <= 1}
+                    />
+                    <DateField
+                      label={t('Termination date')}
+                      name="terminationDate"
+                      minDate={minMaxDates.minDate}
+                      maxDate={minMaxDates.maxDate}
+                    />
+                    <NumberField
+                      label={t('Amount of the deposit refund')}
+                      name="guarantyPayback"
+                    />
+                  </CardContent>
+                </Card>
               </Form>
             );
           }}

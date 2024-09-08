@@ -5,7 +5,7 @@ import { Button } from '../ui/button';
 import { Calendar } from '../ui/calendar';
 import { CalendarIcon } from 'lucide-react';
 import { cn } from '../../utils';
-import { FormControl } from '@material-ui/core';
+import FormField from './FormField';
 import moment from 'moment';
 
 export function DateField({ disabled, ...props }) {
@@ -23,21 +23,13 @@ export function DateField({ disabled, ...props }) {
   );
 
   return (
-    <FormControl margin="normal" fullWidth>
-      <span
-        className={cn(
-          'text-muted-foreground mb-0.5',
-          hasError ? 'text-destructive' : ''
-        )}
-      >
-        {props.label}
-      </span>
+    <FormField {...props}>
       <Popover open={open} onOpenChange={setOpen} modal>
         <PopoverTrigger asChild>
           <Button
             variant={'outline'}
             className={cn(
-              'justify-between text-left font-normal px-2',
+              'flex font-normal',
               !field.value && 'text-muted-foreground',
               hasError
                 ? 'border-destructive border-2 rounded-sm focus:ring-0 focus:ring-offset-0'
@@ -45,8 +37,10 @@ export function DateField({ disabled, ...props }) {
             )}
             disabled={disabled || isSubmitting}
           >
-            {field.value ? moment(field.value).format('L') : <div></div>}
-            <CalendarIcon className="mr-2 h-4 w-4" />
+            <div className="flex-grow text-left">
+              {field.value ? moment(field.value).format('L') : ''}
+            </div>
+            <CalendarIcon className="h-4 w-4" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="end">
@@ -70,9 +64,6 @@ export function DateField({ disabled, ...props }) {
           />
         </PopoverContent>
       </Popover>
-      {hasError && (
-        <span className="text-destructive text-xs mt-0.5">{meta.error}</span>
-      )}
-    </FormControl>
+    </FormField>
   );
 }
