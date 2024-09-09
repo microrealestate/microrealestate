@@ -15,12 +15,12 @@ export function Collapse({ title, open, onOpenChange, className, children }) {
         <div className="flex items-center justify-between">
           <CollapsibleTrigger asChild>
             <Button variant="ghost" size="sm" className="flex w-full">
-              <div className="flex-grow text-lg text-left pl-5">{title}</div>
+              <div className="flex-grow text-lg text-left pl-2">{title}</div>
               <ChevronsUpDown className="h-4 w-4" />
             </Button>
           </CollapsibleTrigger>
         </div>
-        <CollapsibleContent className="px-4 pt-2 pb-4">
+        <CollapsibleContent className="px-5 pb-5">
           {children}
         </CollapsibleContent>
       </Collapsible>

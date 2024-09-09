@@ -1,5 +1,5 @@
 import * as Yup from 'yup';
-import { Card, CardHeader } from '../ui/card';
+import { Card, CardContent, CardHeader } from '../ui/card';
 import { FieldArray, Form, Formik } from 'formik';
 import {
   forwardRef,
@@ -11,7 +11,6 @@ import {
 } from 'react';
 import _ from 'lodash';
 import { Button } from '../ui/button';
-import { CardContent } from '@material-ui/core';
 import { Collapse } from '../ui/collapse';
 import { DateField } from '../formfields/DateField';
 import moment from 'moment';
