@@ -70,24 +70,26 @@ async function injectSessionToken(request: NextRequest) {
       const response = await fetch(
         `${GATEWAY_URL}/api/v2/authenticator/tenant/signedin?token=${token}`
       );
-      const data = await response.json();
-      const sessionToken = data.sessionToken;
-      request.nextUrl.pathname = '/dashboard';
-      request.nextUrl.searchParams.delete('token');
-      const nextResponse = NextResponse.redirect(request.nextUrl);
-      nextResponse.cookies.set('sessionToken', sessionToken, {
-        httpOnly: true,
-        sameSite: 'lax',
-        secure: DOMAIN_URL.protocol === 'https:',
-        domain: DOMAIN_URL.hostname
-      });
-      return nextResponse;
+      if (response.status === 200) {
+        const data = await response.json();
+        const sessionToken = data.sessionToken;
+        request.nextUrl.pathname = '/dashboard';
+        request.nextUrl.searchParams.delete('token');
+        const nextResponse = NextResponse.redirect(request.nextUrl);
+        nextResponse.cookies.set('sessionToken', sessionToken, {
+          httpOnly: true,
+          sameSite: 'lax',
+          secure: DOMAIN_URL.protocol === 'https:',
+          domain: DOMAIN_URL.hostname
+        });
+        return nextResponse;
+      }
     } catch (error) {
       console.error(error);
-      request.nextUrl.pathname = '/signin';
-      request.nextUrl.searchParams.delete('token');
-      return NextResponse.redirect(request.nextUrl);
     }
+    request.nextUrl.pathname = '/signin';
+    request.nextUrl.searchParams.delete('token');
+    return NextResponse.redirect(request.nextUrl);
   }
 }
 
@@ -124,7 +126,9 @@ async function redirectSignIn(request: NextRequest) {
         }
       }
     );
-    session = await response.json();
+    if (response.status === 200) {
+      session = await response.json();
+    }
   } catch (error) {
     console.error(error);
   }
