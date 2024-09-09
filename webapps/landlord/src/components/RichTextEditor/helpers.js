@@ -140,19 +140,20 @@ export async function handlePrint(editor) {
     </body>
   </html>
   `);
-
-  try {
-    iframe.focus();
-    // TODO: support of IE and EDGE
-    // try {
-    //   // IE or Edge
-    //   iframe.contentWindow.document.execCommand('print', false, null);
-    // } catch (e) {
-    iframe.contentWindow.print();
-    // }
-  } catch (error) {
-    console.error(error);
-  } finally {
-    iframe.parentNode.removeChild(iframe);
-  }
+  setTimeout(function () {
+    try {
+      iframe.focus();
+      // TODO: support of IE and EDGE
+      // try {
+      //   // IE or Edge
+      //   iframe.contentWindow.document.execCommand('print', false, null);
+      // } catch (e) {
+      iframe.contentWindow.print();
+      // }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      iframe.parentNode.removeChild(iframe);
+    }
+  }, 1000);
 }
