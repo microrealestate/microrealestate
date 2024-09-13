@@ -6,13 +6,15 @@ import {
   ServiceError
 } from '@microrealestate/common';
 import axios from 'axios';
+import { customAlphabet } from 'nanoid';
 import express from 'express';
 import jwt from 'jsonwebtoken';
+
+const nanoid = customAlphabet('0123456789', 6);
 
 export default function () {
   const {
     EMAILER_URL,
-    RESET_TOKEN_SECRET,
     ACCESS_TOKEN_SECRET,
     TOKEN_COOKIE_ATTRIBUTES,
     PRODUCTION
@@ -29,6 +31,12 @@ export default function () {
         throw new ServiceError('missing fields', 422);
       }
 
+      if (email.includes(';') || email.includes('=')) {
+        // ; and = are needed as separators in the redis payload
+        logger.error('email contains unsupported characters');
+        throw new ServiceError('unsupported email', 422);
+      }
+
       const tenants = await Collections.Tenant.find({
         'contacts.email': email
       });
@@ -37,23 +45,27 @@ export default function () {
         return res.sendStatus(204);
       }
 
-      const token = jwt.sign({ email }, RESET_TOKEN_SECRET, {
-        expiresIn: '5m'
-      });
-      await Service.getInstance().redisClient.set(token, email);
+      const otp = nanoid();
+      const now = new Date();
+      const createdAt = now.getTime();
+      const expiresAt = createdAt + 5 * 60 * 1000; // 5m
+      await Service.getInstance().redisClient.set(
+        otp,
+        `createdAt=${createdAt};expiresAt=${expiresAt};email=${email}`
+      );
 
       logger.debug(
-        `create a new magic link token ${token} for email ${email} and domain ${req.hostname}`
+        `create a new OTP ${otp} for email ${email} and domain ${req.hostname}`
       );
 
       // send email
       await axios.post(
-        `${EMAILER_URL}/magiclink`,
+        `${EMAILER_URL}/otp`,
         {
-          templateName: 'magic_link',
+          templateName: 'otp',
           recordId: email,
           params: {
-            token
+            otp
           }
         },
         {
@@ -86,31 +98,41 @@ export default function () {
   tenantRouter.get(
     '/signedin',
     Middlewares.asyncWrapper(async (req, res) => {
-      const { token } = req.query;
-      if (!token) {
-        throw new ServiceError('invalid token', 401);
+      const { otp } = req.query;
+      if (!otp) {
+        throw new ServiceError('invalid otp', 401);
       }
 
-      const email = await Service.getInstance().redisClient.get(token);
-      if (!email) {
+      const rawPayload = await Service.getInstance().redisClient.get(otp);
+      if (!rawPayload) {
         throw new ServiceError(
-          `email not found for token ${token}. Magic link already used`,
+          `email not found for otp ${otp}. Code already used`,
           401
         );
       }
-      await Service.getInstance().redisClient.del(token);
+      await Service.getInstance().redisClient.del(otp);
 
-      try {
-        jwt.verify(token, RESET_TOKEN_SECRET);
-      } catch (error) {
-        throw new ServiceError(error, 401);
+      const payload = rawPayload.split(';').reduce((acc, rawValue) => {
+        const [key, value] = rawValue.split('=');
+        if (key) {
+          acc[key] = value;
+        }
+        return acc;
+      }, {});
+
+      const now = new Date().getTime();
+      const expiresAt = Number(payload.expiresAt) || 0;
+      if (now > expiresAt) {
+        logger.debug(`otp ${otp} has expired`);
+        throw new ServiceError('invalid otp', 401);
       }
 
-      const account = { email, role: 'tenant' };
+      const account = { email: payload.email, role: 'tenant' };
       const sessionToken = jwt.sign({ account }, ACCESS_TOKEN_SECRET, {
         expiresIn: PRODUCTION ? '30m' : '12h'
       });
-      await Service.getInstance().redisClient.set(sessionToken, email);
+      await Service.getInstance().redisClient.set(sessionToken, payload.email);
+      res.cookie('sessionToken', sessionToken, TOKEN_COOKIE_ATTRIBUTES);
       res.json({ sessionToken });
     })
   );

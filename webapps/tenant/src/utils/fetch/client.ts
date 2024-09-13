@@ -19,10 +19,12 @@ export default function useApiFetcher() {
   apiFetcher.interceptors.response.use(
     (response) => response,
     (error) => {
-      // Force signin if an api responded 401 or 403
-      if ([401, 403].includes(error.response?.status)) {
-        window.location.href = `${getEnv('BASE_PATH') || ''}/signin`;
-        throw new axios.Cancel('Operation canceled force login');
+      if (!error.config?.url?.includes('/signedin')) {
+        // Force signin if an api responded 401 or 403
+        if ([401, 403].includes(error.response?.status)) {
+          window.location.href = `${getEnv('BASE_PATH') || ''}/signin`;
+          throw new axios.Cancel('Operation canceled force login');
+        }
       }
       return Promise.reject(error);
     }

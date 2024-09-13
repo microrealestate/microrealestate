@@ -15,8 +15,8 @@ async function _send(req, res) {
     case '/emailer/resetpassword':
       allowedTemplates = ['reset_password'];
       break;
-    case '/emailer/magiclink':
-      allowedTemplates = ['magic_link'];
+    case '/emailer/otp':
+      allowedTemplates = ['otp'];
       break;
     default:
       allowedTemplates = [
@@ -59,7 +59,7 @@ export default function routes() {
   // parse locale
   apiRouter.use(locale(['fr-FR', 'en', 'pt-BR', 'de-DE'], 'en')); // used when organization is not set
   apiRouter.post('/emailer/resetpassword', Middlewares.asyncWrapper(_send)); // allow this route even there is no access token
-  apiRouter.post('/emailer/magiclink', Middlewares.asyncWrapper(_send)); // allow this route even there is no access token
+  apiRouter.post('/emailer/otp', Middlewares.asyncWrapper(_send)); // allow this route even there is no access token
   apiRouter.use(
     Middlewares.needAccessToken(ACCESS_TOKEN_SECRET),
     Middlewares.checkOrganization(),

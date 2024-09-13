@@ -10,22 +10,13 @@ import Negotiator from 'negotiator';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-const DOMAIN_URL = new URL(getServerEnv('DOMAIN_URL') || 'http://localhost');
 const GATEWAY_URL =
   getServerEnv('DOCKER_GATEWAY_URL') ||
   getServerEnv('GATEWAY_URL') ||
   'http://localhost';
 
 export async function middleware(request: NextRequest) {
-  let nextResponse;
-  if (getServerEnv('DEMO_MODE') !== 'true') {
-    nextResponse = await injectSessionToken(request);
-    if (nextResponse) {
-      return nextResponse;
-    }
-  }
-
-  nextResponse = injectLocale(request);
+  let nextResponse = injectLocale(request);
   if (nextResponse) {
     return nextResponse;
   }
@@ -62,37 +53,6 @@ function getRequestLocale(request: NextRequest) {
   return match(languages, LOCALES, DEFAULT_LOCALE) as Locale;
 }
 
-async function injectSessionToken(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-  if (pathname === '/signedin') {
-    try {
-      const token = request.nextUrl.searchParams.get('token');
-      const response = await fetch(
-        `${GATEWAY_URL}/api/v2/authenticator/tenant/signedin?token=${token}`
-      );
-      if (response.status === 200) {
-        const data = await response.json();
-        const sessionToken = data.sessionToken;
-        request.nextUrl.pathname = '/dashboard';
-        request.nextUrl.searchParams.delete('token');
-        const nextResponse = NextResponse.redirect(request.nextUrl);
-        nextResponse.cookies.set('sessionToken', sessionToken, {
-          httpOnly: true,
-          sameSite: 'lax',
-          secure: DOMAIN_URL.protocol === 'https:',
-          domain: DOMAIN_URL.hostname
-        });
-        return nextResponse;
-      }
-    } catch (error) {
-      console.error(error);
-    }
-    request.nextUrl.pathname = '/signin';
-    request.nextUrl.searchParams.delete('token');
-    return NextResponse.redirect(request.nextUrl);
-  }
-}
-
 function injectLocale(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const requestLocale = getRequestLocale(request);
@@ -110,7 +70,11 @@ async function redirectSignIn(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const locale = getLocaleFromPathname(pathname);
 
-  if ([`/${locale}/signin`].includes(pathname)) {
+  if (
+    [`/${locale}/signin`, `/${locale}/otp`].some(
+      (p) => pathname.indexOf(p) !== -1
+    )
+  ) {
     return;
   }
 

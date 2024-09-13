@@ -14,7 +14,7 @@ export async function get(email, params) {
   // data that will be injected in the email content files (ejs files)
   return {
     landlord,
-    token: params.token,
+    otp: params.otp,
     useAppEmailService: true
   };
 }
