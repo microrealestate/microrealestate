@@ -78,8 +78,7 @@ export async function generate(documentId, html, fileName) {
     browser = await puppeteer.launch({
       executablePath: CHROMIUM_BIN || null,
       headless: true,
-      userDataDir: path.join(TEMPORARY_DIRECTORY, 'chromium-data'),
-      args,
+      args
     });
 
     const page = await browser.newPage();
@@ -91,7 +90,7 @@ export async function generate(documentId, html, fileName) {
     fs.writeFileSync(pdf_file, buffer);
     logger.debug(`done ${pdf_file}`);
     await page.close();
-  } catch(error) {
+  } catch (error) {
     logger.error('chromium error', error);
   } finally {
     if (browser) {
