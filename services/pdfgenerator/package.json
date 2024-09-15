@@ -33,6 +33,7 @@
   "license": "MIT",
   "dependencies": {
     "@microrealestate/common": "*",
+    "async-mutex": "0.5.0",
     "aws-sdk": "2.1677.0",
     "ejs": "3.1.10",
     "file-url": "3.0.0",
