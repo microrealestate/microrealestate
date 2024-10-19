@@ -26,13 +26,13 @@ const validationSchema = Yup.object().shape({
   password: Yup.string().required()
 });
 
-export default function SignUp({ pageError }) {
+export default function SignUp() {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const router = useRouter();
 
-  if (pageError) {
-    return <ErrorPage statusCode={pageError.statusCode} />;
+  if (!config.SIGNUP) {
+    return <ErrorPage statusCode={404} />;
   }
 
   const signUp = async ({ firstName, lastName, email, password }) => {
@@ -123,13 +123,4 @@ export default function SignUp({ pageError }) {
       </Card>
     </div>
   );
-}
-
-export async function getServerSideProps() {
-  let props = {};
-  if (!config.SIGNUP) {
-    props = { pageError: { statusCode: 404 } };
-  }
-
-  return { props };
 }
