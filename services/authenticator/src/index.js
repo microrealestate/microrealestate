@@ -10,9 +10,17 @@ async function onStartUp(express) {
 async function Main() {
   let service;
   try {
-    const DOMAIN_URL = new URL(
-      process.env.DOMAIN_URL || 'http://localhost:8083'
-    );
+    let tokenCookieSecure = process.env.APP_PROTOCOL === 'https';
+    let tokenCookieDomain = process.env.APP_DOMAIN || 'localhost';
+
+    // to be removed in next version of the app (deprecated)
+    if (process.env.DOMAIN_URL) {
+      const DOMAIN_URL = new URL(
+        process.env.DOMAIN_URL || 'http://localhost:8083'
+      );
+      tokenCookieSecure = DOMAIN_URL.protocol === 'https:';
+      tokenCookieDomain = DOMAIN_URL.hostname;
+    }
 
     service = Service.getInstance(
       new EnvironmentConfig({
@@ -22,8 +30,8 @@ async function Main() {
         TOKEN_COOKIE_ATTRIBUTES: {
           httpOnly: true,
           sameSite: 'strict',
-          secure: DOMAIN_URL.protocol === 'https:',
-          domain: DOMAIN_URL.hostname
+          secure: tokenCookieSecure,
+          domain: tokenCookieDomain
         }
       })
     );

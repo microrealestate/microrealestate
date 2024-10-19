@@ -36,7 +36,8 @@ async function Main() {
         LANDLORD_BASE_PATH: process.env.LANDLORD_BASE_PATH,
         TENANT_FRONTEND_URL: process.env.TENANT_FRONTEND_URL,
         TENANT_BASE_PATH: process.env.TENANT_BASE_PATH,
-        DOMAIN_URL: process.env.DOMAIN_URL || 'http://localhost',
+        DOMAIN_URL: process.env.DOMAIN_URL || 'http://localhost', // deprecated
+        APP_DOMAIN: process.env.APP_DOMAIN,
         CORS_ENABLED: process.env.CORS_ENABLED === 'true',
         TENANTAPI_URL: process.env.TENANTAPI_URL
       })
@@ -56,8 +57,11 @@ async function Main() {
 
 function configureCORS(application: Express.Application) {
   const config = Service.getInstance().envConfig.getValues();
-  if (config.CORS_ENABLED && config.DOMAIN_URL) {
-    const { domain } = URLUtils.destructUrl(config.DOMAIN_URL);
+  if (config.CORS_ENABLED && (config.DOMAIN_URL || config.APP_DOMAIN)) {
+    let domain = config.APP_DOMAIN;
+    if (config.DOMAIN_URL) {
+      domain = URLUtils.destructUrl(config.DOMAIN_URL).domain;
+    }
     const corsOptions = {
       origin: new RegExp(`^https?://(.*\\.)?${domain}$`),
       methods: 'GET,POST,PUT,PATCH,DELETE',

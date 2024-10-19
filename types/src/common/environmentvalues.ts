@@ -20,7 +20,9 @@ export type EnvironmentValues = {
   LANDLORD_BASE_PATH?: string;
   TENANT_FRONTEND_URL?: string;
   TENANT_BASE_PATH?: string;
-  DOMAIN_URL?: string;
+  DOMAIN_URL?: string; // deprecated use APP_DOMAIN + APP_PROTOCOL instead
+  APP_DOMAIN?: string;
+  APP_PROTOCOL?: string;
   CORS_ENABLED?: boolean;
   TENANTAPI_URL?: string;
   EMAILER_URL?: string;

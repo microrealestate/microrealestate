@@ -10,7 +10,7 @@ import type { ReactNode } from 'react';
 import { Roboto } from 'next/font/google';
 import { Toaster } from '@/components/ui/toaster';
 
-const APP_NAME = process.env.APP_NAME;
+const APP_NAME = process.env.APP_NAME || 'MicroRealEstate';
 const APP_TITLE = APP_NAME ? [APP_NAME, 'Tenant'] : ['Tenant'];
 if (process.env.NODE_ENV === 'development') {
   APP_TITLE.push('DEV');
@@ -46,14 +46,13 @@ export default async function RootLayout({
         <link rel="icon" href={`${process.env.BASE_PATH}/favicon.svg`} />
         <EnvScript
           env={{
-            NEXT_PUBLIC_APP_NAME: process.env.APP_NAME,
+            NEXT_PUBLIC_APP_NAME: process.env.APP_NAME || 'MicroRealEstate',
             NEXT_PUBLIC_BASE_PATH: process.env.BASE_PATH,
             NEXT_PUBLIC_CORS_ENABLED: process.env.CORS_ENABLED,
             NEXT_PUBLIC_DEMO_MODE: process.env.DEMO_MODE,
             DOCKER_GATEWAY_URL: process.env.DOCKER_GATEWAY_URL,
             NEXT_PUBLIC_GATEWAY_URL: process.env.GATEWAY_URL,
-            NEXT_PUBLIC_DOMAIN_URL: process.env.DOMAIN_URL,
-            NEXT_PUBLIC_NODE_ENV: process.env.NODE_ENV,
+            NEXT_PUBLIC_NODE_ENV: process.env.NODE_ENV
           }}
         />
       </head>

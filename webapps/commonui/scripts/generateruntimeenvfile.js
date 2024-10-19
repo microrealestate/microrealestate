@@ -11,13 +11,13 @@ createRuntimeEnvFile();
  */
 function createRuntimeEnvFile() {
   const browserEnvVars = {
-    NEXT_PUBLIC_APP_NAME: process.env.APP_NAME,
+    NEXT_PUBLIC_APP_NAME: process.env.APP_NAME || 'MicroRealEstate',
     NEXT_PUBLIC_NODE_ENV: process.env.NODE_ENV,
     NEXT_PUBLIC_CORS_ENABLED: process.env.CORS_ENABLED,
     NEXT_PUBLIC_SIGNUP: process.env.SIGNUP,
     NEXT_PUBLIC_GATEWAY_URL: process.env.GATEWAY_URL,
     NEXT_PUBLIC_BASE_PATH: process.env.BASE_PATH,
-    NEXT_PUBLIC_DEMO_MODE: process.env.DEMO_MODE,
+    NEXT_PUBLIC_DEMO_MODE: process.env.DEMO_MODE
   };
 
   let workingDir = process.cwd();
@@ -27,7 +27,7 @@ function createRuntimeEnvFile() {
   if (pathIndex !== -1 && pathIndex + 1 < args.length) {
     workingDir = args[pathIndex + 1];
   }
-  
+
   // write environment variables to file
   fs.writeFileSync(
     path.join(workingDir, 'public', '__ENV.js'),
