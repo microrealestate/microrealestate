@@ -18,7 +18,7 @@ const {
   dumpDB,
   askBackupFile,
   displayConfigWarningsAndErrors,
-  ci,
+  ci
 } = require('./commands');
 const { loadEnv } = require('./utils');
 
@@ -47,7 +47,7 @@ function getArgs() {
       'showconfig',
       'configure',
       'restoredb',
-      'dumpdb',
+      'dumpdb'
     ].includes(command)
   ) {
     displayHelp();
@@ -57,7 +57,7 @@ function getArgs() {
   return {
     command,
     helpArg,
-    serviceArg,
+    serviceArg
   };
 }
 
@@ -103,6 +103,10 @@ async function main() {
 
   displayHeader();
 
+  if (command === 'build') {
+    return await build({ service: serviceArg });
+  }
+
   let envConfig;
   if (fs.existsSync(path.resolve(process.cwd(), '.env'))) {
     envConfig = migrateEnvConfig(
@@ -123,9 +127,6 @@ async function main() {
 
   try {
     switch (command) {
-      case 'build':
-        await build({ service: serviceArg });
-        break;
       case 'start':
         await start();
         break;
