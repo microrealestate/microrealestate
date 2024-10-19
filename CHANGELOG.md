@@ -6,6 +6,37 @@ All notable changes to this project will be documented here.
 
 ### Added
 
+- ...
+
+### Changed
+
+- ...
+
+### Deprecated
+
+- ...
+
+### Removed
+
+- ...
+
+### Fixed
+
+- ...
+
+### Security
+
+- ...
+
+### Contributors
+
+- [@camelaissani](https://github.com/camelaissani)
+
+
+## 1.0.0-alpha.2
+
+### Added
+
 - Added new environment variable `MRE_VERSION` used by the `mre` command to run a specific version of the application.
 
 - Added the `ci` option to the `mre` command to run it in the github CI workflow.
@@ -34,10 +65,6 @@ All notable changes to this project will be documented here.
 
 - Improved A4 page breaks in the rich text editor.
 
-### Deprecated
-
-- ...
-
 ### Removed
 
 - Omitted `mre`, `mre-macos`, and `mre.exe` from the repository, as they are now available for download in the release.
@@ -58,7 +85,7 @@ All notable changes to this project will be documented here.
 
 - Fixed CWEs
 
-## Contributors
+### Contributors
 
 - [@camelaissani](https://github.com/camelaissani)
 
@@ -91,7 +118,7 @@ All notable changes to this project will be documented here.
 
 - Forgot password email is now sent using the email delivery service configured in the .env file and not the one from the landlord app settings.
 
-## Contributors
+### Contributors
 
 - [@zeronounours](https://github.com/zeronounours)
 
