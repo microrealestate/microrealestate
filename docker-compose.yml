@@ -1,0 +1,298 @@
+services:
+  ###############################################################################
+  # Redis
+  ###############################################################################
+  redis:
+    image: redis:7.4-bookworm
+    environment:
+      REDIS_PORT: 6379
+    expose:
+      - '6379'
+    volumes:
+      - ./data/redis:/data
+    command: [
+        'bash',
+        '-c',
+        'docker-entrypoint.sh --requirepass ${REDIS_PASSWORD:-redis_password} --loglevel warning'
+      ] # Change password in production
+    networks:
+      - net
+  ###############################################################################
+  # Mongo
+  ###############################################################################
+  mongo:
+    image: mongo:7
+    environment:
+      MONGO_PORT: 27017
+    command: --quiet --logpath /dev/null
+    expose:
+      - '27017'
+    volumes:
+      - ./data/mongodb:/data/db
+      - ./backup:/backup
+    networks:
+      - net
+  ###############################################################################
+  # Caddy
+  ###############################################################################
+  caddy:
+    image: caddy:latest
+    profiles:
+      - ''
+    command: caddy reverse-proxy --from $APP_DOMAIN --to gateway:8080
+    ports:
+      - 80:80
+      - 443:443
+    environment:
+      - APP_DOMAIN=$APP_DOMAIN
+    networks:
+      - net
+  ###############################################################################
+  # Gateway
+  ###############################################################################
+  gateway:
+    restart: unless-stopped
+    image: 'ghcr.io/microrealestate/microrealestate/gateway:${MRE_VERSION:-latest}'
+    environment:
+      NODE_ENV: production
+      LOGGER_LEVEL: info
+      PORT: 8080
+      EXPOSE_FRONTENDS: 'true'
+      AUTHENTICATOR_URL: http://authenticator:8000
+      API_URL: http://api:8200/api/v2
+      PDFGENERATOR_URL: http://pdfgenerator:8300/pdfgenerator
+      EMAILER_URL: http://emailer:8400/emailer
+      LANDLORD_FRONTEND_URL: http://landlord-frontend:8180
+      LANDLORD_BASE_PATH: /landlord
+      TENANT_FRONTEND_URL: http://tenant-frontend:8190
+      TENANT_BASE_PATH: /tenant
+      APP_DOMAIN: ${APP_DOMAIN:-localhost}
+      CORS_ENABLED: 'true'
+      TENANTAPI_URL: http://tenantapi:8250/tenantapi
+    ports:
+      - '8080:8080'
+    # healthcheck:
+    #   test:
+    #     [
+    #       'CMD-SHELL',
+    #       'wget --no-verbose --tries=1 --spider ${APP_PROTOCOL:-http}://${APP_DOMAIN:-localhost:8080}/health/noUI || exit 1'
+    #     ]
+    #   interval: 1s
+    #   timeout: 2s
+    #   retries: 20
+    #   start_period: 15s
+    networks:
+      - net
+    depends_on:
+      authenticator:
+        condition: service_started
+      api:
+        condition: service_started
+      tenantapi:
+        condition: service_started
+      pdfgenerator:
+        condition: service_started
+      emailer:
+        condition: service_started
+  ###############################################################################
+  # Authenticator
+  ###############################################################################
+  authenticator:
+    restart: unless-stopped
+    image: 'ghcr.io/microrealestate/microrealestate/authenticator:${MRE_VERSION:-latest}'
+    environment:
+      NODE_ENV: production
+      PORT: 8000
+      LOGGER_LEVEL: info
+      REDIS_URL: redis://redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-redis_password} # Change password in production
+      ACCESS_TOKEN_SECRET: ${ACCESS_TOKEN_SECRET:-access_token_secret} # Change secret in production
+      REFRESH_TOKEN_SECRET: ${REFRESH_TOKEN_SECRET:-refresh_token_secret} # Change secret in production
+      RESET_TOKEN_SECRET: ${RESET_TOKEN_SECRET:-reset_token_secret} # Change secret in production
+      APPCREDZ_TOKEN_SECRET: ${APPCREDZ_TOKEN_SECRET:-appcredz_token_secret} # Change secret in production
+      MONGO_URL: mongodb://mongo/mredb
+      EMAILER_URL: http://emailer:8400/emailer
+      SIGNUP: 'true'
+      APP_DOMAIN: ${APP_DOMAIN:-localhost}
+      APP_PROTOCOL: ${APP_PROTOCOL:-http}
+    expose:
+      - '8000'
+    networks:
+      - net
+    depends_on:
+      redis:
+        condition: service_started
+      mongo:
+        condition: service_started
+      emailer:
+        condition: service_started
+  ###############################################################################
+  # PDFGenerator
+  ###############################################################################
+  pdfgenerator:
+    restart: unless-stopped
+    image: 'ghcr.io/microrealestate/microrealestate/pdfgenerator:${MRE_VERSION:-latest}'
+    environment:
+      NODE_ENV: production
+      PORT: 8300
+      LOGGER_LEVEL: info
+      MONGO_URL: mongodb://mongo/mredb
+      ACCESS_TOKEN_SECRET: ${ACCESS_TOKEN_SECRET:-access_token_secret} # Change secret in production
+      CIPHER_KEY: ${CIPHER_KEY:-cipher_key} # Change key in production
+      CIPHER_IV_KEY: ${CIPHER_IV_KEY:-cipher_iv_key} # Change key in production
+      UPLOAD_MAX_SIZE: 2000000000 # ~2Gb
+    expose:
+      - '8300'
+    networks:
+      - net
+    depends_on:
+      mongo:
+        condition: service_started
+  ###############################################################################
+  # Emailer
+  ###############################################################################
+  emailer:
+    restart: unless-stopped
+    image: 'ghcr.io/microrealestate/microrealestate/emailer:${MRE_VERSION:-latest}'
+    environment:
+      NODE_ENV: production
+      ALLOW_SENDING_EMAILS: 'true'
+      PORT: 8400
+      LOGGER_LEVEL: info
+      LANDLORD_APP_URL: ${APP_PROTOCOL:-http}://${APP_DOMAIN:-localhost:8080}/landlord
+      TENANT_APP_URL: ${APP_PROTOCOL:-http}://${APP_DOMAIN:-localhost:8080}/tenant
+      MONGO_URL: mongodb://mongo/mredb
+      ACCESS_TOKEN_SECRET: ${ACCESS_TOKEN_SECRET:-access_token_secret} # Change secret in production
+      CIPHER_KEY: ${CIPHER_KEY:-cipher_key} # Change key in production
+      CIPHER_IV_KEY: ${CIPHER_IV_KEY:-cipher_iv_key} # Change key in production
+      PDFGENERATOR_URL: http://pdfgenerator:8300/pdfgenerator
+      #########################################
+      # Email service configuration
+      # needed to reset landlord password
+      # needed to sign tenant in
+      #########################################
+      GMAIL_EMAIL: $GMAIL_EMAIL
+      GMAIL_APP_PASSWORD: $GMAIL_APP_PASSWORD
+      #########################################
+      # OR
+      #########################################
+      MAILGUN_API_KEY: $MAILGUN_API_KEY
+      MAILGUN_DOMAIN: $MAILGUN_DOMAIN
+      #########################################
+      # OR
+      #########################################
+      SMTP_SERVER: $SMTP_SERVER
+      SMTP_PORT: $SMTP_PORT
+      SMTP_SECURE: $SMTP_SECURE
+      SMTP_USERNAME: $SMTP_USERNAME
+      SMTP_PASSWORD: $SMTP_PASSWORD
+      #########################################
+      EMAIL_FROM: $EMAIL_FROM
+      EMAIL_REPLY_TO: $EMAIL_REPLY_TO
+      EMAIL_BCC: $EMAIL_BCC
+      #########################################
+    expose:
+      - '8400'
+    networks:
+      - net
+    depends_on:
+      mongo:
+        condition: service_started
+      pdfgenerator:
+        condition: service_started
+  ###############################################################################
+  # api
+  ###############################################################################
+  api:
+    restart: unless-stopped
+    image: 'ghcr.io/microrealestate/microrealestate/api:${MRE_VERSION:-latest}'
+    volumes:
+      - ./backup:/usr/app/backup
+    environment:
+      NODE_ENV: production
+      PORT: 8200
+      LOGGER_LEVEL: info
+      MONGO_URL: mongodb://mongo/mredb
+      EMAILER_URL: http://emailer:8400/emailer
+      PDFGENERATOR_URL: http://pdfgenerator:8300/pdfgenerator
+      RESTORE_DB: 'false'
+      ACCESS_TOKEN_SECRET: ${ACCESS_TOKEN_SECRET:-access_token_secret} # Change secret in production
+      CIPHER_KEY: ${CIPHER_KEY:-cipher_key} # Change key in production
+      CIPHER_IV_KEY: ${CIPHER_IV_KEY:-cipher_iv_key} # Change key in production
+    expose:
+      - '8200'
+    networks:
+      - net
+    depends_on:
+      mongo:
+        condition: service_started
+      emailer:
+        condition: service_started
+      pdfgenerator:
+        condition: service_started
+  ###############################################################################
+  # tenant api
+  ###############################################################################
+  tenantapi:
+    restart: unless-stopped
+    image: 'ghcr.io/microrealestate/microrealestate/tenantapi:${MRE_VERSION:-latest}'
+    environment:
+      NODE_ENV: production
+      PORT: 8250
+      LOGGER_LEVEL: info
+      MONGO_URL: mongodb://mongo/mredb
+      ACCESS_TOKEN_SECRET: ${ACCESS_TOKEN_SECRET:-access_token_secret} # Change secret in production
+    expose:
+      - '8250'
+    networks:
+      - net
+    depends_on:
+      mongo:
+        condition: service_started
+  ###############################################################################
+  # Landlord frontend
+  ###############################################################################
+  landlord-frontend:
+    restart: unless-stopped
+    image: 'ghcr.io/microrealestate/microrealestate/landlord-frontend:${MRE_VERSION:-latest}'
+    environment:
+      BASE_PATH: /landlord
+      PORT: 8180
+      DOCKER_GATEWAY_URL: http://gateway:8080
+      CORS_ENABLED: 'true'
+      GATEWAY_URL: ${APP_PROTOCOL:-http}://${APP_DOMAIN:-localhost:8080}
+      NODE_ENV: production
+      SIGNUP: 'true'
+    expose:
+      - '8180'
+    networks:
+      - net
+    depends_on:
+      gateway:
+        condition: service_started
+  ###############################################################################
+  # Tenant frontend
+  ###############################################################################
+  tenant-frontend:
+    restart: unless-stopped
+    image: 'ghcr.io/microrealestate/microrealestate/tenant-frontend:${MRE_VERSION:-latest}'
+    environment:
+      BASE_PATH: /tenant
+      PORT: 8190
+      DOCKER_GATEWAY_URL: http://gateway:8080
+      CORS_ENABLED: 'true'
+      GATEWAY_URL: ${APP_PROTOCOL:-http}://${APP_DOMAIN:-localhost:8080}
+      NODE_ENV: production
+    expose:
+      - '8190'
+    networks:
+      - net
+    depends_on:
+      gateway:
+        condition: service_started
+###############################################################################
+# microservices network
+###############################################################################
+networks:
+  net:
+    driver: bridge
