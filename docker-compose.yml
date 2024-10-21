@@ -11,7 +11,7 @@ services:
     volumes:
       - ./data/redis:/data
     command: [
-        'bash',
+        'sh',
         '-c',
         'docker-entrypoint.sh --requirepass ${REDIS_PASSWORD:-redis_password} --loglevel warning'
       ] # Change password in production
