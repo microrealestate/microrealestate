@@ -91,7 +91,7 @@ To run the application in development mode, follow the steps outlined in the doc
 ## Donate
 
 Thank you for your interest in supporting MicroRealEstate.
-Every contribution will help us pay our ongoing maintenance and development costs :praying_hand:
+Every contribution will help us pay our ongoing maintenance and development costs 🙏
 
 [![Donate](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub)](https://github.com/sponsors/camelaissani)
 
