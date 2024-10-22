@@ -33,13 +33,13 @@ services:
     networks:
       - net
   ###############################################################################
-  # Caddy
+  # Reverse Proxy
   ###############################################################################
-  caddy:
+  reverse-proxy:
     image: caddy:latest
     profiles:
       - ''
-    command: caddy reverse-proxy --from $APP_DOMAIN --to gateway:8080
+    command: caddy reverse-proxy --from ${APP_PROTOCOL:-http}://$APP_DOMAIN --to gateway:8080
     ports:
       - 80:80
       - 443:443
