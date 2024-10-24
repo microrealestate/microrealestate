@@ -53,7 +53,7 @@ export default function TenantListItem({ tenant }) {
   }, [tenant.beginDate, tenant.endDate, tenant.terminationDate]);
 
   return (
-    <Card onClick={handleClick} className="cursor-pointer hover:bg-accent/90">
+    <Card onClick={handleClick} className="cursor-pointer hover:bg-primary/10">
       <CardHeader>
         <CardTitle className="flex flex-col justify-start">
           <Badge

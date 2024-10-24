@@ -1,6 +1,5 @@
 import { Dialog } from '@material-ui/core';
 import dynamic from 'next/dynamic';
-import { grayColor } from '../../styles/styles';
 import { useCallback } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 
@@ -8,9 +7,9 @@ const RichTextEditor = dynamic(import('./RichTextEditor'), {
   ssr: false
 });
 
-const StyledDialog = withStyles(() => ({
+const StyledDialog = withStyles((theme) => ({
   paperFullScreen: {
-    backgroundColor: grayColor[10],
+    backgroundColor: theme.palette.background.default,
     overflow: 'hidden'
   }
 }))(Dialog);

@@ -9,7 +9,6 @@ import {
 } from '@material-ui/core';
 import { getRentAmounts, RentAmount } from './RentDetails';
 import { memo, useCallback, useContext, useMemo, useState } from 'react';
-import BoxWithHover from '../../components/BoxWithHover';
 import { downloadDocument } from '../../utils/fetch';
 import EditIcon from '@material-ui/icons/Edit';
 import { EmptyIllustration } from '../Illustrations';
@@ -53,7 +52,7 @@ const Reminder = memo(function Reminder({ rent, ...boxProps }) {
     label = t('Last notice sent on {{date}}', {
       date: sentDate.format('L LT')
     });
-    color = 'warning.dark';
+    color = 'warning.main';
     documentName = `${rent.occupant.name}-${t('last notice')}.pdf`;
     endpoint = `/documents/rentcall_last_reminder/${rent.occupant._id}/${rent.term}`;
   }
@@ -61,7 +60,7 @@ const Reminder = memo(function Reminder({ rent, ...boxProps }) {
   if (rent.emailStatus?.last?.invoice) {
     sentDate = moment(rent.emailStatus.last.invoice.sentDate);
     label = t('Invoice sent on {{date}}', { date: sentDate.format('L LT') });
-    color = 'success.dark';
+    color = 'success.main';
     documentName = `${rent.occupant.name}-${t('invoice')}.pdf`;
     endpoint = `/documents/invoice/${rent.occupant._id}/${rent.term}`;
   }
@@ -161,7 +160,7 @@ const RentRow = memo(function RentRow({
                   color={
                     rentAmounts.totalAmount <= 0
                       ? 'text.secondary'
-                      : 'warning.dark'
+                      : 'warning.main'
                   }
                 />
               </Grid>
@@ -247,7 +246,7 @@ const MobileRentRow = memo(function MobileRentRow({
             amount={rentAmounts.totalAmount}
             fontWeight={rentAmounts.totalAmount > 0 ? 'fontWeightBold' : ''}
             color={
-              rentAmounts.totalAmount <= 0 ? 'text.secondary' : 'warning.dark'
+              rentAmounts.totalAmount <= 0 ? 'text.secondary' : 'warning.main'
             }
           />
         </Box>
@@ -375,7 +374,10 @@ function RentTable({ rents = [], selected, setSelected }) {
               .map((r) => r._id)
               .includes(rent._id);
             return (
-              <BoxWithHover key={`${rent._id}_${rent.term}`}>
+              <div
+                key={`${rent._id}_${rent.term}`}
+                className="cursor-pointer hover:bg-primary/10"
+              >
                 <Hidden smDown>
                   <RentRow
                     rent={rent}
@@ -394,7 +396,7 @@ function RentTable({ rents = [], selected, setSelected }) {
                     onHistory={handleHistory}
                   />
                 </Hidden>
-              </BoxWithHover>
+              </div>
             );
           })}
         </>

@@ -46,7 +46,7 @@ export default function ToggleMenu({
           {options.map((option) => (
             <li
               key={option.id}
-              className="p-2 hover:bg-accent/90 hover:cursor-pointer"
+              className="p-2 hover:bg-primary/10 hover:cursor-pointer"
               onClick={handleMenuItemClick(option)}
             >
               <Checkbox

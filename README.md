@@ -66,7 +66,7 @@ Start the application under a custom ip:
 ``` shell
 sudo docker APP_DOMAIN=x.x.x.x compose up
 ```
-**x.x.x.x** is the ip address of the server.
+x.x.x.x is the ip address of the server.
 
 The application will be available on http://x.x.x.x/landlord and http://x.x.x.x/tenant.
 

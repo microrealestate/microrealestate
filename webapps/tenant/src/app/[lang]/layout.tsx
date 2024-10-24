@@ -41,7 +41,7 @@ export default async function RootLayout({
   noStore(); // Opt into dynamic rendering
 
   return (
-    <html lang={lang} translate="no">
+    <html lang={lang} translate="no" className="overscroll-none">
       <head>
         <link rel="icon" href={`${process.env.BASE_PATH}/favicon.svg`} />
         <EnvScript

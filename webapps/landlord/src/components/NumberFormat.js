@@ -4,13 +4,13 @@ import { withStyles } from '@material-ui/core/styles';
 
 const PositiveNumber = withStyles((theme) => ({
   root: {
-    color: theme.palette.success.dark
+    color: theme.palette.success.main
   }
 }))(Box);
 
 const NegativeNumber = withStyles((theme) => ({
   root: {
-    color: theme.palette.warning.dark
+    color: theme.palette.warning.main
   }
 }))(Box);
 

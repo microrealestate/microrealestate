@@ -1,88 +1,81 @@
-import {
-  grayColor,
-  hexToRgb,
-  primaryColor,
-  successColor,
-  warningColor,
-  whiteColor,
-} from './styles';
-
 import { createTheme } from '@material-ui/core/styles';
+
+const backgroundColor = '#f3f7fd';
+const whiteColor = '#FFFFFF';
+const primaryColor = '#2563eb';
+const successColor = '#16a34a';
+const warningColor = '#f97316';
+const defaultColor = '#020817';
 
 // Create a theme instance.
 const theme = createTheme({
   palette: {
     primary: {
-      light: primaryColor[0],
-      main: primaryColor[1],
-      dark: primaryColor[2],
-      contrastText: whiteColor,
+      main: primaryColor,
+      contrastText: whiteColor
     },
     success: {
-      light: successColor[0],
-      main: successColor[1],
-      dark: successColor[2],
-      contrastText: whiteColor,
+      main: successColor,
+      contrastText: whiteColor
     },
     warning: {
-      light: warningColor[0],
-      main: warningColor[1],
-      dark: warningColor[2],
-      contrastText: whiteColor,
+      main: warningColor,
+      contrastText: whiteColor
     },
     background: {
       paper: whiteColor,
-      default: grayColor[10],
-    },
+      default: backgroundColor
+    }
   },
   overrides: {
+    MuiAppBar: {
+      colorPrimary: {
+        color: defaultColor,
+        backgroundColor: whiteColor
+      }
+    },
     MuiInputAdornment: {
       root: {
-        color: grayColor[7],
-      },
+        color: defaultColor
+      }
     },
     MuiButton: {
       root: {
-        color: grayColor[7],
+        color: defaultColor
       },
       containedPrimary: {
         color: whiteColor,
         '&.Mui-selected': {
-          backgroundColor: '#7a1e89',
-        },
-      },
+          backgroundColor: primaryColor
+        }
+      }
+    },
+    MuiCheckbox: {
+      root: {
+        color: defaultColor,
+        '&.Mui-checked': {
+          color: primaryColor
+        }
+      }
     },
     MuiInput: {
       root: {
-        color: grayColor[7],
-      },
-    },
-    MuiAppBar: {
-      colorPrimary: {
-        color: grayColor[2],
-        backgroundColor: whiteColor,
-      },
-    },
-    MuiDrawer: {
-      paper: {
-        overflowX: 'hidden',
-      },
+        color: defaultColor
+      }
     },
     MuiStepIcon: {
       root: {
         '&$completed': {
-          color: successColor[1],
-        },
-      },
+          color: successColor
+        }
+      }
     },
-    MuiTableRow: {
-      root: {
-        '&$selected, &$selected$hover': {
-          backgroundColor: 'rgba(' + hexToRgb(primaryColor[0]) + ', 0.2)',
-        },
-      },
-    },
-  },
+    MuiTabs: {
+      indicator: {
+        backgroundColor: primaryColor
+      }
+    }
+  }
 });
 
 export default theme;

@@ -1,13 +1,13 @@
 import * as Yup from 'yup';
-import { Card, CardContent, CardFooter } from '../components/ui/card';
 import { Form, Formik } from 'formik';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
-import { SubmitButton, TextField } from '@microrealestate/commonui/components';
 import config from '../config';
 import Link from '../components/Link';
-import LocationCityIcon from '@material-ui/icons/LocationCity';
 import { setOrganizationId } from '../utils/fetch';
+import SignInUpLayout from '../components/SignInUpLayout';
 import { StoreContext } from '../store';
+import { SubmitButton } from '@microrealestate/commonui/components';
+import { TextField } from '../components/formfields/TextField';
 import { toast } from 'sonner';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
@@ -88,60 +88,54 @@ export default function SignIn() {
   }
 
   return (
-    <div className="mt-10 mx-4 sm:container sm:w-[36rem]">
-      <div className="flex flex-col items-center mb-10">
-        <LocationCityIcon />
-        <span className="text-2xl">{config.APP_NAME}</span>
-        <span className="text-secondary-foreground">{t('for landlords')}</span>
-      </div>
-      <Card>
-        <Formik
-          enableReinitialize={true}
-          initialValues={initialValues}
-          validationSchema={validationSchema}
-          onSubmit={signIn}
-        >
-          {({ isSubmitting }) => {
-            return (
-              <Form>
-                <CardContent className="pt-6">
-                  <TextField label={t('Email Address')} name="email" />
-                  <TextField
-                    label={t('Password')}
-                    name="password"
-                    type="password"
-                    autoComplete="current-password"
-                  />
-                  {!config.DEMO_MODE && (
+    <SignInUpLayout>
+      <Formik
+        enableReinitialize={true}
+        initialValues={initialValues}
+        validationSchema={validationSchema}
+        onSubmit={signIn}
+      >
+        {({ isSubmitting }) => {
+          return (
+            <div className="p-5 md:p-0 md:max-w-md w-full">
+              <Form className="space-y-10">
+                <div className="text-2xl text-center md:text-left md:text-4xl font-medium text-secondary-foreground">
+                  {t('Sign in to your account')}
+                </div>
+                <TextField label={t('Email Address')} name="email" />
+                <TextField
+                  label={t('Password')}
+                  name="password"
+                  type="password"
+                  autoComplete="current-password"
+                />
+                {!config.DEMO_MODE && (
+                  <div className="text-right">
                     <Link href="/forgotpassword" data-cy="forgotpassword">
                       {t('Forgot password?')}
                     </Link>
-                  )}
-                </CardContent>
-                <CardFooter>
-                  <SubmitButton
-                    fullWidth
-                    label={!isSubmitting ? t('Sign in') : t('Signing in')}
-                  />
-                </CardFooter>
+                  </div>
+                )}
+                <SubmitButton
+                  fullWidth
+                  label={!isSubmitting ? t('Sign in') : t('Signing in')}
+                />
               </Form>
-            );
-          }}
-        </Formik>
-        {!config.DEMO_MODE && config.SIGNUP && (
-          <CardFooter>
-            <span className="text-secondary-foreground text-center w-full">
-              {t('New to {{APP_NAME}}?', {
-                APP_NAME: config.APP_NAME
-              })}{' '}
-              <Link href="/signup" data-cy="signup">
-                {t('Create an account')}
-              </Link>
-              .
-            </span>
-          </CardFooter>
-        )}
-      </Card>
-    </div>
+            </div>
+          );
+        }}
+      </Formik>
+      {!config.DEMO_MODE && config.SIGNUP && (
+        <div className="mt-10 lg:mt-0 lg:absolute lg:bottom-10 text-center text-muted-foreground w-full">
+          {t('New to {{APP_NAME}}?', {
+            APP_NAME: config.APP_NAME
+          })}{' '}
+          <Link href="/signup" data-cy="signup">
+            {t('Create an account')}
+          </Link>
+          .
+        </div>
+      )}
+    </SignInUpLayout>
   );
 }

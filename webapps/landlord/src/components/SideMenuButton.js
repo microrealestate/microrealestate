@@ -12,7 +12,7 @@ export default function SideMenuButton({ item, selected, className, onClick }) {
       // disabled={selected}
       onClick={onClick}
       className={cn(
-        'border-none rounded-none h-12 w-full justify-start hover:bg-primary/60 hover:text-primary-foreground',
+        'border-none rounded-none h-12 w-full justify-start hover:bg-primary/10',
         selected
           ? 'disabled:opacity-100 bg-primary text-primary-foreground'
           : null,
