@@ -1,7 +1,6 @@
 'use client';
 
 import * as z from 'zod';
-import { Card, CardContent } from '@/components/ui/card';
 import {
   Form,
   FormControl,
@@ -71,65 +70,67 @@ export default function OTP({
 
   return (
     <>
-      <Card>
-        <CardContent className="pt-8">
-          <div className="flex flex-col justify-center">
-            <h2 className="text-xl text-center">{t('Verification')}</h2>
-            <div className="mt-4 mb-2 text-center">
+      <div className="p-5 md:p-0 md:max-w-md w-full">
+        <Form {...form}>
+          <form
+            className="space-y-10"
+            onSubmit={(e) => {
+              e.preventDefault();
+            }}
+          >
+            <div className="text-2xl text-center md:text-4xl font-medium text-secondary-foreground">
+              <div>{t('Verification')}</div>
               {t('Enter the code sent to')}
             </div>
-            <div className="font-medium text-center">{email}</div>
-            <Form {...form}>
-              <form
-                className="my-4 space-y-4"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                }}
-              >
-                <FormField
-                  control={form.control}
-                  name="otp"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <InputOTP
-                          maxLength={6}
-                          {...field}
-                          onComplete={form.handleSubmit(onSubmit)}
-                          onKeyDown={() => dismiss()}
-                          disabled={loading}
-                        >
-                          <InputOTPGroup className="justify-center w-full text-xl">
-                            <InputOTPSlot index={0} />
-                            <InputOTPSlot index={1} />
-                            <InputOTPSlot index={2} />
-                            <InputOTPSlot index={3} />
-                            <InputOTPSlot index={4} />
-                            <InputOTPSlot index={5} />
-                          </InputOTPGroup>
-                        </InputOTP>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </form>
-            </Form>
-            <Button
-              variant="link"
-              className="mt-2 w-full"
-              disabled={loading}
-              onClick={() => router.replace('/signin')}
-            >
-              {t('Back to Sign in page')}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-      <div className="text-xs text-secondary-foreground mt-4">
-        {t('This code expires shortly, so please check your email soon.')}
-        <br />
-        {t("If you haven't received the email, check your spam folder.")}
+            <div className="text-xl text-center font-medium">{email}</div>
+
+            <FormField
+              control={form.control}
+              name="otp"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <InputOTP
+                      maxLength={6}
+                      {...field}
+                      onComplete={form.handleSubmit(onSubmit)}
+                      onKeyDown={() => dismiss()}
+                      disabled={loading}
+                    >
+                      <InputOTPGroup className="justify-center w-full">
+                        {Array(6)
+                          .fill(0)
+                          .map((_, index) => (
+                            <InputOTPSlot
+                              key={`slot-${index}`}
+                              index={index}
+                              className="bg-card border-card-foreground/30 size-16 text-4xl"
+                            />
+                          ))}
+                      </InputOTPGroup>
+                    </InputOTP>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <div className="text-secondary-foreground">
+              {t('This code expires shortly, so please check your email soon.')}
+              <br />
+              {t("If you haven't received the email, check your spam folder.")}
+            </div>
+          </form>
+        </Form>
+      </div>
+      <div className="mt-10 lg:mt-0 lg:absolute lg:bottom-10 text-center text-muted-foreground w-full">
+        <Button
+          variant="link"
+          className="mt-2 w-full"
+          disabled={loading}
+          onClick={() => router.replace('/signin')}
+        >
+          {t('Back to Sign in page')}
+        </Button>
       </div>
     </>
   );

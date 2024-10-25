@@ -39,7 +39,7 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     // Skip all paths which do not need to be localized
-    '/((?!api|health|_next/static|_next/image|favicon.svg).*)',
+    '/((?!api|health|_next/static|_next/image|favicon.svg|welcome.svg).*)',
     '/'
   ]
 };

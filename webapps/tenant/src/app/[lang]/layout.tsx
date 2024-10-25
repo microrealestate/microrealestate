@@ -1,5 +1,4 @@
 import '@/app/globals.css';
-import { AppHeader } from '@/components/bars/app-header';
 import { cn } from '@/utils';
 import { EnvScript } from 'next-runtime-env';
 import { Locale } from '@microrealestate/types';
@@ -58,10 +57,7 @@ export default async function RootLayout({
       </head>
       <body className={cn('min-h-screen', roboto.className)}>
         <Providers>
-          <div className="flex flex-col items-center min-h-screen">
-            <AppHeader />
-            <div className="w-full my-5 max-w-sm sm:max-w-4xl">{children}</div>
-          </div>
+          {children}
           <Toaster />
         </Providers>
       </body>
