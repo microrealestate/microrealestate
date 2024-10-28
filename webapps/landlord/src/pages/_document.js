@@ -6,7 +6,7 @@ import { ServerStyleSheets } from '@material-ui/core/styles';
 
 export default function MyDocument() {
   return (
-    <Html translate="no">
+    <Html translate="no" className="overscroll-none">
       <Head>
         <Script
           src={`${process.env.BASE_PATH || ''}/__ENV.js`}
@@ -17,7 +17,7 @@ export default function MyDocument() {
           rel="stylesheet"
         />
       </Head>
-      <body className="bg-background text-secondary-foreground">
+      <body className="bg-primary/5 text-secondary-foreground">
         <Main />
         <NextScript />
       </body>

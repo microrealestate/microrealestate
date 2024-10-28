@@ -1,6 +1,5 @@
 'use client';
 import * as z from 'zod';
-import { Card, CardContent } from '@/components/ui/card';
 import {
   Form,
   FormControl,
@@ -69,35 +68,33 @@ export default function SignIn() {
   }
 
   return (
-    <Card>
-      <CardContent className="pt-6 pb-8">
-        <div className="text-xl mb-6 text-center">
-          {t('Sign in to your account')}
-        </div>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      placeholder={t('Your email')}
-                      disabled={getEnv('DEMO_MODE') === 'true' || loading}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button type="submit" className="w-full" disabled={loading}>
-              {t('Sign in')}
-            </Button>
-          </form>
-        </Form>
-      </CardContent>
-    </Card>
+    <div className="p-5 md:p-0 md:max-w-md w-full">
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-10">
+          <div className="text-2xl text-center md:text-left md:text-4xl font-medium text-secondary-foreground">
+            {t('Sign in to your account')}
+          </div>
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Input
+                    {...field}
+                    placeholder={t('Your email')}
+                    disabled={getEnv('DEMO_MODE') === 'true' || loading}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <Button type="submit" className="w-full" disabled={loading}>
+            {t('Sign in')}
+          </Button>
+        </form>
+      </Form>
+    </div>
   );
 }

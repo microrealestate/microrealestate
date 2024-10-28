@@ -48,6 +48,7 @@ curl https://raw.githubusercontent.com/microrealestate/microrealestate/master/.e
 
 Update the secrets and tokens in the `.env` file (at the end of the file).
 
+
 ### Localhost setup
 
 Start the application under localhost:
@@ -57,21 +58,25 @@ docker compose --profile local up
 ```
 The application will be available on http://localhost:8080/landlord and http://localhost:8080/tenant.
 
-### Custom domain setup
 
-Change APP_DOMAIN and APP_PROTOCOL in the `.env` file:
+### Ip setup
+
+Start the application under a custom ip:
 
 ``` shell
-... other variables
-APP_DOMAIN=app.example.com
-APP_PROTOCOL=https
-... other variables
+sudo docker APP_DOMAIN=x.x.x.x compose up
 ```
+x.x.x.x is the ip address of the server.
+
+The application will be available on http://x.x.x.x/landlord and http://x.x.x.x/tenant.
+
+
+### Domain with https setup
 
 Start the app under a custom domain over https:
 
 ``` shell
-sudo docker compose up
+sudo APP_DOMAIN=app.example.com APP_PROTOCOL=https docker compose up
 ```
 
 Make sure your DNS records are pointing to the private server. The application will automatically issue the ssl certificate.
@@ -86,7 +91,7 @@ To run the application in development mode, follow the steps outlined in the doc
 ## Donate
 
 Thank you for your interest in supporting MicroRealEstate.
-Every contribution will help us pay our ongoing maintenance and development costs :praying_hand:
+Every contribution will help us pay our ongoing maintenance and development costs 🙏
 
 [![Donate](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub)](https://github.com/sponsors/camelaissani)
 

@@ -13,6 +13,18 @@ function Illustration({ src, label, alt }) {
   );
 }
 
+export const SignInUpIllustration = ({ label }) => {
+  const { t } = useTranslation('common');
+  return (
+    <div className="h-64 w-full">
+      <Illustration
+        src={`${config.BASE_PATH}/undraw_choosing_house_re_1rv7.svg`}
+        alt="welcome"
+      />
+    </div>
+  );
+};
+
 export const EmptyIllustration = ({ label }) => {
   const { t } = useTranslation('common');
   return (

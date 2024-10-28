@@ -160,26 +160,24 @@ export default function TerminateLeaseDialog({ open, setOpen, tenantList }) {
                 autoComplete="off"
                 className="w-full"
               >
-                <Card>
-                  <CardContent className="pt-6 space-y-4">
-                    <SelectField
-                      label={t('Tenant')}
-                      name="tenantId"
-                      values={tenants}
-                      disabled={tenants.length <= 1}
-                    />
-                    <DateField
-                      label={t('Termination date')}
-                      name="terminationDate"
-                      minDate={minMaxDates.minDate}
-                      maxDate={minMaxDates.maxDate}
-                    />
-                    <NumberField
-                      label={t('Amount of the deposit refund')}
-                      name="guarantyPayback"
-                    />
-                  </CardContent>
-                </Card>
+                <div className="pt-6 space-y-4">
+                  <SelectField
+                    label={t('Tenant')}
+                    name="tenantId"
+                    values={tenants}
+                    disabled={tenants.length <= 1}
+                  />
+                  <DateField
+                    label={t('Termination date')}
+                    name="terminationDate"
+                    minDate={minMaxDates.minDate}
+                    maxDate={minMaxDates.maxDate}
+                  />
+                  <NumberField
+                    label={t('Amount of the deposit refund')}
+                    name="guarantyPayback"
+                  />
+                </div>
               </Form>
             );
           }}

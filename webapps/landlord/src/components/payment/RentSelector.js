@@ -25,7 +25,7 @@ function SelectRentItem({ rent, onClick, className }) {
               label={t('Rent due')}
               amount={rentAmounts.totalAmount}
               color={
-                rentAmounts.totalAmount <= 0 ? 'text.secondary' : 'warning.dark'
+                rentAmounts.totalAmount <= 0 ? 'text.secondary' : 'warning.main'
               }
             />
           </div>

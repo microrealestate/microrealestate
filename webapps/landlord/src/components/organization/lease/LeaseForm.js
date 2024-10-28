@@ -7,7 +7,7 @@ import {
   Section,
   SelectField,
   SubmitButton,
-  TextField,
+  TextField
 } from '@microrealestate/commonui/components';
 import { useContext, useMemo } from 'react';
 
@@ -23,7 +23,7 @@ function initValues(lease) {
     description: lease?.description || '',
     numberOfTerms: lease?.numberOfTerms || '',
     timeRange: lease?.timeRange || '',
-    active: lease?.active || true,
+    active: lease?.active || true
   };
 }
 
@@ -39,7 +39,7 @@ function getValidationSchema(newLease, existingLeases) {
     description: Yup.string(),
     numberOfTerms: Yup.number().integer().min(1).required(),
     timeRange: Yup.string().required(),
-    active: Yup.boolean().required(),
+    active: Yup.boolean().required()
   });
 }
 
@@ -72,7 +72,7 @@ const LeaseForm = ({ onSubmit }) => {
         return (
           <>
             {values.usedByTenants && (
-              <Box color="warning.dark" pb={2}>
+              <Box color="warning.main" pb={2}>
                 <Typography>
                   {t(
                     'This contract is currently used, only some fields can be updated'
@@ -104,7 +104,7 @@ const LeaseForm = ({ onSubmit }) => {
                       values={timeRanges.map((timeRange) => ({
                         id: timeRange,
                         label: t(timeRange),
-                        value: timeRange,
+                        value: timeRange
                       }))}
                       disabled={values.usedByTenants}
                     />

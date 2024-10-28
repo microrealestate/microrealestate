@@ -1,13 +1,13 @@
 import * as Yup from 'yup';
-import { Card, CardContent, CardFooter } from '../components/ui/card';
 import { Form, Formik } from 'formik';
 import React, { useContext, useState } from 'react';
-import { SubmitButton, TextField } from '@microrealestate/commonui/components';
 import { Button } from '../components/ui/button';
 import { CheckCircleIcon } from 'lucide-react';
 import Link from '../components/Link';
-import LocationCityIcon from '@material-ui/icons/LocationCity';
+import SignInUpLayout from '../components/SignInUpLayout';
 import { StoreContext } from '../store';
+import { SubmitButton } from '@microrealestate/commonui/components';
+import { TextField } from '../components/formfields/TextField';
 import { toast } from 'sonner';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
@@ -57,78 +57,64 @@ export default function ForgotPassword() {
   }
 
   return (
-    <div className="mt-10 mx-4 sm:container sm:w-[36rem]">
-      <div className="flex flex-col items-center mb-10">
-        <LocationCityIcon />
-        <span className="text-2xl">{t('Reset your password')}</span>
-      </div>
-      <Card>
-        {!emailSent ? (
-          <>
-            <Formik
-              initialValues={initialValues}
-              validationSchema={validationSchema}
-              onSubmit={forgotPassword}
-            >
-              {({ isSubmitting }) => {
-                return (
-                  <Form>
-                    <CardContent className="pt-6">
-                      <TextField
-                        label={t('Email Address')}
-                        name="email"
-                        autoComplete="email"
-                      />
-                    </CardContent>
-                    <CardFooter>
-                      <SubmitButton
-                        label={
-                          !isSubmitting
-                            ? t('Send reset password email')
-                            : t('Reseting')
-                        }
-                        className="w-full"
-                      />
-                    </CardFooter>
+    <SignInUpLayout>
+      {!emailSent ? (
+        <>
+          <Formik
+            initialValues={initialValues}
+            validationSchema={validationSchema}
+            onSubmit={forgotPassword}
+          >
+            {({ isSubmitting }) => {
+              return (
+                <div className="p-5 md:p-0 md:max-w-md w-full">
+                  <Form className="space-y-10">
+                    <TextField
+                      label={t('Email Address')}
+                      name="email"
+                      autoComplete="email"
+                    />
+                    <SubmitButton
+                      label={
+                        !isSubmitting
+                          ? t('Send reset password email')
+                          : t('Reseting')
+                      }
+                      className="w-full"
+                    />
                   </Form>
-                );
-              }}
-            </Formik>
-            <CardFooter>
-              <span className="text-secondary-foreground text-center w-full">
-                <Link href="/signin" data-cy="signin">
-                  {t('Sign in')}
-                </Link>
-                .
-              </span>
-            </CardFooter>
-          </>
-        ) : (
-          <>
-            <CardContent className="flex flex-col  pt-6">
-              <div className="flex items-center text-success font-semibold">
-                <CheckCircleIcon />
-                <span className="ml-2 text-lg my-4">
-                  {t('Check your email')}
-                </span>
-              </div>
-              <p>
-                {t('An email has been sent to your email address {{email}}', {
-                  email: emailSent
-                })}
-              </p>
-              <p>
-                {t('Follow the directions in the email to reset your password')}
-              </p>
-            </CardContent>
-            <CardFooter>
-              <Button onClick={signIn} className="w-full">
-                {t('Done')}
-              </Button>
-            </CardFooter>
-          </>
-        )}
-      </Card>
-    </div>
+                </div>
+              );
+            }}
+          </Formik>
+          <div className="mt-10 lg:mt-0 lg:absolute lg:bottom-10 text-center text-muted-foreground w-full">
+            <Link href="/signin" data-cy="signin">
+              {t('Sign in')}
+            </Link>
+            .
+          </div>
+        </>
+      ) : (
+        <div className="p-5 text-center lg:text-left md:p-0 md:max-w-md w-full space-y-10">
+          <div className="flex items-center justify-center lg:justify-normal text-success font-semibold">
+            <CheckCircleIcon />
+            <span className="ml-2 text-lg my-4">{t('Check your email')}</span>
+          </div>
+          <div>
+            <p>
+              {t('An email has been sent to your email address {{email}}', {
+                email: emailSent
+              })}
+            </p>
+            <p>
+              {t('Follow the directions in the email to reset your password')}
+            </p>
+          </div>
+          <Button onClick={signIn} className="w-full">
+            {t('Done')}
+          </Button>
+        </div>
+      )}
+    </SignInUpLayout>
   );
 }
