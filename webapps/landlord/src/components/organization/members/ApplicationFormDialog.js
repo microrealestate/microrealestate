@@ -15,7 +15,7 @@ import moment from 'moment';
 import ResponsiveDialog from '../../ResponsiveDialog';
 import { SelectField } from '../../formfields/SelectField';
 import { StoreContext } from '../../../store';
-import { TextField } from '@microrealestate/commonui/components';
+import { TextField } from '../../formfields/TextField';
 import { toast } from 'sonner';
 import useTranslation from 'next-translate/useTranslation';
 
@@ -138,18 +138,22 @@ export default function ApplicationFormDialog({
           {() => {
             return (
               <Form autoComplete="off">
-                {t('Add an application credential to your organization')}
-                <TextField label={t('Name')} name="name" />
-                <SelectField
-                  label={t('Role')}
-                  name="role"
-                  values={roleValues}
-                />
-                <DateField
-                  label={t('Expiry date')}
-                  name="expiryDate"
-                  minDate={moment()}
-                />
+                <div className="pt-6 space-y-4">
+                  <div>
+                    {t('Add an application credential to your organization')}
+                  </div>
+                  <TextField label={t('Name')} name="name" />
+                  <SelectField
+                    label={t('Role')}
+                    name="role"
+                    values={roleValues}
+                  />
+                  <DateField
+                    label={t('Expiry date')}
+                    name="expiryDate"
+                    minDate={moment()}
+                  />
+                </div>
               </Form>
             );
           }}

@@ -1,12 +1,13 @@
 import * as Yup from 'yup';
-import { CheckboxField, TextField } from '@microrealestate/commonui/components';
 import { Form, Formik } from 'formik';
 import React, { useCallback, useContext, useRef, useState } from 'react';
 import { Button } from '../ui/button';
+import { CheckboxField } from '../formfields/CheckboxField';
 import PropertyIcon from './PropertyIcon';
 import ResponsiveDialog from '../ResponsiveDialog';
 import { SelectField } from '../formfields/SelectField';
 import { StoreContext } from '../../store';
+import { TextField } from '../formfields/TextField';
 import { toast } from 'sonner';
 import { toJS } from 'mobx';
 import { useRouter } from 'next/router';
@@ -111,22 +112,24 @@ export default function NewPropertyDialog({ open, setOpen }) {
           {({ values }) => {
             return (
               <Form autoComplete="off">
-                <TextField label={t('Name')} name="name" />
-                {properties?.length ? (
-                  <>
-                    <CheckboxField
-                      name="isCopyFrom"
-                      label={t('Copy from an existing property')}
-                      aria-label={t('Copy from an existing property')}
-                    />
-                    <SelectField
-                      name="copyFrom"
-                      label={t('Property')}
-                      values={properties}
-                      disabled={!values.isCopyFrom}
-                    />
-                  </>
-                ) : null}
+                <div className="pt-6 space-y-4">
+                  <TextField label={t('Name')} name="name" />
+                  {properties?.length ? (
+                    <>
+                      <CheckboxField
+                        name="isCopyFrom"
+                        label={t('Copy from an existing property')}
+                        aria-label={t('Copy from an existing property')}
+                      />
+                      <SelectField
+                        name="copyFrom"
+                        label={t('Property')}
+                        values={properties}
+                        disabled={!values.isCopyFrom}
+                      />
+                    </>
+                  ) : null}
+                </div>
               </Form>
             );
           }}
