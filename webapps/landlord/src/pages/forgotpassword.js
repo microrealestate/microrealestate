@@ -69,17 +69,16 @@ export default function ForgotPassword() {
               return (
                 <div className="p-5 md:p-0 md:max-w-md w-full">
                   <Form className="space-y-10">
+                    <div className="text-2xl text-center md:text-left md:text-4xl font-medium text-secondary-foreground">
+                      {t('Reset your password')}
+                    </div>
                     <TextField
                       label={t('Email Address')}
                       name="email"
                       autoComplete="email"
                     />
                     <SubmitButton
-                      label={
-                        !isSubmitting
-                          ? t('Send reset password email')
-                          : t('Reseting')
-                      }
+                      label={!isSubmitting ? t('Reset') : t('Reseting')}
                       className="w-full"
                     />
                   </Form>
