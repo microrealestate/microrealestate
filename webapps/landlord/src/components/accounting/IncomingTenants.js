@@ -25,9 +25,9 @@ export default function IncomingTenants({ onCSVClick }) {
           </Button>
         </CardTitle>
       </CardHeader>
-      {hasData ? (
-        <CardContent className="flex flex-col gap-2">
-          {store.accounting.filteredData.incomingTenants.map((tenant) => (
+      <CardContent className="flex flex-col gap-2">
+        {hasData ? (
+          store.accounting.filteredData.incomingTenants.map((tenant) => (
             <div
               key={tenant._id}
               className={cn(
@@ -62,11 +62,11 @@ export default function IncomingTenants({ onCSVClick }) {
                 </div>
               </div>
             </div>
-          ))}
-        </CardContent>
-      ) : (
-        <EmptyIllustration />
-      )}
+          ))
+        ) : (
+          <EmptyIllustration />
+        )}
+      </CardContent>
     </Card>
   );
 }

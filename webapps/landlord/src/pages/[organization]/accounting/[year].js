@@ -1,3 +1,4 @@
+import { Card, CardContent, CardHeader } from '../../../components/ui/card';
 import {
   Tabs,
   TabsContent,
@@ -5,7 +6,6 @@ import {
   TabsTrigger
 } from '../../../components/ui/tabs';
 import { useCallback, useContext } from 'react';
-import { Card } from '../../../components/ui/card';
 import { downloadDocument } from '../../../utils/fetch';
 import { EmptyIllustration } from '../../../components/Illustrations';
 import IncomingTenants from '../../../components/accounting/IncomingTenants';
@@ -152,7 +152,12 @@ function Accounting() {
           </TabsContent>
         </Tabs>
       ) : (
-        <EmptyIllustration label={t('No data found')} />
+        <Card>
+          <CardHeader />
+          <CardContent>
+            <EmptyIllustration label={t('No data found')} />
+          </CardContent>
+        </Card>
       )}
     </Page>
   );
