@@ -15,7 +15,7 @@ export default function ContractOverviewCard() {
       Icon={FilePenIcon}
       title={t('Lease')}
       renderContent={() => (
-        <div className="text-base">
+        <div className="text-base space-y-2">
           <div className="flex justify-between">
             <span className="text-muted-foreground">{t('Contract')}</span>
             <span>{store.tenant.selected.contract}</span>

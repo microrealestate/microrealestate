@@ -15,7 +15,7 @@ export default function RentOverviewCard() {
       Icon={ReceiptTextIcon}
       title={t('Rental')}
       renderContent={() => (
-        <div className="text-base">
+        <div className="text-base space-y-2">
           <div className="flex justify-between">
             <span className="text-muted-foreground">{t('Rent')}</span>
             <NumberFormat value={store.tenant.selected.rental} />
@@ -33,7 +33,7 @@ export default function RentOverviewCard() {
           {store.tenant.selected.isVat && (
             <>
               <Separator />
-              <div mt={1}>
+              <div className="flex justify-between">
                 <span className="text-muted-foreground">
                   {t('Pre-tax total')}
                 </span>
