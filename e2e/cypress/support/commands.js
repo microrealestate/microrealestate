@@ -87,9 +87,7 @@ Cypress.Commands.add(
         cy.get('input[name=name]').type(title);
         cy.get('input[name=description]').type(description);
         if (hasExpiryDate) {
-          cy.get('input[name=hasExpiryDate]').check();
-        } else {
-          cy.get('input[name=hasExpiryDate]').uncheck();
+          cy.get('div:has(>input[name=hasExpiryDate]) > button').click();
         }
         if (required) {
           cy.get('[data-cy=fileRequired]').click();
@@ -197,9 +195,7 @@ Cypress.Commands.add(
     if (billing) {
       const { isVat, percentageVatRatio } = billing;
       if (isVat) {
-        cy.get('input[name=isVat]').check();
-      } else {
-        cy.get('input[name=isVat]').uncheck();
+        cy.get('div:has(>input[name=isVat]) > button').click();
       }
       cy.get('input[name=vatRatio]').clear();
       cy.get('input[name=vatRatio]').type(percentageVatRatio);

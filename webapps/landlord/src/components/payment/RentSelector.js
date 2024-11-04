@@ -3,6 +3,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { Button } from '../ui/button';
 import { ChevronDownIcon } from 'lucide-react';
 import { cn } from '../../utils';
+import { Separator } from '../ui/separator';
 import { useState } from 'react';
 import useTranslation from 'next-translate/useTranslation';
 
@@ -14,11 +15,11 @@ function SelectRentItem({ rent, onClick }) {
     <div className="w-full">
       {rent?.occupant ? (
         <div
-          className="grid grid-cols-2 items-center gap-2 text-left md:grid-cols-3"
+          className="grid grid-cols-1 md:grid-cols-2 items-center text-left"
           onClick={onClick}
         >
-          <div className="col-span-2  md:col-span-1">{rent.occupant.name}</div>
-          <div className="">
+          <div>{rent.occupant.name}</div>
+          <div className="flex md:grid md:grid-cols-2 items-center">
             <RentAmount
               label={t('Rent due')}
               amount={rentAmounts.totalAmount}
@@ -26,12 +27,12 @@ function SelectRentItem({ rent, onClick }) {
                 rentAmounts.totalAmount <= 0 ? 'text.secondary' : 'warning.main'
               }
             />
-          </div>
-          <div className="">
-            <RentAmount
-              label={t('Settlement')}
-              amount={rentAmounts.payment !== 0 ? rentAmounts.payment : null}
-            />
+            <div className="grow">
+              <RentAmount
+                label={t('Settlement')}
+                amount={rentAmounts.payment !== 0 ? rentAmounts.payment : null}
+              />
+            </div>
           </div>
         </div>
       ) : (
@@ -72,7 +73,7 @@ export default function RentSelector({ value, rents, onChange, className }) {
       </PopoverTrigger>
       <PopoverContent
         align="center"
-        className="flex flex-col gap-2 h-72 overflow-y-auto popover-content-width-same-as-its-trigger p-0"
+        className="flex flex-col h-72 overflow-y-auto popover-content-width-same-as-its-trigger p-0"
       >
         {rents
           ?.sort(({ occupant: { name: n1 } }, { occupant: { name: n2 } }) => {
@@ -80,14 +81,14 @@ export default function RentSelector({ value, rents, onChange, className }) {
           })
           .map((rent) => {
             return (
-              <div
-                key={rent._id}
-                className="cursor-pointer hover:bg-accent py-2 pl-4 pr-12 odd:bg-background/25"
-              >
-                <SelectRentItem
-                  rent={rent}
-                  onClick={() => handleChange(rent)}
-                />
+              <div key={rent._id}>
+                <div className="cursor-pointer py-2 pl-4 pr-12 hover:bg-primary/10">
+                  <SelectRentItem
+                    rent={rent}
+                    onClick={() => handleChange(rent)}
+                  />
+                </div>
+                <Separator />
               </div>
             );
           })}

@@ -1,17 +1,10 @@
-import {
-  AppBar,
-  Box,
-  Button,
-  FormControlLabel,
-  Input,
-  Switch,
-  Typography,
-} from '@material-ui/core';
 import { useCallback, useState } from 'react';
-
+import { Button } from '../ui/button';
 import FieldMenu from './FieldMenu';
 import FormatMenu from './FormatMenu';
-import SaveIcon from '@material-ui/icons/SaveOutlined';
+import { Input } from '../ui/input';
+import { SaveIcon } from 'lucide-react';
+import { Switch } from '../ui/switch';
 import TableMenu from './TableMenu';
 import useTranslation from 'next-translate/useTranslation';
 
@@ -23,7 +16,7 @@ const EditorMenu = ({
   saving,
   onChange,
   onClose,
-  editable,
+  editable
 }) => {
   const { t } = useTranslation('common');
   const [showFieldMenu, setShowFieldMenu] = useState(fields?.length && true);
@@ -41,80 +34,58 @@ const EditorMenu = ({
 
   return editor ? (
     <>
-      <AppBar>
-        <Box display="flex" flexDirection="column" m={1}>
-          <Box display="flex" justifyContent="space-between" mb={1}>
-            <Box display="flex" alignItems="center">
-              <Box width={300}>
-                <Input
-                  value={title}
-                  onChange={onTitleChange}
-                  fullWidth
-                  readOnly={!editable}
-                  name="title"
-                />
-              </Box>
-              <Box color="text.disabled" ml={2}>
-                {saving === true && (
-                  <Box display="flex" alignItems="center">
-                    <SaveIcon fontSize="small" color="inherit" />
-                    <Typography
-                      variant="caption"
-                      color="inherit"
-                      component="span"
-                      data-cy="savingTextDocument"
-                    >
-                      {t('Saving')}
-                    </Typography>
-                  </Box>
-                )}
-                {saving === false && (
-                  <Typography variant="caption" data-cy="savedTextDocument">
-                    {t('Saved')}
-                  </Typography>
-                )}
-              </Box>
-            </Box>
-            <Box display="flex">
-              <Button
-                variant="contained"
-                size="small"
-                onClick={onClose}
-                data-cy="close"
+      <div className="top-0 sticky z-50 bg-card shadow-md p-2 pb-4">
+        <div className="flex items-center justify-between m-2">
+          <Input
+            name="title"
+            defaultValue={title}
+            onChange={onTitleChange}
+            readOnly={!editable}
+            className="w-80"
+            aria-label={t('Document title')}
+          />
+
+          <div className="flex items-center gap-10">
+            {saving ? (
+              <div className="flex items-center whitespace-nowrap gap-1 ml-6">
+                <SaveIcon className="h-4 w-4" />
+                <div
+                  className="text-sm text-muted-foreground"
+                  data-cy="savingTextDocument"
+                >
+                  {t('Saving')}
+                </div>
+              </div>
+            ) : null}
+            {saving === false ? (
+              <div
+                className="text-sm text-muted-foreground ml-6"
+                data-cy="savedTextDocument"
               >
-                {t('Close')}
-              </Button>
-            </Box>
-          </Box>
-          <Box display="flex" mb={1}>
+                {t('Saved')}
+              </div>
+            ) : null}
+            <Button onClick={onClose} variant="secondary" data-cy="close">
+              {t('Close')}
+            </Button>
+          </div>
+        </div>
+        <div className="flex items-end justify-between mr-2">
+          <div className="flex items-center flex-wrap">
             <FormatMenu editor={editor} showPrintButton={showPrintButton} />
-          </Box>
-          <Box display="flex" justifyContent="space-between">
-            <Box display="flex">
-              <TableMenu editor={editor} />
-            </Box>
-            {fields?.length > 0 && (
-              <Box display="flex">
-                <FormControlLabel
-                  control={
-                    <Switch
-                      color="primary"
-                      size="small"
-                      checked={showFieldMenu}
-                      onChange={onShowFieldMenuChange}
-                    />
-                  }
-                  label={
-                    <Typography variant="body2">
-                      {t('Computed fields')}
-                    </Typography>
-                  }
-                />
-              </Box>
-            )}
-          </Box>
-        </Box>
-      </AppBar>
+            <TableMenu editor={editor} />
+          </div>
+          {fields?.length > 0 && (
+            <div className="flex items-center gap-2">
+              <Switch
+                checked={showFieldMenu}
+                onCheckedChange={onShowFieldMenuChange}
+              />
+              <span>{t('Computed fields')}</span>
+            </div>
+          )}
+        </div>
+      </div>
       {showFieldMenu && <FieldMenu editor={editor} fields={fields} />}
     </>
   ) : null;

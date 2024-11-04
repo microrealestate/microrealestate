@@ -5,15 +5,15 @@ import {
   ContactField,
   RadioField,
   RadioFieldGroup,
-  Section,
   SubmitButton,
-  TextField,
+  TextField
 } from '@microrealestate/commonui/components';
 import { Box, Button } from '@material-ui/core';
 import { FieldArray, Form, Formik } from 'formik';
 import { useContext, useMemo } from 'react';
 
 import { observer } from 'mobx-react-lite';
+import { Section } from '../../formfields/Section';
 import { StoreContext } from '../../../store';
 import useTranslation from 'next-translate/useTranslation';
 
@@ -22,26 +22,26 @@ const validationSchema = Yup.object().shape({
   isCompany: Yup.string().required(),
   legalRepresentative: Yup.mixed().when('isCompany', {
     is: 'true',
-    then: Yup.string().required(),
+    then: Yup.string().required()
   }),
   legalStructure: Yup.mixed().when('isCompany', {
     is: 'true',
-    then: Yup.string().required(),
+    then: Yup.string().required()
   }),
   ein: Yup.mixed().when('isCompany', {
     is: 'true',
-    then: Yup.string().required(),
+    then: Yup.string().required()
   }),
   dos: Yup.mixed().when('isCompany', {
     is: 'true',
-    then: Yup.string(),
+    then: Yup.string()
   }),
   contacts: Yup.array().of(
     Yup.object().shape({
       contact: Yup.string().required(),
       email: Yup.string().email().required(),
       phone1: Yup.string(),
-      phone2: Yup.string(),
+      phone2: Yup.string()
     })
   ),
   address: Yup.object().shape({
@@ -50,8 +50,8 @@ const validationSchema = Yup.object().shape({
     city: Yup.string().required(),
     zipCode: Yup.string().required(),
     state: Yup.string(),
-    country: Yup.string().required(),
-  }),
+    country: Yup.string().required()
+  })
 });
 
 const emptyContact = { contact: '', email: '', phone1: '', phone2: '' };
@@ -67,11 +67,11 @@ const initValues = (tenant) => {
     capital: tenant?.capital || '',
     contacts: tenant?.contacts?.length
       ? tenant.contacts.map(({ contact, email, phone, phone1, phone2 }) => ({
-        contact,
-        email,
-        phone1: phone1 || phone,
-        phone2: phone2 || '',
-      }))
+          contact,
+          email,
+          phone1: phone1 || phone,
+          phone2: phone2 || ''
+        }))
       : [emptyContact],
     address: {
       street1: tenant?.street1 || '',
@@ -79,8 +79,8 @@ const initValues = (tenant) => {
       city: tenant?.city || '',
       zipCode: tenant?.zipCode || '',
       state: tenant?.state || '',
-      country: tenant?.country || '',
-    },
+      country: tenant?.country || ''
+    }
   };
 };
 
@@ -121,9 +121,9 @@ const TenantForm = observer(({ readOnly, onSubmit }) => {
             contact,
             email,
             phone1,
-            phone2,
+            phone2
           };
-        }),
+        })
     });
   };
 

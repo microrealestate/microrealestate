@@ -1,5 +1,5 @@
 import { Button } from '@material-ui/core';
-import { Section } from '@microrealestate/commonui/components';
+import { Section } from '../../formfields/Section';
 import TenantDocumentList from '../TenantDocumentList';
 import UploadFileList from '../UploadFileList';
 import { useCallback } from 'react';

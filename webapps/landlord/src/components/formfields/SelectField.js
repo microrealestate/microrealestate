@@ -39,18 +39,16 @@ export function SelectField({ values = [], disabled, ...props }) {
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          <SelectGroup>
-            {values.map(
-              ({ id, value, label, renderIcon, disabled: disabledMenu }) => (
-                <SelectItem key={id} value={value} disabled={disabledMenu}>
-                  <div className="flex items-center gap-2">
-                    {renderIcon ? renderIcon() : null}
-                    <span>{label}</span>
-                  </div>
-                </SelectItem>
-              )
-            )}
-          </SelectGroup>
+          {values.map(
+            ({ id, value, label, renderIcon, disabled: disabledMenu }) => (
+              <SelectItem key={id} value={value} disabled={disabledMenu}>
+                <div className="flex items-center gap-2">
+                  {renderIcon ? renderIcon() : null}
+                  <span>{label}</span>
+                </div>
+              </SelectItem>
+            )
+          )}
         </SelectContent>
       </Select>
     </FormField>

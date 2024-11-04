@@ -2,12 +2,12 @@ import * as Yup from 'yup';
 import { Form, Formik } from 'formik';
 import React, { useCallback, useContext, useRef, useState } from 'react';
 import { Button } from '../ui/button';
-import { CheckboxField } from '../formfields/CheckboxField';
 import { contractEndMoment } from '@microrealestate/commonui/utils/contract';
 import moment from 'moment';
 import ResponsiveDialog from '../ResponsiveDialog';
 import { SelectField } from '../formfields/SelectField';
 import { StoreContext } from '../../store';
+import { SwitchField } from '../formfields/SwitchField';
 import { TextField } from '../formfields/TextField';
 import { toast } from 'sonner';
 import { toJS } from 'mobx';
@@ -145,7 +145,7 @@ export default function NewTenantDialog({ open, setOpen }) {
                 <TextField label={t('Name')} name="name" />
                 {tenants?.length ? (
                   <>
-                    <CheckboxField
+                    <SwitchField
                       name="isCopyFrom"
                       label={t('Copy from an existing tenant')}
                       aria-label={t('Copy from an existing tenant')}

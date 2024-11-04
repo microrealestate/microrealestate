@@ -3,7 +3,6 @@ import * as Yup from 'yup';
 import {
   AddressField,
   NumberField,
-  Section,
   SelectField,
   SubmitButton,
   TextField
@@ -14,6 +13,7 @@ import { useContext, useMemo } from 'react';
 import { Grid } from '@material-ui/core';
 import { observer } from 'mobx-react-lite';
 import PropertyIcon from './PropertyIcon';
+import { Section } from '../formfields/Section';
 import { StoreContext } from '../../store';
 import types from './types';
 import useTranslation from 'next-translate/useTranslation';

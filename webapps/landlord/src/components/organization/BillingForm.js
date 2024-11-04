@@ -2,7 +2,6 @@ import * as Yup from 'yup';
 import {
   AddressField,
   ContactField,
-  Section,
   SubmitButton,
   TextField
 } from '@microrealestate/commonui/components';
@@ -11,6 +10,7 @@ import { mergeOrganization, updateStoreOrganization } from './utils';
 import { QueryKeys, updateOrganization } from '../../utils/restcalls';
 import { useCallback, useContext, useMemo } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Section } from '../formfields/Section';
 import { StoreContext } from '../../store';
 import { toast } from 'sonner';
 import useTranslation from 'next-translate/useTranslation';

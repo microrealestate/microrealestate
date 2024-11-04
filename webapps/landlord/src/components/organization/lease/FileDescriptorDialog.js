@@ -1,14 +1,14 @@
 import * as Yup from 'yup';
+import { Form, Formik } from 'formik';
 import {
-  CheckboxField,
   RadioField,
   RadioFieldGroup,
   TextField
 } from '@microrealestate/commonui/components';
-import { Form, Formik } from 'formik';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { Button } from '../../ui/button';
 import ResponsiveDialog from '../../ResponsiveDialog';
+import { SwitchField } from '../../formfields/SwitchField';
 import useTranslation from 'next-translate/useTranslation';
 
 const validationSchema = Yup.object().shape({
@@ -99,7 +99,7 @@ export default function FileDescriptorDialog({
               <Form autoComplete="off">
                 <TextField label={t('Name')} name="name" />
                 <TextField label={t('Description')} name="description" />
-                <CheckboxField
+                <SwitchField
                   name="hasExpiryDate"
                   label={t('An expiry date must be provided')}
                   aria-label={t('An expiry date must be provided')}

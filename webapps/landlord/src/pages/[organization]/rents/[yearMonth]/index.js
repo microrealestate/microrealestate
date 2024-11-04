@@ -264,9 +264,11 @@ function Rents() {
           { id: 'paid', label: t('Paid') }
         ]}
         filterFn={_filterData}
-        renderActions={() => (
-          <Actions values={rentSelected} onDone={handleActionDone} />
-        )}
+        renderActions={() =>
+          store.organization.canSendEmails ? (
+            <Actions values={rentSelected} onDone={handleActionDone} />
+          ) : null
+        }
         renderList={({ data }) => (
           <RentTable
             rents={data}

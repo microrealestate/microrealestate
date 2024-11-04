@@ -118,7 +118,9 @@ const RichTextEditor = ({
             onClose={onClose}
             editable={editable}
           />
-          <EditorContent editor={editor} />
+          <div className="xl:w-[210mm] xl:mx-auto">
+            <EditorContent editor={editor} />
+          </div>
         </>
       ) : null}
     </>
