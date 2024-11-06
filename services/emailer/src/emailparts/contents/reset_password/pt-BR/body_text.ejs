@@ -1,14 +1,14 @@
-Hi <%- firstname %>,
+Olá <%- firstname %>,
 
-Someone requested to reset your password of your <%- config.APP_NAME %> account.
+Alguém solicitou a redefinição da senha da sua conta <%- config.APP_NAME %>.
 
-Click on the link below, to create a new password:
+Clique no link abaixo para criar uma nova senha:
 
 <%- `${config.LANDLORD_APP_URL}/resetpassword/${token}` %>
 
-If this link doesn't work, copy it in your browser address bar.
+Se este link não funcionar, copie-o na barra de endereços do seu navegador.
 
-If you don't request this, you can ignore this email. Your password won't change until you create a new password.
+Se você não solicitou isso, pode ignorar este e-mail. Sua senha não será alterada até que você crie uma nova senha.
 
-Regards,
-The <%- config.APP_NAME %> team
+Atenciosamente,
+A equipe do <%- config.APP_NAME %>
