@@ -23,27 +23,27 @@
 
 
 
-Hello,
+Olá,
 
-We would like to point out that our business relations with <%if (landlord.isCompany) { %>your company<% } else { %>you<% } %> are stated in a contract signed <%- _.formatDate(tenant.contract.beginDate, 'LL') %>.
+Gostaríamos de salientar que nossas relações comerciais com <%if (landlord.isCompany) { %>your company<% } else { %>you<% } %> estão estabelecidas em um contrato assinado em <%- _.formatDate(tenant.contract.beginDate, 'LL') %>.
 
-In this contract, it is explicitly indicated that <%- tenant.name %> is obliged to pay in advance and monthly its rents to <%- (landlord.hasCompanyInfo ? landlord.companyInfo.legalStructure + ' ' : '') + landlord.name %>.
+Nesse contrato, está explicitamente indicado que <%- tenant.name %> é obrigado a pagar mensalmente seus aluguéis para <%- (landlord.hasCompanyInfo ? landlord.companyInfo.legalStructure + ' ' : '') + landlord.name %>.
 
-Although, until now, one or more rents are not settled. The amount of unpaid rents is <%- _.formatNumber(tenant.rents[0].total.grandTotal, 'currency') %>.
+No entanto, até o momento, um ou mais aluguéis não foram pagos. O valor dos aluguéis não pagos é de <%- _.formatNumber(tenant.rents[0].total.grandTotal, 'currency') %>.
 
-We would be grateful if you could proceed to the payment of your rent debts in the following 10 days, otherwise we will engage an eviction procedure.
+Agradeceríamos se você pudesse proceder ao pagamento de suas dívidas de aluguel nos próximos 10 dias, caso contrário, providências adicionais serão adotadas.
 
-Payment modalities:
+Modalidades de pagamento:
 
-By transfer
-Bank details
+Transferência:
+Dados bancários
 <% if (landlord.hasBankInfo) { -%>
 <%- landlord.bankInfo.name %>
 IBAN: <%-landlord.bankInfo.iban%>
 <%}-%>
 
-By cheque
-Write your cheque to the order of <%-landlord.name%> and send it to the following address:
+Cheque:
+Escreva seu cheque à ordem de <%-landlord.name%> e envie para o seguinte endereço:
 <%-landlord.name%>
 <% if (landlord.hasAddress) { -%>
 <%-landlord.addresses[0].street1%>
@@ -59,14 +59,16 @@ Write your cheque to the order of <%-landlord.name%> and send it to the followin
 <%}-%>
 <%}-%>
 
-By cash
-Contact: <%-landlord.hasContact ? landlord.contacts[0].name : ''%>
-Phone: <%-landlord.hasContact ? landlord.contacts[0].phone1 : ''%><% landlord.hasContact && landlord.contacts[0].phone2 ? ' / ' + landlord.contacts[0].phone2 : '' %>
+Dinheiro:
+Contato: <%-landlord.hasContact ? landlord.contacts[0].name : ''%>
+Telefone: <%-landlord.hasContact ? landlord.contacts[0].phone1 : ''%><% landlord.hasContact && landlord.contacts[0].phone2 ? ' / ' + landlord.contacts[0].phone2 : '' %>
 Email: <%-landlord.hasContact ? landlord.contacts[0].email : ''%>
 
-We are at your service for any further information you may need.
+Estamos à sua disposição para quaisquer outras informações que você possa precisar.
 
-Regards,
+Caso já tenha realizado o pagamento, desconsidere este email.
+
+Atenciosamente,
 
 <%-landlord.name%>
 <% if (landlord.hasContact) { -%>
