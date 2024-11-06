@@ -25,42 +25,11 @@
 
 Olá,
 
-Esta é sua cobrança de aluguel de <%- _.formatTerm(period, tenant.contract.lease.timeRange) %>.
+Obrigado pelo pagamento.
 
-O valor do seu aluguel é <%- _.formatNumber(tenant.rents[0].total.grandTotal, 'currency') %> e o pagamento deve ser feito antes de <%- _.formatDate(dueDate, 'LL') %>.
+Segue em anexo a próxima cobrança de aluguel para o perío de <%- _.formatTerm(period, tenant.contract.lease.timeRange) %>.
 
-Modalidades de pagamento:
-
-Transferência:
-Dados bancários
-<% if (landlord.hasBankInfo) { -%>
-<%- landlord.bankInfo.name %>
-Agência/Conta: <%-landlord.bankInfo.iban%>
-<%}-%>
-Cheque:
-Escreva seu cheque à ordem de <%-landlord.name%> e envie para o seguinte endereço:
-<%-landlord.name%>
-<% if (landlord.hasAddress) { -%>
-<%-landlord.addresses[0].street1%>
-<%if (landlord.addresses[0].street2) {-%>
-<%-landlord.addresses[0].street2%>
-<%}-%>
-<%-landlord.addresses[0].zipCode%> <%-landlord.addresses[0].city%>
-<%if (landlord.addresses[0].state) {-%>
-<%-landlord.addresses[0].state%>
-<%}-%>
-<%if (landlord.addresses[0].country) {-%>
-<%-landlord.addresses[0].country%>
-<%}-%>
-<%}-%>
-Dinheiro
-Contato: <%-landlord.hasContact ? landlord.contacts[0].name : ''%>
-Telefone: <%-landlord.hasContact ? landlord.contacts[0].phone1 : ''%><% landlord.hasContact && landlord.contacts[0].phone2 ? ' / ' + landlord.contacts[0].phone2 : '' %>
-Email: <%-landlord.hasContact ? landlord.contacts[0].email : ''%>
-
-Estamos à sua disposição para quaisquer outras informações que você possa precisar.
-
-Caso já tenha realizado o pagamento, desconsidere este email.
+O valor do seu aluguel é <%- _.formatTerm(period, tenant.contract.lease.timeRange) %>.
 
 Atenciosamente,
 
