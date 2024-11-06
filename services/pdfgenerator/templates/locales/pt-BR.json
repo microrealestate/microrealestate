@@ -1,7 +1,7 @@
 {
   "Entry date": "Data de entrada",
   "Billing reference": "Referência de cobrança",
-  "Rental period": "Período de locação",
+  "Rental period": "Cobrança referente a",
   "VAT number": "VAT number",
   "{{ city }}, {{ date }}": "{{ city }}, {{ date }}",
   "Rent call": "Aviso de aluguel",
