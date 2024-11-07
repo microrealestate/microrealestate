@@ -88,6 +88,37 @@ Make sure your DNS records are pointing to the private server. The application w
 The application will be available on https://app.example.com/landlord and https://app.example.com/tenant.
 
 
+### Backup and restore the data
+
+The backup and restore commands can be executed when the application is running to allow connecting to MongoDB.
+
+#### Backup
+
+In the mre directory run:
+
+``` shell
+docker compose run mongo /usr/bin/mongodump --uri=mongodb://mongo/mredb --gzip --archive=./backup/mredb-$(date +%F_%T).dump
+```
+
+Replace "mredb" with the name of your database (see .env file). By default, the database name is "mredb".
+
+The archive file will be placed in the "backup" folder.
+
+#### Restore
+
+In the mre/backup directory, select an archive file you want to restore. 
+
+Then run the restore command:
+
+``` shell
+docker compose run mongo /usr/bin/mongorestore --uri=mongodb://mongo/mredb --drop --gzip --archive=./backup/mredb-XXXX.dump 
+```
+
+Where mredb-XXXX.dump is the archive file you selected.
+
+Again, replace "mredb" with the name of your database (see .env file). By default, the database name is "mredb".
+
+
 ## Developers
 
 To run the application in development mode, follow the steps outlined in the documentation available [here](./documentation/DEVELOPER.md)
