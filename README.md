@@ -68,7 +68,7 @@ The application will be available on http://localhost:8080/landlord and http://l
 Start the application under a custom ip:
 
 ``` shell
-sudo docker APP_DOMAIN=x.x.x.x compose up
+sudo APP_DOMAIN=x.x.x.x docker compose up
 ```
 x.x.x.x is the ip address of the server.
 
