@@ -110,7 +110,7 @@ services:
       REFRESH_TOKEN_SECRET: ${REFRESH_TOKEN_SECRET:-refresh_token_secret} # Change secret in production
       RESET_TOKEN_SECRET: ${RESET_TOKEN_SECRET:-reset_token_secret} # Change secret in production
       APPCREDZ_TOKEN_SECRET: ${APPCREDZ_TOKEN_SECRET:-appcredz_token_secret} # Change secret in production
-      MONGO_URL: mongodb://mongo/mredb
+      MONGO_URL: ${MONGO_URL:-mongodb://mongo/mredb}
       EMAILER_URL: http://emailer:8400/emailer
       SIGNUP: 'true'
       APP_DOMAIN: ${APP_DOMAIN:-localhost}
@@ -136,7 +136,7 @@ services:
       NODE_ENV: production
       PORT: 8300
       LOGGER_LEVEL: info
-      MONGO_URL: mongodb://mongo/mredb
+      MONGO_URL: ${MONGO_URL:-mongodb://mongo/mredb}
       ACCESS_TOKEN_SECRET: ${ACCESS_TOKEN_SECRET:-access_token_secret} # Change secret in production
       CIPHER_KEY: ${CIPHER_KEY:-cipher_key} # Change key in production
       CIPHER_IV_KEY: ${CIPHER_IV_KEY:-cipher_iv_key} # Change key in production
@@ -161,7 +161,7 @@ services:
       LOGGER_LEVEL: info
       LANDLORD_APP_URL: ${APP_PROTOCOL:-http}://${APP_DOMAIN:-localhost:8080}/landlord
       TENANT_APP_URL: ${APP_PROTOCOL:-http}://${APP_DOMAIN:-localhost:8080}/tenant
-      MONGO_URL: mongodb://mongo/mredb
+      MONGO_URL: ${MONGO_URL:-mongodb://mongo/mredb}
       ACCESS_TOKEN_SECRET: ${ACCESS_TOKEN_SECRET:-access_token_secret} # Change secret in production
       CIPHER_KEY: ${CIPHER_KEY:-cipher_key} # Change key in production
       CIPHER_IV_KEY: ${CIPHER_IV_KEY:-cipher_iv_key} # Change key in production
@@ -212,7 +212,7 @@ services:
       NODE_ENV: production
       PORT: 8200
       LOGGER_LEVEL: info
-      MONGO_URL: mongodb://mongo/mredb
+      MONGO_URL: ${MONGO_URL:-mongodb://mongo/mredb}
       EMAILER_URL: http://emailer:8400/emailer
       PDFGENERATOR_URL: http://pdfgenerator:8300/pdfgenerator
       RESTORE_DB: 'false'
@@ -240,7 +240,7 @@ services:
       NODE_ENV: production
       PORT: 8250
       LOGGER_LEVEL: info
-      MONGO_URL: mongodb://mongo/mredb
+      MONGO_URL: ${MONGO_URL:-mongodb://mongo/mredb}
       ACCESS_TOKEN_SECRET: ${ACCESS_TOKEN_SECRET:-access_token_secret} # Change secret in production
     expose:
       - '8250'

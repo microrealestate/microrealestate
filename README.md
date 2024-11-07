@@ -48,6 +48,10 @@ curl https://raw.githubusercontent.com/microrealestate/microrealestate/master/.e
 
 Update the secrets and tokens in the `.env` file (at the end of the file).
 
+**🚨 IMPORTANT**
+
+In case you previously ran the application, the secrets, the tokens and the MONGO_URL must be reported from previous .env file to the new one.
+Otherwise, the application will not point to the correct database and will not be able to login with the previous credentials.
 
 ### Localhost setup
 
