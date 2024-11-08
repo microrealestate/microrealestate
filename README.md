@@ -58,7 +58,7 @@ Otherwise, the application will not point to the correct database and will not b
 Start the application under localhost:
 
 ``` shell
-docker compose --profile local up
+APP_PORT=8080 docker compose --profile local up
 ```
 The application will be available on http://localhost:8080/landlord and http://localhost:8080/tenant.
 
@@ -73,6 +73,8 @@ sudo APP_DOMAIN=x.x.x.x docker compose up
 x.x.x.x is the ip address of the server.
 
 The application will be available on http://x.x.x.x/landlord and http://x.x.x.x/tenant.
+
+In case you need to use a port number do not pass it in the APP_DOMAIN. You can use the APP_PORT environment variable.
 
 
 ### Domain with https setup
