@@ -111,7 +111,7 @@ services:
       MONGO_URL: ${MONGO_URL:-mongodb://mongo/mredb}
       EMAILER_URL: http://emailer:8400/emailer
       SIGNUP: 'true'
-      APP_DOMAIN: ${APP_DOMAIN:-localhost}${APP_PORT:+:}$APP_PORT
+      APP_DOMAIN: ${APP_DOMAIN:-localhost} # do not pass APP_PORT here
       APP_PROTOCOL: ${APP_PROTOCOL:-http}
     expose:
       - '8000'
