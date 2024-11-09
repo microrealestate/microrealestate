@@ -2,12 +2,13 @@ import {
   BlankDocumentIllustration,
   TermsDocumentIllustration
 } from '../Illustrations';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '../ui/drawer';
 import { useCallback, useContext, useMemo, useState } from 'react';
-import AddIcon from '@material-ui/icons/Add';
-import { Box } from '@material-ui/core';
+import { Button } from '../ui/button';
 import ConfirmDialog from '../ConfirmDialog';
 import DocumentList from '../DocumentList';
-import FullScreenDialogMenu from '../FullScreenDialogMenu';
+import Loading from '../Loading';
 import { Observer } from 'mobx-react-lite';
 import RichTextEditorDialog from '../RichTextEditor/RichTextEditorDialog';
 import { StoreContext } from '../../store';
@@ -41,6 +42,9 @@ function DocumentItems({ onView, onEdit, onDelete, disabled }) {
 function TenantDocumentList({ disabled = false }) {
   const store = useContext(StoreContext);
   const { t } = useTranslation('common');
+  const [creatingDocument, setCreatingDocument] = useState(false);
+  const [openDocumentCreatorDialog, setOpenDocumentCreatorDialog] =
+    useState(false);
   const [openDocumentToRemoveDialog, setOpenDocumentToRemoveDialog] =
     useState(false);
   const [selectedDocumentToRemove, setSelectedDocumentToRemove] =
@@ -80,18 +84,27 @@ function TenantDocumentList({ disabled = false }) {
 
   const handleClickAddText = useCallback(
     async (template) => {
-      const { status, data } = await store.document.create({
-        name: template.name || t('Untitled document'),
-        type: 'text',
-        templateId: template._id,
-        tenantId: store.tenant.selected?._id,
-        leaseId: store.tenant.selected?.leaseId
-      });
-      if (status !== 200) {
-        return console.error(status);
+      let response;
+      try {
+        setCreatingDocument(true);
+        response = await store.document.create({
+          name: template.name || t('Untitled document'),
+          type: 'text',
+          templateId: template._id,
+          tenantId: store.tenant.selected?._id,
+          leaseId: store.tenant.selected?.leaseId
+        });
+        if (response.status !== 200) {
+          return console.error(response.status);
+        }
+      } finally {
+        setCreatingDocument(false);
       }
-      setSelectedTextDocument(data);
-      setOpenTextDocumentDialog(true);
+      if (response?.data) {
+        setSelectedTextDocument(response.data);
+        setOpenDocumentCreatorDialog(false);
+        setOpenTextDocumentDialog(true);
+      }
     },
     [
       store.document,
@@ -140,18 +153,53 @@ function TenantDocumentList({ disabled = false }) {
 
   return (
     <>
-      <Box mb={1}>
-        <FullScreenDialogMenu
-          variant="contained"
-          Icon={AddIcon}
-          buttonLabel={t('Create document')}
-          dialogTitle={t('Create a document')}
-          menuItems={menuItems}
-          onClick={handleClickAddText}
-          disabled={disabled}
-          data-cy="addTenantTextDocument"
-        />
-      </Box>
+      <Button
+        variant="secondary"
+        onClick={() => setOpenDocumentCreatorDialog(true)}
+        disabled={disabled}
+        className="mb-2"
+        data-cy="addTenantTextDocument"
+      >
+        {t('Create a document')}
+      </Button>
+      <Drawer
+        open={openDocumentCreatorDialog}
+        onOpenChange={setOpenDocumentCreatorDialog}
+        dismissible={!creatingDocument}
+      >
+        <DrawerContent className="w-full h-full p-4">
+          <DrawerHeader className="flex items-center justify-between p-0">
+            <DrawerTitle>{t('Create a document')}</DrawerTitle>
+            <Button
+              variant="secondary"
+              onClick={() => setOpenDocumentCreatorDialog(false)}
+            >
+              {t('Close')}
+            </Button>
+          </DrawerHeader>
+          <div className="flex flex-wrap mx-auto lg:mx-0 gap-4 mt-10">
+            {menuItems.map((item) => (
+              <Card
+                key={item.key}
+                onClick={() => handleClickAddText(item.value)}
+                className="w-96 cursor-pointer hover:bg-primary/10"
+                data-cy={`template-${item.label.replace(/\s/g, '')}`}
+              >
+                <CardHeader>
+                  <CardTitle className="text-base h-12">{item.label}</CardTitle>
+                </CardHeader>
+                <CardContent>{item.illustration}</CardContent>
+              </Card>
+            ))}
+          </div>
+          {creatingDocument ? (
+            <Loading
+              fullScreen={false}
+              className="absolute top-0 left-0 right-0 bottom-0 bg-secondary/50"
+            />
+          ) : null}
+        </DrawerContent>
+      </Drawer>
 
       <DocumentItems
         onEdit={handleClickEdit}
