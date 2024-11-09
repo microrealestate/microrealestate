@@ -23,14 +23,14 @@ function SelectRentItem({ rent, onClick }) {
             <RentAmount
               label={t('Rent due')}
               amount={rentAmounts.totalAmount}
-              color={
-                rentAmounts.totalAmount <= 0 ? 'text.secondary' : 'warning.main'
-              }
+              withColor={false}
+              debitColor={rentAmounts.totalAmount > 0}
             />
             <div className="grow">
               <RentAmount
                 label={t('Settlement')}
                 amount={rentAmounts.payment !== 0 ? rentAmounts.payment : null}
+                withColor={true}
               />
             </div>
           </div>

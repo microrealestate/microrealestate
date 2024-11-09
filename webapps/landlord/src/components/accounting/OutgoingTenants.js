@@ -86,9 +86,11 @@ export default function OutgoingTenants({ onCSVClick }) {
                 <div className="text-muted-foreground text-xs md:text-right">
                   {t('Final balance')}
                 </div>
-                <div className="text-2xl md:text-right">
-                  <NumberFormat value={tenant.finalBalance} withColor />
-                </div>
+                <NumberFormat
+                  value={tenant.finalBalance}
+                  withColor
+                  className="text-2xl md:text-right"
+                />
               </div>
             </div>
           ))}

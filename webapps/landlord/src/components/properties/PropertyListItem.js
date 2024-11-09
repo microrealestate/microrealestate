@@ -45,9 +45,10 @@ export default function PropertyListItem({ property }) {
           <p className="text-sm text-muted-foreground">
             {t('Rent excluding tax and expenses')}
           </p>
-          <div className="text-2xl font-semibold">
-            <NumberFormat value={property.price} />
-          </div>
+          <NumberFormat
+            value={property.price}
+            className="text-2xl font-semibold"
+          />
         </div>
       </div>
       <div className="flex items-center gap-2">

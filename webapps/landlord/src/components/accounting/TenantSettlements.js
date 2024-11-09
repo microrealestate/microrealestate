@@ -1,7 +1,6 @@
-import { Card, CardHeader, CardTitle } from '../ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { DownloadIcon, ReceiptTextIcon } from 'lucide-react';
 import { Button } from '../ui/button';
-import { CardContent } from '@material-ui/core';
 import { cn } from '../../utils';
 import { EmptyIllustration } from '../Illustrations';
 import moment from 'moment';
@@ -38,9 +37,7 @@ function SettlementList({ month, tenantId, settlements }) {
                 >
                   <div>{moment(date).format('L')}</div>
                   <div>{t(type[0].toUpperCase() + type.slice(1))}</div>
-                  <div className="text-2xl">
-                    <NumberFormat value={amount} withColor />
-                  </div>
+                  <NumberFormat value={amount} withColor className="text-2xl" />
                 </div>
               ) : null;
             })

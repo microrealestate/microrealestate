@@ -57,9 +57,10 @@ export default function IncomingTenants({ onCSVClick }) {
                 <div className="text-muted-foreground text-xs md:text-right">
                   {t('Deposit')}
                 </div>
-                <div className="text-2xl md:text-right">
-                  <NumberFormat value={tenant.guaranty} />
-                </div>
+                <NumberFormat
+                  value={tenant.guaranty}
+                  className="text-2xl md:text-right"
+                />
               </div>
             </div>
           ))

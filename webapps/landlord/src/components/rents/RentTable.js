@@ -110,35 +110,31 @@ function RentRow({ rent, isSelected, onSelect, onEdit, onHistory }) {
           </div>
         </div>
         <div className="flex pl-8 md:pl-0 md:grid md:grid-cols-3 lg:grid-cols-5 gap-4 w-full md:w-1/2">
-          <div className="hidden lg:block">
-            <RentAmount
-              label={t('Rent')}
-              amount={rentAmounts.rent}
-              color="text.secondary"
-            />
-          </div>
-          <div className="hidden lg:block">
-            <RentAmount
-              label={t('Balance')}
-              amount={rentAmounts.balance}
-              color="text.secondary"
-              className="hidden md:block"
-            />
-          </div>
+          <RentAmount
+            label={t('Rent')}
+            amount={rentAmounts.rent}
+            withColor={false}
+            className="hidden lg:block"
+          />
+          <RentAmount
+            label={t('Balance')}
+            amount={rentAmounts.balance}
+            withColor={false}
+            className="hidden lg:block"
+          />
           <RentAmount
             label={t('Rent due')}
             amount={rentAmounts.totalAmount}
-            fontWeight={rentAmounts.totalAmount > 0 ? 'fontWeightBold' : ''}
-            color={
-              rentAmounts.totalAmount <= 0 ? 'text.secondary' : 'warning.main'
-            }
+            withColor={false}
+            debitColor={rentAmounts.totalAmount > 0}
+            className={rentAmounts.totalAmount > 0 ? 'font-bold' : ''}
           />
           <div className="grow">
             <RentAmount
               label={t('Settlement')}
               amount={rent.payment}
               showZero={false}
-              fontWeight={rentAmounts.payment > 0 ? 'fontWeightBold' : ''}
+              className={rentAmounts.payment > 0 ? 'font-bold' : ''}
             />
           </div>
           <div className="text-right space-x-2 grow whitespace-nowrap">

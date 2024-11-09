@@ -1,8 +1,6 @@
-import { Box, Divider } from '@material-ui/core';
-
-import { CardRow } from '../Cards';
-import Hidden from '../HiddenSSRCompatible';
+import { cn } from '../../utils';
 import NumberFormat from '../NumberFormat';
+import { Separator } from '../ui/separator';
 import useTranslation from 'next-translate/useTranslation';
 
 export function getRentAmounts(rent) {
@@ -28,39 +26,25 @@ export function getRentAmounts(rent) {
   };
 }
 
-export function RentAmount({ label, amount, color, ...props }) {
+export function RentAmount({
+  label,
+  amount,
+  creditColor,
+  debitColor,
+  withColor = true,
+  className
+}) {
   return (
-    <>
-      <Hidden xsDown>
-        <Box display="flex" flexDirection="column">
-          <Box align="right" fontSize="caption.fontSize" color="text.secondary">
-            {label}
-          </Box>
-          <NumberFormat
-            value={amount}
-            align="right"
-            fontSize="subtitle1.fontSize"
-            withColor={!color}
-            color={color}
-            {...props}
-          />
-        </Box>
-      </Hidden>
-      <Hidden smUp>
-        <Box display="flex" flexDirection="column" fontSize="caption.fontSize">
-          <Box align="right" color="text.secondary">
-            {label}
-          </Box>
-          <NumberFormat
-            value={amount}
-            align="right"
-            withColor={!color}
-            color={color}
-            {...props}
-          />
-        </Box>
-      </Hidden>
-    </>
+    <div className={cn('flex flex-col text-right', className)}>
+      <div className="text-xs text-muted-foreground">{label}</div>
+      <NumberFormat
+        value={amount}
+        align="right"
+        creditColor={creditColor}
+        debitColor={debitColor}
+        withColor={withColor}
+      />
+    </div>
   );
 }
 
@@ -70,8 +54,8 @@ export default function RentDetails({ rent }) {
   const rentAmounts = getRentAmounts(rent);
 
   return (
-    <>
-      <CardRow>
+    <div className="flex flex-col gap-2">
+      <div className="flex justify-between">
         {rentAmounts.balance === 0
           ? t('Previous balance')
           : rentAmounts.isDebitBalance
@@ -82,30 +66,30 @@ export default function RentDetails({ rent }) {
           debitColor={rentAmounts.isDebitBalance}
           creditColor={!rentAmounts.isDebitBalance}
         />
-      </CardRow>
-      <CardRow>
+      </div>
+      <div className="flex justify-between">
         {t('Rent')}
         <NumberFormat value={rentAmounts.rent} />
-      </CardRow>
-      <CardRow>
+      </div>
+      <div className="flex justify-between">
         {t('Additional costs')}
         <NumberFormat value={rentAmounts.additionalCosts} showZero={false} />
-      </CardRow>
-      <CardRow pb={1.5}>
+      </div>
+      <div className="flex justify-between">
         {t('Discount')}
         <NumberFormat value={rentAmounts.discount} showZero={false} />
-      </CardRow>
-      <Divider />
-      <CardRow pt={1.5}>
+      </div>
+      <Separator />
+      <div className="flex justify-between">
         {t('Total to pay')}
         <NumberFormat value={rentAmounts.totalAmount} />
-      </CardRow>
-      <CardRow pb={1.5}>
+      </div>
+      <div className="flex justify-between">
         {t('Settlements')}
         <NumberFormat value={rentAmounts.payment} showZero={false} withColor />
-      </CardRow>
-      <Divider />
-      <CardRow py={1.5}>
+      </div>
+      <Separator />
+      <div className="flex justify-between">
         {rentAmounts.newBalance === 0
           ? t('Balance')
           : rentAmounts.isDebitNewBalance
@@ -117,16 +101,14 @@ export default function RentDetails({ rent }) {
           debitColor={rentAmounts.isDebitNewBalance}
           creditColor={!rentAmounts.isDebitNewBalance}
         />
-      </CardRow>
-      <Divider />
-      <CardRow pt={1.5}>
-        <div className="flex flex-col gap-1">
-          <div>{t('Note')}</div>
-          <div className="h-14 break-words overflow-y-auto">
-            {rent.description}
-          </div>
+      </div>
+      <Separator />
+      <div className="flex flex-col gap-2">
+        <div>{t('Note')}</div>
+        <div className="h-14 break-words overflow-y-auto">
+          {rent.description}
         </div>
-      </CardRow>
-    </>
+      </div>
+    </div>
   );
 }

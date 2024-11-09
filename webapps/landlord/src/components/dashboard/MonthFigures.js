@@ -115,9 +115,11 @@ function MonthFigures({ className }) {
                     >
                       {tenant.name}
                     </Button>
-                    <span className="font-semibold">
-                      <NumberFormat value={balance} withColor />
-                    </span>
+                    <NumberFormat
+                      value={balance}
+                      withColor
+                      className="font-semibold"
+                    />
                   </div>
                 )
               )}

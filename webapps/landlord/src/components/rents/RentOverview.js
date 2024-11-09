@@ -52,9 +52,11 @@ export function RentOverview({ data }) {
           count: data.countNotPaid
         })}
         renderContent={() => (
-          <div className="flex-grow text-warning">
-            <NumberFormat value={data.totalNotPaid} />
-          </div>
+          <NumberFormat
+            value={data.totalNotPaid}
+            debitColor={true}
+            className="flex-grow"
+          />
         )}
         className="hidden sm:block 2xl:col-span-1"
       />
@@ -65,9 +67,11 @@ export function RentOverview({ data }) {
           count: data.countPaid + data.countPartiallyPaid
         })}
         renderContent={() => (
-          <div className="flex-grow text-success">
-            <NumberFormat value={data.totalPaid} />
-          </div>
+          <NumberFormat
+            value={data.totalPaid}
+            creditColor={true}
+            className="flex-grow"
+          />
         )}
         className="hidden sm:block 2xl:col-span-1"
       />
