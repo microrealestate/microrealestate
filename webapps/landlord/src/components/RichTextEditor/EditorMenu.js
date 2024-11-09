@@ -34,7 +34,7 @@ const EditorMenu = ({
 
   return editor ? (
     <>
-      <div className="top-0 sticky z-50 bg-card shadow-md p-2 pb-4">
+      <div className="top-0 sticky z-50 bg-card shadow-md p-2 pb-2">
         <div className="flex items-center justify-between m-2">
           <Input
             name="title"
@@ -71,7 +71,7 @@ const EditorMenu = ({
           </div>
         </div>
         <div className="flex items-end justify-between mr-2">
-          <div className="flex items-center flex-wrap">
+          <div className="flex flex-col gap-1">
             <FormatMenu editor={editor} showPrintButton={showPrintButton} />
             <TableMenu editor={editor} />
           </div>
@@ -86,7 +86,7 @@ const EditorMenu = ({
           )}
         </div>
       </div>
-      {showFieldMenu && <FieldMenu editor={editor} fields={fields} />}
+      {showFieldMenu ? <FieldMenu editor={editor} fields={fields} /> : null}
     </>
   ) : null;
 };
