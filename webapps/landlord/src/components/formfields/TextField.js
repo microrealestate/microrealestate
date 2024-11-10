@@ -1,4 +1,4 @@
-import { EyeIcon, EyeOffIcon } from 'lucide-react';
+import { LuEye, LuEyeOff } from 'react-icons/lu';
 import { useCallback, useState } from 'react';
 import { useField, useFormikContext } from 'formik';
 import { Button } from '../ui/button';
@@ -44,7 +44,7 @@ export function TextField({ disabled, showHidePassword = true, ...props }) {
             size="icon"
             onClick={handleClickShowPassword}
           >
-            {displayPassword ? <EyeIcon /> : <EyeOffIcon />}
+            {displayPassword ? <LuEye /> : <LuEyeOff />}
           </Button>
         ) : null}
       </div>

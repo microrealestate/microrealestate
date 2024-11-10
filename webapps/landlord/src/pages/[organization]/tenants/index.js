@@ -2,9 +2,9 @@ import { fetchTenants, QueryKeys } from '../../../utils/restcalls';
 import React, { useCallback, useContext, useState } from 'react';
 import { Button } from '../../../components/ui/button';
 import { List } from '../../../components/ResourceList';
+import { LuPlusCircle } from 'react-icons/lu';
 import NewTenantDialog from '../../../components/tenants/NewTenantDialog';
 import Page from '../../../components/Page';
-import { PlusCircleIcon } from 'lucide-react';
 import { StoreContext } from '../../../store';
 import TenantList from '../../../components/tenants/TenantList';
 import { toast } from 'sonner';
@@ -102,8 +102,12 @@ function Tenants() {
         ]}
         filterFn={_filterData}
         renderActions={() => (
-          <Button variant="secondary" className="w-full" onClick={onNewTenant}>
-            <PlusCircleIcon className="mr-2" />
+          <Button
+            variant="secondary"
+            className="w-full gap-2"
+            onClick={onNewTenant}
+          >
+            <LuPlusCircle className="size-4" />
             {t('Add a tenant')}
           </Button>
         )}

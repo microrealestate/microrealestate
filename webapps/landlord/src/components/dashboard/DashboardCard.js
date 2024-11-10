@@ -5,9 +5,9 @@ import {
   CardHeader,
   CardTitle
 } from '../ui/card';
-import { ArrowRightCircleIcon } from 'lucide-react';
 import { Button } from '../ui/button';
 import { cn } from '../../utils';
+import { LuArrowRightCircle } from 'react-icons/lu';
 
 export function DashboardCard({
   Icon,
@@ -37,8 +37,8 @@ export function DashboardCard({
           </CardDescription>
         </div>
         {onClick ? (
-          <Button variant="secondary" onClick={onClick} className="h-full p-1">
-            <ArrowRightCircleIcon size="32" />
+          <Button variant="ghost" size="icon" onClick={onClick}>
+            <LuArrowRightCircle className="size-8" />
           </Button>
         ) : null}
       </CardContent>

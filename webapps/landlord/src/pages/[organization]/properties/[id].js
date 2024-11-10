@@ -1,9 +1,4 @@
-import {
-  ArrowLeftIcon,
-  HistoryIcon,
-  KeyRoundIcon,
-  TrashIcon
-} from 'lucide-react';
+import { LuArrowLeft, LuHistory, LuKeyRound, LuTrash } from 'react-icons/lu';
 import { Tab, Tabs } from '@material-ui/core';
 import { TabPanel, useTabChangeHelper } from '../../../components/Tabs';
 import { useCallback, useContext, useState } from 'react';
@@ -31,7 +26,7 @@ function PropertyOverviewCard() {
 
   return (
     <DashboardCard
-      Icon={KeyRoundIcon}
+      Icon={LuKeyRound}
       title={t('Property')}
       renderContent={() => (
         <div className="text-base">
@@ -54,7 +49,7 @@ function OccupancyHistoryCard() {
 
   return (
     <DashboardCard
-      Icon={HistoryIcon}
+      Icon={LuHistory}
       title={t('Previous tenants')}
       renderContent={() => (
         <div className="flex flex-col gap-2 text-xs">
@@ -182,12 +177,12 @@ function Property() {
         <div className="grid grid-cols-5 gap-1.5 md:gap-4">
           <ShortcutButton
             label={t('Back')}
-            Icon={ArrowLeftIcon}
+            Icon={LuArrowLeft}
             onClick={handleBack}
           />
           <ShortcutButton
             label={t('Delete')}
-            Icon={TrashIcon}
+            Icon={LuTrash}
             onClick={onConfirmDeleteProperty}
             className="col-start-2 col-end-2"
             dataCy="removeResourceButton"

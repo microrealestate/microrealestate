@@ -66,10 +66,12 @@ export const TermsDocumentIllustration = ({ alt = '' }) => (
 );
 
 export const WelcomeIllustration = () => (
-  <Illustration
-    src={`${config.BASE_PATH}/undraw_apartment_rent_o0ut.svg`}
-    alt="welcome"
-  />
+  <div className="h-64 w-full">
+    <Illustration
+      src={`${config.BASE_PATH}/undraw_project_completed_re_jr7u.svg`}
+      alt="welcome"
+    />
+  </div>
 );
 
 export const CelebrationIllustration = ({ label, height }) => (

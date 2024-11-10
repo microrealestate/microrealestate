@@ -19,27 +19,44 @@ export default function FirstConnection({
     return [
       {
         key: 0,
-        stepLabel: t('Create my first contract'),
-        buttonLabel: t('Create'),
+        stepLabel: t(
+          'Create a reusable contract model that includes the terms and conditions for renting your properties.'
+        ),
+        buttonLabel: t('Create a contract'),
         onClick: handleCreateContract,
+        isDone: hasContract,
         dataCy: 'shortcutCreateContract'
       },
       {
         key: 1,
-        stepLabel: t('Add my first property'),
-        buttonLabel: t('Add'),
+        stepLabel: t(
+          'Enter the details of your property so it can be listed and made available for renting.'
+        ),
+        buttonLabel: t('Add a property'),
         onClick: handleAddProperty,
+        isDone: hasProperty,
         dataCy: 'shortcutAddProperty'
       },
       {
         key: 2,
-        stepLabel: t('Add my first tenant'),
-        buttonLabel: t('Add'),
+        stepLabel: t(
+          "Add your tenant's details to link them to the property and contract model, finalizing the lease setup."
+        ),
+        buttonLabel: t('Add a tenant'),
         onClick: handleAddTenant,
+        isDone: hasTenant,
         dataCy: 'shortcutAddTenant'
       }
     ];
-  }, [t, handleCreateContract, handleAddProperty, handleAddTenant]);
+  }, [
+    t,
+    handleCreateContract,
+    hasContract,
+    handleAddProperty,
+    hasProperty,
+    handleAddTenant,
+    hasTenant
+  ]);
 
   return (
     <div>
@@ -47,20 +64,28 @@ export default function FirstConnection({
         {t('Follow these steps to start managing your properties')}
       </div>
       <Stepper activeStep={activeStep}>
-        {steps.map(({ key, stepLabel, buttonLabel, onClick, dataCy }) => {
-          return (
-            <Step key={key} stepLabel={stepLabel}>
-              <Button
-                variant="outline"
-                onClick={onClick}
-                data-cy={dataCy}
-                className="w-52"
+        {steps.map(
+          ({ key, stepLabel, buttonLabel, onClick, dataCy, isDone }) => {
+            return (
+              <Step
+                key={key}
+                stepLabel={stepLabel}
+                isDone={isDone}
+                className="p-4"
               >
-                {buttonLabel}
-              </Button>
-            </Step>
-          );
-        })}
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={onClick}
+                  className="w-52"
+                  data-cy={dataCy}
+                >
+                  {buttonLabel}
+                </Button>
+              </Step>
+            );
+          }
+        )}
       </Stepper>
     </div>
   );

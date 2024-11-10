@@ -311,6 +311,7 @@ function LeaseContractForm({ readOnly, onSubmit }) {
               <NumberField
                 label={t('Deposit')}
                 name="guaranty"
+                showZero={true}
                 disabled={!values.leaseId || readOnly}
               />
             </Section>

@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { DownloadIcon, ReceiptTextIcon } from 'lucide-react';
+import { GrDocumentCsv, GrDocumentPdf } from 'react-icons/gr';
 import { Button } from '../ui/button';
 import { cn } from '../../utils';
 import { EmptyIllustration } from '../Illustrations';
@@ -59,9 +59,11 @@ export default function TenantSettlements({
       <CardHeader>
         <CardTitle className="flex justify-between items-center text-lg md:text-xl">
           {t('Settlements')}
-          <Button variant="secondary" onClick={onCSVClick}>
-            <DownloadIcon />
-          </Button>
+          {hasData ? (
+            <Button variant="ghost" size="icon" onClick={onCSVClick}>
+              <GrDocumentCsv className="size-6" />
+            </Button>
+          ) : null}
         </CardTitle>
       </CardHeader>
       {hasData ? (
@@ -75,12 +77,13 @@ export default function TenantSettlements({
                 <div>{settlement.tenant}</div>
                 <Button
                   variant="secondary"
+                  className="flex items-center gap-2"
                   onClick={onDownloadYearInvoices({
                     _id: settlement.tenantId,
                     name: settlement.tenant
                   })}
                 >
-                  <ReceiptTextIcon className="h-4 w-4" />
+                  <GrDocumentPdf /> {t('Invoices')}
                 </Button>
               </div>
               <div className="text-muted-foreground mb-2">

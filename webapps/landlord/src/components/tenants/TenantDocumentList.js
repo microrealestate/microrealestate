@@ -9,6 +9,7 @@ import { Button } from '../ui/button';
 import ConfirmDialog from '../ConfirmDialog';
 import DocumentList from '../DocumentList';
 import Loading from '../Loading';
+import { LuPlusCircle } from 'react-icons/lu';
 import { Observer } from 'mobx-react-lite';
 import RichTextEditorDialog from '../RichTextEditor/RichTextEditorDialog';
 import { StoreContext } from '../../store';
@@ -157,9 +158,10 @@ function TenantDocumentList({ disabled = false }) {
         variant="secondary"
         onClick={() => setOpenDocumentCreatorDialog(true)}
         disabled={disabled}
-        className="mb-2"
+        className="mb-2 gap-2"
         data-cy="addTenantTextDocument"
       >
+        <LuPlusCircle className="size-4" />
         {t('Create a document')}
       </Button>
       <Drawer

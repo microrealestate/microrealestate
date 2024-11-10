@@ -18,9 +18,13 @@ describe('Create/delete resources', () => {
     cy.createContractFromStepper(contract369);
     cy.get('[data-cy=tabContractTemplates]').click();
     contract369.templates.map((template) => {
-      cy.get('ul').contains(template.title).should('be.visible');
+      cy.get('[data-cy=contractPage]')
+        .contains(template.title)
+        .should('be.visible');
       if (template.type === 'text' && template.description) {
-        cy.get('ul').contains(template.description).should('be.visible');
+        cy.get('[data-cy=contractPage]')
+          .contains(template.description)
+          .should('be.visible');
       }
     });
     cy.get('[data-cy=tabContractInfo]').click();

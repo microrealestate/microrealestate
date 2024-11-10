@@ -2080,14 +2080,12 @@ __metadata:
     "@date-io/core": 1.3.13
     "@date-io/moment": 1.3.13
     "@material-ui/core": 4.12.4
-    "@material-ui/icons": 4.11.3
     "@material-ui/pickers": 3.3.10
     "@microrealestate/commonui": "*"
     "@radix-ui/react-avatar": 1.1.1
     "@radix-ui/react-checkbox": 1.1.2
     "@radix-ui/react-collapsible": 1.1.1
     "@radix-ui/react-dialog": 1.1.2
-    "@radix-ui/react-icons": 1.3.1
     "@radix-ui/react-label": 2.1.0
     "@radix-ui/react-popover": 1.1.2
     "@radix-ui/react-progress": 1.1.0
@@ -2135,7 +2133,6 @@ __metadata:
     js-file-download: 0.4.12
     jsesc: 3.0.2
     lodash: 4.17.21
-    lucide-react: 0.365.0
     material-ui-formik-components: 0.7.3
     mobx: 6.12.3
     mobx-react-lite: 3.4.3
@@ -2153,6 +2150,7 @@ __metadata:
     react-awesome-lightbox: 1.8.1
     react-day-picker: 8.10.0
     react-dom: 18.2.0
+    react-icons: 5.3.0
     recharts: 2.12.4
     sonner: 1.4.41
     tailwind-merge: 2.5.2
@@ -2845,15 +2843,6 @@ __metadata:
     "@types/react-dom":
       optional: true
   checksum: 58bf688ea48e852b9c036fc992c3e515409291c3464666660f492e2359e0acbc36b14f535c6a039cd920b3dcd4fe08020ad2d5ce66346284900a7d105cc52ecb
-  languageName: node
-  linkType: hard
-
-"@radix-ui/react-icons@npm:1.3.1":
-  version: 1.3.1
-  resolution: "@radix-ui/react-icons@npm:1.3.1"
-  peerDependencies:
-    react: ^16.x || ^17.x || ^18.x || ^19.x
-  checksum: df2c7c7b4bf6df7d869d4d7520abdf11262c3a557e39e5fad1d9ef6315c91af8ccb26537ba700c99ec0a996c137f84693b90ad039bba5ec160c2a1d44e8d9b2f
   languageName: node
   linkType: hard
 
@@ -11463,15 +11452,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lucide-react@npm:0.365.0":
-  version: 0.365.0
-  resolution: "lucide-react@npm:0.365.0"
-  peerDependencies:
-    react: ^16.5.1 || ^17.0.0 || ^18.0.0
-  checksum: 6653d4df3f209d2beb347f09448d16d403fc1d426973894ad43cf20b9c5443fa83f4131b6691b8ced581be0172944f0b2a433d77925ace5a099a948458bba956
-  languageName: node
-  linkType: hard
-
 "lucide-react@npm:0.378.0":
   version: 0.378.0
   resolution: "lucide-react@npm:0.378.0"
@@ -13774,6 +13754,15 @@ __metadata:
   peerDependencies:
     react: ^16.8.0 || ^17 || ^18
   checksum: dec192fec9c54e436f9e47008635dd7849b6b119ed477a9b0cd491367a0b2ced3427cd937febfb245e1cb7578c863917181d903eff4519c2787bf713ec7d3426
+  languageName: node
+  linkType: hard
+
+"react-icons@npm:5.3.0":
+  version: 5.3.0
+  resolution: "react-icons@npm:5.3.0"
+  peerDependencies:
+    react: "*"
+  checksum: 3aa5f50e05aafc6d31e0d995fe0d98560069aa88717b24ce8aaa082a7e7b20ca95e1e19d847ed6e52d658a5a30e15826af20d7554bf993a743edd55586db62e3
   languageName: node
   linkType: hard
 

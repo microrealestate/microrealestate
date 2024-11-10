@@ -1,4 +1,23 @@
 import {
+  RiAlignCenter,
+  RiAlignLeft,
+  RiAlignRight,
+  RiArrowGoBackFill,
+  RiArrowGoForwardLine,
+  RiBold,
+  RiDoubleQuotesR,
+  RiFormatClear,
+  RiItalic,
+  RiListOrdered,
+  RiListUnordered,
+  RiPrinterFill,
+  RiSeparator,
+  RiStrikethrough,
+  RiSuperscript,
+  RiTextWrap,
+  RiUnderline
+} from 'react-icons/ri';
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -9,7 +28,6 @@ import { Button } from '../ui/button';
 import { handlePrint } from './helpers';
 import { Separator } from '../ui/separator';
 import { Toggle } from '../ui/toggle';
-import { useState } from 'react';
 import useTranslation from 'next-translate/useTranslation';
 
 const getHeadingLevel = (editor) => {
@@ -97,7 +115,7 @@ const FormatMenu = ({ editor, showPrintButton }) => {
         disabled={!editor.isEditable}
         onClick={() => editor.chain().focus().undo().run()}
       >
-        <i className="ri-arrow-go-back-line"></i>
+        <RiArrowGoBackFill />
       </Button>
       <Button
         variant="ghost"
@@ -105,7 +123,7 @@ const FormatMenu = ({ editor, showPrintButton }) => {
         disabled={!editor.isEditable}
         onClick={() => editor.chain().focus().redo().run()}
       >
-        <i className="ri-arrow-go-forward-line"></i>
+        <RiArrowGoForwardLine />
       </Button>
       <Separator orientation="vertical" />
       <HeadingSelect editor={editor} />
@@ -115,28 +133,28 @@ const FormatMenu = ({ editor, showPrintButton }) => {
         disabled={!editor.isEditable}
         onClick={() => editor.chain().focus().toggleBold().run()}
       >
-        <i className="ri-bold"></i>
+        <RiBold />
       </Toggle>
       <Toggle
         pressed={italicActive}
         disabled={!editor.isEditable}
         onClick={() => editor.chain().focus().toggleItalic().run()}
       >
-        <i className="ri-italic"></i>
+        <RiItalic />
       </Toggle>
       <Toggle
         pressed={underlineActive}
         disabled={!editor.isEditable}
         onClick={() => editor.chain().focus().toggleUnderline().run()}
       >
-        <i className="ri-underline"></i>
+        <RiUnderline />
       </Toggle>
       <Toggle
         pressed={strikeActive}
         disabled={!editor.isEditable}
         onClick={() => editor.chain().focus().toggleStrike().run()}
       >
-        <i className="ri-strikethrough"></i>
+        <RiStrikethrough />
       </Toggle>
       <Button
         variant="ghost"
@@ -144,7 +162,7 @@ const FormatMenu = ({ editor, showPrintButton }) => {
         disabled={!editor.isEditable}
         onClick={() => editor.chain().focus().unsetAllMarks().run()}
       >
-        <i className="ri-format-clear"></i>
+        <RiFormatClear />
       </Button>
       <Separator orientation="vertical" />
       <Toggle
@@ -152,21 +170,21 @@ const FormatMenu = ({ editor, showPrintButton }) => {
         disabled={!editor.isEditable}
         onClick={() => editor.chain().focus().setTextAlign('left').run()}
       >
-        <i className="ri-align-left"></i>
+        <RiAlignLeft />
       </Toggle>
       <Toggle
         pressed={alignCenterActive}
         disabled={!editor.isEditable}
         onClick={() => editor.chain().focus().setTextAlign('center').run()}
       >
-        <i className="ri-align-center"></i>
+        <RiAlignCenter />
       </Toggle>
       <Toggle
         pressed={alignRightActive}
         disabled={!editor.isEditable}
         onClick={() => editor.chain().focus().setTextAlign('right').run()}
       >
-        <i className="ri-align-right"></i>
+        <RiAlignRight />
       </Toggle>
       <Separator orientation="vertical" />
       <Toggle
@@ -174,7 +192,7 @@ const FormatMenu = ({ editor, showPrintButton }) => {
         disabled={!editor.isEditable}
         onClick={() => editor.chain().focus().toggleSuperscript().run()}
       >
-        <i className="ri-superscript"></i>
+        <RiSuperscript />
       </Toggle>
       <Separator orientation="vertical" />
       <Toggle
@@ -182,14 +200,14 @@ const FormatMenu = ({ editor, showPrintButton }) => {
         disabled={!editor.isEditable}
         onClick={() => editor.chain().focus().toggleBulletList().run()}
       >
-        <i className="ri-list-unordered"></i>
+        <RiListUnordered />
       </Toggle>
       <Toggle
         pressed={orderedListActive}
         disabled={!editor.isEditable}
         onClick={() => editor.chain().focus().toggleOrderedList().run()}
       >
-        <i className="ri-list-ordered"></i>
+        <RiListOrdered />
       </Toggle>
       <Separator orientation="vertical" />
       <Toggle
@@ -197,7 +215,7 @@ const FormatMenu = ({ editor, showPrintButton }) => {
         disabled={!editor.isEditable}
         onClick={() => editor.chain().focus().toggleBlockquote().run()}
       >
-        <i className="ri-double-quotes-r"></i>
+        <RiDoubleQuotesR />
       </Toggle>
       <Separator orientation="vertical" />
       <Button
@@ -206,7 +224,7 @@ const FormatMenu = ({ editor, showPrintButton }) => {
         disabled={!editor.isEditable}
         onClick={() => editor.chain().focus().setHardBreak().run()}
       >
-        <i className="ri-text-wrap"></i>
+        <RiTextWrap />
       </Button>
       <Separator orientation="vertical" />
       <Button
@@ -215,7 +233,7 @@ const FormatMenu = ({ editor, showPrintButton }) => {
         disabled={!editor.isEditable}
         onClick={() => editor.chain().focus().setHorizontalRule().run()}
       >
-        <i className="ri-separator"></i>
+        <RiSeparator />
       </Button>
       {showPrintButton && (
         <>
@@ -225,7 +243,7 @@ const FormatMenu = ({ editor, showPrintButton }) => {
             size="icon"
             onClick={() => handlePrint(editor)}
           >
-            <i className="ri-printer-fill"></i>
+            <RiPrinterFill />
           </Button>
         </>
       )}

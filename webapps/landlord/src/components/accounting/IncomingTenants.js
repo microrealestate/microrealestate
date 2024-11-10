@@ -1,8 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { cn } from '../../utils';
-import { DownloadIcon } from 'lucide-react';
 import { EmptyIllustration } from '../Illustrations';
+import { GrDocumentCsv } from 'react-icons/gr';
 import moment from 'moment';
 import NumberFormat from '../NumberFormat';
 import PropertyIcon from '../properties/PropertyIcon';
@@ -20,9 +20,11 @@ export default function IncomingTenants({ onCSVClick }) {
       <CardHeader>
         <CardTitle className="flex justify-between items-center text-lg md:text-xl">
           {t('Incoming tenants')}
-          <Button variant="secondary" onClick={onCSVClick}>
-            <DownloadIcon />
-          </Button>
+          {hasData ? (
+            <Button variant="ghost" size="icon" onClick={onCSVClick}>
+              <GrDocumentCsv className="size-6" />
+            </Button>
+          ) : null}
         </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-2">
@@ -60,6 +62,7 @@ export default function IncomingTenants({ onCSVClick }) {
                 <NumberFormat
                   value={tenant.guaranty}
                   className="text-2xl md:text-right"
+                  showZero={true}
                 />
               </div>
             </div>

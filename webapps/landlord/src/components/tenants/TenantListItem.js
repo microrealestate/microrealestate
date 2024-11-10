@@ -104,7 +104,7 @@ export default function TenantListItem({ tenant }) {
       </CardContent>
 
       <CardFooter>
-        <CompulsoryDocumentStatus tenant={tenant} variant="compact" />
+        <CompulsoryDocumentStatus tenant={tenant} />
       </CardFooter>
     </Card>
   );

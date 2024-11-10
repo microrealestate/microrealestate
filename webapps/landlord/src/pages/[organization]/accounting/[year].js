@@ -1,4 +1,3 @@
-import { Card, CardContent, CardHeader } from '../../../components/ui/card';
 import {
   Tabs,
   TabsContent,
@@ -6,8 +5,8 @@ import {
   TabsTrigger
 } from '../../../components/ui/tabs';
 import { useCallback, useContext } from 'react';
+import { Card } from '../../../components/ui/card';
 import { downloadDocument } from '../../../utils/fetch';
-import { EmptyIllustration } from '../../../components/Illustrations';
 import IncomingTenants from '../../../components/accounting/IncomingTenants';
 import moment from 'moment';
 import { observer } from 'mobx-react-lite';
@@ -123,42 +122,31 @@ function Accounting() {
       <Card className="px-4 py-2 mb-6">
         <TopBar onSearch={handleSearch} />
       </Card>
-      {store.accounting.filteredData?.incomingTenants?.length ||
-      store.accounting.filteredData?.outgoingTenants?.length ||
-      store.accounting.filteredData?.settlements?.length ? (
-        <Tabs defaultValue="incoming" className="overflow-x-auto">
-          <TabsList className="flex justify-start flex-nowrap w-screen-nomargin-sm overflow-x-auto md:w-full">
-            <TabsTrigger value="incoming">{`${t('Incoming tenants')} (${
-              store.accounting.filteredData.incomingTenants.length
-            })`}</TabsTrigger>
-            <TabsTrigger value="outgoing">{`${t('Outgoing tenants')} (${
-              store.accounting.filteredData.outgoingTenants.length
-            })`}</TabsTrigger>
-            <TabsTrigger value="settlements">{`${t('Settlements')} (${
-              store.accounting.filteredData.settlements.length
-            })`}</TabsTrigger>
-          </TabsList>
-          <TabsContent value="incoming">
-            <IncomingTenants onCSVClick={getIncomingTenantsAsCsv} />
-          </TabsContent>
-          <TabsContent value="outgoing">
-            <OutgoingTenants onCSVClick={getOutgoingTenantsAsCsv} />
-          </TabsContent>
-          <TabsContent value="settlements">
-            <TenantSettlements
-              onCSVClick={getSettlementsAsCsv}
-              onDownloadYearInvoices={getYearInvoices}
-            />
-          </TabsContent>
-        </Tabs>
-      ) : (
-        <Card>
-          <CardHeader />
-          <CardContent>
-            <EmptyIllustration label={t('No data found')} />
-          </CardContent>
-        </Card>
-      )}
+      <Tabs defaultValue="incoming" className="overflow-x-auto">
+        <TabsList className="flex justify-start flex-nowrap w-screen-nomargin-sm overflow-x-auto md:w-full">
+          <TabsTrigger value="incoming">{`${t('Incoming tenants')} (${
+            store.accounting.filteredData.incomingTenants?.length || 0
+          })`}</TabsTrigger>
+          <TabsTrigger value="outgoing">{`${t('Outgoing tenants')} (${
+            store.accounting.filteredData.outgoingTenants?.length || 0
+          })`}</TabsTrigger>
+          <TabsTrigger value="settlements">{`${t('Settlements')} (${
+            store.accounting.filteredData.settlements?.length || 0
+          })`}</TabsTrigger>
+        </TabsList>
+        <TabsContent value="incoming">
+          <IncomingTenants onCSVClick={getIncomingTenantsAsCsv} />
+        </TabsContent>
+        <TabsContent value="outgoing">
+          <OutgoingTenants onCSVClick={getOutgoingTenantsAsCsv} />
+        </TabsContent>
+        <TabsContent value="settlements">
+          <TenantSettlements
+            onCSVClick={getSettlementsAsCsv}
+            onDownloadYearInvoices={getYearInvoices}
+          />
+        </TabsContent>
+      </Tabs>
     </Page>
   );
 }

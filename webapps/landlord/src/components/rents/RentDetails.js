@@ -73,11 +73,11 @@ export default function RentDetails({ rent }) {
       </div>
       <div className="flex justify-between">
         {t('Additional costs')}
-        <NumberFormat value={rentAmounts.additionalCosts} showZero={false} />
+        <NumberFormat value={rentAmounts.additionalCosts} />
       </div>
       <div className="flex justify-between">
         {t('Discount')}
-        <NumberFormat value={rentAmounts.discount} showZero={false} />
+        <NumberFormat value={rentAmounts.discount} />
       </div>
       <Separator />
       <div className="flex justify-between">
@@ -86,7 +86,7 @@ export default function RentDetails({ rent }) {
       </div>
       <div className="flex justify-between">
         {t('Settlements')}
-        <NumberFormat value={rentAmounts.payment} showZero={false} withColor />
+        <NumberFormat value={rentAmounts.payment} withColor />
       </div>
       <Separator />
       <div className="flex justify-between">

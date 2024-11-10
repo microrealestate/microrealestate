@@ -1,5 +1,5 @@
-import { AlertTriangleIcon, BanknoteIcon } from 'lucide-react';
 import { Cell, Legend, Pie, PieChart, ResponsiveContainer } from 'recharts';
+import { LuAlertTriangle, LuBanknote } from 'react-icons/lu';
 import { useContext, useMemo } from 'react';
 import { Button } from '../ui/button';
 import { CelebrationIllustration } from '../../components/Illustrations';
@@ -40,7 +40,7 @@ function MonthFigures({ className }) {
   return (
     <div className={cn('grid grid-cols-1 gap-4', className)}>
       <DashboardCard
-        Icon={BanknoteIcon}
+        Icon={LuBanknote}
         title={t('Settlements')}
         description={t('Rents of {{monthYear}}', {
           monthYear: moment().format('MMMM YYYY')
@@ -90,7 +90,7 @@ function MonthFigures({ className }) {
       />
 
       <DashboardCard
-        Icon={AlertTriangleIcon}
+        Icon={LuAlertTriangle}
         title={t('Top 5 of not paid rents')}
         description={t('Tenants with the highest unpaid balance')}
         renderContent={() =>

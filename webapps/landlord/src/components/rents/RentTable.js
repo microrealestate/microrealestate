@@ -1,4 +1,3 @@
-import { Edit2Icon, HistoryIcon } from 'lucide-react';
 import { getRentAmounts, RentAmount } from './RentDetails';
 import { useCallback, useContext, useMemo, useState } from 'react';
 import { Button } from '../ui/button';
@@ -6,11 +5,13 @@ import { Checkbox } from '../ui/checkbox';
 import { cn } from '../../utils';
 import { downloadDocument } from '../../utils/fetch';
 import { EmptyIllustration } from '../Illustrations';
+import { LuHistory } from 'react-icons/lu';
 import moment from 'moment';
 import NewPaymentDialog from '../payment/NewPaymentDialog';
 import RentHistoryDialog from './RentHistoryDialog';
 import { Separator } from '../ui/separator';
 import { StoreContext } from '../../store';
+import { TbCashRegister } from 'react-icons/tb';
 import Tooltip from '../Tooltip';
 import useTranslation from 'next-translate/useTranslation';
 
@@ -19,7 +20,7 @@ function Reminder({ rent, className }) {
 
   let label;
   let sentDate;
-  let color = 'text-muted';
+  let color = 'text-muted-foreground';
   let endpoint;
   let documentName;
 
@@ -133,16 +134,15 @@ function RentRow({ rent, isSelected, onSelect, onEdit, onHistory }) {
             <RentAmount
               label={t('Settlement')}
               amount={rent.payment}
-              showZero={false}
               className={rentAmounts.payment > 0 ? 'font-bold' : ''}
             />
           </div>
           <div className="text-right space-x-2 grow whitespace-nowrap">
             <Button variant="ghost" size="icon" onClick={onEdit(rent)}>
-              <Edit2Icon className="h-4 w-4" />
+              <TbCashRegister className="size-6" />
             </Button>
             <Button variant="ghost" size="icon" onClick={onHistory(rent)}>
-              <HistoryIcon className="h-4 w-4" />
+              <LuHistory className="size-6" />
             </Button>
           </div>
         </div>

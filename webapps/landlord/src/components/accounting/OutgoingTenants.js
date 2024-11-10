@@ -1,8 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { cn } from '../../utils';
-import { DownloadIcon } from 'lucide-react';
 import { EmptyIllustration } from '../Illustrations';
+import { GrDocumentCsv } from 'react-icons/gr';
 import moment from 'moment';
 import NumberFormat from '../NumberFormat';
 import PropertyIcon from '../properties/PropertyIcon';
@@ -20,9 +20,11 @@ export default function OutgoingTenants({ onCSVClick }) {
       <CardHeader>
         <CardTitle className="flex justify-between items-center text-lg md:text-xl">
           {t('Outgoing tenants')}
-          <Button variant="secondary" onClick={onCSVClick}>
-            <DownloadIcon />
-          </Button>
+          {hasData ? (
+            <Button variant="ghost" size="icon" onClick={onCSVClick}>
+              <GrDocumentCsv className="size-6" />
+            </Button>
+          ) : null}
         </CardTitle>
       </CardHeader>
       {hasData ? (
@@ -67,10 +69,7 @@ export default function OutgoingTenants({ onCSVClick }) {
                     {t('Deposit reimbursement')}
                   </div>
                   <div>
-                    <NumberFormat
-                      value={tenant.guarantyPayback}
-                      showZero={false}
-                    />
+                    <NumberFormat value={tenant.guarantyPayback} />
                   </div>
                 </div>
                 <div>
@@ -78,7 +77,7 @@ export default function OutgoingTenants({ onCSVClick }) {
                     {t('Last rent balance')}
                   </div>
                   <div>
-                    <NumberFormat value={tenant.balance} showZero={false} />
+                    <NumberFormat value={tenant.balance} />
                   </div>
                 </div>
               </div>
@@ -89,6 +88,7 @@ export default function OutgoingTenants({ onCSVClick }) {
                 <NumberFormat
                   value={tenant.finalBalance}
                   withColor
+                  showZero={true}
                   className="text-2xl md:text-right"
                 />
               </div>

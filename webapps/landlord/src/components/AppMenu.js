@@ -1,12 +1,11 @@
 import {
-  KeyRoundIcon,
-  LayoutDashboardIcon,
-  MenuIcon,
-  ReceiptTextIcon,
-  SettingsIcon,
-  UserCircleIcon,
-  WalletIcon
-} from 'lucide-react';
+  LuKeyRound,
+  LuLayoutDashboard,
+  LuMenu,
+  LuSettings,
+  LuUserCircle,
+  LuWallet
+} from 'react-icons/lu';
 import {
   Sheet,
   SheetClose,
@@ -17,6 +16,7 @@ import {
   SheetTrigger
 } from './ui/sheet';
 import { useCallback, useContext, useEffect, useState } from 'react';
+import { BsReceipt } from 'react-icons/bs';
 import { Button } from './ui/button';
 import { cn } from '../utils';
 import config from '../config';
@@ -33,7 +33,7 @@ const menuItems = [
     key: 'dashboard',
     labelId: 'Dashboard',
     pathname: '/dashboard',
-    Icon: LayoutDashboardIcon,
+    Icon: LuLayoutDashboard,
     dataCy: 'dashboardNav'
   },
   {
@@ -41,35 +41,35 @@ const menuItems = [
     labelId: 'Rents',
     pathname: '/rents/[yearMonth]',
     subPathnames: ['/payment/[tenantId]/[...param]'],
-    Icon: ReceiptTextIcon,
+    Icon: BsReceipt,
     dataCy: 'rentsNav'
   },
   {
     key: 'tenants',
     labelId: 'Tenants',
     pathname: '/tenants',
-    Icon: UserCircleIcon,
+    Icon: LuUserCircle,
     dataCy: 'tenantsNav'
   },
   {
     key: 'properties',
     labelId: 'Properties',
     pathname: '/properties',
-    Icon: KeyRoundIcon,
+    Icon: LuKeyRound,
     dataCy: 'propertiesNav'
   },
   {
     key: 'accounting',
     labelId: 'Accounting',
     pathname: '/accounting/[year]',
-    Icon: WalletIcon,
+    Icon: LuWallet,
     dataCy: 'accountingNav'
   },
   {
     key: 'settings',
     labelId: 'Settings',
     pathname: '/settings',
-    Icon: SettingsIcon,
+    Icon: LuSettings,
     dataCy: 'settingsNav'
   },
   {
@@ -166,7 +166,7 @@ export function HamburgerMenu({ className, onChange }) {
             data-cy="appMenu"
             className="text-muted-foreground bg-card hover:bg-card"
           >
-            <MenuIcon />
+            <LuMenu />
           </Button>
         </SheetTrigger>
         <SheetContent side="left" className="flex flex-col px-0">

@@ -2,9 +2,9 @@ import { fetchProperties, QueryKeys } from '../../../utils/restcalls';
 import { useCallback, useContext, useState } from 'react';
 import { Button } from '../../../components/ui/button';
 import { List } from '../../../components/ResourceList';
+import { LuPlusCircle } from 'react-icons/lu';
 import NewPropertyDialog from '../../../components/properties/NewPropertyDialog';
 import Page from '../../../components/Page';
-import { PlusCircleIcon } from 'lucide-react';
 import PropertyList from '../../../components/properties/PropertyList';
 import { StoreContext } from '../../../store';
 import { toast } from 'sonner';
@@ -84,8 +84,13 @@ function Properties() {
         actions={[{ id: 'addProperty', label: t('Add a property') }]}
         filterFn={_filterData}
         renderActions={() => (
-          <Button variant="secondary" className="w-full" onClick={handleAction}>
-            <PlusCircleIcon className="mr-2" /> {t('Add a property')}
+          <Button
+            variant="secondary"
+            className="w-full gap-2"
+            onClick={handleAction}
+          >
+            <LuPlusCircle className="size-4" />
+            {t('Add a property')}
           </Button>
         )}
         renderList={PropertyList}

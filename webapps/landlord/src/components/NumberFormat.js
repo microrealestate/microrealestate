@@ -9,7 +9,7 @@ export default function NumberFormat({
   debitColor,
   creditColor,
   abs = false,
-  showZero = true,
+  showZero = false,
   className
 }) {
   const formatNumber = useFormatNumber();
@@ -49,7 +49,7 @@ export default function NumberFormat({
   }
 
   return (
-    <div className={cn('text-muted-foreground', baseClassName)}>
+    <div className={baseClassName}>
       {formatNumber(value, style, minimumFractionDigits)}
     </div>
   );

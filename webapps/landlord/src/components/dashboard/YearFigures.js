@@ -8,8 +8,8 @@ import {
   YAxis
 } from 'recharts';
 import { useCallback, useContext, useMemo } from 'react';
-import { BanknoteIcon } from 'lucide-react';
 import { DashboardCard } from './DashboardCard';
+import { LuBanknote } from 'react-icons/lu';
 import moment from 'moment';
 import { observer } from 'mobx-react-lite';
 import { StoreContext } from '../../store';
@@ -72,7 +72,7 @@ function YearFigures({ className }) {
 
   return hasRevenues ? (
     <DashboardCard
-      Icon={BanknoteIcon}
+      Icon={LuBanknote}
       title={t('Rents of {{year}}', {
         year: moment().format('YYYY')
       })}
