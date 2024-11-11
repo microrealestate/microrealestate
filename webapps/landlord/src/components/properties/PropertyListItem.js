@@ -19,7 +19,7 @@ export default function PropertyListItem({ property }) {
   }, [property._id, property.name, router, store]);
 
   return (
-    <Card className="p-4 cursor-pointer hover:bg-primary/10" onClick={onClick}>
+    <Card className="p-4 cursor-pointer" onClick={onClick}>
       <div className="flex flex-col md:items-end md:flex-row md:justify-between">
         <div>
           <Badge

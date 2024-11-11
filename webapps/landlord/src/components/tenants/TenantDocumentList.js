@@ -184,11 +184,15 @@ function TenantDocumentList({ disabled = false }) {
               <Card
                 key={item.key}
                 onClick={() => handleClickAddText(item.value)}
-                className="w-96 cursor-pointer hover:bg-primary/10"
+                className="w-96 cursor-pointer"
                 data-cy={`template-${item.label.replace(/\s/g, '')}`}
               >
                 <CardHeader>
-                  <CardTitle className="text-base h-12">{item.label}</CardTitle>
+                  <CardTitle className="h-12">
+                    <Button variant="link" className="text-xl">
+                      {item.label}
+                    </Button>
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>{item.illustration}</CardContent>
               </Card>
