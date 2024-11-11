@@ -5,6 +5,7 @@ import { Checkbox } from '../ui/checkbox';
 import { cn } from '../../utils';
 import { downloadDocument } from '../../utils/fetch';
 import { EmptyIllustration } from '../Illustrations';
+import { GrDocumentPdf } from 'react-icons/gr';
 import { LuHistory } from 'react-icons/lu';
 import moment from 'moment';
 import NewPaymentDialog from '../payment/NewPaymentDialog';
@@ -67,13 +68,29 @@ function Reminder({ rent, className }) {
   }, [documentName, endpoint]);
 
   return visible ? (
-    <Button
-      variant="link"
-      className={cn('text-xs p-0 h-fit', color, className)}
-      onClick={handleDownloadClick}
-    >
-      {label}
-    </Button>
+    <>
+      <Button
+        variant="link"
+        className={cn(
+          'hidden md:inline-flex p-0 h-fit text-xs font-medium gap-1',
+          color,
+          className
+        )}
+        onClick={handleDownloadClick}
+      >
+        <GrDocumentPdf className="size-4" />
+        {label}
+      </Button>
+      <Button
+        variant="secondary"
+        size="sm"
+        className={cn('sm:hidden text-xs font-medium gap-1', color, className)}
+        onClick={handleDownloadClick}
+      >
+        <GrDocumentPdf className="size-4" />
+        {label}
+      </Button>
+    </>
   ) : null;
 }
 
@@ -83,8 +100,8 @@ function RentRow({ rent, isSelected, onSelect, onEdit, onHistory }) {
   const rentAmounts = getRentAmounts(rent);
 
   return (
-    <>
-      <div className="flex flex-col gap-8 md:gap-0 md:flex-row items-center my-2.5">
+    <div className="my-2">
+      <div className="flex flex-col gap-4 md:gap-0 md:flex-row items-center">
         <div className="flex items-center gap-4 w-full md:w-1/2">
           {store.organization.canSendEmails ? (
             rent.occupant.hasContactEmails ? (
@@ -105,30 +122,34 @@ function RentRow({ rent, isSelected, onSelect, onEdit, onHistory }) {
             )
           ) : null}
 
-          <div className="relative">
-            <div className="text-xl">{rent.occupant.name}</div>
-            <Reminder rent={rent} className="absolute -bottom-3.5" />
-          </div>
+          <Button
+            variant="link"
+            className="p-0 h-fit text-xl"
+            onClick={onEdit(rent)}
+          >
+            {rent.occupant.name}
+          </Button>
         </div>
         <div className="flex pl-8 md:pl-0 md:grid md:grid-cols-3 lg:grid-cols-5 gap-4 w-full md:w-1/2">
           <RentAmount
             label={t('Rent')}
             amount={rentAmounts.rent}
             withColor={false}
-            className="hidden lg:block"
+            className="hidden lg:block text-muted-foreground"
           />
           <RentAmount
             label={t('Balance')}
             amount={rentAmounts.balance}
             withColor={false}
-            className="hidden lg:block"
+            className="hidden lg:block text-muted-foreground"
           />
           <RentAmount
             label={t('Rent due')}
             amount={rentAmounts.totalAmount}
             withColor={false}
             debitColor={rentAmounts.totalAmount > 0}
-            className={rentAmounts.totalAmount > 0 ? 'font-bold' : ''}
+            creditColor={rentAmounts.totalAmount < 0}
+            className={rentAmounts.totalAmount !== 0 ? 'font-bold' : ''}
           />
           <div className="grow">
             <RentAmount
@@ -138,7 +159,12 @@ function RentRow({ rent, isSelected, onSelect, onEdit, onHistory }) {
             />
           </div>
           <div className="text-right space-x-2 grow whitespace-nowrap">
-            <Button variant="ghost" size="icon" onClick={onEdit(rent)}>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onEdit(rent)}
+              className="hidden sm:inline-flex"
+            >
               <TbCashRegister className="size-6" />
             </Button>
             <Button variant="ghost" size="icon" onClick={onHistory(rent)}>
@@ -147,8 +173,9 @@ function RentRow({ rent, isSelected, onSelect, onEdit, onHistory }) {
           </div>
         </div>
       </div>
+      <Reminder rent={rent} className="mt-4 md:mt-0 ml-[32px] mb-2" />
       <Separator />
-    </>
+    </div>
   );
 }
 
