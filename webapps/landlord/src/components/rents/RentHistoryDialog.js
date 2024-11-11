@@ -2,18 +2,13 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
-  Box,
-  CardContent,
-  Grid,
-  IconButton,
-  Typography
+  Grid
 } from '@material-ui/core';
-import { Card, CardHeader } from '../ui/card';
+import { Card, CardContent, CardHeader } from '../ui/card';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '../ui/drawer';
+import { LuChevronsUpDown, LuPencil } from 'react-icons/lu';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { Button } from '../ui/button';
-import EditIcon from '@material-ui/icons/Edit';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { getPeriod } from '../../utils';
 import Loading from '../Loading';
 import moment from 'moment';
@@ -35,18 +30,15 @@ function RentListItem({ rent, tenant, onClick }) {
   );
 
   return (
-    <Card
-      className="p-2 cursor-pointer hover:bg-primary/10"
-      onClick={handleClick}
-    >
+    <Card className="p-2 cursor-pointer" onClick={handleClick}>
       <CardHeader className="flex flex-row justify-between items-center">
         <div className="text-xl">
           {getPeriod(t, rent.term, tenant.occupant.frequency)}
         </div>
         <div>
-          <IconButton onClick={handleClick}>
-            <EditIcon fontSize="small" />
-          </IconButton>
+          <Button variant="ghost" size="icon" onClick={handleClick}>
+            <LuPencil />
+          </Button>
         </div>
       </CardHeader>
       <CardContent>
@@ -154,10 +146,10 @@ function RentHistory({ tenantId }) {
         <Loading />
       ) : (
         <>
-          <Box pb={4}>
-            <Typography variant="h5">{tenant.occupant.name}</Typography>
+          <div className="pb-4">
+            <div className="text-xl font-semibold">{tenant.occupant.name}</div>
             {tenant.occupant.beginDate && tenant.occupant.endDate && (
-              <Typography color="textSecondary" variant="body2">
+              <div className="text-muted-foreground text-xs">
                 {t('Contract from {{beginDate}} to {{endDate}}', {
                   beginDate: moment(
                     tenant.occupant.beginDate,
@@ -167,9 +159,9 @@ function RentHistory({ tenantId }) {
                     'L'
                   )
                 })}
-              </Typography>
+              </div>
             )}
-          </Box>
+          </div>
           <div className="overflow-y-auto p-4">
             {rentYears.map((year) => {
               return (
@@ -178,8 +170,8 @@ function RentHistory({ tenantId }) {
                   expanded={expandedYear === year}
                   onChange={handleAccordionChange(year)}
                 >
-                  <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                    <Box>{year}</Box>
+                  <AccordionSummary expandIcon={<LuChevronsUpDown />}>
+                    {year}
                   </AccordionSummary>
                   {expandedYear === year ? (
                     <AccordionDetails>

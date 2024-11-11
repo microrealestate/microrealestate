@@ -2,8 +2,8 @@ import * as Yup from 'yup';
 import { Form, Formik } from 'formik';
 import React, { useContext, useState } from 'react';
 import { Button } from '../components/ui/button';
-import { CheckCircleIcon } from 'lucide-react';
 import Link from '../components/Link';
+import { LuCheckCircle } from 'react-icons/lu';
 import SignInUpLayout from '../components/SignInUpLayout';
 import { StoreContext } from '../store';
 import { SubmitButton } from '@microrealestate/commonui/components';
@@ -96,7 +96,7 @@ export default function ForgotPassword() {
       ) : (
         <div className="p-5 text-center lg:text-left md:p-0 md:max-w-md w-full space-y-10">
           <div className="flex items-center justify-center lg:justify-normal text-success font-semibold">
-            <CheckCircleIcon />
+            <LuCheckCircle />
             <span className="ml-2 text-lg my-4">{t('Check your email')}</span>
           </div>
           <div>

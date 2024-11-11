@@ -1,10 +1,10 @@
 import {
-  ArrowLeftIcon,
-  HistoryIcon,
-  PencilIcon,
-  StopCircleIcon,
-  TrashIcon
-} from 'lucide-react';
+  LuArrowLeft,
+  LuHistory,
+  LuPencil,
+  LuStopCircle,
+  LuTrash
+} from 'react-icons/lu';
 import { useCallback, useContext, useMemo, useState } from 'react';
 import { Card } from '../../../components/ui/card';
 import ConfirmDialog from '../../../components/ConfirmDialog';
@@ -194,12 +194,12 @@ function Tenant() {
         <div className="grid grid-cols-5 gap-1.5 md:gap-4">
           <ShortcutButton
             label={t('Back')}
-            Icon={ArrowLeftIcon}
+            Icon={LuArrowLeft}
             onClick={handleBack}
           />
           <ShortcutButton
             label={t('Delete')}
-            Icon={TrashIcon}
+            Icon={LuTrash}
             disabled={store.tenant.selected.hasPayments}
             onClick={handleDeleteTenant}
             dataCy="removeResourceButton"
@@ -207,20 +207,20 @@ function Tenant() {
           {showTerminateLeaseButton ? (
             <ShortcutButton
               label={t('Terminate')}
-              Icon={StopCircleIcon}
+              Icon={LuStopCircle}
               onClick={handleTerminateLease}
             />
           ) : null}
           {showEditButton ? (
             <ShortcutButton
               label={t('Edit')}
-              Icon={PencilIcon}
+              Icon={LuPencil}
               onClick={handleEditTenant}
             />
           ) : null}
           {showEditButton ? (
             <ShortcutButton
-              Icon={HistoryIcon}
+              Icon={LuHistory}
               label={t('Schedule')}
               onClick={handleRentHistory}
             />

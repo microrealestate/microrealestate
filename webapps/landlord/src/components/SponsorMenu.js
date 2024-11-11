@@ -1,9 +1,10 @@
-import { cn } from '../utils';
-import { HeartHandshakeIcon } from 'lucide-react';
+import { FaHeart } from 'react-icons/fa';
 import SideMenuButton from './SideMenuButton';
 
 function HeartBeating() {
-  return <HeartHandshakeIcon className="text-destructive" />;
+  return (
+    <FaHeart className="text-destructive size-4 mx-1 animate-pulse backg" />
+  );
 }
 
 export default function SponsorMenu({ className }) {
@@ -22,7 +23,7 @@ export default function SponsorMenu({ className }) {
         labelId: 'Sponsor this project'
       }}
       onClick={handleSponsorClicked}
-      className={cn(className, 'animate-pulse')}
+      className={className}
     />
   );
 }

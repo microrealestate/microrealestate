@@ -1,4 +1,4 @@
-import { ArrowLeftIcon, TrashIcon } from 'lucide-react';
+import { LuArrowLeft, LuTrash } from 'react-icons/lu';
 import { useCallback, useContext, useState } from 'react';
 import { ADMIN_ROLE } from '../../../../store/User';
 import { Card } from '../../../../components/ui/card';
@@ -98,12 +98,12 @@ function Contract() {
         <div className="grid grid-cols-5 gap-1.5 md:gap-4">
           <ShortcutButton
             label={t('Back')}
-            Icon={ArrowLeftIcon}
+            Icon={LuArrowLeft}
             onClick={handleBack}
           />
           <ShortcutButton
             label={t('Delete')}
-            Icon={TrashIcon}
+            Icon={LuTrash}
             onClick={() => setOpenRemoveContractDialog(true)}
             disabled={
               store.lease.selected?.usedByTenants ||

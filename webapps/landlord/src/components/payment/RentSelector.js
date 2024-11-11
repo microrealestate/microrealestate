@@ -1,8 +1,8 @@
 import { getRentAmounts, RentAmount } from '../rents/RentDetails';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { Button } from '../ui/button';
-import { ChevronDownIcon } from 'lucide-react';
 import { cn } from '../../utils';
+import { LuChevronDown } from 'react-icons/lu';
 import { Separator } from '../ui/separator';
 import { useState } from 'react';
 import useTranslation from 'next-translate/useTranslation';
@@ -23,14 +23,14 @@ function SelectRentItem({ rent, onClick }) {
             <RentAmount
               label={t('Rent due')}
               amount={rentAmounts.totalAmount}
-              color={
-                rentAmounts.totalAmount <= 0 ? 'text.secondary' : 'warning.main'
-              }
+              withColor={false}
+              debitColor={rentAmounts.totalAmount > 0}
             />
             <div className="grow">
               <RentAmount
                 label={t('Settlement')}
                 amount={rentAmounts.payment !== 0 ? rentAmounts.payment : null}
+                withColor={true}
               />
             </div>
           </div>
@@ -68,7 +68,7 @@ export default function RentSelector({ value, rents, onChange, className }) {
           className={cn('flex w-full h-fit gap-2 bg-card px-4', className)}
         >
           <SelectRentItem rent={value} />
-          <ChevronDownIcon />
+          <LuChevronDown />
         </Button>
       </PopoverTrigger>
       <PopoverContent

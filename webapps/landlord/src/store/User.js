@@ -33,7 +33,7 @@ export default class User {
       signOut: flow,
       refreshTokens: flow,
       forgotPassword: flow,
-      resetPassword: flow,
+      resetPassword: flow
     });
   }
 
@@ -52,7 +52,7 @@ export default class User {
   setUserFromToken(accessToken) {
     const {
       account: { firstname, lastname, email },
-      exp,
+      exp
     } = jose.decodeJwt(accessToken);
     this.firstName = firstname;
     this.lastName = lastname;
@@ -68,7 +68,7 @@ export default class User {
         firstname,
         lastname,
         email,
-        password,
+        password
       });
       return 200;
     } catch (error) {
@@ -82,14 +82,13 @@ export default class User {
         '/authenticator/landlord/signin',
         {
           email,
-          password,
+          password
         }
       );
       const { accessToken } = response.data;
       this.setUserFromToken(accessToken);
       return 200;
     } catch (error) {
-      console.error(error);
       return error.response.status;
     }
   }
@@ -147,7 +146,6 @@ export default class User {
       this.token = undefined;
       this.tokenExpiry = undefined;
       setAccessToken(null);
-      console.error(error);
       return { status: error?.response?.status, error };
     }
   }
@@ -155,11 +153,10 @@ export default class User {
   *forgotPassword(email) {
     try {
       yield apiFetcher().post('/authenticator/landlord/forgotpassword', {
-        email,
+        email
       });
       return 200;
     } catch (error) {
-      console.error(error);
       return error.response.status;
     }
   }
@@ -168,11 +165,10 @@ export default class User {
     try {
       yield apiFetcher().patch('/authenticator/landlord/resetpassword', {
         resetToken,
-        password,
+        password
       });
       return 200;
     } catch (error) {
-      console.error(error);
       return error.response.status;
     }
   }

@@ -1,14 +1,5 @@
-import { Alert, AlertTitle } from '../../../../components/ui/alert';
-import {
-  AlertTriangleIcon,
-  ChevronDownIcon,
-  MessageSquareTextIcon,
-  MessageSquareWarningIcon,
-  MessageSquareXIcon,
-  ReceiptTextIcon,
-  SendIcon
-} from 'lucide-react';
 import { fetchRents, QueryKeys } from '../../../../utils/restcalls';
+import { LuAlertTriangle, LuChevronDown, LuSend } from 'react-icons/lu';
 import {
   Popover,
   PopoverContent,
@@ -16,12 +7,14 @@ import {
 } from '../../../../components/ui/popover';
 import { useCallback, useContext, useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Alert } from '../../../../components/ui/alert';
 import { Button } from '../../../../components/ui/button';
 import ConfirmDialog from '../../../../components/ConfirmDialog';
+import { GrDocumentPdf } from 'react-icons/gr';
 import { List } from '../../../../components/ResourceList';
+import { LuRotateCw } from 'react-icons/lu';
 import moment from 'moment';
 import Page from '../../../../components/Page';
-import { ReloadIcon } from '@radix-ui/react-icons';
 import { RentOverview } from '../../../../components/rents/RentOverview';
 import RentTable from '../../../../components/rents/RentTable';
 import { StoreContext } from '../../../../store';
@@ -136,8 +129,8 @@ function Actions({ values, onDone }) {
   return (
     <>
       {sending ? (
-        <div className="flex items-center gap-1">
-          <ReloadIcon className="animate-spin" />
+        <div className="flex items-center gap-1 text-muted-foreground">
+          <LuRotateCw className="animate-spin size-4" />
           {t('Sending...')}
         </div>
       ) : (
@@ -145,9 +138,9 @@ function Actions({ values, onDone }) {
           <Popover>
             <PopoverTrigger asChild>
               <Button variant="secondary" disabled={disabled}>
-                <SendIcon className="mr-2" />
+                <LuSend className="mr-2" />
                 {t('Send by email')}
-                <ChevronDownIcon className="ml-1" />
+                <LuChevronDown className="ml-1" />
               </Button>
             </PopoverTrigger>
             <PopoverContent align="end" className="p-0.5 m-0 w-auto">
@@ -158,7 +151,7 @@ function Actions({ values, onDone }) {
                   disabled={disabled}
                   className="justify-start w-full rounded-none"
                 >
-                  <ReceiptTextIcon className="mr-2" /> {t('Invoice')}
+                  <GrDocumentPdf className="mr-2" /> {t('Invoice')}
                 </Button>
                 <Button
                   variant="ghost"
@@ -166,15 +159,14 @@ function Actions({ values, onDone }) {
                   disabled={disabled}
                   className="justify-start w-full rounded-none"
                 >
-                  <MessageSquareTextIcon className="mr-2" />{' '}
-                  {t('First payment notice')}
+                  <GrDocumentPdf className="mr-2" /> {t('First payment notice')}
                 </Button>
                 <Button
                   variant="ghost"
                   onClick={handleAction('rentcall_reminder')}
                   className="justify-start w-full rounded-none text-warning"
                 >
-                  <MessageSquareWarningIcon className="mr-2 " />{' '}
+                  <GrDocumentPdf className="mr-2 " />{' '}
                   {t('Second payment notice')}
                 </Button>
                 <Button
@@ -182,8 +174,7 @@ function Actions({ values, onDone }) {
                   onClick={handleAction('rentcall_last_reminder')}
                   className="justify-start w-full rounded-none text-destructive"
                 >
-                  <MessageSquareXIcon className="mr-2" />{' '}
-                  {t('Last payment notice')}
+                  <GrDocumentPdf className="mr-2" /> {t('Last payment notice')}
                 </Button>
               </div>
             </PopoverContent>
@@ -248,12 +239,14 @@ function Rents() {
 
       {!store.organization.canSendEmails ? (
         <Alert variant="warning" className="mb-4">
-          <AlertTriangleIcon className="h-4 w-4" />
-          <AlertTitle>
-            {t(
-              'Unable to send documents by email without configuring the mail service in Settings page'
-            )}
-          </AlertTitle>
+          <div className="flex items-center gap-4">
+            <LuAlertTriangle className="size-6" />
+            <div className="text-sm">
+              {t(
+                'Unable to send documents by email without configuring the mail service in Settings page'
+              )}
+            </div>
+          </div>
         </Alert>
       ) : null}
       <List

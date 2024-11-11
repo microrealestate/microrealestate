@@ -1,20 +1,11 @@
-import { Alert, AlertTitle } from './ui/alert';
-import { AlertTriangleIcon, InfoIcon } from 'lucide-react';
-import {
-  Box,
-  IconButton,
-  List,
-  ListItem,
-  ListItemSecondaryAction,
-  ListItemText,
-  Paper,
-  Typography
-} from '@material-ui/core';
+import { Card, CardContent } from './ui/card';
+import { LuAlertTriangle, LuInfo, LuTrash } from 'react-icons/lu';
 import { useCallback, useMemo } from 'react';
-import DeleteIcon from '@material-ui/icons/Delete';
-import DescriptionOutlinedIcon from '@material-ui/icons/DescriptionOutlined';
+import { Alert } from './ui/alert';
+import { Button } from './ui/button';
+import { GrDocumentText } from 'react-icons/gr';
+import { MdOutlineScanner } from 'react-icons/md';
 import moment from 'moment';
-import ScannerOutlinedIcon from '@material-ui/icons/ScannerOutlined';
 import useTranslation from 'next-translate/useTranslation';
 
 const DocumentItem = ({ document, onEdit, onDelete, disabled }) => {
@@ -37,54 +28,55 @@ const DocumentItem = ({ document, onEdit, onDelete, disabled }) => {
   }, [expiryMoment]);
 
   return (
-    <ListItem button divider onClick={handleEditClick}>
-      <ListItemText
-        id={document._id}
-        primary={
-          <Box display="flex" flexDirection="column" justifyContent="center">
-            <Box display="flex">
-              <Box mr={1}>
-                {document.type === 'text' ? (
-                  <DescriptionOutlinedIcon color="action" />
-                ) : (
-                  <ScannerOutlinedIcon color="action" />
-                )}
-              </Box>
-              <Typography component="div">{document.name}</Typography>
-            </Box>
+    <div className="flex justify-between items-center p-4 border-b">
+      <div>
+        <Button
+          variant="link"
+          onClick={() => handleEditClick(document._id)}
+          className="gap-1 p-0"
+        >
+          {document.type === 'text' ? (
+            <GrDocumentText className="size-6" />
+          ) : (
+            <MdOutlineScanner className="size-6" />
+          )}
+          {document.name}
+        </Button>
 
-            {expiryMoment ? (
-              <Alert variant={isExpired ? 'warning' : 'default'}>
-                {isExpired ? (
-                  <AlertTriangleIcon className="h-4 w-4" />
-                ) : (
-                  <InfoIcon className="h-4 w-4" />
-                )}
-                <AlertTitle>
-                  {isExpired
-                    ? t('expired document')
-                    : t('expiry {{relativeDate}}', {
-                        relativeDate: expiryMoment.fromNow()
-                      })}
-                </AlertTitle>
-              </Alert>
-            ) : (
-              !!document.description && (
-                <Typography variant="caption">
-                  {document.description}
-                </Typography>
-              )
-            )}
-          </Box>
-        }
-      />
+        {document.description ? (
+          <div className="text-muted-foreground text-sm">
+            {document.description}
+          </div>
+        ) : null}
 
-      <ListItemSecondaryAction>
-        <IconButton edge="end" onClick={handleDeleteClick} disabled={disabled}>
-          <DeleteIcon />
-        </IconButton>
-      </ListItemSecondaryAction>
-    </ListItem>
+        {expiryMoment ? (
+          <Alert variant={isExpired ? 'warning' : 'default'}>
+            <div className="flex items-center gap-4">
+              {isExpired ? (
+                <LuAlertTriangle className="size-4" />
+              ) : (
+                <LuInfo className="size-4" />
+              )}
+              <div className="text-sm">
+                {isExpired
+                  ? t('expired document')
+                  : t('expiry {{relativeDate}}', {
+                      relativeDate: expiryMoment.fromNow()
+                    })}
+              </div>
+            </div>
+          </Alert>
+        ) : null}
+      </div>
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={handleDeleteClick}
+        disabled={disabled}
+      >
+        <LuTrash className="size-6" />
+      </Button>
+    </div>
   );
 };
 
@@ -95,24 +87,22 @@ export default function DocumentList({
   disabled = false
 }) {
   return (
-    <Paper variant="outlined">
-      <Box minHeight={200}>
-        <List>
-          {documents
-            ?.sort(({ type: type1 }, { type: type2 }) =>
-              type1.localeCompare(type2)
-            )
-            .map((document) => (
-              <DocumentItem
-                key={document._id}
-                document={document}
-                onEdit={onEdit}
-                onDelete={onDelete}
-                disabled={disabled}
-              />
-            ))}
-        </List>
-      </Box>
-    </Paper>
+    <Card>
+      <CardContent className="p-0 h-72 overflow-y-auto">
+        {documents
+          ?.sort(({ type: type1 }, { type: type2 }) =>
+            type1.localeCompare(type2)
+          )
+          .map((document) => (
+            <DocumentItem
+              key={document._id}
+              document={document}
+              onEdit={onEdit}
+              onDelete={onDelete}
+              disabled={disabled}
+            />
+          ))}
+      </CardContent>
+    </Card>
   );
 }

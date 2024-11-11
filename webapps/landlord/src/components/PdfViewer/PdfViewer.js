@@ -5,6 +5,7 @@ import { apiFetcher } from '../../utils/fetch';
 import { Button } from '../ui/button';
 import Loading from '../Loading';
 import { printPlugin } from '@react-pdf-viewer/print';
+import { RiPrinterFill } from 'react-icons/ri';
 import { StoreContext } from '../../store';
 import { toast } from 'sonner';
 import useTranslation from 'next-translate/useTranslation';
@@ -52,7 +53,7 @@ export default function PdfViewer({ open, setOpen, pdfDoc }) {
               <Print>
                 {(props) => (
                   <Button variant="secondary" onClick={props.onClick}>
-                    <i className="ri-printer-fill"></i>
+                    <RiPrinterFill />
                   </Button>
                 )}
               </Print>

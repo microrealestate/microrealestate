@@ -12,7 +12,7 @@ export default function SideMenuButton({ item, selected, className, onClick }) {
       // disabled={selected}
       onClick={onClick}
       className={cn(
-        'border-none rounded-none h-12 w-full justify-start hover:bg-primary/10',
+        'border-none rounded-none h-12 w-full justify-start gap-2 hover:bg-primary/10',
         selected
           ? 'disabled:opacity-100 bg-primary text-primary-foreground'
           : null,
@@ -20,7 +20,7 @@ export default function SideMenuButton({ item, selected, className, onClick }) {
       )}
       data-cy={item.dataCy}
     >
-      {item.Icon ? <item.Icon /> : null}
+      {item.Icon ? <item.Icon className="size-6" /> : null}
       {item?.labelId ? <span className="ml-2">{t(item.labelId)}</span> : null}
     </Button>
   );

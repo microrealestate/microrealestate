@@ -3,7 +3,7 @@ import { Button } from '../ui/button';
 import FieldMenu from './FieldMenu';
 import FormatMenu from './FormatMenu';
 import { Input } from '../ui/input';
-import { SaveIcon } from 'lucide-react';
+import { LuSave } from 'react-icons/lu';
 import { Switch } from '../ui/switch';
 import TableMenu from './TableMenu';
 import useTranslation from 'next-translate/useTranslation';
@@ -34,7 +34,7 @@ const EditorMenu = ({
 
   return editor ? (
     <>
-      <div className="top-0 sticky z-50 bg-card shadow-md p-2 pb-4">
+      <div className="top-0 sticky z-50 bg-card shadow-md p-2 pb-2">
         <div className="flex items-center justify-between m-2">
           <Input
             name="title"
@@ -45,23 +45,17 @@ const EditorMenu = ({
             aria-label={t('Document title')}
           />
 
-          <div className="flex items-center gap-10">
+          <div className="flex items-center gap-10 text-muted-foreground">
             {saving ? (
               <div className="flex items-center whitespace-nowrap gap-1 ml-6">
-                <SaveIcon className="h-4 w-4" />
-                <div
-                  className="text-sm text-muted-foreground"
-                  data-cy="savingTextDocument"
-                >
+                <LuSave className="size-4" />
+                <div className="text-sm" data-cy="savingTextDocument">
                   {t('Saving')}
                 </div>
               </div>
             ) : null}
             {saving === false ? (
-              <div
-                className="text-sm text-muted-foreground ml-6"
-                data-cy="savedTextDocument"
-              >
+              <div className="text-sm ml-6" data-cy="savedTextDocument">
                 {t('Saved')}
               </div>
             ) : null}
@@ -71,7 +65,7 @@ const EditorMenu = ({
           </div>
         </div>
         <div className="flex items-end justify-between mr-2">
-          <div className="flex items-center flex-wrap">
+          <div className="flex flex-col gap-1">
             <FormatMenu editor={editor} showPrintButton={showPrintButton} />
             <TableMenu editor={editor} />
           </div>
@@ -86,7 +80,7 @@ const EditorMenu = ({
           )}
         </div>
       </div>
-      {showFieldMenu && <FieldMenu editor={editor} fields={fields} />}
+      {showFieldMenu ? <FieldMenu editor={editor} fields={fields} /> : null}
     </>
   ) : null;
 };

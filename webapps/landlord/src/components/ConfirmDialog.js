@@ -1,5 +1,5 @@
-import { AlertTriangleIcon } from 'lucide-react';
 import { Button } from './ui/button';
+import { LuAlertTriangle } from 'react-icons/lu';
 import ResponsiveDialog from './ResponsiveDialog';
 import { useCallback } from 'react';
 import useTranslation from 'next-translate/useTranslation';
@@ -28,7 +28,7 @@ export default function ConfirmDialog({
       renderHeader={() => (
         <>
           <div className="flex flex-col md:flex-row items-center gap-2">
-            <AlertTriangleIcon size={32} />
+            <LuAlertTriangle className="size-8" />
             <span>{title}</span>
           </div>
           {subTitle ? (

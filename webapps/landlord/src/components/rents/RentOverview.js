@@ -1,10 +1,6 @@
-import {
-  CalendarFoldIcon,
-  ReceiptTextIcon,
-  TrendingDownIcon,
-  TrendingUpIcon
-} from 'lucide-react';
+import { LuCalendar, LuTrendingDown, LuTrendingUp } from 'react-icons/lu';
 import { useCallback, useContext } from 'react';
+import { BsReceipt } from 'react-icons/bs';
 import { DashboardCard } from '../dashboard/DashboardCard';
 import NumberFormat from '../NumberFormat';
 import PeriodPicker from '../PeriodPicker';
@@ -30,7 +26,7 @@ export function RentOverview({ data }) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-5 gap-4">
       <DashboardCard
-        Icon={CalendarFoldIcon}
+        Icon={LuCalendar}
         title={t('Period')}
         renderContent={() => (
           <PeriodPicker value={data.period} onChange={handlePeriodChange} />
@@ -39,35 +35,40 @@ export function RentOverview({ data }) {
       />
 
       <DashboardCard
-        Icon={ReceiptTextIcon}
+        Icon={BsReceipt}
         title={t('Rents')}
         description={t('Rents for the period')}
         renderContent={() => data.countAll}
         className="hidden sm:block 2xl:col-span-1"
       />
       <DashboardCard
-        Icon={TrendingDownIcon}
+        Icon={LuTrendingDown}
         title={t('Not paid')}
         description={t('{{count}} rents', {
           count: data.countNotPaid
         })}
         renderContent={() => (
-          <div className="flex-grow text-warning">
-            <NumberFormat value={data.totalNotPaid} />
-          </div>
+          <NumberFormat
+            value={data.totalNotPaid}
+            debitColor={true}
+            className="flex-grow"
+          />
         )}
         className="hidden sm:block 2xl:col-span-1"
       />
       <DashboardCard
-        Icon={TrendingUpIcon}
+        Icon={LuTrendingUp}
         title={t('Paid')}
         description={t('{{count}} rents', {
           count: data.countPaid + data.countPartiallyPaid
         })}
         renderContent={() => (
-          <div className="flex-grow text-success">
-            <NumberFormat value={data.totalPaid} />
-          </div>
+          <NumberFormat
+            value={data.totalPaid}
+            creditColor={true}
+            showZero={true}
+            className="flex-grow"
+          />
         )}
         className="hidden sm:block 2xl:col-span-1"
       />

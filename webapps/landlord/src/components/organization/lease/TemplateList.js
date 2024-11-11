@@ -3,8 +3,8 @@ import { Button } from '../../ui/button';
 import ConfirmDialog from '../../ConfirmDialog';
 import DocumentList from '../../DocumentList';
 import FileDescriptorDialog from './FileDescriptorDialog';
+import { LuPlusCircle } from 'react-icons/lu';
 import { observer } from 'mobx-react-lite';
-import { PlusCircleIcon } from 'lucide-react';
 import RichTextEditorDialog from '../../RichTextEditor/RichTextEditorDialog';
 import { StoreContext } from '../../../store';
 import useTranslation from 'next-translate/useTranslation';
@@ -189,18 +189,18 @@ function TemplateList() {
           variant="secondary"
           onClick={handleClickAddFileDescriptor}
           data-cy="addFileDescriptor"
-          className="w-full justify-start sm:justify-normal sm:w-fit"
+          className="w-full justify-start sm:justify-normal sm:w-fit gap-2"
         >
-          <PlusCircleIcon className="mr-2" />
+          <LuPlusCircle className="size-4" />
           {t('Upload template')}
         </Button>
         <Button
           variant="secondary"
           onClick={handleClickAddText}
           data-cy="addTextDocument"
-          className="w-full justify-start sm:justify-normal sm:w-fit"
+          className="w-full justify-start sm:justify-normal sm:w-fit gap-2"
         >
-          <PlusCircleIcon className="mr-2" />
+          <LuPlusCircle className="size-4" />
           {t('Text template')}
         </Button>
       </div>

@@ -15,9 +15,9 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from '../../../../components/ui/button';
 import { cn } from '../../../../utils';
 import { Label } from '../../../../components/ui/label';
+import { LuPlusCircle } from 'react-icons/lu';
 import NewLeaseDialog from '../../../../components/organization/lease/NewLeaseDialog';
 import Page from '../../../../components/Page';
-import { PlusCircleIcon } from 'lucide-react';
 import ShortcutButton from '../../../../components/ShortcutButton';
 import { StoreContext } from '../../../../store';
 import { Switch } from '../../../../components/ui/switch';
@@ -70,7 +70,7 @@ function LeasesSettings() {
         <div className="grid grid-cols-5 gap-1.5 md:gap-4">
           <ShortcutButton
             label={t('New contract')}
-            Icon={PlusCircleIcon}
+            Icon={LuPlusCircle}
             disabled={store.tenant.selected.hasPayments}
             onClick={handleNewLeaseDialog}
           />

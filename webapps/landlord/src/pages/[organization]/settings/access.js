@@ -9,10 +9,10 @@ import { fetchOrganizations, QueryKeys } from '../../../utils/restcalls';
 import { useContext, useState } from 'react';
 import ApplicationFormDialog from '../../../components/organization/members/ApplicationFormDialog';
 import ApplicationShowDialog from '../../../components/organization/members/ApplicationShowDialog';
+import { LuPlusCircle } from 'react-icons/lu';
 import MemberFormDialog from '../../../components/organization/members/MemberFormDialog';
 import Members from '../../../components/organization/Members';
 import Page from '../../../components/Page';
-import { PlusCircleIcon } from 'lucide-react';
 import ShortcutButton from '../../../components/ShortcutButton';
 import { StoreContext } from '../../../store';
 import { toast } from 'sonner';
@@ -51,7 +51,7 @@ function AccessSettings() {
         <div className="grid grid-cols-5 gap-1.5 md:gap-4">
           <ShortcutButton
             label={t('New collaborator')}
-            Icon={PlusCircleIcon}
+            Icon={LuPlusCircle}
             onClick={() => {
               setSelectedOrgForMember(organization);
               setOpenMemberFormDialog(true);
@@ -60,7 +60,7 @@ function AccessSettings() {
           />
           <ShortcutButton
             label={t('New application')}
-            Icon={PlusCircleIcon}
+            Icon={LuPlusCircle}
             onClick={() => {
               setSelectedOrgForApp(organization);
               setOpenApplicationFormDialog(true);

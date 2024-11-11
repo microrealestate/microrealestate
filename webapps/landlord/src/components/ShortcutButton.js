@@ -23,7 +23,7 @@ export default function ShortcutButton({
         className
       )}
     >
-      {Icon ? <Icon /> : null}
+      {Icon ? <Icon className="size-6" /> : null}
       <span
         className={cn(
           'tracking-tighter whitespace-normal md:text-sm md:tracking-normal',

@@ -15,10 +15,10 @@ import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { cn } from '../../utils';
 import ConfirmDialog from '../ConfirmDialog';
+import { LuTrash } from 'react-icons/lu';
 import moment from 'moment';
 import { StoreContext } from '../../store';
 import { toast } from 'sonner';
-import { TrashIcon } from 'lucide-react';
 import useTranslation from 'next-translate/useTranslation';
 
 export default function Members({ organization }) {
@@ -151,7 +151,7 @@ export default function Members({ organization }) {
                     </SelectContent>
                   </Select>
                   <Button
-                    variant="secondary"
+                    variant="ghost"
                     onClick={() => {
                       setSelectedMemberToRemove(member);
                       setOpenMemberToRemoveConfirmDialog(true);
@@ -160,7 +160,7 @@ export default function Members({ organization }) {
                     size="icon"
                     className="w-12"
                   >
-                    <TrashIcon className="h-4 w-4" />
+                    <LuTrash className="size-6" />
                   </Button>
                 </div>
               </div>
@@ -205,7 +205,7 @@ export default function Members({ organization }) {
               <div className="flex gap-2 items-center">
                 <div className="flex-grow">{t(app.role)}</div>
                 <Button
-                  variant="secondary"
+                  variant="ghost"
                   onClick={() => {
                     setSelectedAppToRemove(app);
                     setOpenAppToRemoveConfirmDialog(true);
@@ -214,7 +214,7 @@ export default function Members({ organization }) {
                   size="icon"
                   className="w-10"
                 >
-                  <TrashIcon className="h-4 w-4" />
+                  <LuTrash className="size-6" />
                 </Button>
               </div>
             </div>

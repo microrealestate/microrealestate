@@ -3,9 +3,9 @@ import { useCallback, useState } from 'react';
 import { useField, useFormikContext } from 'formik';
 import { Button } from '../ui/button';
 import { Calendar } from '../ui/calendar';
-import { CalendarIcon } from 'lucide-react';
 import { cn } from '../../utils';
 import FormField from './FormField';
+import { LuCalendar } from 'react-icons/lu';
 import moment from 'moment';
 
 export function DateField({ disabled, ...props }) {
@@ -40,7 +40,7 @@ export function DateField({ disabled, ...props }) {
             <div className="flex-grow text-left">
               {field.value ? moment(field.value).format('L') : ''}
             </div>
-            <CalendarIcon className="h-4 w-4" />
+            <LuCalendar className="size-4" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="end">

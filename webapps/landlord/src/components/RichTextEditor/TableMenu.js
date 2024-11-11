@@ -1,3 +1,15 @@
+import {
+  RiDeleteBin2Line,
+  RiDeleteColumn,
+  RiDeleteRow,
+  RiInsertColumnLeft,
+  RiInsertColumnRight,
+  RiInsertRowBottom,
+  RiInsertRowTop,
+  RiMergeCellsHorizontal,
+  RiSplitCellsHorizontal,
+  RiTable2
+} from 'react-icons/ri';
 import { Button } from '../ui/button';
 import { Separator } from '../ui/separator';
 
@@ -16,7 +28,7 @@ const TableMenu = ({ editor }) => {
         }
         disabled={!editor.isEditable}
       >
-        <i className="ri-table-2"></i>
+        <RiTable2 />
       </Button>
       <Button
         variant="ghost"
@@ -24,7 +36,7 @@ const TableMenu = ({ editor }) => {
         disabled={!editor.isEditable || !editor.can().deleteTable()}
         onClick={() => editor.chain().focus().deleteTable().run()}
       >
-        <i className="ri-delete-bin-2-line"></i>
+        <RiDeleteBin2Line />
       </Button>
       <Separator orientation="vertical" />
       <Button
@@ -33,7 +45,7 @@ const TableMenu = ({ editor }) => {
         disabled={!editor.isEditable || !editor.can().addColumnBefore()}
         onClick={() => editor.chain().focus().addColumnBefore().run()}
       >
-        <i className="ri-insert-column-left"></i>
+        <RiInsertColumnLeft />
       </Button>
       <Button
         variant="ghost"
@@ -41,7 +53,7 @@ const TableMenu = ({ editor }) => {
         disabled={!editor.isEditable || !editor.can().addColumnAfter()}
         onClick={() => editor.chain().focus().addColumnAfter().run()}
       >
-        <i className="ri-insert-column-right"></i>
+        <RiInsertColumnRight />
       </Button>
       <Button
         variant="ghost"
@@ -49,7 +61,7 @@ const TableMenu = ({ editor }) => {
         disabled={!editor.isEditable || !editor.can().deleteColumn()}
         onClick={() => editor.chain().focus().deleteColumn().run()}
       >
-        <i className="ri-delete-column"></i>
+        <RiDeleteColumn />
       </Button>
       <Separator orientation="vertical" />
       <Button
@@ -58,7 +70,7 @@ const TableMenu = ({ editor }) => {
         disabled={!editor.isEditable || !editor.can().addRowBefore()}
         onClick={() => editor.chain().focus().addRowBefore().run()}
       >
-        <i className="ri-insert-row-top"></i>
+        <RiInsertRowTop />
       </Button>
       <Button
         variant="ghost"
@@ -66,7 +78,7 @@ const TableMenu = ({ editor }) => {
         disabled={!editor.isEditable || !editor.can().addRowAfter()}
         onClick={() => editor.chain().focus().addRowAfter().run()}
       >
-        <i className="ri-insert-row-bottom"></i>
+        <RiInsertRowBottom />
       </Button>
       <Button
         variant="ghost"
@@ -74,7 +86,7 @@ const TableMenu = ({ editor }) => {
         disabled={!editor.isEditable || !editor.can().deleteRow()}
         onClick={() => editor.chain().focus().deleteRow().run()}
       >
-        <i className="ri-delete-row"></i>
+        <RiDeleteRow />
       </Button>
       <Separator orientation="vertical" />
       <Button
@@ -83,7 +95,7 @@ const TableMenu = ({ editor }) => {
         disabled={!editor.isEditable || !editor.can().mergeCells()}
         onClick={() => editor.chain().focus().mergeCells().run()}
       >
-        <i className="ri-merge-cells-horizontal"></i>
+        <RiMergeCellsHorizontal />
       </Button>
       <Button
         variant="ghost"
@@ -91,7 +103,7 @@ const TableMenu = ({ editor }) => {
         disabled={!editor.isEditable || !editor.can().splitCell()}
         onClick={() => editor.chain().focus().splitCell().run()}
       >
-        <i className="ri-split-cells-horizontal"></i>
+        <RiSplitCellsHorizontal />
       </Button>
     </div>
   ) : null;
