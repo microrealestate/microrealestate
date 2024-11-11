@@ -2,7 +2,7 @@
   "Entry date": "Data de entrada",
   "Billing reference": "Referência de cobrança",
   "Rental period": "Cobrança referente a",
-  "VAT number": "VAT number",
+  "VAT number": "Número do IVA",
   "{{ city }}, {{ date }}": "{{ city }}, {{ date }}",
   "Rent call": "Aviso de aluguel",
   "The total amount of {{amount}} has to be paid on {{date}}.": "O valor total de {{amount}} deve ser pago até {{date}}.",
