@@ -95,7 +95,7 @@ export default function UploadFileItem({
           variant="link"
           disabled={!hasLinkToDocument}
           className="p-0"
-          onClick={() => handleClickView(document._id)}
+          onClick={handleClickView}
         >
           {template.name}
         </Button>

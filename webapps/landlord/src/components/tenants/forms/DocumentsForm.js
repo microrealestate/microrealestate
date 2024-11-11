@@ -22,14 +22,16 @@ export default function DocumentsForm({ onSubmit, readOnly }) {
         <TenantDocumentList disabled={readOnly} />
       </Section>
 
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={handleNext}
-        data-cy="submit"
-      >
-        {t('Save')}
-      </Button>
+      {!readOnly && (
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleNext}
+          data-cy="submit"
+        >
+          {t('Save')}
+        </Button>
+      )}
     </>
   );
 }
