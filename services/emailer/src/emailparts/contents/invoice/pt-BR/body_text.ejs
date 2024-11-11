@@ -23,15 +23,15 @@
 
 
 
-Hello,
+Olá,
 
-Thank you for your settlement.
+Obrigado pelo pagamento.
 
-Please find in attachment the rent invoice of <%- _.formatTerm(period, tenant.contract.lease.timeRange) %>.
+Segue em anexo a próxima cobrança de aluguel para o perío de <%- _.formatTerm(period, tenant.contract.lease.timeRange) %>.
 
-Kind regards,
+Atenciosamente,
 
-<%-landlord.name %>
+<%-landlord.name%>
 <% if (landlord.hasContact) { -%>
 <%-landlord.contacts[0].phone1%><%if (landlord.contacts[0].phone2) {%> / <%-landlord.contacts[0].phone2%> <%}%>
 <%-landlord.contacts[0].email%>

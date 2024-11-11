@@ -23,22 +23,22 @@
 
 
 
-Hello,
+Olá,
 
-Please find the rent notice of <%- _.formatTerm(period, tenant.contract.lease.timeRange) %>.
+Esta é sua cobrança de aluguel de <%- _.formatTerm(period, tenant.contract.lease.timeRange) %>.
 
-The amount of your rent is <%- _.formatNumber(tenant.rents[0].total.grandTotal, 'currency') %> and the settlement has to be made before <%- _.formatDate(dueDate, 'LL') %>.
+O valor do seu aluguel é <%- _.formatNumber(tenant.rents[0].total.grandTotal, 'currency') %> e o pagamento deve ser feito antes de <%- _.formatDate(dueDate, 'LL') %>.
 
-Payment modalities:
+Modalidades de pagamento:
 
-By transfer
-Bank details
+Transferência:
+Dados bancários
 <% if (landlord.hasBankInfo) { -%>
 <%- landlord.bankInfo.name %>
-IBAN: <%-landlord.bankInfo.iban%>
+Agência/Conta: <%-landlord.bankInfo.iban%>
 <%}-%>
-By cheque
-Write your cheque to the order of <%-landlord.name%> and send it to the following address:
+Cheque:
+Escreva seu cheque à ordem de <%-landlord.name%> e envie para o seguinte endereço:
 <%-landlord.name%>
 <% if (landlord.hasAddress) { -%>
 <%-landlord.addresses[0].street1%>
@@ -53,14 +53,16 @@ Write your cheque to the order of <%-landlord.name%> and send it to the followin
 <%-landlord.addresses[0].country%>
 <%}-%>
 <%}-%>
-By cash
-Contact: <%-landlord.hasContact ? landlord.contacts[0].name : ''%>
-Phone: <%-landlord.hasContact ? landlord.contacts[0].phone1 : ''%><% landlord.hasContact && landlord.contacts[0].phone2 ? ' / ' + landlord.contacts[0].phone2 : '' %>
+Dinheiro:
+Contato: <%-landlord.hasContact ? landlord.contacts[0].name : ''%>
+Telefone: <%-landlord.hasContact ? landlord.contacts[0].phone1 : ''%><% landlord.hasContact && landlord.contacts[0].phone2 ? ' / ' + landlord.contacts[0].phone2 : '' %>
 Email: <%-landlord.hasContact ? landlord.contacts[0].email : ''%>
 
-We are at your service for any further information you may need.
+Estamos à sua disposição para quaisquer outras informações que você possa precisar.
 
-Regards,
+Caso já tenha realizado o pagamento, desconsidere este email.
+
+Atenciosamente,
 
 <%-landlord.name%>
 <% if (landlord.hasContact) { -%>
