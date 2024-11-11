@@ -133,7 +133,7 @@ function NotePartForm({ description }) {
 
   return (
     <TextAreaField
-      label={t('Note (visible to tenant)')}
+      label={t('Note (only visible to landlord)')}
       name="description"
       value={description}
     />
@@ -147,7 +147,7 @@ function DiscountPartForm({ promo, notepromo }) {
     <div className="space-y-2">
       <NumberField label={t('Amount')} name="promo" value={promo} />
       <TextAreaField
-        label={t('Description')}
+        label={t('Description (visible to tenant)')}
         name="notepromo"
         value={notepromo}
       />
@@ -161,7 +161,7 @@ function AdditionalCostPartForm({ extracharge, noteextracharge }) {
     <div className="space-y-2">
       <NumberField label={t('Amount')} name="extracharge" value={extracharge} />
       <TextAreaField
-        label={t('Description')}
+        label={t('Description (visible to tenant)')}
         name="noteextracharge"
         value={noteextracharge}
       />
