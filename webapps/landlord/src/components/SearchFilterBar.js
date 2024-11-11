@@ -103,21 +103,31 @@ export default function SearchFilterBar({ filters = [], onSearch, className }) {
   const triggerSearch = useCallback(
     (inputSelectedStatus, inputSearchText) => {
       startTransition(() => {
-        const searchParams = [];
+        const searchQuery = {};
+        delete router.query.search;
+        delete router.query.statuses;
         if (inputSearchText) {
-          searchParams.push(`search=${inputSearchText}`);
+          searchQuery.search = inputSearchText;
         }
         if (inputSelectedStatus.length) {
-          searchParams.push(
-            `statuses=${inputSelectedStatus.map(({ id }) => id).join(',')}`
-          );
+          searchQuery.statuses = inputSelectedStatus
+            .map(({ id }) => id)
+            .join(',');
         }
-        window.history.pushState(
-          null,
-          '',
-          `${buildPathname(router)}${
-            searchParams.length ? `?${searchParams.join('&')}` : ''
-          }`
+        router.push(
+          {
+            pathname: router.pathname,
+            query:
+              Object.keys(router.query).length ||
+              Object.keys(searchQuery).length
+                ? {
+                    ...router.query,
+                    ...searchQuery
+                  }
+                : {}
+          },
+          undefined,
+          { shallow: true }
         );
         onSearch(inputSelectedStatus, inputSearchText);
       });
