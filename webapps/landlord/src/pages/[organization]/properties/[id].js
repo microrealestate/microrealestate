@@ -51,30 +51,28 @@ function OccupancyHistoryCard() {
     <DashboardCard
       Icon={LuHistory}
       title={t('Previous tenants')}
-      renderContent={() => (
-        <div className="flex flex-col gap-2 text-xs">
-          {store.property.selected?.occupancyHistory?.length ? (
-            store.property.selected.occupancyHistory.map((occupant) => {
-              const occupationDates = t('{{beginDate}} to {{endDate}}', {
-                beginDate: moment(occupant.beginDate, 'DD/MM/YYYY').format(
-                  'll'
-                ),
-                endDate: moment(occupant.endDate, 'DD/MM/YYYY').format('ll')
-              });
-              return (
-                <div key={occupant.id} className="flex justify-between">
-                  <span className="text-muted-foreground">{occupant.name}</span>
-                  <span>{occupationDates}</span>
+      renderContent={() =>
+        store.property.selected?.occupancyHistory?.length ? (
+          store.property.selected.occupancyHistory.map((occupant) => {
+            const occupationDates = t('{{beginDate}} to {{endDate}}', {
+              beginDate: moment(occupant.beginDate, 'DD/MM/YYYY').format('ll'),
+              endDate: moment(occupant.endDate, 'DD/MM/YYYY').format('ll')
+            });
+            return (
+              <div key={occupant.id} className="mt-2">
+                <div className="text-base">{occupant.name}</div>
+                <div className="text-xs text-muted-foreground">
+                  {occupationDates}
                 </div>
-              );
-            })
-          ) : (
-            <span className="text-muted-foreground">
-              {t('Property not rented so far')}
-            </span>
-          )}
-        </div>
-      )}
+              </div>
+            );
+          })
+        ) : (
+          <span className="text-base text-muted-foreground">
+            {t('Property not rented so far')}
+          </span>
+        )
+      }
     />
   );
 }
