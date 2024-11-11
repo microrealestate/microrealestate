@@ -124,7 +124,7 @@ function RentRow({ rent, isSelected, onSelect, onEdit, onHistory }) {
 
           <Button
             variant="link"
-            className="p-0 h-fit text-xl"
+            className="p-0 h-fit text-xl whitespace-normal text-left"
             onClick={onEdit(rent)}
           >
             {rent.occupant.name}
