@@ -1,16 +1,13 @@
 import {
-  Box,
-  IconButton,
-  ListItem,
-  ListItemSecondaryAction,
-  ListItemText
-} from '@material-ui/core';
+  LuAlertTriangle,
+  LuInfo,
+  LuTrash,
+  LuUploadCloud
+} from 'react-icons/lu';
 import { useCallback, useMemo } from 'react';
-import CloudUploadIcon from '@material-ui/icons/CloudUpload';
-import DeleteIcon from '@material-ui/icons/Delete';
-import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
+import { Button } from '../ui/button';
+
 import moment from 'moment';
-import ReportProblemOutlinedIcon from '@material-ui/icons/ReportProblemOutlined';
 import useTranslation from 'next-translate/useTranslation';
 
 export default function UploadFileItem({
@@ -92,76 +89,62 @@ export default function UploadFileItem({
   }, [document, onDelete, template.name]);
 
   return (
-    <ListItem divider button={hasLinkToDocument} onClick={handleClickView}>
-      <ListItemText
-        primary={
-          <>
-            <Box>
-              <Box color={!hasLinkToDocument ? 'text.disabled' : null}>
-                {template.name}
-              </Box>
-              {template.description ? (
-                <Box
-                  fontSize="caption.fontSize"
-                  color={
-                    !hasLinkToDocument ? 'text.disabled' : 'text.secondary'
-                  }
-                >
-                  {template.description}
-                </Box>
-              ) : null}
-              {document?.updatedDate ? (
-                <Box fontSize="caption.fontSize" color="text.secondary">
-                  {t('Saved on {{date}}', {
-                    date: moment(document?.updatedDate).format('LL hh:mm')
-                  })}
-                </Box>
-              ) : null}
-            </Box>
-            {severity === 'error' && (
-              <Box
-                display="flex"
-                alignItems="center"
-                gridGap={4}
-                color="warning.main"
-                mt={0.5}
-              >
-                <ReportProblemOutlinedIcon fontSize="small" />
-                <Box fontSize="caption.fontSize" color="text.primary">
-                  {message}
-                </Box>
-              </Box>
-            )}
-            {severity === 'warning' && (
-              <Box
-                display="flex"
-                alignItems="center"
-                gridGap={4}
-                color="info.main"
-              >
-                <InfoOutlinedIcon fontSize="small" />
-                <Box fontSize="caption.fontSize" color="text.secondary">
-                  {message}
-                </Box>
-              </Box>
-            )}
-          </>
-        }
-      />
-      <ListItemSecondaryAction>
-        <Box display="flex" justifyContent="end" alignItems="center">
-          {uploadButtonVisible && (
-            <IconButton onClick={handleClickUpload} disabled={disabled}>
-              <CloudUploadIcon />
-            </IconButton>
-          )}
-          {hasLinkToDocument && !uploadButtonVisible && (
-            <IconButton onClick={handleClickDelete} disabled={disabled}>
-              <DeleteIcon />
-            </IconButton>
-          )}
-        </Box>
-      </ListItemSecondaryAction>
-    </ListItem>
+    <div className="flex justify-between items-center p-4 border-b">
+      <div>
+        <Button
+          variant="link"
+          disabled={!hasLinkToDocument}
+          className="p-0"
+          onClick={handleClickView}
+        >
+          {template.name}
+        </Button>
+        {template.description ? (
+          <div className="text-sm">{template.description}</div>
+        ) : null}
+        {document?.updatedDate ? (
+          <div className="text-muted-foreground text-xs">
+            {t('Saved on {{date}}', {
+              date: moment(document?.updatedDate).format('LL hh:mm')
+            })}
+          </div>
+        ) : null}
+        {severity === 'error' && (
+          <div className="flex items-center gap-1 text-warning text-xs">
+            <LuAlertTriangle />
+            <div>{message}</div>
+          </div>
+        )}
+        {severity === 'warning' && (
+          <div className="flex items-center gap-1 text-muted-foreground text-xs">
+            <LuInfo />
+            <div>{message}</div>
+          </div>
+        )}
+      </div>
+
+      <div className="flex justify-end items-center">
+        {uploadButtonVisible && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleClickUpload}
+            disabled={disabled}
+          >
+            <LuUploadCloud className="size-6" />
+          </Button>
+        )}
+        {hasLinkToDocument && !uploadButtonVisible && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleClickDelete}
+            disabled={disabled}
+          >
+            <LuTrash className="size-6" />
+          </Button>
+        )}
+      </div>
+    </div>
   );
 }

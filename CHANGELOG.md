@@ -6,7 +6,7 @@ All notable changes to this project will be documented here.
 
 ### Added
 
-- ...
+- Added brazilian translation #18
 
 ### Changed
 
@@ -31,6 +31,8 @@ All notable changes to this project will be documented here.
 ### Contributors
 
 - [@camelaissani](https://github.com/camelaissani)
+
+- [@mykael90](https://github.com/mykael90)
 
 
 ## 1.0.0-alpha.2

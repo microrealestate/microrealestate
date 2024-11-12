@@ -1,5 +1,5 @@
 import { cn } from '../utils';
-import { RotateCwIcon } from 'lucide-react';
+import { LuRotateCw } from 'react-icons/lu';
 
 export default function Loading({ fullScreen = true, className }) {
   return fullScreen ? (
@@ -10,11 +10,11 @@ export default function Loading({ fullScreen = true, className }) {
         className
       )}
     >
-      <RotateCwIcon className="animate-spin text-primary z-50" size={32} />
+      <LuRotateCw className="animate-spin text-primary z-50 size-8" />
     </div>
   ) : (
     <div className={cn('flex items-center justify-center', className)}>
-      <RotateCwIcon className="animate-spin text-primary z-50" size={32} />
+      <LuRotateCw className="animate-spin text-primary z-50 size-8" />
     </div>
   );
 }

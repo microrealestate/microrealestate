@@ -1,70 +1,111 @@
-import { Divider } from '@material-ui/core';
-import EditorButton from './EditorButton';
-import FormatToolbar from './FormatToolbar';
+import {
+  RiDeleteBin2Line,
+  RiDeleteColumn,
+  RiDeleteRow,
+  RiInsertColumnLeft,
+  RiInsertColumnRight,
+  RiInsertRowBottom,
+  RiInsertRowTop,
+  RiMergeCellsHorizontal,
+  RiSplitCellsHorizontal,
+  RiTable2
+} from 'react-icons/ri';
+import { Button } from '../ui/button';
+import { Separator } from '../ui/separator';
 
 const TableMenu = ({ editor }) => {
   return editor ? (
-    <FormatToolbar>
-      <EditorButton
-        iconType="ri-table-2"
+    <div className="flex">
+      <Button
+        variant="ghost"
+        size="icon"
         onClick={() =>
           editor.commands.insertTable({
             rows: 1,
             cols: 2,
-            withHeaderRow: false,
+            withHeaderRow: false
           })
         }
         disabled={!editor.isEditable}
-      />
-      <EditorButton
-        iconType="ri-delete-bin-2-line"
+      >
+        <RiTable2 />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
         disabled={!editor.isEditable || !editor.can().deleteTable()}
         onClick={() => editor.chain().focus().deleteTable().run()}
-      />
-      <Divider orientation="vertical" flexItem />
-      <EditorButton
-        iconType="ri-insert-column-left"
+      >
+        <RiDeleteBin2Line />
+      </Button>
+      <Separator orientation="vertical" />
+      <Button
+        variant="ghost"
+        size="icon"
         disabled={!editor.isEditable || !editor.can().addColumnBefore()}
         onClick={() => editor.chain().focus().addColumnBefore().run()}
-      />
-      <EditorButton
-        iconType="ri-insert-column-right"
+      >
+        <RiInsertColumnLeft />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
         disabled={!editor.isEditable || !editor.can().addColumnAfter()}
         onClick={() => editor.chain().focus().addColumnAfter().run()}
-      />
-      <EditorButton
-        iconType="ri-delete-column"
+      >
+        <RiInsertColumnRight />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
         disabled={!editor.isEditable || !editor.can().deleteColumn()}
         onClick={() => editor.chain().focus().deleteColumn().run()}
-      />
-      <Divider orientation="vertical" flexItem />
-      <EditorButton
-        iconType="ri-insert-row-top"
+      >
+        <RiDeleteColumn />
+      </Button>
+      <Separator orientation="vertical" />
+      <Button
+        variant="ghost"
+        size="icon"
         disabled={!editor.isEditable || !editor.can().addRowBefore()}
         onClick={() => editor.chain().focus().addRowBefore().run()}
-      />
-      <EditorButton
-        iconType="ri-insert-row-bottom"
+      >
+        <RiInsertRowTop />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
         disabled={!editor.isEditable || !editor.can().addRowAfter()}
         onClick={() => editor.chain().focus().addRowAfter().run()}
-      />
-      <EditorButton
-        iconType="ri-delete-row"
+      >
+        <RiInsertRowBottom />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
         disabled={!editor.isEditable || !editor.can().deleteRow()}
         onClick={() => editor.chain().focus().deleteRow().run()}
-      />
-      <Divider orientation="vertical" flexItem />
-      <EditorButton
-        iconType="ri-merge-cells-horizontal"
+      >
+        <RiDeleteRow />
+      </Button>
+      <Separator orientation="vertical" />
+      <Button
+        variant="ghost"
+        size="icon"
         disabled={!editor.isEditable || !editor.can().mergeCells()}
         onClick={() => editor.chain().focus().mergeCells().run()}
-      />
-      <EditorButton
-        iconType="ri-split-cells-horizontal"
+      >
+        <RiMergeCellsHorizontal />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
         disabled={!editor.isEditable || !editor.can().splitCell()}
         onClick={() => editor.chain().focus().splitCell().run()}
-      />
-    </FormatToolbar>
+      >
+        <RiSplitCellsHorizontal />
+      </Button>
+    </div>
   ) : null;
 };
 

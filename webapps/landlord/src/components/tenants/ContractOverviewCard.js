@@ -1,8 +1,8 @@
 import CompulsoryDocumentStatus from './CompulsaryDocumentStatus';
 import { DashboardCard } from '../dashboard/DashboardCard';
-import { FilePenIcon } from 'lucide-react';
 import moment from 'moment';
 import NumberFormat from '../NumberFormat';
+import { RiContractLine } from 'react-icons/ri';
 import { StoreContext } from '../../store';
 import { useContext } from 'react';
 import useTranslation from 'next-translate/useTranslation';
@@ -12,10 +12,10 @@ export default function ContractOverviewCard() {
   const store = useContext(StoreContext);
   return (
     <DashboardCard
-      Icon={FilePenIcon}
+      Icon={RiContractLine}
       title={t('Lease')}
       renderContent={() => (
-        <div className="text-base">
+        <div className="text-base space-y-2">
           <div className="flex justify-between">
             <span className="text-muted-foreground">{t('Contract')}</span>
             <span>{store.tenant.selected.contract}</span>

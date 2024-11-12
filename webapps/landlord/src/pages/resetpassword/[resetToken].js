@@ -1,11 +1,11 @@
 import * as Yup from 'yup';
-import { Card, CardContent, CardFooter } from '../../components/ui/card';
 import { Form, Formik } from 'formik';
 import React, { useContext } from 'react';
-import { SubmitButton, TextField } from '@microrealestate/commonui/components';
 import Link from '../../components/Link';
-import LocationCityIcon from '@material-ui/icons/LocationCity';
+import SignInUpLayout from '../../components/SignInUpLayout';
 import { StoreContext } from '../../store';
+import { SubmitButton } from '@microrealestate/commonui/components';
+import { TextField } from '../../components/formfields/TextField';
 import { toast } from 'sonner';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
@@ -53,12 +53,8 @@ export default function ResetPassword() {
   };
 
   return (
-    <div className="mt-10 mx-4 sm:container sm:w-[36rem]">
-      <div className="flex flex-col items-center mb-10">
-        <LocationCityIcon />
-        <span className="text-2xl">{t('Reset your password')}</span>
-      </div>
-      <Card>
+    <SignInUpLayout>
+      <>
         <Formik
           initialValues={initialValues}
           validationSchema={validationSchema}
@@ -66,8 +62,11 @@ export default function ResetPassword() {
         >
           {({ isSubmitting }) => {
             return (
-              <Form>
-                <CardContent className="pt-6">
+              <div className="p-5 md:p-0 md:max-w-md w-full">
+                <Form className="space-y-10">
+                  <div className="text-2xl text-center md:text-left md:text-4xl font-medium text-secondary-foreground">
+                    {t('Reset your password')}
+                  </div>
                   <TextField
                     label={t('New password')}
                     name="password"
@@ -78,28 +77,24 @@ export default function ResetPassword() {
                     name="confirmationPassword"
                     type="password"
                   />
-                </CardContent>
-                <CardFooter>
+
                   <SubmitButton
-                    label={
-                      !isSubmitting ? t('Reset my password') : t('Reseting')
-                    }
+                    label={!isSubmitting ? t('Reset') : t('Reseting')}
                     className="w-full"
                   />
-                </CardFooter>
-              </Form>
+                </Form>
+              </div>
             );
           }}
         </Formik>
-        <CardFooter>
-          <span className="text-secondary-foreground text-center w-full">
-            <Link href="/signin" data-cy="signin">
-              {t('Sign in')}
-            </Link>
-            .
-          </span>
-        </CardFooter>
-      </Card>
-    </div>
+
+        <div className="mt-10 lg:mt-0 lg:absolute lg:bottom-10 text-center text-muted-foreground w-full">
+          <Link href="/signin" data-cy="signin">
+            {t('Sign in')}
+          </Link>
+          .
+        </div>
+      </>
+    </SignInUpLayout>
   );
 }

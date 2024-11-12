@@ -9,7 +9,7 @@ import {
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
-import { PlusCircle } from 'lucide-react';
+import { LuPlusCircle } from 'react-icons/lu';
 import { Separator } from './ui/separator';
 import ToggleMenu from './ToggleMenu';
 import { useRouter } from 'next/router';
@@ -49,7 +49,7 @@ function FilterBar({ filters, selectedFilterIds, onChange }) {
       >
         <div className="flex items-center gap-1.5">
           <div>
-            <PlusCircle className="inline-block align-middle w-4 h-4" />
+            <LuPlusCircle className="inline-block align-middle size-4" />
             <div className="inline-block align-middle ml-1">{t('Filters')}</div>
           </div>
           {selectedFilterIds.length > 0 ? (
@@ -103,21 +103,31 @@ export default function SearchFilterBar({ filters = [], onSearch, className }) {
   const triggerSearch = useCallback(
     (inputSelectedStatus, inputSearchText) => {
       startTransition(() => {
-        const searchParams = [];
+        const searchQuery = {};
+        delete router.query.search;
+        delete router.query.statuses;
         if (inputSearchText) {
-          searchParams.push(`search=${inputSearchText}`);
+          searchQuery.search = inputSearchText;
         }
         if (inputSelectedStatus.length) {
-          searchParams.push(
-            `statuses=${inputSelectedStatus.map(({ id }) => id).join(',')}`
-          );
+          searchQuery.statuses = inputSelectedStatus
+            .map(({ id }) => id)
+            .join(',');
         }
-        window.history.pushState(
-          null,
-          '',
-          `${buildPathname(router)}${
-            searchParams.length ? `?${searchParams.join('&')}` : ''
-          }`
+        router.push(
+          {
+            pathname: router.pathname,
+            query:
+              Object.keys(router.query).length ||
+              Object.keys(searchQuery).length
+                ? {
+                    ...router.query,
+                    ...searchQuery
+                  }
+                : {}
+          },
+          undefined,
+          { shallow: true }
         );
         onSearch(inputSelectedStatus, inputSearchText);
       });

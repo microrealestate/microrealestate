@@ -5,17 +5,16 @@ import {
   DateField,
   NumberField,
   RangeDateField,
-  Section,
   SelectField,
   SubmitButton,
-  TextField,
+  TextField
 } from '@microrealestate/commonui/components';
 import {
   FieldArray,
   Form,
   Formik,
   validateYupSchema,
-  yupToFormErrors,
+  yupToFormErrors
 } from 'formik';
 import {
   Fragment,
@@ -23,12 +22,13 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useState,
+  useState
 } from 'react';
 
 import moment from 'moment';
 import { nanoid } from 'nanoid';
 import { observer } from 'mobx-react-lite';
+import { Section } from '../../formfields/Section';
 import { StoreContext } from '../../../store';
 import useTranslation from 'next-translate/useTranslation';
 
@@ -48,9 +48,9 @@ const validationSchema = Yup.object().shape({
         expense: Yup.object().shape({
           title: Yup.mixed().when('amount', {
             is: (val) => val > 0,
-            then: Yup.string().required(),
+            then: Yup.string().required()
           }),
-          amount: Yup.number().min(0),
+          amount: Yup.number().min(0)
         }),
         entryDate: Yup.date()
           .required()
@@ -78,12 +78,12 @@ const validationSchema = Yup.object().shape({
               }
               return true;
             }
-          ),
+          )
       })
     )
     .min(1),
   guaranty: Yup.number().min(0).required(),
-  guarantyPayback: Yup.number().min(0),
+  guarantyPayback: Yup.number().min(0)
 });
 
 const emptyExpense = () => ({ title: '', amount: 0 });
@@ -92,7 +92,7 @@ const emptyProperty = () => ({
   key: nanoid(),
   _id: '',
   rent: 0,
-  expense: emptyExpense(),
+  expense: emptyExpense()
 });
 
 const initValues = (tenant) => {
@@ -113,24 +113,24 @@ const initValues = (tenant) => {
       : null,
     properties: tenant?.properties?.length
       ? tenant.properties.map((property) => {
-        return {
-          key: property.property._id,
-          _id: property.property._id,
-          rent: property.rent || '',
-          expense: property.expenses?.[0] || {
-            ...emptyExpense(),
-          },
-          entryDate: property.entryDate
-            ? moment(property.entryDate, 'DD/MM/YYYY')
-            : moment(beginDate),
-          exitDate: property.exitDate
-            ? moment(property.exitDate, 'DD/MM/YYYY')
-            : moment(endDate),
-        };
-      })
+          return {
+            key: property.property._id,
+            _id: property.property._id,
+            rent: property.rent || '',
+            expense: property.expenses?.[0] || {
+              ...emptyExpense()
+            },
+            entryDate: property.entryDate
+              ? moment(property.entryDate, 'DD/MM/YYYY')
+              : moment(beginDate),
+            exitDate: property.exitDate
+              ? moment(property.exitDate, 'DD/MM/YYYY')
+              : moment(endDate)
+          };
+        })
       : [{ ...emptyProperty(), entryDate: beginDate, exitDate: endDate }],
     guaranty: tenant?.guaranty || 0,
-    guarantyPayback: tenant?.guarantyPayback || 0,
+    guarantyPayback: tenant?.guarantyPayback || 0
   };
 };
 
@@ -139,8 +139,8 @@ export const validate = (tenant) => {
   return validationSchema.validate(values, {
     context: {
       beginDate: values.beginDate,
-      endDate: values.endDate,
-    },
+      endDate: values.endDate
+    }
   });
 };
 
@@ -171,7 +171,7 @@ function LeaseContractForm({ readOnly, onSubmit }) {
       id: _id,
       value: _id,
       label: name,
-      disabled: !active,
+      disabled: !active
     }));
   }, [store.lease.items]);
 
@@ -189,13 +189,13 @@ function LeaseContractForm({ readOnly, onSubmit }) {
           status:
             status === 'occupied'
               ? !currentProperties.includes(_id)
-                  ? t('occupied by {{tenantName}}', {
-                    tenantName: occupantLabel,
+                ? t('occupied by {{tenantName}}', {
+                    tenantName: occupantLabel
                   })
-                  : t('occupied by current tenant')
-              : t('vacant'),
-        }),
-      })),
+                : t('occupied by current tenant')
+              : t('vacant')
+        })
+      }))
     ];
   }, [t, store.tenant.selected.properties, store.property.items]);
 
@@ -218,9 +218,9 @@ function LeaseContractForm({ readOnly, onSubmit }) {
               rent: property.rent,
               expenses: property.expense.title ? [property.expense] : [],
               entryDate: property.entryDate?.format('DD/MM/YYYY'),
-              exitDate: property.exitDate?.format('DD/MM/YYYY'),
+              exitDate: property.exitDate?.format('DD/MM/YYYY')
             };
-          }),
+          })
       });
     },
     [onSubmit, store.lease.items]
@@ -265,7 +265,7 @@ function LeaseContractForm({ readOnly, onSubmit }) {
             previousProperty.expense = {
               title: t('General expenses'),
               // TODO: find another way to have expenses configurable
-              amount: Math.round(property.price * 100 * 0.1) / 100,
+              amount: Math.round(property.price * 100 * 0.1) / 100
             };
           }
           handleChange(evt);
@@ -311,6 +311,7 @@ function LeaseContractForm({ readOnly, onSubmit }) {
               <NumberField
                 label={t('Deposit')}
                 name="guaranty"
+                showZero={true}
                 disabled={!values.leaseId || readOnly}
               />
             </Section>
@@ -403,7 +404,7 @@ function LeaseContractForm({ readOnly, onSubmit }) {
                             arrayHelpers.push({
                               ...emptyProperty(),
                               entryDate: values.beginDate,
-                              endDate: values.endDate,
+                              endDate: values.endDate
                             })
                           }
                           data-cy="addTenantProperty"

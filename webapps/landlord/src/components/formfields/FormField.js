@@ -7,18 +7,17 @@ export default function FormField({ children, ...props }) {
 
   return (
     <div className="flex flex-col gap-1">
-      <div
+      <label
+        htmlFor={props.name}
         className={cn(
-          'text-muted-foreground mb-0.5',
+          'text-muted-foreground',
           hasError ? 'text-destructive' : ''
         )}
       >
         {props.label}
-      </div>
+      </label>
       {children}
-      {hasError && (
-        <span className="text-destructive text-xs mt-0.5">{meta.error}</span>
-      )}
+      {hasError && <div className="text-destructive text-xs">{meta.error}</div>}
     </div>
   );
 }

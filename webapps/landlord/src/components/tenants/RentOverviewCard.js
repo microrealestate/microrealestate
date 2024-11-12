@@ -1,6 +1,6 @@
+import { BsReceipt } from 'react-icons/bs';
 import { DashboardCard } from '../dashboard/DashboardCard';
 import NumberFormat from '../NumberFormat';
-import { ReceiptTextIcon } from 'lucide-react';
 import { Separator } from '../ui/separator';
 import { StoreContext } from '../../store';
 import { useContext } from 'react';
@@ -12,10 +12,10 @@ export default function RentOverviewCard() {
 
   return (
     <DashboardCard
-      Icon={ReceiptTextIcon}
+      Icon={BsReceipt}
       title={t('Rental')}
       renderContent={() => (
-        <div className="text-base">
+        <div className="text-base space-y-2">
           <div className="flex justify-between">
             <span className="text-muted-foreground">{t('Rent')}</span>
             <NumberFormat value={store.tenant.selected.rental} />
@@ -33,7 +33,7 @@ export default function RentOverviewCard() {
           {store.tenant.selected.isVat && (
             <>
               <Separator />
-              <div mt={1}>
+              <div className="flex justify-between">
                 <span className="text-muted-foreground">
                   {t('Pre-tax total')}
                 </span>

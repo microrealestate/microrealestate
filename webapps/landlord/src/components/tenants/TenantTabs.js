@@ -4,8 +4,8 @@ import { TabPanel, useTabChangeHelper } from '../Tabs';
 import BillingForm from './forms/BillingForm';
 import DocumentsForm from './forms/DocumentsForm';
 import LeaseContractForm from './forms/LeaseContractForm';
+import { LuAlertTriangle } from 'react-icons/lu';
 import { observer } from 'mobx-react-lite';
-import ReportProblemOutlinedIcon from '@material-ui/icons/ReportProblemOutlined';
 import { StoreContext } from '../../store';
 import TenantForm from './forms/TenantForm';
 import { useContext } from 'react';
@@ -34,15 +34,7 @@ function TenantTabs({ onSubmit /*, setError*/, readOnly }) {
           label={
             <Box display="flex" justifyContent="center" alignItems="center">
               {hasMissingCompulsaryDocuments ? (
-                <Box
-                  display="flex"
-                  justifyContent="center"
-                  alignItems="center"
-                  color="warning.main"
-                  mr={0.8}
-                >
-                  <ReportProblemOutlinedIcon fontSize="small" />
-                </Box>
+                <LuAlertTriangle className="text-warning mr-1 size-6" />
               ) : null}
               <Box color="text.primary" fontSize="caption.fontSize">
                 {t('Documents')}

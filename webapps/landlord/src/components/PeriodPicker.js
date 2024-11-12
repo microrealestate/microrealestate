@@ -1,4 +1,4 @@
-import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
+import { LuChevronLeft, LuChevronRight } from 'react-icons/lu';
 import { useMemo, useState } from 'react';
 import { Button } from './ui/button';
 import { cn } from '../utils';
@@ -46,10 +46,10 @@ export default function PeriodPicker({
       <span>{month.format(format)}</span>
       <div className="flex gap-2">
         <Button variant="secondary" size="icon" onClick={handlePreviousClick}>
-          <ChevronLeftIcon className="h-4 w-4" />
+          <LuChevronLeft className="size-4" />
         </Button>
         <Button variant="secondary" size="icon" onClick={handleNextClick}>
-          <ChevronRightIcon className="h-4 w-4" />
+          <LuChevronRight className="size-4" />
         </Button>
       </div>
     </div>

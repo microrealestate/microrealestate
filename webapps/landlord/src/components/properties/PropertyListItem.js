@@ -19,7 +19,7 @@ export default function PropertyListItem({ property }) {
   }, [property._id, property.name, router, store]);
 
   return (
-    <Card className="p-4 cursor-pointer hover:bg-primary/10" onClick={onClick}>
+    <Card className="p-4 cursor-pointer" onClick={onClick}>
       <div className="flex flex-col md:items-end md:flex-row md:justify-between">
         <div>
           <Badge
@@ -45,9 +45,10 @@ export default function PropertyListItem({ property }) {
           <p className="text-sm text-muted-foreground">
             {t('Rent excluding tax and expenses')}
           </p>
-          <div className="text-2xl font-semibold">
-            <NumberFormat value={property.price} />
-          </div>
+          <NumberFormat
+            value={property.price}
+            className="text-2xl font-semibold"
+          />
         </div>
       </div>
       <div className="flex items-center gap-2">

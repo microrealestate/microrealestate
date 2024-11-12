@@ -48,13 +48,17 @@ curl https://raw.githubusercontent.com/microrealestate/microrealestate/master/.e
 
 Update the secrets and tokens in the `.env` file (at the end of the file).
 
+**🚨 IMPORTANT**
+
+In case you previously ran the application, the secrets, the tokens and the MONGO_URL must be reported from previous .env file to the new one.
+Otherwise, the application will not point to the correct database and will not be able to login with the previous credentials.
 
 ### Localhost setup
 
 Start the application under localhost:
 
 ``` shell
-docker compose --profile local up
+APP_PORT=8080 docker compose --profile local up
 ```
 The application will be available on http://localhost:8080/landlord and http://localhost:8080/tenant.
 
@@ -64,11 +68,13 @@ The application will be available on http://localhost:8080/landlord and http://l
 Start the application under a custom ip:
 
 ``` shell
-sudo docker APP_DOMAIN=x.x.x.x compose up
+sudo APP_DOMAIN=x.x.x.x docker compose up
 ```
 x.x.x.x is the ip address of the server.
 
 The application will be available on http://x.x.x.x/landlord and http://x.x.x.x/tenant.
+
+In case you need to use a port number do not pass it in the APP_DOMAIN. You can use the APP_PORT environment variable.
 
 
 ### Domain with https setup
@@ -82,6 +88,37 @@ sudo APP_DOMAIN=app.example.com APP_PROTOCOL=https docker compose up
 Make sure your DNS records are pointing to the private server. The application will automatically issue the ssl certificate.
 
 The application will be available on https://app.example.com/landlord and https://app.example.com/tenant.
+
+
+### Backup and restore the data
+
+The backup and restore commands can be executed when the application is running to allow connecting to MongoDB.
+
+#### Backup
+
+In the mre directory run:
+
+``` shell
+docker compose run mongo /usr/bin/mongodump --uri=mongodb://mongo/mredb --gzip --archive=./backup/mredb-$(date +%F_%T).dump
+```
+
+Replace "mredb" with the name of your database (see .env file). By default, the database name is "mredb".
+
+The archive file will be placed in the "backup" folder.
+
+#### Restore
+
+In the mre/backup directory, select an archive file you want to restore. 
+
+Then run the restore command:
+
+``` shell
+docker compose run mongo /usr/bin/mongorestore --uri=mongodb://mongo/mredb --drop --gzip --archive=./backup/mredb-XXXX.dump 
+```
+
+Where mredb-XXXX.dump is the archive file you selected.
+
+Again, replace "mredb" with the name of your database (see .env file). By default, the database name is "mredb".
 
 
 ## Developers

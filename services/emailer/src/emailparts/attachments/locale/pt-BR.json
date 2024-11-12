@@ -3,8 +3,8 @@
   "short_rentcall": "R",
   "short_rentcall_reminder": "R",
   "short_rentcall_last_reminder": "R",
-  "invoice": "Rent receipt",
-  "rentcall": "Payment notice",
-  "rentcall_reminder": "Payment notice (reminder)",
-  "rentcall_last_reminder": "Payment notice (last reminder)"
+  "invoice": "Cobrança de aluguel",
+  "rentcall": "Lembrete de pagamento",
+  "rentcall_reminder": "Lembrete de pagamento (aviso adicional)",
+  "rentcall_last_reminder": "Lembrete de pagamento (último aviso)"
 }

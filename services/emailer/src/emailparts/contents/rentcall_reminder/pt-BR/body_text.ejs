@@ -23,23 +23,23 @@
 
 
 
-Hello,
+Olá,
 
-On examining your account, we note that, failing mistake or omission on our part, you have not settled your rent of <%- _.formatTerm(period, tenant.contract.lease.timeRange) %>.
+Ao examinar sua conta, notamos que, salvo erro ou omissão de nossa parte, não foi identificado o pagamento do aluguel de <%- _.formatTerm(period, tenant.contract.lease.timeRange) %>.
 
-We would be grateful if you could proceed to the payment of <%- _.formatNumber(tenant.rents[0].total.grandTotal, 'currency') %> very shortly.
+Agradeceríamos se você procedesse com o pagamento de <%- _.formatNumber(tenant.rents[0].total.grandTotal, 'currency') %> o mais breve possível.
 
-Payment modalities:
+Modalidades de pagamento:
 
-By transfer
-Bank details
+Transferência:
+Dados bancários
 <% if (landlord.hasBankInfo) { -%>
 <%- landlord.bankInfo.name %>
-IBAN: <%-landlord.bankInfo.iban%>
+Agência/Conta: <%-landlord.bankInfo.iban%>
 <%}-%>
 
-By cheque
-Write your cheque to the order of <%-landlord.name%> and send it to the following address:
+Cheque:
+Escreva seu cheque à ordem de <%-landlord.name%> e envie para o seguinte endereço:
 <%-landlord.name%>
 <% if (landlord.hasAddress) { -%>
 <%-landlord.addresses[0].street1%>
@@ -55,14 +55,16 @@ Write your cheque to the order of <%-landlord.name%> and send it to the followin
 <%}-%>
 <%}-%>
 
-By cash
-Contact: <%-landlord.hasContact ? landlord.contacts[0].name : ''%>
-Phone: <%-landlord.hasContact ? landlord.contacts[0].phone1 : ''%><% landlord.hasContact && landlord.contacts[0].phone2 ? ' / ' + landlord.contacts[0].phone2 : '' %>
+Dinheiro:
+Contato: <%-landlord.hasContact ? landlord.contacts[0].name : ''%>
+Telefone: <%-landlord.hasContact ? landlord.contacts[0].phone1 : ''%><% landlord.hasContact && landlord.contacts[0].phone2 ? ' / ' + landlord.contacts[0].phone2 : '' %>
 Email: <%-landlord.hasContact ? landlord.contacts[0].email : ''%>
 
-We are at your service for any further information you may need.
+Estamos à sua disposição para quaisquer outras informações que você possa precisar.
 
-Regards,
+Caso já tenha realizado o pagamento, desconsidere este email.
+
+Atenciosamente,
 
 <%-landlord.name%>
 <% if (landlord.hasContact) { -%>

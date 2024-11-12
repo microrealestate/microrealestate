@@ -6,15 +6,15 @@ import {
   NumberField,
   RadioField,
   RadioFieldGroup,
-  Section,
   SubmitButton,
-  SwitchField,
   TextField
 } from '@microrealestate/commonui/components';
 import { QueryKeys, updateOrganization } from '../../utils/restcalls';
 import { useCallback, useContext, useMemo } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Section } from '../formfields/Section';
 import { StoreContext } from '../../store';
+import { SwitchField } from '../formfields/SwitchField';
 import { toast } from 'sonner';
 import useTranslation from 'next-translate/useTranslation';
 
@@ -358,13 +358,11 @@ export default function ThirdPartiesForm({ organization }) {
                           'Enable explicit TLS (Implicit TLS / StartTLS is always used when supported by the SMTP)'
                         )}
                         name="smtp_secure"
-                        color="primary"
                       />
                       <br />
                       <SwitchField
                         label={t('Use authentication')}
                         name="smtp_authentication"
-                        color="primary"
                       />
                       {values?.smtp_authentication ? (
                         <>

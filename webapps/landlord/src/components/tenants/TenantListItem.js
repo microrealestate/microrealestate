@@ -53,7 +53,7 @@ export default function TenantListItem({ tenant }) {
   }, [tenant.beginDate, tenant.endDate, tenant.terminationDate]);
 
   return (
-    <Card onClick={handleClick} className="cursor-pointer hover:bg-primary/10">
+    <Card onClick={handleClick} className="cursor-pointer">
       <CardHeader>
         <CardTitle className="flex flex-col justify-start">
           <Badge
@@ -64,7 +64,7 @@ export default function TenantListItem({ tenant }) {
           </Badge>
           <Button
             variant="link"
-            className="justify-start p-0 m-0 text-xl text-ellipsis whitespace-nowrap overflow-hidden"
+            className="justify-start p-0 m-0 text-xl whitespace-normal text-left"
             data-cy="openResourceButton"
           >
             {tenant.name}
@@ -104,7 +104,7 @@ export default function TenantListItem({ tenant }) {
       </CardContent>
 
       <CardFooter>
-        <CompulsoryDocumentStatus tenant={tenant} variant="compact" />
+        <CompulsoryDocumentStatus tenant={tenant} />
       </CardFooter>
     </Card>
   );

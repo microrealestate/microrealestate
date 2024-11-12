@@ -1,40 +1,44 @@
 import {
-  BedSingleIcon,
-  BuildingIcon,
-  HomeIcon,
-  MailboxIcon,
-  MountainIcon,
-  ParkingSquareIcon,
-  StoreIcon,
-  WarehouseIcon
-} from 'lucide-react';
+  LuBedSingle,
+  LuBuilding,
+  LuHome,
+  LuMailbox,
+  LuMountain,
+  LuParkingSquare,
+  LuStore,
+  LuWarehouse
+} from 'react-icons/lu';
+
+import { PiOfficeChair } from 'react-icons/pi';
 
 export default function PropertyIcon({ type }) {
-  let TypeIcon = MountainIcon;
+  let TypeIcon = LuMountain;
   switch (type) {
     case 'store':
-      TypeIcon = StoreIcon;
+      TypeIcon = LuStore;
       break;
     case 'apartment':
-      TypeIcon = HomeIcon;
+      TypeIcon = LuHome;
       break;
     case 'room':
-      TypeIcon = BedSingleIcon;
+      TypeIcon = LuBedSingle;
       break;
     case 'building':
+      TypeIcon = LuBuilding;
+      break;
     case 'office':
-      TypeIcon = BuildingIcon;
+      TypeIcon = PiOfficeChair;
       break;
     case 'garage':
-      TypeIcon = WarehouseIcon;
+      TypeIcon = LuWarehouse;
       break;
     case 'parking':
-      TypeIcon = ParkingSquareIcon;
+      TypeIcon = LuParkingSquare;
       break;
     case 'letterbox':
-      TypeIcon = MailboxIcon;
+      TypeIcon = LuMailbox;
       break;
   }
 
-  return <TypeIcon />;
+  return <TypeIcon className="size-6" />;
 }

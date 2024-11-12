@@ -50,14 +50,6 @@ const theme = createTheme({
         }
       }
     },
-    MuiCheckbox: {
-      root: {
-        color: defaultColor,
-        '&.Mui-checked': {
-          color: primaryColor
-        }
-      }
-    },
     MuiInput: {
       root: {
         color: defaultColor

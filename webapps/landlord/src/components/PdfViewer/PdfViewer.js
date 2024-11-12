@@ -1,12 +1,11 @@
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '../ui/drawer';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { Viewer, Worker } from '@react-pdf-viewer/core';
-
 import { apiFetcher } from '../../utils/fetch';
-import { Button } from '@material-ui/core';
-import EditorButton from '../RichTextEditor/EditorButton';
+import { Button } from '../ui/button';
 import Loading from '../Loading';
 import { printPlugin } from '@react-pdf-viewer/print';
+import { RiPrinterFill } from 'react-icons/ri';
 import { StoreContext } from '../../store';
 import { toast } from 'sonner';
 import useTranslation from 'next-translate/useTranslation';
@@ -53,13 +52,12 @@ export default function PdfViewer({ open, setOpen, pdfDoc }) {
             <div className="flex flex-grow justify-end gap-4">
               <Print>
                 {(props) => (
-                  <EditorButton
-                    iconType="ri-printer-fill"
-                    onClick={props.onClick}
-                  />
+                  <Button variant="secondary" onClick={props.onClick}>
+                    <RiPrinterFill />
+                  </Button>
                 )}
               </Print>
-              <Button variant="contained" size="small" onClick={handleClose}>
+              <Button variant="secondary" onClick={handleClose}>
                 {t('Close')}
               </Button>
             </div>

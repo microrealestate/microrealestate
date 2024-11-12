@@ -1,10 +1,34 @@
-import { Box, Divider, InputBase, MenuItem, Select } from '@material-ui/core';
-import { useCallback, useEffect, useState } from 'react';
-
-import EditorButton from './EditorButton';
-import FormatToolbar from './FormatToolbar';
+import {
+  RiAlignCenter,
+  RiAlignLeft,
+  RiAlignRight,
+  RiArrowGoBackFill,
+  RiArrowGoForwardLine,
+  RiBold,
+  RiDoubleQuotesR,
+  RiFormatClear,
+  RiItalic,
+  RiListOrdered,
+  RiListUnordered,
+  RiPrinterFill,
+  RiSeparator,
+  RiStrikethrough,
+  RiSuperscript,
+  RiTextWrap,
+  RiUnderline
+} from 'react-icons/ri';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '../ui/select';
+import { Button } from '../ui/button';
 import { handlePrint } from './helpers';
-import { withStyles } from '@material-ui/core/styles';
+import { Separator } from '../ui/separator';
+import { Toggle } from '../ui/toggle';
+import useTranslation from 'next-translate/useTranslation';
 
 const getHeadingLevel = (editor) => {
   if (!editor) {
@@ -33,63 +57,38 @@ const getHeadingLevel = (editor) => {
   return 0;
 };
 
-const StyledSelect = withStyles(() => ({
-  root: {
-    paddingLeft: '4px',
-  },
-}))(Select);
-
-const HeadingSelect = ({ editor }) => {
-  const [headingLevel, setHeadingLevel] = useState(getHeadingLevel(editor));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    setHeadingLevel(getHeadingLevel(editor));
-  });
-
-  const handleHeadingChange = useCallback(
-    (e) => {
-      const level = e.target.value;
-      if (level > 0) {
-        editor.chain().focus().toggleHeading({ level }).run();
-      } else {
-        editor.chain().focus().toggleHeading({ level: headingLevel }).run();
-      }
-      setHeadingLevel(level);
-    },
-    [editor, headingLevel]
-  );
+function HeadingSelect({ editor }) {
+  const { t } = useTranslation('common');
+  const headingLevel = getHeadingLevel(editor);
+  const handleHeadingChange = (level) => {
+    if (Number(level) > 0) {
+      editor.chain().focus().toggleHeading({ level }).run();
+    } else {
+      editor.chain().focus().toggleHeading({ level: headingLevel }).run();
+    }
+  };
 
   return (
-    <StyledSelect
+    <Select
       value={headingLevel}
-      onChange={handleHeadingChange}
-      input={<InputBase />}
+      onValueChange={handleHeadingChange}
       disabled={!editor.isEditable}
     >
-      <MenuItem value={1}>
-        <Box width={80}>Heading 1</Box>
-      </MenuItem>
-      <MenuItem value={2}>
-        <Box width={80}>Heading 2</Box>
-      </MenuItem>
-      <MenuItem value={3}>
-        <Box width={80}>Heading 3</Box>
-      </MenuItem>
-      <MenuItem value={4}>
-        <Box width={80}>Heading 4</Box>
-      </MenuItem>
-      <MenuItem value={5}>
-        <Box width={80}>Heading 5</Box>
-      </MenuItem>
-      <MenuItem value={6}>
-        <Box width={80}>Heading 6</Box>
-      </MenuItem>
-      <MenuItem value={0}>
-        <Box width={80}>Normal</Box>
-      </MenuItem>
-    </StyledSelect>
+      <SelectTrigger className="w-56 mx-1">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value={1}>{t('Heading 1')}</SelectItem>
+        <SelectItem value={2}>{t('Heading 2')}</SelectItem>
+        <SelectItem value={3}>{t('Heading 3')}</SelectItem>
+        <SelectItem value={4}>{t('Heading 4')}</SelectItem>
+        <SelectItem value={5}>{t('Heading 5')}</SelectItem>
+        <SelectItem value={6}>{t('Heading 6')}</SelectItem>
+        <SelectItem value={0}>{t('Normal')}</SelectItem>
+      </SelectContent>
+    </Select>
   );
-};
+}
 
 const FormatMenu = ({ editor, showPrintButton }) => {
   if (!editor) {
@@ -109,117 +108,146 @@ const FormatMenu = ({ editor, showPrintButton }) => {
   const superscriptActive = editor.isActive('superscript');
 
   return (
-    <FormatToolbar>
-      <EditorButton
-        iconType="ri-arrow-go-back-line"
+    <div className="flex">
+      <Button
+        variant="ghost"
+        size="icon"
         disabled={!editor.isEditable}
         onClick={() => editor.chain().focus().undo().run()}
-      />
-      <EditorButton
-        iconType="ri-arrow-go-forward-line"
+      >
+        <RiArrowGoBackFill />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
         disabled={!editor.isEditable}
         onClick={() => editor.chain().focus().redo().run()}
-      />
-      <Divider orientation="vertical" flexItem />
+      >
+        <RiArrowGoForwardLine />
+      </Button>
+      <Separator orientation="vertical" />
       <HeadingSelect editor={editor} />
-      <Divider orientation="vertical" flexItem />
-      <EditorButton
-        iconType="ri-bold"
-        selected={boldActive}
+      <Separator orientation="vertical" />
+      <Toggle
+        pressed={boldActive}
         disabled={!editor.isEditable}
         onClick={() => editor.chain().focus().toggleBold().run()}
-      />
-      <EditorButton
-        iconType="ri-italic"
-        selected={italicActive}
+      >
+        <RiBold />
+      </Toggle>
+      <Toggle
+        pressed={italicActive}
         disabled={!editor.isEditable}
         onClick={() => editor.chain().focus().toggleItalic().run()}
-      />
-      <EditorButton
-        iconType="ri-underline"
-        selected={underlineActive}
+      >
+        <RiItalic />
+      </Toggle>
+      <Toggle
+        pressed={underlineActive}
         disabled={!editor.isEditable}
         onClick={() => editor.chain().focus().toggleUnderline().run()}
-      />
-      <EditorButton
-        iconType="ri-strikethrough"
-        selected={strikeActive}
+      >
+        <RiUnderline />
+      </Toggle>
+      <Toggle
+        pressed={strikeActive}
         disabled={!editor.isEditable}
         onClick={() => editor.chain().focus().toggleStrike().run()}
-      />
-      <EditorButton
-        iconType="ri-format-clear"
+      >
+        <RiStrikethrough />
+      </Toggle>
+      <Button
+        variant="ghost"
+        size="icon"
         disabled={!editor.isEditable}
         onClick={() => editor.chain().focus().unsetAllMarks().run()}
-      />
-      <Divider orientation="vertical" flexItem />
-      <EditorButton
-        iconType="ri-align-left"
-        selected={alignLeftActive}
+      >
+        <RiFormatClear />
+      </Button>
+      <Separator orientation="vertical" />
+      <Toggle
+        pressed={alignLeftActive}
         disabled={!editor.isEditable}
         onClick={() => editor.chain().focus().setTextAlign('left').run()}
-      />
-      <EditorButton
-        iconType="ri-align-center"
-        selected={alignCenterActive}
+      >
+        <RiAlignLeft />
+      </Toggle>
+      <Toggle
+        pressed={alignCenterActive}
         disabled={!editor.isEditable}
         onClick={() => editor.chain().focus().setTextAlign('center').run()}
-      />
-      <EditorButton
-        iconType="ri-align-right"
-        selected={alignRightActive}
+      >
+        <RiAlignCenter />
+      </Toggle>
+      <Toggle
+        pressed={alignRightActive}
         disabled={!editor.isEditable}
         onClick={() => editor.chain().focus().setTextAlign('right').run()}
-      />
-      <Divider orientation="vertical" flexItem />
-      <EditorButton
-        iconType="ri-superscript"
-        selected={superscriptActive}
+      >
+        <RiAlignRight />
+      </Toggle>
+      <Separator orientation="vertical" />
+      <Toggle
+        pressed={superscriptActive}
         disabled={!editor.isEditable}
         onClick={() => editor.chain().focus().toggleSuperscript().run()}
-      />
-      <Divider orientation="vertical" flexItem />
-      <EditorButton
-        iconType="ri-list-unordered"
-        selected={bulletListActive}
+      >
+        <RiSuperscript />
+      </Toggle>
+      <Separator orientation="vertical" />
+      <Toggle
+        pressed={bulletListActive}
         disabled={!editor.isEditable}
         onClick={() => editor.chain().focus().toggleBulletList().run()}
-      />
-      <EditorButton
-        iconType="ri-list-ordered"
-        selected={orderedListActive}
+      >
+        <RiListUnordered />
+      </Toggle>
+      <Toggle
+        pressed={orderedListActive}
         disabled={!editor.isEditable}
         onClick={() => editor.chain().focus().toggleOrderedList().run()}
-      />
-      <Divider orientation="vertical" flexItem />
-      <EditorButton
-        iconType="ri-double-quotes-r"
-        selected={blockquoteActive}
+      >
+        <RiListOrdered />
+      </Toggle>
+      <Separator orientation="vertical" />
+      <Toggle
+        pressed={blockquoteActive}
         disabled={!editor.isEditable}
         onClick={() => editor.chain().focus().toggleBlockquote().run()}
-      />
-      <Divider orientation="vertical" flexItem />
-      <EditorButton
-        iconType="ri-text-wrap"
+      >
+        <RiDoubleQuotesR />
+      </Toggle>
+      <Separator orientation="vertical" />
+      <Button
+        variant="ghost"
+        size="icon"
         disabled={!editor.isEditable}
         onClick={() => editor.chain().focus().setHardBreak().run()}
-      />
-      <Divider orientation="vertical" flexItem />
-      <EditorButton
-        iconType="ri-separator"
+      >
+        <RiTextWrap />
+      </Button>
+      <Separator orientation="vertical" />
+      <Button
+        variant="ghost"
+        size="icon"
         disabled={!editor.isEditable}
         onClick={() => editor.chain().focus().setHorizontalRule().run()}
-      />
+      >
+        <RiSeparator />
+      </Button>
       {showPrintButton && (
         <>
-          <Divider orientation="vertical" flexItem />
-          <EditorButton
-            iconType="ri-printer-fill"
+          <Separator orientation="vertical" />
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => handlePrint(editor)}
-          />
+          >
+            <RiPrinterFill />
+          </Button>
         </>
       )}
-    </FormatToolbar>
+    </div>
   );
 };
 

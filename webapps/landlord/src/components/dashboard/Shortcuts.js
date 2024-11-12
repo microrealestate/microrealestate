@@ -1,12 +1,7 @@
+/* eslint-disable sort-imports */
 import { Card, CardContent } from '../../components/ui/card';
-import {
-  CircleUserIcon,
-  FileTextIcon,
-  KeyRoundIcon,
-  ReceiptTextIcon,
-  StopCircleIcon
-} from 'lucide-react';
-('lucide-react');
+import { LuKeyRound, LuStopCircle, LuUserCircle } from 'react-icons/lu';
+import { TbCashRegister } from 'react-icons/tb';
 import { useCallback, useContext, useMemo, useState } from 'react';
 import { cn } from '../../utils';
 import FirstConnection from './FirstConnection';
@@ -15,6 +10,7 @@ import NewPaymentDialog from '../payment/NewPaymentDialog';
 import NewPropertyDialog from '../properties/NewPropertyDialog';
 import NewTenantDialog from '../tenants/NewTenantDialog';
 import { observer } from 'mobx-react-lite';
+import { RiContractLine } from 'react-icons/ri';
 import ShortcutButton from '../ShortcutButton';
 import { StoreContext } from '../../store';
 import TerminateLeaseDialog from '../tenants/TerminateLeaseDialog';
@@ -68,8 +64,8 @@ function Shortcuts({ firstConnection = false, className }) {
     <>
       {firstConnection ? (
         <Card className={className}>
-          <CardContent className="flex items-center pt-6 ">
-            <div className="hidden lg:block w-3/5 h-96">
+          <CardContent className="flex items-center justify-center pt-6 ">
+            <div className="hidden lg:block h-full w-1/2">
               <WelcomeIllustration />
             </div>
             <FirstConnection
@@ -91,7 +87,7 @@ function Shortcuts({ firstConnection = false, className }) {
           )}
         >
           <ShortcutButton
-            Icon={ReceiptTextIcon}
+            Icon={TbCashRegister}
             label={isDesktop ? t('Pay a rent') : t('Pay')}
             disabled={!store.dashboard.data?.overview?.tenantCount}
             onClick={handlePayment}
@@ -100,7 +96,7 @@ function Shortcuts({ firstConnection = false, className }) {
           />
 
           <ShortcutButton
-            Icon={StopCircleIcon}
+            Icon={LuStopCircle}
             label={isDesktop ? t('Terminate a lease') : t('Terminate')}
             onClick={handleTerminateLease}
             className="md:flex md:flex-col md:items-center md:justify-start"
@@ -108,7 +104,7 @@ function Shortcuts({ firstConnection = false, className }) {
           />
 
           <ShortcutButton
-            Icon={KeyRoundIcon}
+            Icon={LuKeyRound}
             label={isDesktop ? t('Add a property') : t('Add')}
             onClick={handleAddProperty}
             className="md:flex md:flex-col md:items-center md:justify-start"
@@ -116,7 +112,7 @@ function Shortcuts({ firstConnection = false, className }) {
           />
 
           <ShortcutButton
-            Icon={CircleUserIcon}
+            Icon={LuUserCircle}
             label={isDesktop ? t('Add a tenant') : t('Add')}
             onClick={handleAddTenant}
             className="md:flex md:flex-col md:items-center md:justify-start"
@@ -125,7 +121,7 @@ function Shortcuts({ firstConnection = false, className }) {
 
           {store.user.isAdministrator && (
             <ShortcutButton
-              Icon={FileTextIcon}
+              Icon={RiContractLine}
               label={isDesktop ? t('Create a contract') : t('Create')}
               onClick={handleCreateContract}
               className="md:flex md:flex-col md:items-center md:justify-start"

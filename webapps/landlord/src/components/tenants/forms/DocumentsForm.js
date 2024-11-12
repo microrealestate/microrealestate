@@ -1,5 +1,5 @@
 import { Button } from '@material-ui/core';
-import { Section } from '@microrealestate/commonui/components';
+import { Section } from '../../formfields/Section';
 import TenantDocumentList from '../TenantDocumentList';
 import UploadFileList from '../UploadFileList';
 import { useCallback } from 'react';
@@ -22,14 +22,16 @@ export default function DocumentsForm({ onSubmit, readOnly }) {
         <TenantDocumentList disabled={readOnly} />
       </Section>
 
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={handleNext}
-        data-cy="submit"
-      >
-        {t('Save')}
-      </Button>
+      {!readOnly && (
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleNext}
+          data-cy="submit"
+        >
+          {t('Save')}
+        </Button>
+      )}
     </>
   );
 }

@@ -1,18 +1,18 @@
 import * as Yup from 'yup';
 
-import {
-  CheckboxField,
-  NumberField,
-  Section,
-  SubmitButton,
-  TextField,
-} from '@microrealestate/commonui/components';
 import { Form, Formik } from 'formik';
+import {
+  NumberField,
+  SubmitButton,
+  TextField
+} from '@microrealestate/commonui/components';
 import { useContext, useMemo } from 'react';
 
 import { Box } from '@material-ui/core';
 import { observer } from 'mobx-react-lite';
+import { Section } from '../../formfields/Section';
 import { StoreContext } from '../../../store';
+import { SwitchField } from '../../formfields/SwitchField';
 import useTranslation from 'next-translate/useTranslation';
 
 const validationSchema = Yup.object().shape({
@@ -20,9 +20,9 @@ const validationSchema = Yup.object().shape({
   isVat: Yup.boolean().required(),
   vatRatio: Yup.mixed().when('isVat', {
     is: true,
-    then: Yup.number().moreThan(0).max(100),
+    then: Yup.number().moreThan(0).max(100)
   }),
-  discount: Yup.number().min(0),
+  discount: Yup.number().min(0)
 });
 
 const initValues = (tenant) => {
@@ -30,7 +30,7 @@ const initValues = (tenant) => {
     reference: tenant?.reference || '',
     isVat: !!tenant?.isVat,
     vatRatio: tenant?.vatRatio * 100 || 0,
-    discount: tenant?.discount || 0,
+    discount: tenant?.discount || 0
   };
 };
 
@@ -52,7 +52,7 @@ const Billing = observer(({ readOnly, onSubmit }) => {
       reference: billing.reference,
       isVat: billing.isVat,
       vatRatio: billing.isVat ? billing.vatRatio / 100 : 0,
-      discount: billing.discount,
+      discount: billing.discount
     });
   };
 
@@ -68,6 +68,7 @@ const Billing = observer(({ readOnly, onSubmit }) => {
             <Section
               label={t('Billing information')}
               visible={!store.tenant.selected.stepperMode}
+              className="space-y-6"
             >
               <TextField
                 label={t('Tenant reference')}
@@ -76,20 +77,20 @@ const Billing = observer(({ readOnly, onSubmit }) => {
               />
               {store.organization.selected &&
                 store.organization.selected.isCompany && (
-                <Box display="flex" direction="row" alignItems="flex-end">
-                  <CheckboxField
-                    name="isVat"
-                    //label={t('Subject to VAT')}
-                    aria-label={t('Subject to VAT')}
-                    disabled={readOnly}
-                  />
-                  <NumberField
-                    label={t('VAT percentage')}
-                    name="vatRatio"
-                    disabled={readOnly || !values.isVat}
-                  />
-                </Box>
-              )}
+                  <>
+                    <SwitchField
+                      name="isVat"
+                      label={t('Subject to VAT')}
+                      aria-label={t('Subject to VAT')}
+                      disabled={readOnly}
+                    />
+                    <NumberField
+                      label={t('VAT percentage')}
+                      name="vatRatio"
+                      disabled={readOnly || !values.isVat}
+                    />
+                  </>
+                )}
               {values.discount > 0 ? (
                 <NumberField
                   label={t('Discount')}

@@ -1,10 +1,10 @@
-import { Alert, AlertTitle } from '../ui/alert';
-import { Box, List, Paper } from '@material-ui/core';
+import { Card, CardContent } from '../ui/card';
 import { useCallback, useContext, useMemo, useState } from 'react';
-import { AlertTriangleIcon } from 'lucide-react';
+import { Alert } from '../ui/alert';
 import ConfirmDialog from '../ConfirmDialog';
 import { downloadDocument } from '../../utils/fetch';
 import ImageViewer from '../ImageViewer/ImageViewer';
+import { LuAlertTriangle } from 'react-icons/lu';
 import { observer } from 'mobx-react-lite';
 import PdfViewer from '../PdfViewer/PdfViewer';
 import { StoreContext } from '../../store';
@@ -143,36 +143,36 @@ function UploadFileList({ disabled }) {
     <>
       {!store.organization.canUploadDocumentsInCloud ? (
         <Alert variant="warning" className="mb-2">
-          <AlertTriangleIcon className="h-4 w-4" />
-          <AlertTitle>
-            {t(
-              'Unable to upload documents without configuring the cloud storage service in Settings page'
-            )}
-          </AlertTitle>
+          <div className="flex items-center gap-4">
+            <LuAlertTriangle className="size-6" />
+            <div className="text-sm">
+              {t(
+                'Unable to upload documents without configuring the cloud storage service in Settings page'
+              )}
+            </div>
+          </div>
         </Alert>
       ) : null}
 
-      <Paper variant="outlined">
-        <Box minHeight={200}>
-          <List>
-            {files.map(({ template, document }) => {
-              return (
-                <UploadFileItem
-                  key={template._id}
-                  template={template}
-                  document={document}
-                  disabled={
-                    disabled || !store.organization.canUploadDocumentsInCloud
-                  }
-                  onView={handleView}
-                  onUpload={handleUpload}
-                  onDelete={handleDelete}
-                />
-              );
-            })}
-          </List>
-        </Box>
-      </Paper>
+      <Card>
+        <CardContent className="p-0 h-72 overflow-y-auto">
+          {files.map(({ template, document }) => {
+            return (
+              <UploadFileItem
+                key={template._id}
+                template={template}
+                document={document}
+                disabled={
+                  disabled || !store.organization.canUploadDocumentsInCloud
+                }
+                onView={handleView}
+                onUpload={handleUpload}
+                onDelete={handleDelete}
+              />
+            );
+          })}
+        </CardContent>
+      </Card>
 
       <UploadDialog
         open={openUploadDocumentDialog}

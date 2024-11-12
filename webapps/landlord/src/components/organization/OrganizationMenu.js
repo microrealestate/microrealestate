@@ -1,12 +1,11 @@
 import {
-  BriefcaseBusinessIcon,
-  Building2Icon,
-  CableIcon,
-  FilePenIcon,
-  HandCoinsIcon,
-  UserIcon,
-  UsersIcon
-} from 'lucide-react';
+  LuBuilding2,
+  LuCable,
+  LuCoins,
+  LuCrown,
+  LuUser,
+  LuUsers
+} from 'react-icons/lu';
 import {
   Sheet,
   SheetClose,
@@ -19,6 +18,7 @@ import {
 import { useCallback, useContext, useEffect, useState } from 'react';
 import { Button } from '../ui/button';
 import config from '../../config';
+import { RiContractLine } from 'react-icons/ri';
 import { Separator } from '../ui/separator';
 import SideMenuButton from '../SideMenuButton';
 import { StoreContext } from '../../store';
@@ -30,14 +30,14 @@ const menuItems = [
   [
     {
       key: 'account',
-      Icon: UserIcon,
+      Icon: LuUser,
       labelId: 'Your account',
       pathname: '/settings/account',
       dataCy: 'accountNav'
     },
     {
       key: 'organizations',
-      Icon: Building2Icon,
+      Icon: LuBuilding2,
       labelId: 'Your organizations',
       pathname: '/settings/organizations',
       dataCy: 'organizationsNav'
@@ -46,35 +46,35 @@ const menuItems = [
   [
     {
       key: 'landlord',
-      Icon: BriefcaseBusinessIcon,
+      Icon: LuCrown,
       labelId: 'Landlord',
       pathname: '/settings/landlord',
       dataCy: 'landlordNav'
     },
     {
       key: 'billing',
-      Icon: HandCoinsIcon,
+      Icon: LuCoins,
       labelId: 'Billing',
       pathname: '/settings/billing',
       dataCy: 'billingNav'
     },
     {
       key: 'contracts',
-      Icon: FilePenIcon,
+      Icon: RiContractLine,
       labelId: 'Contracts',
       pathname: '/settings/contracts',
       dataCy: 'contractsNav'
     },
     {
       key: 'access',
-      Icon: UsersIcon,
+      Icon: LuUsers,
       labelId: 'Access',
       pathname: '/settings/access',
       dataCy: 'accessNav'
     },
     {
       key: 'thirdparties',
-      Icon: CableIcon,
+      Icon: LuCable,
       labelId: 'Third-parties',
       pathname: '/settings/thirdparties',
       dataCy: 'thirdpartiesNav'

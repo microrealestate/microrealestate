@@ -2,8 +2,8 @@ import * as Yup from 'yup';
 import { Form, Formik } from 'formik';
 import React, { useContext, useState } from 'react';
 import { Button } from '../components/ui/button';
-import { CheckCircleIcon } from 'lucide-react';
 import Link from '../components/Link';
+import { LuCheckCircle } from 'react-icons/lu';
 import SignInUpLayout from '../components/SignInUpLayout';
 import { StoreContext } from '../store';
 import { SubmitButton } from '@microrealestate/commonui/components';
@@ -69,17 +69,16 @@ export default function ForgotPassword() {
               return (
                 <div className="p-5 md:p-0 md:max-w-md w-full">
                   <Form className="space-y-10">
+                    <div className="text-2xl text-center md:text-left md:text-4xl font-medium text-secondary-foreground">
+                      {t('Reset your password')}
+                    </div>
                     <TextField
                       label={t('Email Address')}
                       name="email"
                       autoComplete="email"
                     />
                     <SubmitButton
-                      label={
-                        !isSubmitting
-                          ? t('Send reset password email')
-                          : t('Reseting')
-                      }
+                      label={!isSubmitting ? t('Reset') : t('Reseting')}
                       className="w-full"
                     />
                   </Form>
@@ -97,7 +96,7 @@ export default function ForgotPassword() {
       ) : (
         <div className="p-5 text-center lg:text-left md:p-0 md:max-w-md w-full space-y-10">
           <div className="flex items-center justify-center lg:justify-normal text-success font-semibold">
-            <CheckCircleIcon />
+            <LuCheckCircle />
             <span className="ml-2 text-lg my-4">{t('Check your email')}</span>
           </div>
           <div>

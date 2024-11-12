@@ -1,9 +1,4 @@
-import {
-  HandCoinsIcon,
-  KeyRoundIcon,
-  PercentIcon,
-  UserCircleIcon
-} from 'lucide-react';
+import { LuCoins, LuKeyRound, LuPercent, LuUserCircle } from 'react-icons/lu';
 import { cn } from '../../utils';
 import { DashboardCard } from './DashboardCard';
 import NumberFormat from '../NumberFormat';
@@ -27,7 +22,7 @@ function GeneralFigures({ className }) {
       )}
     >
       <DashboardCard
-        Icon={UserCircleIcon}
+        Icon={LuUserCircle}
         title={t('Tenants')}
         description={t('Total number of tenants')}
         renderContent={() => overview?.tenantCount}
@@ -36,7 +31,7 @@ function GeneralFigures({ className }) {
         }}
       />
       <DashboardCard
-        Icon={KeyRoundIcon}
+        Icon={LuKeyRound}
         title={t('Properties')}
         description={t('Total number of properties')}
         renderContent={() => overview?.propertyCount}
@@ -45,7 +40,7 @@ function GeneralFigures({ className }) {
         }}
       />
       <DashboardCard
-        Icon={PercentIcon}
+        Icon={LuPercent}
         title={t('Occupancy rate')}
         description={t('Percentage of occupied properties')}
         renderContent={() => (
@@ -58,11 +53,11 @@ function GeneralFigures({ className }) {
         )}
       />
       <DashboardCard
-        Icon={HandCoinsIcon}
+        Icon={LuCoins}
         title={t('Revenues')}
         description={t('Total revenues for the year')}
         renderContent={() => (
-          <NumberFormat value={overview?.totalYearRevenues} />
+          <NumberFormat value={overview?.totalYearRevenues} showZero={true} />
         )}
       />
     </div>

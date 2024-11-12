@@ -4,7 +4,7 @@ import React, { useCallback, useContext, useRef, useState } from 'react';
 import { Button } from '../../ui/button';
 import ResponsiveDialog from '../../ResponsiveDialog';
 import { StoreContext } from '../../../store';
-import { TextField } from '@microrealestate/commonui/components';
+import { TextField } from '../../formfields/TextField';
 import { toast } from 'sonner';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';

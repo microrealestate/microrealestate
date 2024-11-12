@@ -71,7 +71,7 @@ export default function NewPaymentDialog({
   return (
     <Drawer open={open} onOpenChange={setOpen}>
       <DrawerContent className="h-full w-full">
-        <DrawerHeader className="text-lg md:text-xl font-semibold leading-none tracking-tight px-4">
+        <DrawerHeader className="mx-auto w-full max-w-screen-lg text-lg md:text-xl font-semibold leading-none tracking-tight px-4">
           <DrawerTitle>
             {rents?.length > 1 ? t('Pay a rent') : t('Enter a rent settlement')}
           </DrawerTitle>
@@ -92,7 +92,7 @@ export default function NewPaymentDialog({
           ) : null}
         </div>
 
-        <DrawerFooter className="px-4">
+        <DrawerFooter className="mx-auto w-full max-w-screen-lg">
           <div className="flex flex-col md:flex-row md:justify-end sm:gap-2">
             <Button variant="outline" onClick={handleClose}>
               {t('Cancel')}
