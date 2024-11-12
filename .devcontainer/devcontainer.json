@@ -1,0 +1,31 @@
+{
+    "name": "Docker In Docker",
+    "build": {
+        "dockerfile": "./Dockerfile"
+    },
+    "runArgs": [
+        "--volume=/var/lib/docker",
+        "--privileged"
+    ],
+    "settings": {
+        "[yaml]": {
+            "editor.autoIndent": "advanced",
+            "editor.defaultFormatter": "redhat.vscode-yaml"
+        },
+        "[dockercompose]": {
+            "editor.autoIndent": "advanced",
+            "editor.defaultFormatter": "redhat.vscode-yaml"
+        },
+        "editor.formatOnSave": true,
+        "editor.formatOnPaste": true
+    },
+    "extensions": [
+        "ms-azuretools.vscode-docker",
+        "redhat.vscode-yaml",
+        "github.copilot"
+    ],
+    "features": {
+        "ghcr.io/devcontainers/features/github-cli": "latest",
+        "ghcr.io/devcontainers/features/docker-in-docker": "latest"
+    }
+}
