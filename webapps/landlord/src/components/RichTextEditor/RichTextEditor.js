@@ -36,6 +36,7 @@ const RichTextEditor = ({
   const [saving, setSaving] = useState();
   const editor = useEditor({
     editable,
+    immediatelyRender: false,
     extensions: [
       StarterKit,
       Placeholder.configure({
