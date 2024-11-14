@@ -2,31 +2,19 @@
 
 All notable changes to this project will be documented here.
 
-## Unreleased
+## 1.0.0-alpha.3
 
 ### Added
+
+- Simplified the self-hosting procedure, using docker-compose.yml and supporting https
 
 - Added brazilian translation #18
 
 ### Changed
 
-- ...
+- Chanded theme, icons and illustrations
 
-### Deprecated
-
-- ...
-
-### Removed
-
-- ...
-
-### Fixed
-
-- ...
-
-### Security
-
-- ...
+- Reworked the signin and signup pages
 
 ### Contributors
 

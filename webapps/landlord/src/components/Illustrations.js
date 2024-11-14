@@ -2,11 +2,11 @@ import config from '../config';
 import Image from 'next/image';
 import useTranslation from 'next-translate/useTranslation';
 
-function Illustration({ src, label, alt }) {
+function Illustration({ src, label, alt, priority = false }) {
   return (
     <div className="flex flex-col gap-4 items-center w-full h-full">
       <div className="relative w-full h-full">
-        <Image src={src} alt={alt} fill />
+        <Image src={src} alt={alt} priority={priority} fill />
       </div>
       {!!label && <p className="text-xl text-muted-foreground">{label}</p>}
     </div>
@@ -19,6 +19,7 @@ export const SignInUpIllustration = ({ label }) => {
     <div className="h-64 w-full">
       <Illustration
         src={`${config.BASE_PATH}/undraw_choosing_house_re_1rv7.svg`}
+        priority={true}
         alt="welcome"
       />
     </div>
@@ -32,14 +33,15 @@ export const EmptyIllustration = ({ label }) => {
       <Illustration
         src={`${config.BASE_PATH}/undraw_Empty_re_opql.svg`}
         label={label || t('No data found')}
+        priority={true}
         alt="no data found"
       />
     </div>
   );
 };
 
-export const LocationIllustration = ({ height }) => (
-  <div className={`h-[${height}px] w-full`}>
+export const LocationIllustration = () => (
+  <div className="h-64 w-full">
     <Illustration
       src={`${config.BASE_PATH}/undraw_Location_tracking.svg`}
       alt="no location found"
@@ -69,6 +71,7 @@ export const WelcomeIllustration = () => (
   <div className="h-64 w-full">
     <Illustration
       src={`${config.BASE_PATH}/undraw_project_completed_re_jr7u.svg`}
+      priority={true}
       alt="welcome"
     />
   </div>

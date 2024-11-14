@@ -1,5 +1,5 @@
 import { Marker, Map as PigeonMap } from 'pigeon-maps';
-import { memo, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import axios from 'axios';
 import Loading from './Loading';
 import { LocationIllustration } from './Illustrations';
@@ -7,7 +7,7 @@ import { useTheme } from '@material-ui/core';
 
 const nominatimBaseURL = 'https://nominatim.openstreetmap.org';
 
-const Map = memo(function Map({ address, height = 200, zoom = 16 }) {
+export default function Map({ address }) {
   const [center, setCenter] = useState();
   const [loading, setLoading] = useState(true);
   const theme = useTheme();
@@ -58,10 +58,10 @@ const Map = memo(function Map({ address, height = 200, zoom = 16 }) {
   }, [address]);
 
   return (
-    <>
+    <div className={`flex items-center justify-center w-full h-64`}>
       {!loading ? (
         center ? (
-          <PigeonMap height={height} center={center} zoom={zoom}>
+          <PigeonMap height={256} center={center} zoom={16}>
             <Marker
               height={35}
               width={35}
@@ -70,13 +70,11 @@ const Map = memo(function Map({ address, height = 200, zoom = 16 }) {
             />
           </PigeonMap>
         ) : (
-          <LocationIllustration height={height} />
+          <LocationIllustration />
         )
       ) : (
         <Loading fullScreen={false} />
       )}
-    </>
+    </div>
   );
-});
-
-export default Map;
+}

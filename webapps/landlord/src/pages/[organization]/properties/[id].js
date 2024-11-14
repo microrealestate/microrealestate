@@ -29,7 +29,7 @@ function PropertyOverviewCard() {
       Icon={LuKeyRound}
       title={t('Property')}
       renderContent={() => (
-        <div className="text-base">
+        <div className="text-base space-y-2">
           <div className="flex justify-between">
             <span className="text-muted-foreground">
               {store.property.selected.name}
