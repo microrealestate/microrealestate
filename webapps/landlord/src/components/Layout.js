@@ -15,14 +15,14 @@ export default function Layout({ hideMenu, children }) {
     <>
       {hideMenu ? (
         <>
-          <div className="sticky top-0 z-50 shadow-md">
+          <div className="sticky top-0 z-50 shadow">
             <EnvironmentBar />
           </div>
           <div className={cn('flex-grow')}>{children}</div>
         </>
       ) : (
         <>
-          <div className="sticky top-0 z-50 shadow-md">
+          <div className="sticky top-0 z-50 shadow">
             <EnvironmentBar />
             {store.user?.signedIn ? (
               <div className="flex items-center xl:justify-end bg-card w-full gap-2 py-1">
