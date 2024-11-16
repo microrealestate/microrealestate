@@ -1,12 +1,11 @@
 import { getRentAmounts, RentAmount } from './RentDetails';
+import { LuHistory, LuPaperclip } from 'react-icons/lu';
 import { useCallback, useContext, useMemo, useState } from 'react';
 import { Button } from '../ui/button';
 import { Checkbox } from '../ui/checkbox';
 import { cn } from '../../utils';
 import { downloadDocument } from '../../utils/fetch';
 import { EmptyIllustration } from '../Illustrations';
-import { GrDocumentPdf } from 'react-icons/gr';
-import { LuHistory } from 'react-icons/lu';
 import moment from 'moment';
 import NewPaymentDialog from '../payment/NewPaymentDialog';
 import RentHistoryDialog from './RentHistoryDialog';
@@ -72,22 +71,22 @@ function Reminder({ rent, className }) {
       <Button
         variant="link"
         className={cn(
-          'hidden md:inline-flex p-0 h-fit text-xs font-medium gap-1',
+          'hidden md:inline-flex p-0 h-fit text-xs font-normal gap-1',
           color,
           className
         )}
         onClick={handleDownloadClick}
       >
-        <GrDocumentPdf className="size-4" />
+        <LuPaperclip className="size-4" />
         {label}
       </Button>
       <Button
         variant="secondary"
         size="sm"
-        className={cn('sm:hidden text-xs font-medium gap-1', color, className)}
+        className={cn('sm:hidden gap-1', color, className)}
         onClick={handleDownloadClick}
       >
-        <GrDocumentPdf className="size-4" />
+        <LuPaperclip className="size-4" />
         {label}
       </Button>
     </>
@@ -100,7 +99,7 @@ function RentRow({ rent, isSelected, onSelect, onEdit, onHistory }) {
   const rentAmounts = getRentAmounts(rent);
 
   return (
-    <div className="my-2">
+    <>
       <div className="flex flex-col gap-4 md:gap-0 md:flex-row items-center">
         <div className="flex items-center gap-4 w-full md:w-1/2">
           {store.organization.canSendEmails ? (
@@ -173,9 +172,8 @@ function RentRow({ rent, isSelected, onSelect, onEdit, onHistory }) {
           </div>
         </div>
       </div>
-      <Reminder rent={rent} className="mt-4 md:mt-0 ml-[32px] mb-2" />
-      <Separator />
-    </div>
+      <Reminder rent={rent} className="mt-4 md:mt-0 ml-[32px] mb-3" />
+    </>
   );
 }
 
@@ -272,14 +270,18 @@ function RentTable({ rents = [], selected, setSelected }) {
               .map((r) => r._id)
               .includes(rent._id);
             return (
-              <RentRow
-                key={`${rent._id}_${rent.term}`}
-                rent={rent}
-                isSelected={isItemSelected}
-                onSelect={onSelectClick}
-                onEdit={handleEdit}
-                onHistory={handleHistory}
-              />
+              <div key={`${rent._id}_${rent.term}`}>
+                <div className="my-3">
+                  <RentRow
+                    rent={rent}
+                    isSelected={isItemSelected}
+                    onSelect={onSelectClick}
+                    onEdit={handleEdit}
+                    onHistory={handleHistory}
+                  />
+                </div>
+                <Separator />
+              </div>
             );
           })}
         </>

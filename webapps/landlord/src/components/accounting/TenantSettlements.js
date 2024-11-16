@@ -1,8 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { GrDocumentCsv, GrDocumentPdf } from 'react-icons/gr';
 import { Button } from '../ui/button';
 import { cn } from '../../utils';
 import { EmptyIllustration } from '../Illustrations';
+import { GrDocumentCsv } from 'react-icons/gr';
+import { LuPaperclip } from 'react-icons/lu';
 import moment from 'moment';
 import NumberFormat from '../NumberFormat';
 import { StoreContext } from '../../store';
@@ -77,13 +78,13 @@ export default function TenantSettlements({
                 <div>{settlement.tenant}</div>
                 <Button
                   variant="secondary"
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-1"
                   onClick={onDownloadYearInvoices({
                     _id: settlement.tenantId,
                     name: settlement.tenant
                   })}
                 >
-                  <GrDocumentPdf /> {t('Invoices')}
+                  <LuPaperclip /> {t('Invoices')}
                 </Button>
               </div>
               <div className="text-muted-foreground mb-2">
