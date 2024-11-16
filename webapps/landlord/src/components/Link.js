@@ -5,7 +5,11 @@ import NextLink from 'next/link';
 
 export default forwardRef(function Link({ className, ...props }, ref) {
   return (
-    <Button variant="link" className={cn('h-fit p-0 m-0', className)} asChild>
+    <Button
+      variant="link"
+      className={cn('inline-block h-fit p-0 m-0', className)}
+      asChild
+    >
       <NextLink {...props} ref={ref} />
     </Button>
   );
