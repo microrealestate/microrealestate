@@ -1,7 +1,6 @@
-import { Box, Paper, Tab, Tabs } from '@material-ui/core';
-import { TabPanel, useTabChangeHelper } from '../Tabs';
-
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import BillingForm from './forms/BillingForm';
+import { Card } from '../ui/card';
 import DocumentsForm from './forms/DocumentsForm';
 import LeaseContractForm from './forms/LeaseContractForm';
 import { LuAlertTriangle } from 'react-icons/lu';
@@ -14,48 +13,52 @@ import useTranslation from 'next-translate/useTranslation';
 function TenantTabs({ onSubmit /*, setError*/, readOnly }) {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
-  const { handleTabChange, tabSelectedIndex } = useTabChangeHelper();
 
   const hasMissingCompulsaryDocuments =
     store.tenant.selected.filesToUpload.some(({ missing }) => missing);
 
   return (
-    <Paper>
-      <Tabs
-        variant="scrollable"
-        value={tabSelectedIndex}
-        onChange={handleTabChange}
-        aria-label="Tenant tabs"
-      >
-        <Tab label={t('Tenant')} wrapped />
-        <Tab label={t('Lease')} wrapped />
-        <Tab label={t('Billing')} wrapped />
-        <Tab
-          label={
-            <Box display="flex" justifyContent="center" alignItems="center">
-              {hasMissingCompulsaryDocuments ? (
-                <LuAlertTriangle className="text-warning mr-1 size-6" />
-              ) : null}
-              <Box color="text.primary" fontSize="caption.fontSize">
-                {t('Documents')}
-              </Box>
-            </Box>
-          }
-        />
-      </Tabs>
-      <TabPanel value={tabSelectedIndex} index={0}>
-        <TenantForm onSubmit={onSubmit} readOnly={readOnly} />
-      </TabPanel>
-      <TabPanel value={tabSelectedIndex} index={1}>
-        <LeaseContractForm onSubmit={onSubmit} readOnly={readOnly} />
-      </TabPanel>
-      <TabPanel value={tabSelectedIndex} index={2}>
-        <BillingForm onSubmit={onSubmit} readOnly={readOnly} />
-      </TabPanel>
-      <TabPanel value={tabSelectedIndex} index={3}>
-        <DocumentsForm onSubmit={onSubmit} readOnly={readOnly} />
-      </TabPanel>
-    </Paper>
+    <Tabs defaultValue="tenant">
+      <TabsList className="flex justify-start overflow-x-auto overflow-y-hidden">
+        <TabsTrigger value="tenant" className="min-w-48 sm:w-full">
+          {t('Tenant')}
+        </TabsTrigger>
+        <TabsTrigger value="lease" className="min-w-48 sm:w-full">
+          {t('Lease')}
+        </TabsTrigger>
+        <TabsTrigger value="billing" className="min-w-48 sm:w-full">
+          {t('Billing')}
+        </TabsTrigger>
+        <TabsTrigger value="documents" className="min-w-48 sm:w-full">
+          <div className="flex justify-center items-center gap-1">
+            {hasMissingCompulsaryDocuments ? (
+              <LuAlertTriangle className="text-warning size-6" />
+            ) : null}
+            <div>{t('Documents')}</div>
+          </div>
+        </TabsTrigger>
+      </TabsList>
+      <TabsContent value="tenant">
+        <Card className="p-6">
+          <TenantForm onSubmit={onSubmit} readOnly={readOnly} />
+        </Card>
+      </TabsContent>
+      <TabsContent value="lease">
+        <Card className="p-6">
+          <LeaseContractForm onSubmit={onSubmit} readOnly={readOnly} />
+        </Card>
+      </TabsContent>
+      <TabsContent value="billing">
+        <Card className="p-6">
+          <BillingForm onSubmit={onSubmit} readOnly={readOnly} />
+        </Card>
+      </TabsContent>
+      <TabsContent value="documents">
+        <Card className="p-6">
+          <DocumentsForm onSubmit={onSubmit} readOnly={readOnly} />
+        </Card>
+      </TabsContent>
+    </Tabs>
   );
 }
 

@@ -1,6 +1,10 @@
 import { LuArrowLeft, LuHistory, LuKeyRound, LuTrash } from 'react-icons/lu';
-import { Tab, Tabs } from '@material-ui/core';
-import { TabPanel, useTabChangeHelper } from '../../../components/Tabs';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger
+} from '../../../components/ui/tabs';
 import { useCallback, useContext, useState } from 'react';
 import { Card } from '../../../components/ui/card';
 import ConfirmDialog from '../../../components/ConfirmDialog';
@@ -89,7 +93,6 @@ function Property() {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const router = useRouter();
-  const { handleTabChange, tabSelectedIndex } = useTabChangeHelper();
   const [openConfirmDeletePropertyDialog, setOpenConfirmDeletePropertyDialog] =
     useState(false);
   const [fetching] = useFillStore(fetchData, [router]);
@@ -191,20 +194,18 @@ function Property() {
     >
       <>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card className="md:col-span-2">
-            <Tabs
-              variant="scrollable"
-              value={tabSelectedIndex}
-              onChange={handleTabChange}
-              aria-label="Property tabs"
-            >
-              <Tab label={t('Property')} wrapped />
-            </Tabs>
-            <TabPanel value={tabSelectedIndex} index={0}>
-              <PropertyForm onSubmit={onSubmit} />
-            </TabPanel>
-          </Card>
-
+          <Tabs defaultValue="property" className="md:col-span-2">
+            <TabsList className="flex justify-start overflow-x-auto overflow-y-hidden">
+              <TabsTrigger value="property" className="w-1/2">
+                {t('Property')}
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="property">
+              <Card className="p-6">
+                <PropertyForm onSubmit={onSubmit} />
+              </Card>
+            </TabsContent>
+          </Tabs>
           <div className="hidden md:grid grid-cols-1 gap-4 h-fit">
             <PropertyOverviewCard />
             <OccupancyHistoryCard />

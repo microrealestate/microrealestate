@@ -116,13 +116,13 @@ function Contract() {
       }
       dataCy="contractPage"
     >
-      <Card>
-        {store.lease.selected?.stepperMode ? (
+      {store.lease.selected?.stepperMode ? (
+        <Card>
           <LeaseStepper onSubmit={onLeaseAddUpdate} onRemove={onLeaseRemove} />
-        ) : (
-          <LeaseTabs onSubmit={onLeaseAddUpdate} onRemove={onLeaseRemove} />
-        )}
-      </Card>
+        </Card>
+      ) : (
+        <LeaseTabs onSubmit={onLeaseAddUpdate} onRemove={onLeaseRemove} />
+      )}
       <ConfirmDialog
         title={t('Are you sure to remove this contract?')}
         subTitle={store.lease.selected?.name}

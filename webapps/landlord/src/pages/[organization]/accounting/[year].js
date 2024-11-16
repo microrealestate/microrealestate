@@ -122,15 +122,21 @@ function Accounting() {
       <Card className="px-4 py-2 mb-6">
         <TopBar onSearch={handleSearch} />
       </Card>
-      <Tabs defaultValue="incoming" className="overflow-x-auto">
-        <TabsList className="flex justify-start flex-nowrap w-screen-nomargin-sm overflow-x-auto md:w-full">
-          <TabsTrigger value="incoming">{`${t('Incoming tenants')} (${
+      <Tabs defaultValue="incoming">
+        <TabsList className="flex justify-start w-screen-nomargin-sm md:w-full overflow-x-auto overflow-y-hidden">
+          <TabsTrigger value="incoming" className="min-w-48 sm:w-full">{`${t(
+            'Incoming tenants'
+          )} (${
             store.accounting.filteredData.incomingTenants?.length || 0
           })`}</TabsTrigger>
-          <TabsTrigger value="outgoing">{`${t('Outgoing tenants')} (${
+          <TabsTrigger value="outgoing" className="min-w-48 sm:w-full">{`${t(
+            'Outgoing tenants'
+          )} (${
             store.accounting.filteredData.outgoingTenants?.length || 0
           })`}</TabsTrigger>
-          <TabsTrigger value="settlements">{`${t('Settlements')} (${
+          <TabsTrigger value="settlements" className="min-w-48 sm:w-full">{`${t(
+            'Settlements'
+          )} (${
             store.accounting.filteredData.settlements?.length || 0
           })`}</TabsTrigger>
         </TabsList>
