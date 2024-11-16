@@ -1,4 +1,4 @@
-import { Button } from '@material-ui/core';
+import { Button } from '../../ui/button';
 import { Section } from '../../formfields/Section';
 import TenantDocumentList from '../TenantDocumentList';
 import UploadFileList from '../UploadFileList';
@@ -23,12 +23,7 @@ export default function DocumentsForm({ onSubmit, readOnly }) {
       </Section>
 
       {!readOnly && (
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleNext}
-          data-cy="submit"
-        >
+        <Button onClick={handleNext} data-cy="submit">
           {t('Save')}
         </Button>
       )}

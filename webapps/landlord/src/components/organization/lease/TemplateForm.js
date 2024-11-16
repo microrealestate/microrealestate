@@ -1,5 +1,5 @@
 import { useCallback, useContext } from 'react';
-import { Button } from '@material-ui/core';
+import { Button } from '../../ui/button';
 import { Section } from '../../formfields/Section';
 import { StoreContext } from '../../../store';
 import TemplateList from './TemplateList';
@@ -22,12 +22,7 @@ export default function TemplateForm({ onSubmit }) {
         <TemplateList />
       </Section>
       {store.lease?.selected.stepperMode ? (
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleNext}
-          data-cy="submit"
-        >
+        <Button onClick={handleNext} data-cy="submit">
           {t('Save')}
         </Button>
       ) : null}

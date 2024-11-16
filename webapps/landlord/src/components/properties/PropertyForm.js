@@ -1,5 +1,4 @@
 import * as Yup from 'yup';
-
 import {
   AddressField,
   NumberField,
@@ -9,8 +8,6 @@ import {
 } from '@microrealestate/commonui/components';
 import { Form, Formik } from 'formik';
 import { useContext, useMemo } from 'react';
-
-import { Grid } from '@material-ui/core';
 import { observer } from 'mobx-react-lite';
 import PropertyIcon from './PropertyIcon';
 import { Section } from '../formfields/Section';
@@ -81,42 +78,30 @@ const PropertyForm = observer(({ onSubmit }) => {
         return (
           <Form autoComplete="off">
             <Section label={t('Property information')}>
-              <Grid container spacing={1}>
-                <Grid item xs={12} md={4}>
-                  <SelectField
-                    label={t('Property Type')}
-                    name="type"
-                    values={propertyTypes}
-                  />
-                </Grid>
-                <Grid item xs={12} md={8}>
-                  <TextField label={t('Name')} name="name" />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField label={t('Description')} name="description" />
-                </Grid>
+              <div className="sm:flex sm:gap-2">
+                <SelectField
+                  label={t('Property Type')}
+                  name="type"
+                  values={propertyTypes}
+                />
+                <TextField label={t('Name')} name="name" />
+              </div>
+              <TextField label={t('Description')} name="description" />
 
-                {[
-                  'store',
-                  'building',
-                  'apartment',
-                  'room',
-                  'office',
-                  'garage'
-                ].includes(values.type) && (
-                  <>
-                    <Grid item xs={12} md={4}>
-                      <NumberField label={t('Surface')} name="surface" />
-                    </Grid>
-                    <Grid item xs={12} md={4}>
-                      <TextField label={t('Phone')} name="phone" />
-                    </Grid>
-                    <Grid item xs={12} md={4}>
-                      <TextField label={t('Digicode')} name="digicode" />
-                    </Grid>
-                  </>
-                )}
-              </Grid>
+              {[
+                'store',
+                'building',
+                'apartment',
+                'room',
+                'office',
+                'garage'
+              ].includes(values.type) && (
+                <div className="sm:flex sm:gap-2">
+                  <NumberField label={t('Surface')} name="surface" />
+                  <TextField label={t('Phone')} name="phone" />
+                  <TextField label={t('Digicode')} name="digicode" />
+                </div>
+              )}
             </Section>
             <Section label={t('Address')}>
               <AddressField />

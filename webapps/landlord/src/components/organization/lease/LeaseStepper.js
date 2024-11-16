@@ -1,7 +1,5 @@
 import LeaseForm, { validate as LeaseFormValidate } from './LeaseForm';
 import { useCallback, useContext, useState } from 'react';
-
-import { Box } from '@material-ui/core';
 import Step from '@material-ui/core/Step';
 import StepContent from '@material-ui/core/StepContent';
 import StepLabel from '@material-ui/core/StepLabel';
@@ -41,17 +39,17 @@ export default function LeaseStepper({ onSubmit }) {
       <Step>
         <StepLabel>{t('Contract information')}</StepLabel>
         <StepContent>
-          <Box px={1}>
+          <div className="px-2">
             <LeaseForm onSubmit={handleSubmit} />
-          </Box>
+          </div>
         </StepContent>
       </Step>
       <Step>
         <StepLabel>{t('Template documents')}</StepLabel>
         <StepContent>
-          <Box px={1}>
+          <div className="px-2">
             <TemplateForm onSubmit={handleSubmit} />
-          </Box>
+          </div>
         </StepContent>
       </Step>
     </Stepper>

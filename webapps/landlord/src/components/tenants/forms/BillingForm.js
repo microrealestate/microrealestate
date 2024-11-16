@@ -7,8 +7,6 @@ import {
   TextField
 } from '@microrealestate/commonui/components';
 import { useContext, useMemo } from 'react';
-
-import { Box } from '@material-ui/core';
 import { observer } from 'mobx-react-lite';
 import { Section } from '../../formfields/Section';
 import { StoreContext } from '../../../store';

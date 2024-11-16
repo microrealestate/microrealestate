@@ -1,8 +1,7 @@
 import {
   Accordion,
   AccordionDetails,
-  AccordionSummary,
-  Grid
+  AccordionSummary
 } from '@material-ui/core';
 import { Card, CardContent, CardHeader } from '../ui/card';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '../ui/drawer';
@@ -61,20 +60,18 @@ function YearRentList({ tenant, year, onClick }) {
   );
 
   return (
-    <Grid container spacing={2}>
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 w-full">
       {rents?.map((rent) => {
         return (
-          <Grid item key={rent.term} xs={12} sm={12} md={6} lg={4} xl={3}>
-            <RentListItem
-              key={rent.term}
-              rent={rent}
-              tenant={tenant}
-              onClick={handleClick(tenant, rent)}
-            />
-          </Grid>
+          <RentListItem
+            key={rent.term}
+            rent={rent}
+            tenant={tenant}
+            onClick={handleClick(tenant, rent)}
+          />
         );
       })}
-    </Grid>
+    </div>
   );
 }
 

@@ -1,5 +1,4 @@
 import * as Yup from 'yup';
-
 import {
   AddressField,
   ContactField,
@@ -8,10 +7,10 @@ import {
   SubmitButton,
   TextField
 } from '@microrealestate/commonui/components';
-import { Box, Button } from '@material-ui/core';
 import { FieldArray, Form, Formik } from 'formik';
+import { LuPlusCircle, LuTrash } from 'react-icons/lu';
 import { useContext, useMemo } from 'react';
-
+import { Button } from '../../ui/button';
 import { observer } from 'mobx-react-lite';
 import { Section } from '../../formfields/Section';
 import { StoreContext } from '../../../store';
@@ -203,7 +202,7 @@ const TenantForm = observer(({ readOnly, onSubmit }) => {
                 render={(arrayHelpers) => (
                   <div>
                     {values.contacts.map((contact, index) => (
-                      <Box key={index}>
+                      <div key={index}>
                         <ContactField
                           contactName={`contacts[${index}].contact`}
                           emailName={`contacts[${index}].email`}
@@ -212,32 +211,32 @@ const TenantForm = observer(({ readOnly, onSubmit }) => {
                           disabled={readOnly}
                         />
                         {!readOnly && values.contacts.length > 1 && (
-                          <Box pb={2} display="flex" justifyContent="flex-end">
+                          <div className="flex justify-end">
                             <Button
-                              // variant="contained"
-                              color="primary"
-                              size="small"
+                              variant="ghost"
+                              size="sm"
                               onClick={() => arrayHelpers.remove(index)}
+                              className="gap-1 text-xs text-muted-foreground"
                               data-cy="removeTenantContact"
                             >
+                              <LuTrash className="size-4" />
                               {t('Remove contact')}
                             </Button>
-                          </Box>
+                          </div>
                         )}
-                      </Box>
+                      </div>
                     ))}
                     {!readOnly && (
-                      <Box display="flex" justifyContent="space-between">
-                        <Button
-                          // variant="contained"
-                          color="primary"
-                          size="small"
-                          onClick={() => arrayHelpers.push(emptyContact)}
-                          data-cy="addTenantContact"
-                        >
-                          {t('Add contact')}
-                        </Button>
-                      </Box>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => arrayHelpers.push(emptyContact)}
+                        className="gap-1 text-xs text-muted-foreground"
+                        data-cy="addTenantContact"
+                      >
+                        <LuPlusCircle className="size-4" />
+                        {t('Add contact')}
+                      </Button>
                     )}
                   </div>
                 )}
