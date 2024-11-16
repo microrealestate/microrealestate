@@ -78,7 +78,7 @@ function YearFigures({ className }) {
       })}
       description={t('Rents for the year')}
       renderContent={() => (
-        <div className="text-xs lg:text-lg -ml-8 lg:-ml-4">
+        <div className="-ml-8 lg:-ml-4">
           <ResponsiveContainer height={570}>
             <BarChart
               data={data}
@@ -97,36 +97,58 @@ function YearFigures({ className }) {
                 axisLine={false}
                 tickLine={false}
                 type="category"
+                tick={(props) => {
+                  const { x, y, payload } = props;
+                  return (
+                    <text
+                      x={x - 30}
+                      y={y}
+                      className="text-xs"
+                      fill="hsl(var(--muted-foreground))"
+                    >
+                      {payload.value}
+                    </text>
+                  );
+                }}
               />
               <Legend
                 verticalAlign="top"
-                height={40}
-                formatter={(value) =>
-                  value === 'paid' ? t('Rent paid') : t('Rents not paid')
-                }
+                content={() => (
+                  <div className="flex justify-center gap-4 text-sm mb-6">
+                    <div className="flex items-center gap-2 text-warning">
+                      <div className="size-2 bg-[hsl(var(--chart-1))]" />
+                      <span>{t('Not paid')}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-success">
+                      <div className="size-2 bg-[hsl(var(--chart-2))]" />
+                      <span>{t('Paid')}</span>
+                    </div>
+                  </div>
+                )}
               />
               <Bar
                 dataKey="notPaid"
-                fill="hsl(var(--warning))"
+                fill="hsl(var(--chart-1))"
                 stackId="stack"
                 cursor="pointer"
-                background={{ fill: 'hsl(var(--muted))' }}
                 label={{
-                  fill: 'hsl(var(--warning-foreground))',
+                  fill: 'hsl(var(--warning))',
                   formatter: (value) => (value < 0 ? formatNumber(value) : ''),
                   className: 'tracking-tight text-[0.5rem] sm:text-xs'
                 }}
+                stroke="hsl(var(--chart-1-border))"
               />
               <Bar
                 dataKey="paid"
-                fill="hsl(var(--success))"
+                fill="hsl(var(--chart-2))"
                 stackId="stack"
                 cursor="pointer"
                 label={{
-                  fill: 'hsl(var(--success-foreground))',
+                  fill: 'hsl(var(--success))',
                   formatter: (value) => (value > 0 ? formatNumber(value) : ''),
                   className: 'tracking-tight text-[0.5rem] sm:text-xs'
                 }}
+                stroke="hsl(var(--chart-2-border))"
               />
               <ReferenceLine x={0} stroke="hsl(var(--border))" />
             </BarChart>

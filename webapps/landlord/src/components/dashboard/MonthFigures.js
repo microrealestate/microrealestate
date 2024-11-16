@@ -46,46 +46,75 @@ function MonthFigures({ className }) {
           monthYear: moment().format('MMMM YYYY')
         })}
         renderContent={() => (
-          <div className="text-xs lg:text-lg -ml-0.5">
-            <ResponsiveContainer aspect={1.75}>
-              <PieChart>
-                <Legend
-                  verticalAlign="top"
-                  formatter={(value) =>
-                    value === 'paid' ? t('Paid') : t('Not paid')
+          <ResponsiveContainer aspect={1.75}>
+            <PieChart>
+              <Legend
+                verticalAlign="top"
+                content={() => (
+                  <div className="flex justify-center gap-4 text-sm">
+                    <div className="flex items-center gap-2 text-warning">
+                      <div className="size-2 bg-[hsl(var(--chart-1))]" />
+                      <span>{t('Not paid')}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-success">
+                      <div className="size-2 bg-[hsl(var(--chart-2))]" />
+                      <span>{t('Paid')}</span>
+                    </div>
+                  </div>
+                )}
+              />
+              <Pie
+                data={data}
+                startAngle={180}
+                endAngle={0}
+                cy="80%"
+                paddingAngle={4}
+                dataKey="value"
+                innerRadius="50%"
+                cursor="pointer"
+                onClick={(data) => {
+                  if (!data?.payload) {
+                    return;
                   }
+                  const {
+                    payload: { yearMonth, status }
+                  } = data;
+                  store.rent.setFilters({ status: [status] });
+                  router.push(
+                    `/${store.organization.selected.name}/rents/${yearMonth}?status=${status}`
+                  );
+                }}
+                label={(props) => {
+                  const { x, y, name, value } = props;
+                  const color =
+                    name === 'paid'
+                      ? 'hsl(var(--success))'
+                      : 'hsl(var(--warning))';
+
+                  return (
+                    <text
+                      x={x - 20}
+                      y={y - 10}
+                      fill={color}
+                      className="text-xs"
+                    >
+                      {value !== undefined && value ? formatNumber(value) : ''}
+                    </text>
+                  );
+                }}
+                labelLine={false}
+              >
+                <Cell
+                  fill="hsl(var(--chart-1))"
+                  stroke="hsl(var(--chart-1-border))"
                 />
-                <Pie
-                  data={data}
-                  startAngle={180}
-                  endAngle={0}
-                  cy="70%"
-                  paddingAngle={2}
-                  dataKey="value"
-                  innerRadius="55%"
-                  cursor="pointer"
-                  onClick={(data) => {
-                    if (!data?.payload) {
-                      return;
-                    }
-                    const {
-                      payload: { yearMonth, status }
-                    } = data;
-                    store.rent.setFilters({ status: [status] });
-                    router.push(
-                      `/${store.organization.selected.name}/rents/${yearMonth}?status=${status}`
-                    );
-                  }}
-                  label={({ value }) => (value ? formatNumber(value) : '')}
-                  labelLine={false}
-                  className="tracking-tight text-[0.5rem] sm:text-xs"
-                >
-                  <Cell fill="hsl(var(--warning))" />
-                  <Cell fill="hsl(var(--success))" />
-                </Pie>
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
+                <Cell
+                  fill="hsl(var(--chart-2))"
+                  stroke="hsl(var(--chart-2-border))"
+                />
+              </Pie>
+            </PieChart>
+          </ResponsiveContainer>
         )}
       />
 
