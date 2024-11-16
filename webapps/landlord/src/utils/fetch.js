@@ -92,8 +92,12 @@ export const apiFetcher = () => {
           `-----------------------------------------------------------------------------------------------------
 | 🚨 Important! 🚨                                                                                   |
 -----------------------------------------------------------------------------------------------------
-Origin mismatch between webapp and api endpoint: ${webAppUrl.origin} vs ${gatewayUrl.origin}
-Please restart the server with APP_DOMAIN=${webAppUrl.hostname} and APP_PORT=${webAppUrl.port}.
+Origin mismatch between webapp and api endpoint: ${webAppUrl.origin} vs ${
+            gatewayUrl.origin
+          }
+Please restart the server with APP_DOMAIN=${webAppUrl.hostname}${
+            webAppUrl.port ? ` and APP_PORT=${webAppUrl.port}` : ''
+          }.
 -----------------------------------------------------------------------------------------------------`
         );
       }
