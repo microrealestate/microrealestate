@@ -7,7 +7,8 @@ import { isServer } from '@microrealestate/commonui/utils';
 
 export const ADMIN_ROLE = 'administrator';
 export const RENTER_ROLE = 'renter';
-export const ROLES = [ADMIN_ROLE, RENTER_ROLE];
+export const MANAGER_ROLE = 'property manager';
+export const ROLES = [ADMIN_ROLE, RENTER_ROLE, MANAGER_ROLE];
 export default class User {
   constructor() {
     this.token = undefined;
