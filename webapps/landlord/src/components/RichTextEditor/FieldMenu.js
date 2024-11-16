@@ -34,11 +34,11 @@ export default function FieldMenu({ editor, fields }) {
   };
 
   return (
-    <Card className="z-50 fixed top-[160px] bottom-[15px] right-2 w-[350px]">
+    <Card className="z-50 fixed top-44 bottom-4 right-2 w-96">
       <CardHeader>
         <Input placeholder={t('Search')} onChange={onSearch} />
       </CardHeader>
-      <CardContent className="absolute left-0 right-0 top-[88px] bottom-6 space-y-1 overflow-y-auto">
+      <CardContent className="absolute left-0 right-0 top-24 bottom-0 space-y-1 overflow-y-auto">
         {filteredFields.map((field) => {
           return (
             <Button
