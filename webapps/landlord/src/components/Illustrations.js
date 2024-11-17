@@ -77,8 +77,8 @@ export const WelcomeIllustration = () => (
   </div>
 );
 
-export const CelebrationIllustration = ({ label, height }) => (
-  <div className={`h-[${height}px] w-full`}>
+export const CelebrationIllustration = ({ label }) => (
+  <div className={`h-56 w-full`}>
     <Illustration
       src={`${config.BASE_PATH}/undraw_Celebration_re_kc9k.svg`}
       label={label}

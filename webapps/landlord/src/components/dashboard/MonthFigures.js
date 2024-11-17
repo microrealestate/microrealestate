@@ -37,6 +37,10 @@ function MonthFigures({ className }) {
     ];
   }, [store.dashboard.currentRevenues, yearMonth]);
 
+  const numberOfSlices = useMemo(() => {
+    return data.filter(({ value }) => value > 0).length;
+  }, [data]);
+
   return (
     <div className={cn('grid grid-cols-1 gap-4', className)}>
       <DashboardCard
@@ -46,7 +50,7 @@ function MonthFigures({ className }) {
           monthYear: moment().format('MMMM YYYY')
         })}
         renderContent={() => (
-          <ResponsiveContainer aspect={1.75}>
+          <ResponsiveContainer height={262}>
             <PieChart>
               <Legend
                 verticalAlign="top"
@@ -68,7 +72,7 @@ function MonthFigures({ className }) {
                 startAngle={180}
                 endAngle={0}
                 cy="80%"
-                paddingAngle={4}
+                paddingAngle={numberOfSlices === 1 ? 0 : 4}
                 dataKey="value"
                 innerRadius="50%"
                 cursor="pointer"
@@ -119,12 +123,20 @@ function MonthFigures({ className }) {
       />
 
       <DashboardCard
-        Icon={LuAlertTriangle}
-        title={t('Top 5 of not paid rents')}
-        description={t('Tenants with the highest unpaid balance')}
+        Icon={store.dashboard.data.topUnpaid?.length ? LuAlertTriangle : null}
+        title={
+          store.dashboard.data.topUnpaid?.length
+            ? t('Top 5 of not paid rents')
+            : ''
+        }
+        description={
+          store.dashboard.data.topUnpaid?.length
+            ? t('Tenants with the highest unpaid balance')
+            : ''
+        }
         renderContent={() =>
           store.dashboard.data.topUnpaid?.length ? (
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2 min-h-48">
               {store.dashboard.data.topUnpaid.map(
                 ({ tenant, balance, rent }) => (
                   <div
@@ -156,7 +168,6 @@ function MonthFigures({ className }) {
           ) : (
             <CelebrationIllustration
               label={t('Well done! All rents are paid')}
-              height={223}
             />
           )
         }

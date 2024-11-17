@@ -79,7 +79,7 @@ function YearFigures({ className }) {
       description={t('Rents for the year')}
       renderContent={() => (
         <div className="-ml-8 lg:-ml-4">
-          <ResponsiveContainer height={570}>
+          <ResponsiveContainer height={608}>
             <BarChart
               data={data}
               layout="vertical"

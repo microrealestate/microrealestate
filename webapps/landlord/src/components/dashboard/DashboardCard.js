@@ -2,11 +2,11 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle
 } from '../ui/card';
 import { Button } from '../ui/button';
-import { cn } from '../../utils';
 import { LuArrowRightCircle } from 'react-icons/lu';
 
 export function DashboardCard({
@@ -19,29 +19,23 @@ export function DashboardCard({
 }) {
   return (
     <Card className={className}>
-      <CardHeader className="pb-2 pr-4">
+      <CardHeader className="pr-4">
         <CardTitle className="flex items-center justify-between font-normal text-xs xl:text-base">
           {title}
-          {Icon ? <Icon size="20" className="text-muted-foreground" /> : null}
+          {Icon ? <Icon className="size-6 text-muted-foreground" /> : null}
         </CardTitle>
       </CardHeader>
-      <CardContent
-        className={cn(
-          'flex justify-between items-center text-3xl xl:text-4xl font-medium pr-4'
-        )}
-      >
-        <div className="w-full h-full">
-          {renderContent?.()}
-          <CardDescription className="text-xs mt-2">
-            {description}
-          </CardDescription>
-        </div>
+      <CardContent className="flex justify-between items-center text-3xl xl:text-4xl font-medium pr-4">
+        <div className="w-full h-full">{renderContent?.()}</div>
         {onClick ? (
           <Button variant="ghost" size="icon" onClick={onClick}>
             <LuArrowRightCircle className="size-8" />
           </Button>
         ) : null}
       </CardContent>
+      <CardFooter>
+        <CardDescription className="text-xs">{description}</CardDescription>
+      </CardFooter>
     </Card>
   );
 }
