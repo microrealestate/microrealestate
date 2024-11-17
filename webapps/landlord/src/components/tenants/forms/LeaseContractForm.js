@@ -316,7 +316,6 @@ function LeaseContractForm({ readOnly, onSubmit }) {
                   endDate: values.endDate
                 }}
                 items={values.properties}
-                readOnly={readOnly}
                 renderTitle={(property, index) =>
                   t('Property #{{count}}', { count: index + 1 })
                 }
@@ -333,19 +332,19 @@ function LeaseContractForm({ readOnly, onSubmit }) {
                       <NumberField
                         label={t('Rent')}
                         name={`properties[${index}].rent`}
-                        disabled={!values.properties[index]?._id || readOnly}
+                        disabled={!property?._id || readOnly}
                       />
                     </div>
                     <div className="sm:flex sm:gap-2">
                       <TextField
                         label={t('Expense')}
                         name={`properties[${index}].expense.title`}
-                        disabled={!values.properties[index]?._id || readOnly}
+                        disabled={!property?._id || readOnly}
                       />
                       <NumberField
                         label={t('Amount')}
                         name={`properties[${index}].expense.amount`}
-                        disabled={!values.properties[index]?._id || readOnly}
+                        disabled={!property?._id || readOnly}
                       />
                     </div>
                     <RangeDateField
@@ -355,10 +354,11 @@ function LeaseContractForm({ readOnly, onSubmit }) {
                       endName={`properties[${index}].exitDate`}
                       minDate={values?.beginDate}
                       maxDate={values?.endDate}
-                      disabled={!values.properties[index]?._id || readOnly}
+                      disabled={!property?._id || readOnly}
                     />
                   </Fragment>
                 )}
+                readOnly={readOnly}
               />
             </Section>
             {!readOnly && (

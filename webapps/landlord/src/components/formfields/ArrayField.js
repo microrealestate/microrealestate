@@ -14,6 +14,14 @@ export function ArrayField({
   readOnly
 }) {
   const cyLabel = `${_.upperFirst(name)}Item`;
+  const isMultiple = items?.length > 1;
+  const isReadOnly = (item, index) => {
+    return (
+      readOnly === true ||
+      (typeof readOnly === 'function' ? readOnly(item, index) === true : false)
+    );
+  };
+
   return (
     <FieldArray
       name={name}
@@ -23,10 +31,12 @@ export function ArrayField({
             <div key={index}>
               <div
                 className={cn(
-                  !readOnly && items.length > 1 ? 'border-2 rounded-sm p-4' : ''
+                  !isReadOnly(item, index) && isMultiple
+                    ? 'border-2 rounded-sm p-4'
+                    : ''
                 )}
               >
-                {!readOnly && items.length > 1 && (
+                {!isReadOnly(item, index) && isMultiple && (
                   <div className="flex justify-between">
                     <span className="text-lg text-muted-foreground">
                       {renderTitle?.(item, index)}
@@ -50,7 +60,7 @@ export function ArrayField({
               </div>
             </div>
           ))}
-          {!readOnly && (
+          {!isReadOnly() && (
             <div className="flex justify-end">
               <Button
                 variant="secondary"

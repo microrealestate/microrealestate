@@ -81,10 +81,10 @@ function PaymentPartForm({ term, payments }) {
           addLabel={t('Add a settlement')}
           emptyItem={emptyPayment}
           items={payments}
-          renderTitle={(item, index) =>
+          renderTitle={(payment, index) =>
             `${t('Settlement #{{count}}', { count: index + 1 })}`
           }
-          renderContent={(item, index) => (
+          renderContent={(payment, index) => (
             <div className="grid gap-2 items-center grid-cols-1 md:grid-cols-2 lg:grid-cols-4 mb-2">
               <DateField
                 label={t('Date')}
@@ -97,11 +97,11 @@ function PaymentPartForm({ term, payments }) {
                 name={`payments[${index}].type`}
                 values={paymentTypes.itemList}
               />
-              {payments[index].type !== 'cash' ? (
+              {payment.type !== 'cash' ? (
                 <TextField
                   label={t('Reference')}
                   name={`payments[${index}].reference`}
-                  disabled={payments[index].type === 'cash'}
+                  disabled={payment.type === 'cash'}
                 />
               ) : null}
               <NumberField
