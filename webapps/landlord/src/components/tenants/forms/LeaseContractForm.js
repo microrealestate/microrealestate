@@ -7,13 +7,7 @@ import {
   SubmitButton,
   TextField
 } from '@microrealestate/commonui/components';
-import {
-  FieldArray,
-  Form,
-  Formik,
-  validateYupSchema,
-  yupToFormErrors
-} from 'formik';
+import { Form, Formik, validateYupSchema, yupToFormErrors } from 'formik';
 import {
   Fragment,
   useCallback,
@@ -22,8 +16,7 @@ import {
   useMemo,
   useState
 } from 'react';
-import { LuPlusCircle, LuTrash } from 'react-icons/lu';
-import { Button } from '../../ui/button';
+import { ArrayField } from '../../formfields/ArrayField';
 import moment from 'moment';
 import { nanoid } from 'nanoid';
 import { observer } from 'mobx-react-lite';
@@ -314,94 +307,57 @@ function LeaseContractForm({ readOnly, onSubmit }) {
               />
             </Section>
             <Section label={t('Properties')}>
-              <FieldArray
+              <ArrayField
                 name="properties"
-                render={(arrayHelpers) => (
-                  <>
-                    {values.properties.map((property, index) => {
-                      return (
-                        <Fragment key={property.key}>
-                          <div className="sm:flex sm:gap-2">
-                            <SelectField
-                              label={t('Property')}
-                              name={`properties[${index}]._id`}
-                              values={availableProperties}
-                              onChange={(evt) =>
-                                onPropertyChange(evt, property)
-                              }
-                              disabled={readOnly}
-                            />
-                            <NumberField
-                              label={t('Rent')}
-                              name={`properties[${index}].rent`}
-                              disabled={
-                                !values.properties[index]?._id || readOnly
-                              }
-                            />
-                          </div>
-                          <div className="sm:flex sm:gap-2">
-                            <TextField
-                              label={t('Expense')}
-                              name={`properties[${index}].expense.title`}
-                              disabled={
-                                !values.properties[index]?._id || readOnly
-                              }
-                            />
-                            <NumberField
-                              label={t('Amount')}
-                              name={`properties[${index}].expense.amount`}
-                              disabled={
-                                !values.properties[index]?._id || readOnly
-                              }
-                            />
-                          </div>
-                          <RangeDateField
-                            beginLabel={t('Entry date')}
-                            beginName={`properties[${index}].entryDate`}
-                            endLabel={t('Exit date')}
-                            endName={`properties[${index}].exitDate`}
-                            minDate={values?.beginDate}
-                            maxDate={values?.endDate}
-                            disabled={
-                              !values.properties[index]?._id || readOnly
-                            }
-                          />
-                          {!readOnly && values.properties.length > 1 && (
-                            <div className="flex justify-end">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => arrayHelpers.remove(index)}
-                                className="gap-1 text-xs text-muted-foreground"
-                                data-cy="removeTenantProperty"
-                              >
-                                <LuTrash className="size-4" />
-                                {t('Remove property')}
-                              </Button>
-                            </div>
-                          )}
-                        </Fragment>
-                      );
-                    })}
-                    {!readOnly && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() =>
-                          arrayHelpers.push({
-                            ...emptyProperty(),
-                            entryDate: values.beginDate,
-                            endDate: values.endDate
-                          })
-                        }
-                        className="gap-1 text-xs text-muted-foreground"
-                        data-cy="addTenantProperty"
-                      >
-                        <LuPlusCircle className="size-4" />
-                        {t('Add property')}
-                      </Button>
-                    )}
-                  </>
+                addLabel={t('Add a property')}
+                emptyItem={{
+                  ...emptyProperty(),
+                  entryDate: values.beginDate,
+                  endDate: values.endDate
+                }}
+                items={values.properties}
+                readOnly={readOnly}
+                renderTitle={(property, index) =>
+                  t('Property #{{count}}', { count: index + 1 })
+                }
+                renderContent={(property, index) => (
+                  <Fragment key={property.key}>
+                    <div className="sm:flex sm:gap-2">
+                      <SelectField
+                        label={t('Property')}
+                        name={`properties[${index}]._id`}
+                        values={availableProperties}
+                        onChange={(evt) => onPropertyChange(evt, property)}
+                        disabled={readOnly}
+                      />
+                      <NumberField
+                        label={t('Rent')}
+                        name={`properties[${index}].rent`}
+                        disabled={!values.properties[index]?._id || readOnly}
+                      />
+                    </div>
+                    <div className="sm:flex sm:gap-2">
+                      <TextField
+                        label={t('Expense')}
+                        name={`properties[${index}].expense.title`}
+                        disabled={!values.properties[index]?._id || readOnly}
+                      />
+                      <NumberField
+                        label={t('Amount')}
+                        name={`properties[${index}].expense.amount`}
+                        disabled={!values.properties[index]?._id || readOnly}
+                      />
+                    </div>
+                    <RangeDateField
+                      beginLabel={t('Entry date')}
+                      beginName={`properties[${index}].entryDate`}
+                      endLabel={t('Exit date')}
+                      endName={`properties[${index}].exitDate`}
+                      minDate={values?.beginDate}
+                      maxDate={values?.endDate}
+                      disabled={!values.properties[index]?._id || readOnly}
+                    />
+                  </Fragment>
                 )}
               />
             </Section>

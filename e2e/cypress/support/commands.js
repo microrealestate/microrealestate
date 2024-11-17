@@ -158,7 +158,7 @@ Cypress.Commands.add(
     }
     contacts.forEach(({ name, email, phone1, phone2 }, index) => {
       if (index > 0) {
-        cy.get('[data-cy=addTenantContact]').click();
+        cy.get('button[data-cy=addContactsItem]').click();
       }
       cy.get(`input[name="contacts[${index}].contact"]`).type(name);
       cy.get(`input[name="contacts[${index}].email"]`).type(email);
@@ -174,7 +174,7 @@ Cypress.Commands.add(
       cy.get('input[name=beginDate]').type(beginDate);
       properties.forEach(({ name, expense, entryDate, exitDate }, index) => {
         if (index > 0) {
-          cy.get('[data-cy=addTenantProperty]').click();
+          cy.get('[data-cy=addPropertiesItem]').click();
         }
         cy.muiSelectText(`properties[${index}]._id`, name);
         cy.get(`input[name="properties[${index}].expense.title"]`).type(
