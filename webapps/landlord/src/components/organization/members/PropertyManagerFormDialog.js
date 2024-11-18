@@ -1,21 +1,18 @@
 import * as Yup from 'yup';
 import { Form, Formik } from 'formik';
 import { mergeOrganization, updateStoreOrganization } from '../utils';
-import { QueryKeys, updateOrganization } from '../../../utils/restcalls';
-import { RENTER_ROLE, ROLES } from '../../../store/User';
+import { QueryKeys, updateOrganization, fetchProperties } from '../../../utils/restcalls';
 import { useCallback, useContext, useMemo, useRef } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '../../ui/button';
 import ResponsiveDialog from '../../ResponsiveDialog';
 import { SelectField } from '../../formfields/SelectField';
 import { StoreContext } from '../../../store';
-import { TextField } from '../../formfields/TextField';
+import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import useTranslation from 'next-translate/useTranslation';
 
 const memberInitialValues = {
-  email: '',
-  role: RENTER_ROLE
 };
 
 export default function PropertyManagerFormDialog({
@@ -55,22 +52,26 @@ export default function PropertyManagerFormDialog({
   const validationSchema = useMemo(
     () =>
       Yup.object().shape({
-        email: Yup.string()
-          .email()
-          .notOneOf(organization?.members.map(({ email }) => email) || [])
-          .required(),
-        role: Yup.string().required()
       }),
     [organization?.members]
   );
 
-  const roleValues = useMemo(
-    () => ROLES.map((role) => ({ id: role, label: t(role), value: role })),
-    [t]
-  );
+  const { data: properties } = useQuery({
+    queryKey: [QueryKeys.PROPERTIES],
+    queryFn: () => fetchProperties(store),
+    refetchOnMount: 'always',
+    retry: 3,
+  });
+
+  // Transform the data if available
+  const propValues = properties?.map((prop) => ({
+    id: prop.id,
+    label: t(prop.name) + ": " + t(prop.address.street1) + ", " + t(prop.address.city)+ ", " + t(prop.address.state),
+    value: prop,
+  }));
 
   if (isError) {
-    toast.error(t('Error adding member'));
+    toast.error(t('Error assigning property'));
   }
 
   return (
@@ -78,7 +79,7 @@ export default function PropertyManagerFormDialog({
       open={open}
       setOpen={setOpen}
       isLoading={isLoading}
-      renderHeader={() => t('New collaborator')}
+      renderHeader={() => t('Assign Properties')}
       renderContent={() => (
         <Formik
           initialValues={memberInitialValues}
@@ -90,12 +91,11 @@ export default function PropertyManagerFormDialog({
             return (
               <Form autoComplete="off">
                 <div className="pt-6 space-y-4">
-                  <div>{t('Add a collaborator to your organization')}</div>
-                  <TextField label={t('Email')} name="email" />
+                  <div>{t('Currently Assigned Properties')}</div>
                   <SelectField
-                    label={t('Role')}
-                    name="role"
-                    values={roleValues}
+                    label={t('Properties')}
+                    name="property"
+                    values={propValues}
                   />
                 </div>
               </Form>
