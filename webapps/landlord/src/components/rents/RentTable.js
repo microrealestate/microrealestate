@@ -67,29 +67,20 @@ function Reminder({ rent, className }) {
   }, [documentName, endpoint]);
 
   return visible ? (
-    <>
-      <Button
-        variant="link"
-        className={cn(
-          'hidden md:inline-flex p-0 h-fit text-xs font-normal gap-1',
-          color,
-          className
-        )}
-        onClick={handleDownloadClick}
-      >
-        <LuPaperclip className="size-4" />
-        {label}
-      </Button>
-      <Button
-        variant="secondary"
-        size="sm"
-        className={cn('sm:hidden gap-1', color, className)}
-        onClick={handleDownloadClick}
-      >
-        <LuPaperclip className="size-4" />
-        {label}
-      </Button>
-    </>
+    <Button
+      variant="outline"
+      size="sm"
+      className={cn(
+        'rounded-lg text-xs bg-muted font-normal h-fit gap-1 px-1 py-0.5',
+        color,
+        `hover:${color}`,
+        className
+      )}
+      onClick={handleDownloadClick}
+    >
+      <LuPaperclip className="size-4" />
+      <div className="whitespace-normal">{label}</div>
+    </Button>
   ) : null;
 }
 
@@ -100,34 +91,37 @@ function RentRow({ rent, isSelected, onSelect, onEdit, onHistory }) {
 
   return (
     <>
-      <div className="flex flex-col gap-4 md:gap-0 md:flex-row items-center">
-        <div className="flex items-center gap-4 w-full md:w-1/2">
-          {store.organization.canSendEmails ? (
-            rent.occupant.hasContactEmails ? (
-              <Checkbox
-                checked={isSelected}
-                disabled={!store.organization.canSendEmails}
-                onCheckedChange={onSelect(rent)}
-                aria-labelledby={rent.occupant.name}
-              />
-            ) : (
-              <Tooltip title={t('No emails available for this tenant')}>
+      <div className="flex flex-col gap-4 md:gap-0 md:flex-row md:items-center">
+        <div className="w-full md:w-1/2 space-y-2">
+          <div className="flex items-center gap-4">
+            {store.organization.canSendEmails ? (
+              rent.occupant.hasContactEmails ? (
                 <Checkbox
+                  checked={isSelected}
+                  disabled={!store.organization.canSendEmails}
                   onCheckedChange={onSelect(rent)}
                   aria-labelledby={rent.occupant.name}
-                  disabled
                 />
-              </Tooltip>
-            )
-          ) : null}
+              ) : (
+                <Tooltip title={t('No emails available for this tenant')}>
+                  <Checkbox
+                    onCheckedChange={onSelect(rent)}
+                    aria-labelledby={rent.occupant.name}
+                    disabled
+                  />
+                </Tooltip>
+              )
+            ) : null}
 
-          <Button
-            variant="link"
-            className="p-0 h-fit text-xl whitespace-normal text-left"
-            onClick={onEdit(rent)}
-          >
-            {rent.occupant.name}
-          </Button>
+            <Button
+              variant="link"
+              className="p-0 h-fit text-xl whitespace-normal text-left"
+              onClick={onEdit(rent)}
+            >
+              {rent.occupant.name}
+            </Button>
+          </div>
+          <Reminder rent={rent} className="hidden md:inline-flex ml-8" />
         </div>
         <div className="flex pl-8 md:pl-0 md:grid md:grid-cols-3 lg:grid-cols-5 gap-4 w-full md:w-1/2">
           <RentAmount
@@ -171,8 +165,8 @@ function RentRow({ rent, isSelected, onSelect, onEdit, onHistory }) {
             </Button>
           </div>
         </div>
+        <Reminder rent={rent} className="md:hidden w-fit" />
       </div>
-      <Reminder rent={rent} className="mt-4 md:mt-0 ml-[32px] mb-3" />
     </>
   );
 }
