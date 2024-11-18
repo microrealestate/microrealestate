@@ -15,7 +15,8 @@ import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { cn } from '../../utils';
 import ConfirmDialog from '../ConfirmDialog';
-import { LuTrash } from 'react-icons/lu';
+import PropertyManagerFormDialog from './members/PropertyManagerFormDialog';
+import { LuTrash, LuHotel } from 'react-icons/lu';
 import moment from 'moment';
 import { StoreContext } from '../../store';
 import { toast } from 'sonner';
@@ -36,6 +37,8 @@ export default function Members({ organization }) {
   const [openMemberToRemoveConfirmDialog, setOpenMemberToRemoveConfirmDialog] =
     useState(false);
   const [selectedMemberToRemove, setSelectedMemberToRemove] = useState(null);
+  const [openPropertyManagerFormDialog, setPropertyManagerFormDialog] = useState(false);
+  const [selectedMemberInOrg, setSelectedMemberInOrg] = useState(null);
   const [openAppToRemoveConfirmDialog, setOpenAppToRemoveConfirmDialog] =
     useState(false);
   const [selectedAppToRemove, setSelectedAppToRemove] = useState(null);
@@ -162,6 +165,18 @@ export default function Members({ organization }) {
                   >
                     <LuTrash className="size-6" />
                   </Button>
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      setSelectedMemberInOrg(member);
+                      setPropertyManagerFormDialog(true);
+                    }}
+                    disabled={isActionDisabled}
+                    size="icon"
+                    className="w-12"
+                  >
+                    <LuHotel className="size-6" />
+                  </Button>
                 </div>
               </div>
             );
@@ -221,6 +236,11 @@ export default function Members({ organization }) {
           );
         })}
       </Card>
+      <PropertyManagerFormDialog
+        open={openPropertyManagerFormDialog}
+        setOpen={setPropertyManagerFormDialog}
+        data={selectedMemberInOrg}
+      />
       <ConfirmDialog
         title={t('Are you sure to remove this collaborator?')}
         subTitle={selectedMemberToRemove?.email}
