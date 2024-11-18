@@ -1,8 +1,9 @@
-import { Cell, Legend, Pie, PieChart, ResponsiveContainer } from 'recharts';
+import { Legend, RadialBar, RadialBarChart } from 'recharts';
 import { LuAlertTriangle, LuBanknote } from 'react-icons/lu';
 import { useContext, useMemo } from 'react';
 import { Button } from '../ui/button';
 import { CelebrationIllustration } from '../../components/Illustrations';
+import { ChartContainer } from '../ui/chart';
 import { cn } from '../../utils';
 import { DashboardCard } from './DashboardCard';
 import moment from 'moment';
@@ -23,23 +24,29 @@ function MonthFigures({ className }) {
     const currentRevenues = store.dashboard.currentRevenues;
     return [
       {
-        name: 'notPaid',
-        value: currentRevenues.notPaid,
-        yearMonth,
-        status: 'notpaid'
-      },
-      {
-        name: 'paid',
-        value: currentRevenues.paid,
-        yearMonth,
-        status: 'paid'
+        notPaid: currentRevenues.notPaid,
+        paid: currentRevenues.paid,
+        yearMonth
       }
     ];
   }, [store.dashboard.currentRevenues, yearMonth]);
 
-  const numberOfSlices = useMemo(() => {
-    return data.filter(({ value }) => value > 0).length;
-  }, [data]);
+  const handleClick = (data) => {
+    if (!data?.payload) {
+      return;
+    }
+
+    const status = data.tooltipPayload?.[0].dataKey?.toLowerCase() || '';
+    const {
+      payload: { yearMonth }
+    } = data;
+
+    store.rent.setFilters({ status: [status] });
+    store.rent.setPeriod(moment(yearMonth, 'YYYY.MM', true));
+    router.push(
+      `/${store.organization.selected.name}/rents/${yearMonth}?statuses=${status}`
+    );
+  };
 
   return (
     <div className={cn('grid grid-cols-1 gap-4', className)}>
@@ -50,8 +57,20 @@ function MonthFigures({ className }) {
           monthYear: moment().format('MMMM YYYY')
         })}
         renderContent={() => (
-          <ResponsiveContainer height={262}>
-            <PieChart>
+          <ChartContainer
+            config={{
+              paid: { color: 'hsl(var(--chart-2))' },
+              notPaid: { color: 'hsl(var(--chart-1))' }
+            }}
+            className="h-full w-full"
+          >
+            <RadialBarChart
+              data={data}
+              endAngle={180}
+              innerRadius="100%"
+              outerRadius="150%"
+              cy={'80%'}
+            >
               <Legend
                 verticalAlign="top"
                 content={() => (
@@ -67,58 +86,36 @@ function MonthFigures({ className }) {
                   </div>
                 )}
               />
-              <Pie
-                data={data}
-                startAngle={180}
-                endAngle={0}
-                cy="80%"
-                paddingAngle={numberOfSlices === 1 ? 0 : 4}
-                dataKey="value"
-                innerRadius="50%"
+              <RadialBar
+                dataKey="paid"
+                stackId="rents"
+                cornerRadius={4}
+                fill="var(--color-paid)"
+                stroke="hsl(var(--chart-2-border))"
+                label={{
+                  fill: 'hsl(var(--success))',
+                  position: 'outside',
+                  formatter: (value) => (value ? formatNumber(value) : '')
+                }}
                 cursor="pointer"
-                onClick={(data) => {
-                  if (!data?.payload) {
-                    return;
-                  }
-                  const {
-                    payload: { yearMonth, status }
-                  } = data;
-                  store.rent.setFilters({ status: [status] });
-                  router.push(
-                    `/${store.organization.selected.name}/rents/${yearMonth}?status=${status}`
-                  );
+                onClick={handleClick}
+              />
+              <RadialBar
+                dataKey="notPaid"
+                stackId="rents"
+                cornerRadius={4}
+                fill="var(--color-notPaid)"
+                stroke="hsl(var(--chart-1-border))"
+                label={{
+                  fill: 'hsl(var(--warning))',
+                  position: 'outside',
+                  formatter: (value) => (value ? formatNumber(value) : '')
                 }}
-                label={(props) => {
-                  const { x, y, name, value } = props;
-                  const color =
-                    name === 'paid'
-                      ? 'hsl(var(--success))'
-                      : 'hsl(var(--warning))';
-
-                  return (
-                    <text
-                      x={x - 20}
-                      y={y - 10}
-                      fill={color}
-                      className="text-xs"
-                    >
-                      {value !== undefined && value ? formatNumber(value) : ''}
-                    </text>
-                  );
-                }}
-                labelLine={false}
-              >
-                <Cell
-                  fill="hsl(var(--chart-1))"
-                  stroke="hsl(var(--chart-1-border))"
-                />
-                <Cell
-                  fill="hsl(var(--chart-2))"
-                  stroke="hsl(var(--chart-2-border))"
-                />
-              </Pie>
-            </PieChart>
-          </ResponsiveContainer>
+                cursor="pointer"
+                onClick={handleClick}
+              />
+            </RadialBarChart>
+          </ChartContainer>
         )}
       />
 

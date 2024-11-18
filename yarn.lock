@@ -2151,7 +2151,7 @@ __metadata:
     react-day-picker: 8.10.0
     react-dom: 18.2.0
     react-icons: 5.3.0
-    recharts: 2.12.4
+    recharts: 2.13.3
     sonner: 1.4.41
     tailwind-merge: 2.5.2
     tailwindcss: 3.4.10
@@ -13763,7 +13763,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-is@npm:^16.10.2, react-is@npm:^16.13.1, react-is@npm:^16.7.0":
+"react-is@npm:^16.13.1, react-is@npm:^16.7.0":
   version: 16.13.1
   resolution: "react-is@npm:16.13.1"
   checksum: f7a19ac3496de32ca9ae12aa030f00f14a3d45374f1ceca0af707c831b2a6098ef0d6bdae51bd437b0a306d7f01d4677fcc8de7c0d331eb47ad0f46130e53c5f
@@ -13777,7 +13777,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-is@npm:^18.0.0":
+"react-is@npm:^18.0.0, react-is@npm:^18.3.1":
   version: 18.3.1
   resolution: "react-is@npm:18.3.1"
   checksum: e20fe84c86ff172fc8d898251b7cc2c43645d108bf96d0b8edf39b98f9a2cae97b40520ee7ed8ee0085ccc94736c4886294456033304151c3f94978cec03df21
@@ -13960,14 +13960,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"recharts@npm:2.12.4":
-  version: 2.12.4
-  resolution: "recharts@npm:2.12.4"
+"recharts@npm:2.13.3":
+  version: 2.13.3
+  resolution: "recharts@npm:2.13.3"
   dependencies:
     clsx: ^2.0.0
     eventemitter3: ^4.0.1
     lodash: ^4.17.21
-    react-is: ^16.10.2
+    react-is: ^18.3.1
     react-smooth: ^4.0.0
     recharts-scale: ^0.4.4
     tiny-invariant: ^1.3.1
@@ -13975,7 +13975,7 @@ __metadata:
   peerDependencies:
     react: ^16.0.0 || ^17.0.0 || ^18.0.0
     react-dom: ^16.0.0 || ^17.0.0 || ^18.0.0
-  checksum: b617ef44380d74d3664bb45ef725823bfb50faac94b93908ffd5b1b1a31128185acec8efcc7bce9eae260465335bb4d48152ce6fc8185b6ce61f033bd112a63c
+  checksum: bde5ba112e9fbfb3acb42a9793c7c7784e67c86f2e57d1cc09fae1f9ea394bb00c7bedcbc7e3dfde9e23b9fbf674e60e8f68b3ea7c08d982cd7b45789ac93249
   languageName: node
   linkType: hard
 
