@@ -80,7 +80,7 @@ describe('Create/delete resources', () => {
     cy.contains(
       i18n.getFixedT(userWithCompanyAccount.locale)('Top 5 of not paid rents')
     ).should('be.visible');
-    cy.get('.recharts-pie').should('be.visible');
+    cy.get('.recharts-radial-bar-sector').should('be.visible');
     cy.get('.recharts-bar').should('be.visible');
 
     cy.navAppMenu('tenants');
