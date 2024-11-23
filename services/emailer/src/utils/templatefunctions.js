@@ -1,22 +1,27 @@
+import i18n from 'i18n';
 import moment from 'moment';
 
-export default function({ locale, currency }) {
+export default function ({ locale, currency }) {
   moment.locale(locale);
+  i18n.setLocale(locale);
 
   return {
+    t: (...params) => {
+      return i18n.__(...params);
+    },
     formatNumber: (value, style = 'decimal', minimumFractionDigits = 2) => {
       if (['currency', 'decimal'].includes(style)) {
         return Intl.NumberFormat(locale, {
           style,
           currency,
-          minimumFractionDigits,
+          minimumFractionDigits
         }).format(value);
       }
 
       if (style === 'percent') {
         return Number(value).toLocaleString(locale, {
           style: 'percent',
-          minimumFractionDigits,
+          minimumFractionDigits
         });
       }
 
@@ -46,6 +51,6 @@ export default function({ locale, currency }) {
         return term.format('YYYY');
       }
       return termTxt;
-    },
+    }
   };
-};
+}

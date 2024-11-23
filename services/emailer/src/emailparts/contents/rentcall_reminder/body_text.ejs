@@ -1,0 +1,17 @@
+<%- include('../__content_parts/text/header.ejs') %>
+
+
+
+<%- include('../__content_parts/text/greetings.ejs') %>
+
+<%- _.t('On examining your account, we note that, failing mistake or omission on our part, you have not settled your rent of {{term}}.', { term: _.formatTerm(period, tenant.contract.lease.timeRange)}) %>
+
+<%- _.t('We would be grateful if you could proceed to the payment of {{amount}} very shortly.', { amount: _.formatNumber(tenant.rents[0].total.grandTotal, 'currency') }) %>
+
+<%- include('../__content_parts/text/paymentmethods.ejs') %>
+
+<%- _.t('We are at your service for any further information you may need.') %>
+
+<%- include('../__content_parts/text/signature.ejs') %>
+
+<%- include('../__content_parts/text/landlordcontact.ejs') %>

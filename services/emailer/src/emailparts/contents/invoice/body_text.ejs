@@ -1,0 +1,13 @@
+<%- include('../__content_parts/text/header.ejs') %>
+
+
+
+<%- include('../__content_parts/text/greetings.ejs') %>
+
+<%- _.t('Thank you for your settlement.') %>
+
+<%- _.t('Please find in attachment the rent invoice of {{term}}.', { term: _.formatTerm(period, tenant.contract.lease.timeRange) }) %> 
+
+<%- include('../__content_parts/text/signature.ejs') %>
+
+<%- include('../__content_parts/text/landlordcontact.ejs') %>

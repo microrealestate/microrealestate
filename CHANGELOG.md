@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented here.
 
+## Work in progress
+
+### Added
+
+- Added html emails - can have issues in German and Brazilian translations
+
+### Contributors
+
+- [@camelaissani](https://github.com/camelaissani)
+
+
 ## 1.0.0-alpha.3
 
 ### Added

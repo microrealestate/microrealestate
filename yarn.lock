@@ -2040,6 +2040,7 @@ __metadata:
     eslint: 8.57.0
     eslint-config-prettier: 9.1.0
     eslint-plugin-import: 2.29.1
+    i18n: 0.14.2
     jsonwebtoken: 9.0.0
     locale: 0.1.0
     moment: 2.29.4

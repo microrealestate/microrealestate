@@ -1,8 +1,11 @@
 import { EnvironmentConfig, logger, Service } from '@microrealestate/common';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
+import i18n from 'i18n';
 import path from 'path';
 import routes from './routes.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 Main();
 
@@ -15,6 +18,12 @@ async function onStartUp(express) {
 }
 
 async function Main() {
+  i18n.configure({
+    locales: ['en', 'fr-FR', 'pt-BR', 'de-DE'],
+    directory: path.join(__dirname, 'locales'),
+    updateFiles: false
+  });
+
   let service;
   try {
     const __dirname = path.dirname(fileURLToPath(import.meta.url));

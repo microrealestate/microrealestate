@@ -1,0 +1,34 @@
+<%- _.t('Payment modalities:') %>
+
+<% if (landlord.hasBankInfo) { -%>
+<%- _.t('By bank transfer') %>
+<%- _.t('Bank details') %>
+<%- landlord.bankInfo.name %>
+<%- _.t('IBAN: {{iban}}', { iban: landlord.bankInfo.iban }) %>
+<% } -%>
+
+<%- _.t('By check') %>
+<%- _.t('Write your check to the order of {{name}} and send it to the following address:', { name: landlord.name }) %>
+<%- landlord.name %>
+<% if (landlord.hasAddress) { -%>
+<%- landlord.addresses[0].street1 %>
+<% if (landlord.addresses[0].street2) { -%>
+<%- landlord.addresses[0].street2 %>
+<% } -%>
+<%- landlord.addresses[0].zipCode %> <%- landlord.addresses[0].city %>
+<% if (landlord.addresses[0].state) { -%>
+<%- landlord.addresses[0].state %>
+<% } -%>
+<% if (landlord.addresses[0].country) { -%>
+<%- landlord.addresses[0].country %>
+<% } -%>
+<% } -%>
+
+<% if (landlord.hasContact) { -%>
+<%- _.t('By cash') %>
+<%- _.t('Contact: {{name}}', { name: landlord.contacts[0].name }) %>
+<%- _.t('Phone: {{phones}}', { phones: (landlord.contacts[0].phone1 || '') + (landlord.contacts[0].phone2 ? (' / ' + landlord.contacts[0].phone2) : '')}) %>
+<%- _.t('Email: {{email}}', { email: landlord.contacts[0].email }) %>
+<% } -%>
+
+<%- _.t('If you have already paid this amount, we thank you and invite you to ignore this message.') %>

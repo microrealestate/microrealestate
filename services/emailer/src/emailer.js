@@ -123,7 +123,7 @@ export async function send(
       data
     );
   } catch (error) {
-    logger.error(error);
+    logger.error(error.message || error);
     throw new ServiceError(`missing content for ${templateName}`, 422);
   }
 

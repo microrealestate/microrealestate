@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+  <%- include('../__content_parts/html/htmlhead.ejs') %>
+  <body>
+    <div class="email-body">
+      <div class="email-container">
+        <div class="bar"></div>
+        <div class="content">
+          <div class="header">
+            <div class="logo"><%-landlord.name%></div>
+          </div>
+
+          <p><%- include('../__content_parts/html/greetings.ejs') %></p>
+
+          <p>
+            <%- _.t('We have received a sign-in attempt to your tenant space.') %>
+          </p>
+
+          <p>
+            <%- _.t('To complete the sign-in process, enter the 6-digit code in the original window:') %>
+          </p>
+
+          <p class="otp"><%- otp %></p>
+
+          <p>
+            <%- _.t("If you haven't request this code, no further action required. It will expire in 5 minutes.") %>
+          </p>
+
+          <%- include('../__content_parts/html/signature.ejs') %>
+        </div>
+      </div>
+      <%- include('../__content_parts/html/landlordcontact.ejs') %>
+    </div>
+  </body>
+</html>

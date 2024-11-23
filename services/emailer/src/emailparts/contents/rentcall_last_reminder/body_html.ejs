@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+<%- include('../__content_parts/html/htmlhead.ejs') %>
+    <body>
+        <div class="email-body">
+            <div class="email-container">
+                <div class="bar"></div>
+                <div class="content">
+                    <div class="header">
+                        <div class="logo"><%-landlord.name%></div>
+                    </div>
+
+                    <div class="title"><%- _.t('Last reminder before eviction') %></div>
+
+                    <p><%- include('../__content_parts/html/greetings.ejs') %></p>
+
+                    <p>
+                        <% if (landlord.isCompany) { -%>
+                            <%- _.t('We would like to point out that our business agreements with your company are stated in a contract signed {{date}}.', { date: _.formatDate(tenant.contract.beginDate, 'LL') }) %>
+                        <% } else { -%>
+                            <%- _.t('We would like to point out that our business agreements with you are stated in a contract signed {{date}}.', { date: _.formatDate(tenant.contract.beginDate, 'LL') }) %>   
+                        <% } -%>
+                    </p>
+            
+                    <p>
+                        <%- _.t('In this contract, it is explicitly indicated that {{tenant}} is obliged to pay in advance and monthly its rents to {{landlord}}.', { tenant: tenant.name, landlord: (landlord.hasCompanyInfo ? landlord.companyInfo.legalStructure + ' ' : '') + landlord.name }) %>
+                    </p>
+
+                    <p>
+                        <%- _.t('So far, one or more rents have not been paid. The current amount of unpaid rents is <strong>{{amount}}</strong>.', { amount: _.formatNumber(tenant.rents[0].total.grandTotal, 'currency') }) %>
+                    </p>
+
+                    <p>
+                       <strong><%- _.t('We would be grateful if you could proceed to the payment of your rent debts in the following 10 days, otherwise we will engage an eviction procedure.') %></strong>
+                    </p>
+
+                    <%- include('../__content_parts/html/paymentmethods.ejs') %>
+
+                    <p>
+                        <%- _.t('We are at your service for any further information you may need.') %>
+                    </p>
+
+                    <%- include('../__content_parts/html/signature.ejs') %>   
+                </div>
+            </div>
+            <%- include('../__content_parts/html/landlordcontact.ejs') %>   
+        </div>
+    </body>
+</html>

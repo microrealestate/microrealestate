@@ -1,0 +1,39 @@
+<p><%- _.t('Payment modalities:') %></p>
+<p class="payment-method">
+    <u><%- _.t('By bank transfer') %></u><br />
+    <%- _.t('Bank details') %><br />
+    <% if (landlord.hasBankInfo) { -%>
+        <%- landlord.bankInfo.name %><br />
+        <%- _.t('IBAN: {{iban}}', { iban: landlord.bankInfo.iban }) %>
+    <%}-%>
+</p>
+<p class="payment-method">
+    <u><%- _.t('By check') %></u><br />
+    <%- _.t('Write your check to the order of {{name}} and send it to the following address:', { name: landlord.name }) %><br />
+    <%-landlord.name%><br />
+    <% if (landlord.hasAddress) { -%>
+        <%-landlord.addresses[0].street1%><br />
+        <%if (landlord.addresses[0].street2) {-%>
+            <%-landlord.addresses[0].street2%><br />
+        <%}-%>
+        <%-landlord.addresses[0].zipCode%> <%-landlord.addresses[0].city%><br />
+        <%if (landlord.addresses[0].state) {-%>
+            <%-landlord.addresses[0].state%><br />
+        <%}-%>
+        <%if (landlord.addresses[0].country) {-%>
+            <%-landlord.addresses[0].country%>
+        <%}-%>
+    <%}-%>
+</p>
+<% if (landlord.hasContact) { -%>
+    <p class="payment-method">
+        <u><%- _.t('By cash') %></u><br />
+        <%- _.t('Contact: {{name}}', { name: landlord.contacts[0].name }) %><br />
+        <%- _.t('Phone: {{phones}}', { phones: (landlord.contacts[0].phone1 || '') + (landlord.contacts[0].phone2 ? (' / ' + landlord.contacts[0].phone2) : '')}) %><br />
+        <%- _.t('Email: {{email}}', { email: landlord.contacts[0].email }) %>
+    </p>
+<% } -%>
+
+<p>
+    <%- _.t('If you have already paid this amount, we thank you and invite you to ignore this message.') %>
+</p>

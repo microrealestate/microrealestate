@@ -27,7 +27,7 @@ export async function build(
   params,
   emailData
 ) {
-  const contentPackagePath = path.join(_templatesDir, templateName, locale);
+  const contentPackagePath = path.join(_templatesDir, templateName);
 
   if (!fs.existsSync(contentPackagePath)) {
     throw new Error(
