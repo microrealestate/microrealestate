@@ -76,6 +76,13 @@ export default function Members({ organization }) {
     [mutateAsync, organization, store]
   );
 
+  const handleAddProperty= useCallback(
+    async (member) => {
+      console.log(member);
+    },
+    [mutateAsync, organization, store]
+  );
+
   const onRoleChange = useCallback(
     async (role, member) => {
       setUpdating(member);
@@ -163,7 +170,7 @@ export default function Members({ organization }) {
                     size="icon"
                     className="w-12"
                   >
-                    <LuTrash className="size-6" />
+                  <LuTrash className="size-6" />
                   </Button>
                   <Button
                     variant="ghost"
@@ -240,6 +247,7 @@ export default function Members({ organization }) {
         open={openPropertyManagerFormDialog}
         setOpen={setPropertyManagerFormDialog}
         data={selectedMemberInOrg}
+        onSave={handleAddProperty}
       />
       <ConfirmDialog
         title={t('Are you sure to remove this collaborator?')}

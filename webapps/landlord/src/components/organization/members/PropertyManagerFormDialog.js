@@ -1,15 +1,13 @@
-import * as Yup from 'yup';
 import { Form, Formik } from 'formik';
-import { mergeOrganization, updateStoreOrganization } from '../utils';
-import { QueryKeys, updateOrganization, fetchProperties } from '../../../utils/restcalls';
-import { useCallback, useContext, useMemo, useRef } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { QueryKeys, fetchProperties } from '../../../utils/restcalls';
+import PropertyList from '../../properties/PropertyList';
+import { useCallback, useState, useContext, useRef } from 'react';
+import {  useQueryClient } from '@tanstack/react-query';
 import { Button } from '../../ui/button';
 import ResponsiveDialog from '../../ResponsiveDialog';
 import { SelectField } from '../../formfields/SelectField';
 import { StoreContext } from '../../../store';
 import { useQuery } from '@tanstack/react-query';
-import { toast } from 'sonner';
 import useTranslation from 'next-translate/useTranslation';
 
 const memberInitialValues = {
@@ -18,84 +16,70 @@ const memberInitialValues = {
 export default function PropertyManagerFormDialog({
   open,
   setOpen,
-  data: organization
+  data,
+  onSave
 }) {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const formRef = useRef();
   const queryClient = useQueryClient();
-  const { mutateAsync, isLoading, isError } = useMutation({
-    mutationFn: updateOrganization,
-    onSuccess: (organization) => {
-      updateStoreOrganization(store, organization);
-      queryClient.invalidateQueries({ queryKey: [QueryKeys.ORGANIZATIONS] });
-    }
-  });
 
-  const handleClose = useCallback(() => {
-    setOpen(false);
-  }, [setOpen]);
-
-  const _onSubmit = useCallback(
-    async (member) => {
-      await mutateAsync({
-        store,
-        organization: mergeOrganization(organization, {
-          members: [...organization.members, member]
-        })
-      });
-      handleClose();
-    },
-    [mutateAsync, store, organization, handleClose]
-  );
-
-  const validationSchema = useMemo(
-    () =>
-      Yup.object().shape({
-      }),
-    [organization?.members]
-  );
-
-  const { data: properties } = useQuery({
+  const { data: allProperties } = useQuery({
     queryKey: [QueryKeys.PROPERTIES],
     queryFn: () => fetchProperties(store),
     refetchOnMount: 'always',
     retry: 3,
   });
 
-  // Transform the data if available
-  const propValues = properties?.map((prop) => ({
-    id: prop.id,
-    label: t(prop.name) + ": " + t(prop.address.street1) + ", " + t(prop.address.city)+ ", " + t(prop.address.state),
-    value: prop,
+  // transform to use it in select field
+  const propValues = allProperties?.map((prop) => ({
+    id: prop._id,
+    label: prop.name + ": " + prop.address.street1 + ", " + prop.address.city + ", " + prop.address.state,
+    value: prop._id,
   }));
 
-  if (isError) {
-    toast.error(t('Error assigning property'));
-  }
+  const handleSave = useCallback(() => {
+    setOpen(false);
+    onSave?.(data);
+  }, [setOpen, onSave, data]);
+
+  const handleClose = useCallback(() => {
+    setOpen(false);
+  }, [setOpen]);
+
+  const handleSelectChange = useCallback(
+    (prop) => {
+     console.log('Selected Value:', prop);
+     console.log('Properties Value:', allProperties);
+     console.log('PropVales Value:', propValues);
+     console.log('Data Value:', data);
+     data.properties.push(allProperties?.find((thisProp) => thisProp._id === prop))
+    }, [data]);
 
   return (
     <ResponsiveDialog
       open={open}
       setOpen={setOpen}
-      isLoading={isLoading}
-      renderHeader={() => t('Assign Properties')}
+      renderHeader={() => 'Assign Properties'}
       renderContent={() => (
         <Formik
           initialValues={memberInitialValues}
-          validationSchema={validationSchema}
-          onSubmit={_onSubmit}
+          onSubmit={handleSave}
           innerRef={formRef}
         >
           {() => {
             return (
               <Form autoComplete="off">
                 <div className="pt-6 space-y-4">
-                  <div>{t('Currently Assigned Properties')}</div>
+                  <div>{'Currently Assigned Properties'}</div>
+                  <PropertyList
+                    data={data.properties}
+                  />
                   <SelectField
-                    label={t('Properties')}
+                    label={'Select Property To Add'}
                     name="property"
                     values={propValues}
+                    onValueChange={handleSelectChange}
                   />
                 </div>
               </Form>
@@ -108,7 +92,7 @@ export default function PropertyManagerFormDialog({
           <Button variant="outline" onClick={handleClose}>
             {t('Cancel')}
           </Button>
-          <Button onClick={() => formRef.current.submitForm()}>
+          <Button onClick={handleSave}>
             {t('Add')}
           </Button>
         </>

@@ -34,6 +34,7 @@ export namespace CollectionTypes {
       email: string;
       role: UserRole;
       registered: boolean;
+      properties: CollectionTypes.Property[];
     }[];
     applications: {
       name: string;
