@@ -95,7 +95,8 @@ function MonthFigures({ className }) {
                 label={{
                   fill: 'hsl(var(--success))',
                   position: 'outside',
-                  formatter: (value) => (value ? formatNumber(value) : '')
+                  formatter: (value) => (value ? formatNumber(value) : ''),
+                  className: 'text-[9px] md:text-sm'
                 }}
                 cursor="pointer"
                 onClick={handleClick}
@@ -109,7 +110,8 @@ function MonthFigures({ className }) {
                 label={{
                   fill: 'hsl(var(--warning))',
                   position: 'outside',
-                  formatter: (value) => (value ? formatNumber(value) : '')
+                  formatter: (value) => (value ? formatNumber(value) : ''),
+                  className: 'text-[9px] md:text-sm'
                 }}
                 cursor="pointer"
                 onClick={handleClick}

@@ -12,7 +12,6 @@ import { Button } from '../ui/button';
 import { cn } from '../../utils';
 import moment from 'moment';
 import { Progress } from '../ui/progress';
-import { Separator } from '../ui/separator';
 import { StoreContext } from '../../store';
 import TenantAvatar from './TenantAvatar';
 import TenantPropertyList from './TenantPropertyList';
@@ -76,7 +75,7 @@ export default function TenantListItem({ tenant }) {
           </div>
         </CardTitle>
       </CardHeader>
-      <CardContent className="text-sm text-muted-foreground">
+      <CardContent className="text-sm text-muted-foreground pb-0">
         <div className="cursor-pointer" onClick={handleClick}>
           <div>
             {tenant.beginDate
@@ -106,7 +105,6 @@ export default function TenantListItem({ tenant }) {
       </CardContent>
 
       <CardFooter className="p-0 flex-col">
-        <Separator />
         <div className="flex items-center justify-end w-full py-4 px-6">
           <Badge
             variant={tenant.terminated ? 'secondary' : 'success'}

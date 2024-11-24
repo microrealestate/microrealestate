@@ -10,7 +10,6 @@ import { Badge } from '../../components/ui/badge';
 import { Button } from '../ui/button';
 import NumberFormat from '../../components/NumberFormat';
 import PropertyAvatar from './PropertyAvatar';
-import { Separator } from '../ui/separator';
 import { StoreContext } from '../../store';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
@@ -44,7 +43,7 @@ export default function PropertyListItem({ property }) {
           </div>
         </CardTitle>
       </CardHeader>
-      <CardContent className="text-right space-y-2 mb-4">
+      <CardContent className="text-right space-y-2 pb-4">
         <div className="text-sm text-muted-foreground">
           {t('Rent excluding tax and expenses')}
         </div>
@@ -54,7 +53,6 @@ export default function PropertyListItem({ property }) {
         />
       </CardContent>
       <CardFooter className="p-0 flex-col">
-        <Separator />
         <div className="flex items-center justify-between w-full py-4 px-6">
           <div className="text-xs text-muted-foreground">
             {property.status !== 'vacant'

@@ -2,6 +2,7 @@ import { getRentAmounts, RentAmount } from './RentDetails';
 import { LuHistory, LuPaperclip } from 'react-icons/lu';
 import { useCallback, useContext, useMemo, useState } from 'react';
 import { Button } from '../ui/button';
+import { Card } from '../ui/card';
 import { Checkbox } from '../ui/checkbox';
 import { cn } from '../../utils';
 import { downloadDocument } from '../../utils/fetch';
@@ -243,7 +244,7 @@ function RentTable({ rents = [], selected, setSelected }) {
       />
 
       {rents.length ? (
-        <>
+        <Card className="p-6">
           {store.organization.canSendEmails ? (
             <div className="space-y-2">
               <Checkbox
@@ -278,7 +279,7 @@ function RentTable({ rents = [], selected, setSelected }) {
               </div>
             );
           })}
-        </>
+        </Card>
       ) : (
         <EmptyIllustration label={t('No rents found')} />
       )}

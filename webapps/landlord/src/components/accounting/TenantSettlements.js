@@ -55,60 +55,57 @@ export default function TenantSettlements({
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const hasData = !!store.accounting?.filteredData?.settlements?.length;
-  return (
+  return hasData ? (
     <Card>
       <CardHeader>
         <CardTitle className="flex justify-between items-center text-lg md:text-xl">
           {t('Settlements')}
-          {hasData ? (
-            <Button variant="ghost" size="icon" onClick={onCSVClick}>
-              <GrDocumentCsv className="size-6" />
-            </Button>
-          ) : null}
+          <Button variant="ghost" size="icon" onClick={onCSVClick}>
+            <GrDocumentCsv className="size-6" />
+          </Button>
         </CardTitle>
       </CardHeader>
-      {hasData ? (
-        <CardContent>
-          {store.accounting.filteredData.settlements.map((settlement) => (
-            <div
-              key={settlement.tenantId}
-              className="border-b first:border-t last:border-none py-4"
-            >
-              <div className="flex justify-between text-xl px-2">
-                <div>{settlement.tenant}</div>
-                <Button
-                  variant="secondary"
-                  className="flex items-center gap-1"
-                  onClick={onDownloadYearInvoices({
-                    _id: settlement.tenantId,
-                    name: settlement.tenant
-                  })}
-                >
-                  <LuPaperclip /> {t('Invoices')}
-                </Button>
-              </div>
-              <div className="text-muted-foreground mb-2">
-                {moment(settlement.beginDate).format('L')} -{' '}
-                {moment(settlement.endDate).format('L')}
-              </div>
-              <div>
-                {months.map((m, index) => {
-                  return (
-                    <SettlementList
-                      key={`${settlement.tenantId}_${index}`}
-                      tenantId={settlement.tenantId}
-                      month={index}
-                      settlements={settlement.settlements[index]}
-                    />
-                  );
+      <CardContent>
+        {store.accounting.filteredData.settlements.map((settlement) => (
+          <div
+            key={settlement.tenantId}
+            className="border-b first:border-t last:border-none py-4"
+          >
+            <div className="flex justify-between text-xl px-2">
+              <div>{settlement.tenant}</div>
+              <Button
+                variant="secondary"
+                className="flex items-center gap-1"
+                onClick={onDownloadYearInvoices({
+                  _id: settlement.tenantId,
+                  name: settlement.tenant
                 })}
-              </div>
+              >
+                <LuPaperclip /> {t('Invoices')}
+              </Button>
             </div>
-          ))}
-        </CardContent>
-      ) : (
-        <EmptyIllustration />
-      )}
+            <div className="text-muted-foreground mb-2">
+              {moment(settlement.beginDate).format('L')} -{' '}
+              {moment(settlement.endDate).format('L')}
+            </div>
+            <div>
+              {months.map((m, index) => {
+                return (
+                  <SettlementList
+                    key={`${settlement.tenantId}_${index}`}
+                    tenantId={settlement.tenantId}
+                    month={index}
+                    settlements={settlement.settlements[index]}
+                  />
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </CardContent>
+      )
     </Card>
+  ) : (
+    <EmptyIllustration />
   );
 }

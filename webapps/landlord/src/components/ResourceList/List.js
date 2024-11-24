@@ -1,8 +1,6 @@
-import { Card, CardContent, CardFooter, CardHeader } from '../ui/card';
 import { useCallback, useMemo, useState } from 'react';
 import Header from './Header';
 import Pagination from './Pagination';
-import { Separator } from '../ui/separator';
 
 function _computeChunks(chunkSize, data = []) {
   const chunks = [];
@@ -51,23 +49,20 @@ export default function List({
   }, []);
 
   return (
-    <Card>
-      <CardHeader>
-        <Header
-          filters={filters}
-          renderActions={renderActions}
-          onSearch={handleSearch}
-        />
-      </CardHeader>
-      <Separator className="mb-6" />
-      <CardContent>{renderList?.({ data: chunks[pageIndex - 1] })}</CardContent>
-      <CardFooter className="pb-4">
-        <Pagination
-          chunks={chunks}
-          data={filteredData}
-          onChange={handlePageChange}
-        />
-      </CardFooter>
-    </Card>
+    <div className="flex flex-col gap-8">
+      <Header
+        filters={filters}
+        renderActions={renderActions}
+        onSearch={handleSearch}
+      />
+
+      {renderList?.({ data: chunks[pageIndex - 1] })}
+
+      <Pagination
+        chunks={chunks}
+        data={filteredData}
+        onChange={handlePageChange}
+      />
+    </div>
   );
 }
