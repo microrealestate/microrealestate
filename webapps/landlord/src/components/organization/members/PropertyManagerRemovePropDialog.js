@@ -1,7 +1,7 @@
 import { Form, Formik } from 'formik';
 import { QueryKeys, fetchProperties } from '../../../utils/restcalls';
 import PropertyList from '../../properties/PropertyList';
-import { useCallback, useState, useContext, useRef } from 'react';
+import { useCallback, useMemo, useContext, useRef } from 'react';
 import {  useQueryClient } from '@tanstack/react-query';
 import { Button } from '../../ui/button';
 import ResponsiveDialog from '../../ResponsiveDialog';
@@ -13,7 +13,7 @@ import useTranslation from 'next-translate/useTranslation';
 const memberInitialValues = {
 };
 
-export default function PropertyManagerFormDialog({
+export default function PropertyManagerRemovePropDialog({
   open,
   setOpen,
   data,
@@ -32,11 +32,19 @@ export default function PropertyManagerFormDialog({
   });
 
   // transform to use it in select field
-  const propValues = allProperties?.map((prop) => ({
+  const propValues = useMemo(() => {
+    return allProperties?.map((prop) => ({
     id: prop._id,
     label: prop.name + ": " + prop.address.street1 + ", " + prop.address.city + ", " + prop.address.state,
     value: prop._id,
-  }));
+    }));
+  }, [allProperties]);
+
+ const memberProperties = useMemo(() => {
+    return allProperties?.filter(
+      ({ _id }) => data?.properties?.includes(_id)
+    );
+  }, [allProperties, data]);
 
   const handleSave = useCallback(() => {
     setOpen(false);
@@ -49,18 +57,18 @@ export default function PropertyManagerFormDialog({
 
   const handleSelectChange = useCallback(
     (prop) => {
-     console.log('Selected Value:', prop);
-     console.log('Properties Value:', allProperties);
-     console.log('PropVales Value:', propValues);
-     console.log('Data Value:', data);
-     data.properties.push(allProperties?.find((thisProp) => thisProp._id === prop))
+      if(data?.properties?.includes(prop))
+      {
+        console.log('Removing Prop to member');
+        data.properties = data.properties.filter((item) => item !== prop);
+      }
     }, [data]);
 
   return (
     <ResponsiveDialog
       open={open}
       setOpen={setOpen}
-      renderHeader={() => 'Assign Properties'}
+      renderHeader={() => 'Remove Properties'}
       renderContent={() => (
         <Formik
           initialValues={memberInitialValues}
@@ -73,10 +81,10 @@ export default function PropertyManagerFormDialog({
                 <div className="pt-6 space-y-4">
                   <div>{'Currently Assigned Properties'}</div>
                   <PropertyList
-                    data={data.properties}
+                    data={memberProperties}
                   />
                   <SelectField
-                    label={'Select Property To Add'}
+                    label={'Select Property To Remove'}
                     name="property"
                     values={propValues}
                     onValueChange={handleSelectChange}
@@ -93,7 +101,7 @@ export default function PropertyManagerFormDialog({
             {t('Cancel')}
           </Button>
           <Button onClick={handleSave}>
-            {t('Add')}
+            {t('Remove')}
           </Button>
         </>
       )}
