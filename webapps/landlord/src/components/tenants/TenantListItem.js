@@ -56,14 +56,14 @@ export default function TenantListItem({ tenant }) {
 
   return (
     <Card className="relative">
-      <TenantStatus tenant={tenant} className="absolute top-2 right-2" />
+      <TenantStatus tenant={tenant} className="absolute top-0.5 right-0.5" />
       <CardHeader className="mb-4 cursor-pointer" onClick={handleClick}>
         <CardTitle className="flex justify-start items-center gap-2">
           <TenantAvatar tenant={tenant} />
           <div>
             <Button
               variant="link"
-              className="justify-start p-0 h-fit text-xl whitespace-normal text-left"
+              className="w-fit h-fit p-0 text-xl whitespace-normal"
               data-cy="openResourceButton"
             >
               {tenant.name}
@@ -85,7 +85,7 @@ export default function TenantListItem({ tenant }) {
           </div>
           <Progress
             value={progress}
-            className={cn('h-2 my-2 bg-muted')}
+            className={cn('h-2 my-2 bg-secondary')}
             indicatorClassName={
               tenant.terminated ? 'bg-muted-foreground/30' : 'bg-success'
             }
@@ -109,11 +109,8 @@ export default function TenantListItem({ tenant }) {
         <Separator />
         <div className="flex items-center justify-end w-full py-4 px-6">
           <Badge
-            variant={tenant.terminated ? 'outline' : 'success'}
-            className={cn(
-              'text-xs font-medium',
-              tenant.terminated ? 'bg-muted-foreground/30' : ''
-            )}
+            variant={tenant.terminated ? 'secondary' : 'success'}
+            className="font-normal"
           >
             {tenant.terminated ? t('Lease ended') : t('Lease running')}
           </Badge>

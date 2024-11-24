@@ -1,9 +1,16 @@
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle
+} from '../../components/ui/card';
 import { useCallback, useContext } from 'react';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../ui/button';
-import { Card } from '../../components/ui/card';
 import NumberFormat from '../../components/NumberFormat';
-import PropertyIcon from './PropertyIcon';
+import PropertyAvatar from './PropertyAvatar';
+import { Separator } from '../ui/separator';
 import { StoreContext } from '../../store';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
@@ -19,47 +26,51 @@ export default function PropertyListItem({ property }) {
   }, [property._id, property.name, router, store]);
 
   return (
-    <Card className="p-4 cursor-pointer" onClick={onClick}>
-      <div className="flex flex-col md:items-end md:flex-row md:justify-between">
-        <div>
+    <Card className="cursor-pointer" onClick={onClick}>
+      <CardHeader className="mb-4">
+        <CardTitle className="flex justify-start items-center gap-2">
+          <PropertyAvatar property={property} />
+          <div>
+            <Button
+              variant="link"
+              className="w-fit h-fit p-0 text-xl whitespace-normal"
+              data-cy="openResourceButton"
+            >
+              {property.name}
+            </Button>
+            <div className="text-xs font-normal text-muted-foreground">
+              {property.description}
+            </div>
+          </div>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="text-right space-y-2 mb-4">
+        <div className="text-sm text-muted-foreground">
+          {t('Rent excluding tax and expenses')}
+        </div>
+        <NumberFormat
+          value={property.price}
+          className="text-3xl font-medium border py-2 px-4 rounded bg-card "
+        />
+      </CardContent>
+      <CardFooter className="p-0 flex-col">
+        <Separator />
+        <div className="flex items-center justify-between w-full py-4 px-6">
+          <div className="text-xs text-muted-foreground">
+            {property.status !== 'vacant'
+              ? t('Occupied by {{tenant}}', {
+                  tenant: property.occupantLabel
+                })
+              : null}
+          </div>
           <Badge
             variant={property.status === 'vacant' ? 'success' : 'secondary'}
-            className="w-fit border border-secondary-foreground/20"
+            className="font-normal"
           >
             {property.status === 'vacant' ? t('Vacant') : t('Rented')}
           </Badge>
-          <Button
-            variant="link"
-            className="flex items-center font-normal gap-2 p-0 mt-2"
-            data-cy="openResourceButton"
-          >
-            <PropertyIcon type={property.type} />
-            <span className="text-xl">{property.name}</span>
-          </Button>
-          <span className="text-sm text-muted-foreground">
-            {property.description}
-          </span>
         </div>
-
-        <div className="md:text-right">
-          <p className="text-sm text-muted-foreground">
-            {t('Rent excluding tax and expenses')}
-          </p>
-          <NumberFormat
-            value={property.price}
-            className="text-2xl font-semibold"
-          />
-        </div>
-      </div>
-      <div className="flex items-center gap-2">
-        {property.status !== 'vacant' && (
-          <p className="text-sm text-muted-foreground">
-            {t('Occupied by {{tenant}}', {
-              tenant: property.occupantLabel
-            })}
-          </p>
-        )}
-      </div>
+      </CardFooter>
     </Card>
   );
 }

@@ -29,7 +29,7 @@ function Address({ address }) {
 
 export default function TenantPropertyList({ tenant, className }) {
   return (
-    <div className={cn('flex flex-wrap gap-4 p-4 rounded bg-muted', className)}>
+    <div className={cn('flex flex-wrap gap-4 p-4 border rounded', className)}>
       {tenant.properties?.map(({ property }) => (
         <Popover key={property._id}>
           <PopoverTrigger asChild>
