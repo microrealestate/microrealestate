@@ -8,6 +8,7 @@ import moment from 'moment';
 import { observer } from 'mobx-react-lite';
 import { StoreContext } from '../../store';
 import useFormatNumber from '../../hooks/useFormatNumber';
+import { useMediaQuery } from 'usehooks-ts';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 
@@ -16,6 +17,7 @@ function YearFigures({ className }) {
   const router = useRouter();
   const { t } = useTranslation('common');
   const formatNumber = useFormatNumber();
+  const isDesktop = useMediaQuery('(min-width: 768px)');
 
   const data = useMemo(() => {
     const now = moment();
@@ -72,7 +74,9 @@ function YearFigures({ className }) {
               type="number"
               hide={true}
               domain={['dataMin', 'dataMax']}
-              padding={{ left: 90, right: 90 }}
+              padding={
+                isDesktop ? { left: 70, right: 70 } : { left: 35, right: 35 }
+              }
             />
             <YAxis
               dataKey="name"
@@ -86,7 +90,7 @@ function YearFigures({ className }) {
                   <text
                     x={x - 30}
                     y={y}
-                    className="text-xs"
+                    className="text-[9px] md:text-xs"
                     fill="hsl(var(--muted-foreground))"
                   >
                     {payload.value}
@@ -118,7 +122,7 @@ function YearFigures({ className }) {
                 position: 'right',
                 fill: 'hsl(var(--warning))',
                 formatter: (value) => (value < 0 ? formatNumber(value) : ''),
-                className: 'tracking-tight text-xs'
+                className: 'tracking-tight text-[9px] md:text-sm'
               }}
               stroke="hsl(var(--chart-1-border))"
               radius={[0, 4, 4, 0]}
@@ -134,7 +138,7 @@ function YearFigures({ className }) {
                 position: 'right',
                 fill: 'hsl(var(--success))',
                 formatter: (value) => (value > 0 ? formatNumber(value) : ''),
-                className: 'tracking-tight text-xs'
+                className: 'tracking-tight text-[9px] md:text-sm'
               }}
               stroke="hsl(var(--chart-2-border))"
               radius={[0, 4, 4, 0]}
