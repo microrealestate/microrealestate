@@ -8,10 +8,10 @@ import {
   LuStore,
   LuWarehouse
 } from 'react-icons/lu';
-
+import { cn } from '../../utils';
 import { PiOfficeChair } from 'react-icons/pi';
 
-export default function PropertyIcon({ type }) {
+export default function PropertyIcon({ type, className }) {
   let TypeIcon = LuMountain;
   switch (type) {
     case 'store':
@@ -40,5 +40,5 @@ export default function PropertyIcon({ type }) {
       break;
   }
 
-  return <TypeIcon className="size-6" />;
+  return <TypeIcon className={cn('size-6', className)} />;
 }
