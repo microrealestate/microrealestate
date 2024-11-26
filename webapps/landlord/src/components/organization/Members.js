@@ -15,7 +15,9 @@ import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { cn } from '../../utils';
 import ConfirmDialog from '../ConfirmDialog';
-import { LuTrash } from 'react-icons/lu';
+import PropertyManagerAddPropDialog from './members/PropertyManagerAddPropDialog';
+import PropertyManagerRemovePropDialog from './members/PropertyManagerRemovePropDialog';
+import { LuTrash, LuMapPin, LuMapPinOff } from 'react-icons/lu';
 import moment from 'moment';
 import { StoreContext } from '../../store';
 import { toast } from 'sonner';
@@ -36,6 +38,9 @@ export default function Members({ organization }) {
   const [openMemberToRemoveConfirmDialog, setOpenMemberToRemoveConfirmDialog] =
     useState(false);
   const [selectedMemberToRemove, setSelectedMemberToRemove] = useState(null);
+  const [openPropertyManagerAddPropDialog, setPropertyManagerAddPropDialog] = useState(false);
+  const [openPropertyManagerRemovePropDialog, setPropertyManagerRemovePropDialog] = useState(false);
+  const [selectedMemberInOrg, setSelectedMemberInOrg] = useState(null);
   const [openAppToRemoveConfirmDialog, setOpenAppToRemoveConfirmDialog] =
     useState(false);
   const [selectedAppToRemove, setSelectedAppToRemove] = useState(null);
@@ -68,6 +73,28 @@ export default function Members({ organization }) {
           )
         })
       });
+      setUpdating();
+    },
+    [mutateAsync, organization, store]
+  );
+
+  const handlePropertyChange = useCallback(
+    async (member) => {
+      setUpdating(member);
+      const updatedMembers = organization.members.map((m) =>
+        m.email === member.email ? { ...m, ...member } : m
+      );
+      await mutateAsync({
+        store,
+        organization: mergeOrganization(organization, {
+          members: updatedMembers,
+        })
+      });
+
+      // Update selectedMemberInOrg with the new member data
+      const updatedMember = updatedMembers.find((m) => m.email === member.email);
+      setSelectedMemberInOrg(updatedMember);
+
       setUpdating();
     },
     [mutateAsync, organization, store]
@@ -160,7 +187,31 @@ export default function Members({ organization }) {
                     size="icon"
                     className="w-12"
                   >
-                    <LuTrash className="size-6" />
+                  <LuTrash className="size-6" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      setSelectedMemberInOrg(member);
+                      setPropertyManagerAddPropDialog(true);
+                    }}
+                    disabled={isActionDisabled}
+                    size="icon"
+                    className="w-12"
+                  >
+                    <LuMapPin className="size-6" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      setSelectedMemberInOrg(member);
+                      setPropertyManagerRemovePropDialog(true);
+                    }}
+                    disabled={isActionDisabled}
+                    size="icon"
+                    className="w-12"
+                  >
+                    <LuMapPinOff className="size-6" />
                   </Button>
                 </div>
               </div>
@@ -221,6 +272,18 @@ export default function Members({ organization }) {
           );
         })}
       </Card>
+      <PropertyManagerAddPropDialog
+        open={openPropertyManagerAddPropDialog}
+        setOpen={setPropertyManagerAddPropDialog}
+        data={selectedMemberInOrg}
+        onSave={handlePropertyChange}
+      />
+      <PropertyManagerRemovePropDialog
+        open={openPropertyManagerRemovePropDialog}
+        setOpen={setPropertyManagerRemovePropDialog}
+        data={selectedMemberInOrg}
+        onSave={handlePropertyChange}
+      />
       <ConfirmDialog
         title={t('Are you sure to remove this collaborator?')}
         subTitle={selectedMemberToRemove?.email}
