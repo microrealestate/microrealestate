@@ -13,7 +13,7 @@ export default function MyDocument() {
           strategy="beforeInteractive"
         />
       </Head>
-      <body className="bg-primary/5 text-secondary-foreground">
+      <body className="bg-body text-foreground">
         <Main />
         <NextScript />
       </body>

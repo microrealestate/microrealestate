@@ -6,13 +6,11 @@ export default function PropertyList({ data }) {
   const { t } = useTranslation('common');
 
   return data.length > 0 ? (
-    <ul>
+    <div className="grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
       {data.map((property) => (
-        <li key={property._id} className="mb-3 last:mb-0">
-          <PropertyListItem property={property} />
-        </li>
+        <PropertyListItem key={property._id} property={property} />
       ))}
-    </ul>
+    </div>
   ) : (
     <EmptyIllustration label={t('No properties found')} />
   );

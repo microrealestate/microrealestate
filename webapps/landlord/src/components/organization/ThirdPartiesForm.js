@@ -1,5 +1,4 @@
 import * as Yup from 'yup';
-import { Box, Link } from '@material-ui/core';
 import { Form, Formik, validateYupSchema, yupToFormErrors } from 'formik';
 import { mergeOrganization, updateStoreOrganization } from './utils';
 import {
@@ -12,6 +11,7 @@ import {
 import { QueryKeys, updateOrganization } from '../../utils/restcalls';
 import { useCallback, useContext, useMemo } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import Link from '../Link';
 import { Section } from '../formfields/Section';
 import { StoreContext } from '../../store';
 import { SwitchField } from '../formfields/SwitchField';
@@ -324,15 +324,14 @@ export default function ThirdPartiesForm({ organization }) {
                   </RadioFieldGroup>
                   {values?.emailDeliveryServiceName === 'gmail' && (
                     <>
-                      <Box my={1}>
-                        <Link
-                          href={`https://support.google.com/accounts/answer/185833?hl=${organization.locale}`}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          {t('How to use the App password with Gmail')}
-                        </Link>
-                      </Box>
+                      <Link
+                        href={`https://support.google.com/accounts/answer/185833?hl=${organization.locale}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="my-2"
+                      >
+                        {t('How to use the App password with Gmail')}
+                      </Link>
                       <TextField label={t('Email')} name="gmail_email" />
                       <TextField
                         label={t('Application password')}
@@ -384,15 +383,14 @@ export default function ThirdPartiesForm({ organization }) {
                   )}
                   {values?.emailDeliveryServiceName === 'mailgun' && (
                     <>
-                      <Box my={1}>
-                        <Link
-                          href={`https://help.mailgun.com/hc/${organization.locale.toLowerCase()}/articles/203380100-Where-can-I-find-my-API-key-and-SMTP-credentials-`}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          {t('How to use the API key and domain with Mailgun')}
-                        </Link>
-                      </Box>
+                      <Link
+                        href={`https://help.mailgun.com/hc/${organization.locale.toLowerCase()}/articles/203380100-Where-can-I-find-my-API-key-and-SMTP-credentials-`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="my-2"
+                      >
+                        {t('How to use the API key and domain with Mailgun')}
+                      </Link>
                       <TextField
                         label={t('Private API key')}
                         name="mailgun_apiKey"

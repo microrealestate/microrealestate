@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+  <%- include('../__content_parts/html/htmlhead.ejs') %>
+  <body>
+    <div class="email-body">
+      <div class="email-container">
+        <div class="bar"></div>
+        <div class="content">
+          <div class="header">
+            <div class="logo"><%-landlord.name%></div>
+          </div>
+
+          <div class="title"><%- _.t('Payment notice reminder') %></div>
+
+          <p><%- include('../__content_parts/html/greetings.ejs') %></p>
+
+          <p>
+            <%- _.t('On examining your account, we note that, failing mistake or omission on our part, you have not settled your rent of <strong>{{term}}</strong>.', { term: _.formatTerm(period, tenant.contract.lease.timeRange)}) %>
+          </p>
+
+          <p>
+            <%- _.t('We would be grateful if you could proceed to the payment of <strong>{{amount}}</strong> very shortly.', { amount: _.formatNumber(tenant.rents[0].total.grandTotal, 'currency') }) %>
+          </p>
+
+          <p>
+            <%- _.t('Please send us your payment before <strong>{{date}}</strong>.', { date: _.formatDate(dueDate, 'LL') }) %>
+          </p>
+
+          <%- include('../__content_parts/html/paymentmethods.ejs') %>         
+          
+          <p>
+            <%- _.t('We are at your service for any further information you may need.') %>
+          </p>
+          
+          <%- include('../__content_parts/html/signature.ejs') %>   
+        </div>
+      </div>
+      <%- include('../__content_parts/html/landlordcontact.ejs') %>   
+    </div>
+  </body>
+</html>

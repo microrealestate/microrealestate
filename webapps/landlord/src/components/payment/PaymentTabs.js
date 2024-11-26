@@ -1,6 +1,6 @@
 import * as Yup from 'yup';
 import { Card, CardContent, CardHeader } from '../ui/card';
-import { FieldArray, Form, Formik } from 'formik';
+import { Form, Formik } from 'formik';
 import {
   forwardRef,
   useCallback,
@@ -10,6 +10,7 @@ import {
   useState
 } from 'react';
 import _ from 'lodash';
+import { ArrayField } from '../formfields/ArrayField';
 import { Button } from '../ui/button';
 import { Collapse } from '../ui/collapse';
 import { DateField } from '../formfields/DateField';
@@ -70,61 +71,48 @@ function PaymentPartForm({ term, payments }) {
   const momentTerm = moment(term, 'YYYYMMDDHH');
 
   return (
-    <FieldArray name="payments">
-      {({ form, ...arrayHelpers }) => {
-        return payments.map((payment, index) => (
-          <Card key={index}>
-            <CardHeader className="text-lg px-6 pt-3 pb-0">
-              {t('Settlement #{{count}}', { count: index + 1 })}
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-2 items-center grid-cols-1 md:grid-cols-2 lg:grid-cols-4 mb-2">
-                <DateField
-                  label={t('Date')}
-                  name={`payments[${index}].date`}
-                  minDate={moment(momentTerm).startOf('month')}
-                  maxDate={moment(momentTerm).endOf('month')}
+    <Card>
+      <CardHeader className="text-lg px-6 pt-3 pb-0">
+        {t('Settlement')}
+      </CardHeader>
+      <CardContent>
+        <ArrayField
+          name="payments"
+          addLabel={t('Add a settlement')}
+          emptyItem={emptyPayment}
+          items={payments}
+          renderTitle={(payment, index) =>
+            `${t('Settlement #{{count}}', { count: index + 1 })}`
+          }
+          renderContent={(payment, index) => (
+            <div className="grid gap-2 items-center grid-cols-1 md:grid-cols-2 lg:grid-cols-4 mb-2">
+              <DateField
+                label={t('Date')}
+                name={`payments[${index}].date`}
+                minDate={moment(momentTerm).startOf('month')}
+                maxDate={moment(momentTerm).endOf('month')}
+              />
+              <SelectField
+                label={t('Type')}
+                name={`payments[${index}].type`}
+                values={paymentTypes.itemList}
+              />
+              {payment.type !== 'cash' ? (
+                <TextField
+                  label={t('Reference')}
+                  name={`payments[${index}].reference`}
+                  disabled={payment.type === 'cash'}
                 />
-                <SelectField
-                  label={t('Type')}
-                  name={`payments[${index}].type`}
-                  values={paymentTypes.itemList}
-                />
-                {payments[index].type !== 'cash' ? (
-                  <TextField
-                    label={t('Reference')}
-                    name={`payments[${index}].reference`}
-                    disabled={payments[index].type === 'cash'}
-                  />
-                ) : null}
-                <NumberField
-                  label={t('Amount')}
-                  name={`payments[${index}].amount`}
-                />
-              </div>
-              {payments.length === index + 1 && (
-                <Button
-                  variant="link"
-                  size="sm"
-                  onClick={() => arrayHelpers.push(emptyPayment)}
-                >
-                  {t('Add a settlement')}
-                </Button>
-              )}
-              {payments.length > 1 && (
-                <Button
-                  variant="link"
-                  size="sm"
-                  onClick={() => arrayHelpers.remove(index)}
-                >
-                  {t('Remove this settlement')}
-                </Button>
-              )}
-            </CardContent>
-          </Card>
-        ));
-      }}
-    </FieldArray>
+              ) : null}
+              <NumberField
+                label={t('Amount')}
+                name={`payments[${index}].amount`}
+              />
+            </div>
+          )}
+        />
+      </CardContent>
+    </Card>
   );
 }
 

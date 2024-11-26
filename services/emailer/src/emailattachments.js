@@ -1,9 +1,4 @@
-import { fileURLToPath } from 'url';
-import fs from 'fs';
-import path from 'path';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const _attachmentsDir = path.join(__dirname, 'emailparts', 'attachments');
+import * as Attachments from './emailparts/attachments/index.js';
 
 export async function build(
   authorizationHeader,
@@ -13,23 +8,12 @@ export async function build(
   recordId,
   params,
   data
-)  {
-  const attachmentsPackagePath = path.join(
-    _attachmentsDir,
-    templateName,
-    'index.js'
-  );
-  if (!fs.existsSync(attachmentsPackagePath)) {
-    return {
-      attachment: [],
-    };
-  }
-
-  const attachments = await import(attachmentsPackagePath);
-  return await attachments.get(
+) {
+  return await Attachments.build(
     authorizationHeader,
     locale,
     organizationId,
+    templateName,
     recordId,
     params,
     data

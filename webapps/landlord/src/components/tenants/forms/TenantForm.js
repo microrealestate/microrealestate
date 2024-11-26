@@ -1,5 +1,4 @@
 import * as Yup from 'yup';
-
 import {
   AddressField,
   ContactField,
@@ -8,10 +7,9 @@ import {
   SubmitButton,
   TextField
 } from '@microrealestate/commonui/components';
-import { Box, Button } from '@material-ui/core';
-import { FieldArray, Form, Formik } from 'formik';
+import { Form, Formik } from 'formik';
 import { useContext, useMemo } from 'react';
-
+import { ArrayField } from '../../formfields/ArrayField';
 import { observer } from 'mobx-react-lite';
 import { Section } from '../../formfields/Section';
 import { StoreContext } from '../../../store';
@@ -198,48 +196,23 @@ const TenantForm = observer(({ readOnly, onSubmit }) => {
                 "The contacts will receive the invoices and will be able to access the tenant's portal"
               )}
             >
-              <FieldArray
+              <ArrayField
                 name="contacts"
-                render={(arrayHelpers) => (
-                  <div>
-                    {values.contacts.map((contact, index) => (
-                      <Box key={index}>
-                        <ContactField
-                          contactName={`contacts[${index}].contact`}
-                          emailName={`contacts[${index}].email`}
-                          phone1Name={`contacts[${index}].phone1`}
-                          phone2Name={`contacts[${index}].phone2`}
-                          disabled={readOnly}
-                        />
-                        {!readOnly && values.contacts.length > 1 && (
-                          <Box pb={2} display="flex" justifyContent="flex-end">
-                            <Button
-                              // variant="contained"
-                              color="primary"
-                              size="small"
-                              onClick={() => arrayHelpers.remove(index)}
-                              data-cy="removeTenantContact"
-                            >
-                              {t('Remove contact')}
-                            </Button>
-                          </Box>
-                        )}
-                      </Box>
-                    ))}
-                    {!readOnly && (
-                      <Box display="flex" justifyContent="space-between">
-                        <Button
-                          // variant="contained"
-                          color="primary"
-                          size="small"
-                          onClick={() => arrayHelpers.push(emptyContact)}
-                          data-cy="addTenantContact"
-                        >
-                          {t('Add contact')}
-                        </Button>
-                      </Box>
-                    )}
-                  </div>
+                addLabel={t('Add a contact')}
+                emptyItem={emptyContact}
+                items={values.contacts}
+                readOnly={readOnly}
+                renderTitle={(contact, index) =>
+                  t('Contact #{{count}}', { count: index + 1 })
+                }
+                renderContent={(contact, index) => (
+                  <ContactField
+                    contactName={`contacts[${index}].contact`}
+                    emailName={`contacts[${index}].email`}
+                    phone1Name={`contacts[${index}].phone1`}
+                    phone2Name={`contacts[${index}].phone2`}
+                    disabled={readOnly}
+                  />
                 )}
               />
             </Section>

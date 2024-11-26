@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+  <%- include('../__content_parts/html/htmlhead.ejs') %>
+  <body>
+    <div class="email-body">
+      <div class="email-container">
+        <div class="bar"></div>
+        <div class="content">
+          <div class="header">
+            <div class="logo"><%- config.APP_NAME %></div>
+          </div>
+
+          <p><%- include('../__content_parts/html/greetings.ejs') %></p>
+
+          <p>
+            <%- _.t('Someone requested to reset your password of your {{appName}} account.', { appName: config.APP_NAME }) %>
+          </p>
+
+          <p>
+            <%- _.t('Click on the button below, to create a new password:') %>
+          </p>
+
+           <div class="cta">
+            <a href="<%- `${config.LANDLORD_APP_URL}/resetpassword/${token}` %>" target="_blank"><%- _.t('Reset password') %></a>
+            </div>
+          
+          <p>
+            <%- _.t("If you don't request this, you can ignore this email. Your password won't change.") %>
+          </p>
+          
+          <%- include('../__content_parts/html/appsignature.ejs') %>   
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

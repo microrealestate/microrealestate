@@ -4,6 +4,7 @@
 
 @layer base {
   :root {
+    --body: 210 20% 98.04%;
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
@@ -24,7 +25,7 @@
     --destructive-foreground: 210 40% 98%;
     --warning: 24.6 95% 53.1%;
     --warning-foreground: 60 9.1% 97.8%;
-    --border: 214.3 31.8% 91.4%;
+    --border: 220 13.04% 90.98;
     --input: 214.3 31.8% 91.4%;
     --ring: 221.2 83.2% 53.3%;
     --radius: 0.5rem;
@@ -36,6 +37,7 @@
   }
 
   .dark {
+    --body: 222.2 84% 4.9%;
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
     --card: 222.2 84% 4.9%;
@@ -72,7 +74,7 @@
     @apply border-border;
   }
   body {
-    @apply bg-primary/5 text-foreground;
+    @apply bg-body text-foreground;
     font-feature-settings:
       'rlig' 1,
       'calt' 1;

@@ -1,19 +1,14 @@
-import {
-  Bar,
-  BarChart,
-  Legend,
-  ReferenceLine,
-  ResponsiveContainer,
-  XAxis,
-  YAxis
-} from 'recharts';
-import { useCallback, useContext, useMemo } from 'react';
+import { Bar, BarChart, Legend, ReferenceLine, XAxis, YAxis } from 'recharts';
+import { useContext, useMemo } from 'react';
+import { ChartContainer } from '../ui/chart';
+import { cn } from '../../utils';
 import { DashboardCard } from './DashboardCard';
 import { LuBanknote } from 'react-icons/lu';
 import moment from 'moment';
 import { observer } from 'mobx-react-lite';
 import { StoreContext } from '../../store';
 import useFormatNumber from '../../hooks/useFormatNumber';
+import { useMediaQuery } from 'usehooks-ts';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 
@@ -22,6 +17,7 @@ function YearFigures({ className }) {
   const router = useRouter();
   const { t } = useTranslation('common');
   const formatNumber = useFormatNumber();
+  const isDesktop = useMediaQuery('(min-width: 768px)');
 
   const data = useMemo(() => {
     const now = moment();
@@ -48,27 +44,15 @@ function YearFigures({ className }) {
     return data.some((r) => r.notPaid !== 0 || r.paid !== 0);
   }, [data]);
 
-  const onClick = useCallback(
-    (data) => {
-      if (
-        !data?.activePayload?.[0]?.payload ||
-        !store.organization.selected?.name
-      ) {
-        return;
-      }
-      const {
-        activePayload: [
-          {
-            payload: { yearMonth }
-          }
-        ]
-      } = data;
-      store.rent.setFilters({});
-      store.rent.setPeriod(moment(yearMonth, 'YYYY.MM', true));
-      router.push(`/${store.organization.selected.name}/rents/${yearMonth}`);
-    },
-    [router, store.rent, store.organization.selected.name]
-  );
+  const handleClick = (dataKey) => (data) => {
+    const { yearMonth } = data;
+    const status = dataKey.toLowerCase();
+    store.rent.setFilters({ status: [status] });
+    store.rent.setPeriod(moment(yearMonth, 'YYYY.MM', true));
+    router.push(
+      `/${store.organization.selected.name}/rents/${yearMonth}?statuses=${status}`
+    );
+  };
 
   return hasRevenues ? (
     <DashboardCard
@@ -78,62 +62,94 @@ function YearFigures({ className }) {
       })}
       description={t('Rents for the year')}
       renderContent={() => (
-        <div className="text-xs lg:text-lg -ml-8 lg:-ml-4">
-          <ResponsiveContainer height={570}>
-            <BarChart
-              data={data}
-              layout="vertical"
-              stackOffset="sign"
-              onClick={onClick}
-            >
-              <XAxis
-                type="number"
-                hide={true}
-                domain={['dataMin', 'dataMax']}
-              />
-              <YAxis
-                dataKey="name"
-                hide={false}
-                axisLine={false}
-                tickLine={false}
-                type="category"
-              />
-              <Legend
-                verticalAlign="top"
-                height={40}
-                formatter={(value) =>
-                  value === 'paid' ? t('Rent paid') : t('Rents not paid')
-                }
-              />
-              <Bar
-                dataKey="notPaid"
-                fill="hsl(var(--warning))"
-                stackId="stack"
-                cursor="pointer"
-                background={{ fill: 'hsl(var(--muted))' }}
-                label={{
-                  fill: 'hsl(var(--warning-foreground))',
-                  formatter: (value) => (value < 0 ? formatNumber(value) : ''),
-                  className: 'tracking-tight text-[0.5rem] sm:text-xs'
-                }}
-              />
-              <Bar
-                dataKey="paid"
-                fill="hsl(var(--success))"
-                stackId="stack"
-                cursor="pointer"
-                label={{
-                  fill: 'hsl(var(--success-foreground))',
-                  formatter: (value) => (value > 0 ? formatNumber(value) : ''),
-                  className: 'tracking-tight text-[0.5rem] sm:text-xs'
-                }}
-              />
-              <ReferenceLine x={0} stroke="hsl(var(--border))" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+        <ChartContainer
+          config={{
+            paid: { color: 'hsl(var(--chart-2))' },
+            notPaid: { color: 'hsl(var(--chart-1))' }
+          }}
+          className="h-full w-full"
+        >
+          <BarChart data={data} layout="vertical" stackOffset="sign">
+            <XAxis
+              type="number"
+              hide={true}
+              domain={['dataMin', 'dataMax']}
+              padding={
+                isDesktop ? { left: 70, right: 70 } : { left: 35, right: 35 }
+              }
+            />
+            <YAxis
+              dataKey="name"
+              hide={false}
+              axisLine={false}
+              tickLine={false}
+              type="category"
+              tick={(props) => {
+                const { x, y, payload } = props;
+                return (
+                  <text
+                    x={x - 30}
+                    y={y}
+                    className="text-[9px] md:text-xs"
+                    fill="hsl(var(--muted-foreground))"
+                  >
+                    {payload.value}
+                  </text>
+                );
+              }}
+            />
+            <Legend
+              verticalAlign="top"
+              content={() => (
+                <div className="flex justify-center gap-4 text-sm mb-6">
+                  <div className="flex items-center gap-2 text-warning">
+                    <div className="size-2 bg-[hsl(var(--chart-1))]" />
+                    <span>{t('Not paid')}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-success">
+                    <div className="size-2 bg-[hsl(var(--chart-2))]" />
+                    <span>{t('Paid')}</span>
+                  </div>
+                </div>
+              )}
+            />
+            <Bar
+              dataKey="notPaid"
+              fill="hsl(var(--chart-1))"
+              stackId="stack"
+              cursor="pointer"
+              label={{
+                position: 'right',
+                fill: 'hsl(var(--warning))',
+                formatter: (value) => (value < 0 ? formatNumber(value) : ''),
+                className: 'tracking-tight text-[9px] md:text-sm'
+              }}
+              stroke="hsl(var(--chart-1-border))"
+              radius={[0, 4, 4, 0]}
+              barSize={20}
+              onClick={handleClick('notPaid')}
+            />
+            <Bar
+              dataKey="paid"
+              fill="hsl(var(--chart-2))"
+              stackId="stack"
+              cursor="pointer"
+              label={{
+                position: 'right',
+                fill: 'hsl(var(--success))',
+                formatter: (value) => (value > 0 ? formatNumber(value) : ''),
+                className: 'tracking-tight text-[9px] md:text-sm'
+              }}
+              stroke="hsl(var(--chart-2-border))"
+              radius={[0, 4, 4, 0]}
+              barSize={30}
+              onClick={handleClick('paid')}
+            />
+            <ReferenceLine x={0} stroke="hsl(var(--border))" />
+          </BarChart>
+        </ChartContainer>
       )}
-      className={className}
+      className={cn('min-h-[600px]', className)}
     />
   ) : null;
 }

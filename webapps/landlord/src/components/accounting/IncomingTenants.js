@@ -15,62 +15,58 @@ export default function IncomingTenants({ onCSVClick }) {
   const store = useContext(StoreContext);
   const hasData = !!store.accounting?.filteredData?.incomingTenants?.length;
 
-  return (
+  return hasData ? (
     <Card>
       <CardHeader>
         <CardTitle className="flex justify-between items-center text-lg md:text-xl">
           {t('Incoming tenants')}
-          {hasData ? (
-            <Button variant="ghost" size="icon" onClick={onCSVClick}>
-              <GrDocumentCsv className="size-6" />
-            </Button>
-          ) : null}
+          <Button variant="ghost" size="icon" onClick={onCSVClick}>
+            <GrDocumentCsv className="size-6" />
+          </Button>
         </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-2">
-        {hasData ? (
-          store.accounting.filteredData.incomingTenants.map((tenant) => (
-            <div
-              key={tenant._id}
-              className={cn(
-                'flex flex-col gap-2 md:flex-row md:justify-between',
-                'border-b first:border-t last:border-none py-2'
-              )}
-            >
-              <div>
-                <div className="text-xl">{tenant.name}</div>
-                <div className="text-muted-foreground">
-                  {moment(tenant.beginDate).format('L')} -{' '}
-                  {moment(tenant.endDate).format('L')}
-                </div>
-                <div className="flex items-center flex-wrap gap-2 md:text-xl mt-2 mb-4">
-                  {tenant.properties.map((property) => (
-                    <div
-                      className="flex items-center gap-1 text-xs text-muted-foreground"
-                      key={property._id}
-                    >
-                      <PropertyIcon type={property.type} />
-                      <span>{property.name}</span>
-                    </div>
-                  ))}
-                </div>
+        {store.accounting.filteredData.incomingTenants.map((tenant) => (
+          <div
+            key={tenant._id}
+            className={cn(
+              'flex flex-col gap-2 md:flex-row md:justify-between',
+              'border-b first:border-t last:border-none py-2'
+            )}
+          >
+            <div>
+              <div className="text-xl">{tenant.name}</div>
+              <div className="text-muted-foreground">
+                {moment(tenant.beginDate).format('L')} -{' '}
+                {moment(tenant.endDate).format('L')}
               </div>
-              <div>
-                <div className="text-muted-foreground text-xs md:text-right">
-                  {t('Deposit')}
-                </div>
-                <NumberFormat
-                  value={tenant.guaranty}
-                  className="text-2xl md:text-right"
-                  showZero={true}
-                />
+              <div className="flex items-center flex-wrap gap-2 md:text-xl mt-2 mb-4">
+                {tenant.properties.map((property) => (
+                  <div
+                    className="flex items-center gap-1 text-xs text-muted-foreground"
+                    key={property._id}
+                  >
+                    <PropertyIcon type={property.type} />
+                    <span>{property.name}</span>
+                  </div>
+                ))}
               </div>
             </div>
-          ))
-        ) : (
-          <EmptyIllustration />
-        )}
+            <div>
+              <div className="text-muted-foreground text-xs md:text-right">
+                {t('Deposit')}
+              </div>
+              <NumberFormat
+                value={tenant.guaranty}
+                className="text-2xl md:text-right"
+                showZero={true}
+              />
+            </div>
+          </div>
+        ))}
       </CardContent>
     </Card>
+  ) : (
+    <EmptyIllustration />
   );
 }

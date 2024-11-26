@@ -1,13 +1,11 @@
 import BillingForm, {
-  validate as BillingFormValidate,
+  validate as BillingFormValidate
 } from './forms/BillingForm';
 import LeaseContractForm, {
-  validate as LeaseContractFormValidate,
+  validate as LeaseContractFormValidate
 } from './forms/LeaseContractForm';
 import TenantForm, { validate as TenantFormValidate } from './forms/TenantForm';
 import { useCallback, useContext, useState } from 'react';
-
-import { Box } from '@material-ui/core';
 import DocumentsForm from './forms/DocumentsForm';
 import Step from '@material-ui/core/Step';
 import StepContent from '@material-ui/core/StepContent';
@@ -48,33 +46,33 @@ export default function TenantStepper({ onSubmit }) {
       <Step>
         <StepLabel>{t('Tenant information')}</StepLabel>
         <StepContent>
-          <Box px={1}>
+          <div className="px-2">
             <TenantForm onSubmit={handleSubmit} />
-          </Box>
+          </div>
         </StepContent>
       </Step>
       <Step>
         <StepLabel>{t('Lease')}</StepLabel>
         <StepContent>
-          <Box px={1}>
+          <div className="px-2">
             <LeaseContractForm onSubmit={handleSubmit} />
-          </Box>
+          </div>
         </StepContent>
       </Step>
       <Step>
         <StepLabel>{t('Billing information')}</StepLabel>
         <StepContent>
-          <Box px={1}>
+          <div className="px-2">
             <BillingForm onSubmit={handleSubmit} />
-          </Box>
+          </div>
         </StepContent>
       </Step>
       <Step>
         <StepLabel>{t('Documents')}</StepLabel>
         <StepContent>
-          <Box px={1}>
+          <div className="px-2">
             <DocumentsForm onSubmit={handleSubmit} />
-          </Box>
+          </div>
         </StepContent>
       </Step>
     </Stepper>

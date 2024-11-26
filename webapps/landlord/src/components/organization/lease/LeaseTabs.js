@@ -1,31 +1,39 @@
-import { Tab, Tabs } from '@material-ui/core';
-import { TabPanel, useTabChangeHelper } from '../../Tabs';
-
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../ui/tabs';
+import { Card } from '../../ui/card';
 import LeaseForm from './LeaseForm';
 import TemplateForm from './TemplateForm';
 import useTranslation from 'next-translate/useTranslation';
 
 export default function LeaseTabs({ onSubmit }) {
   const { t } = useTranslation('common');
-  const { handleTabChange, tabSelectedIndex } = useTabChangeHelper();
-
   return (
-    <>
-      <Tabs
-        variant="scrollable"
-        value={tabSelectedIndex}
-        onChange={handleTabChange}
-        aria-label="Lease tabs"
-      >
-        <Tab label={t('Contract')} wrapped data-cy="tabContractInfo" />
-        <Tab label={t('Documents')} wrapped data-cy="tabContractTemplates" />
-      </Tabs>
-      <TabPanel value={tabSelectedIndex} index={0}>
-        <LeaseForm onSubmit={onSubmit} />
-      </TabPanel>
-      <TabPanel value={tabSelectedIndex} index={1}>
-        <TemplateForm onSubmit={onSubmit} />
-      </TabPanel>
-    </>
+    <Tabs defaultValue="contract">
+      <TabsList className="flex justify-start w-screen-nomargin-sm sm:w-full overflow-x-auto overflow-y-hidden">
+        <TabsTrigger
+          value="contract"
+          className="min-w-48 sm:w-full"
+          data-cy="tabContractInfo"
+        >
+          {t('Contract')}
+        </TabsTrigger>
+        <TabsTrigger
+          value="documents"
+          className="min-w-48 sm:w-full"
+          data-cy="tabContractTemplates"
+        >
+          {t('Documents')}
+        </TabsTrigger>
+      </TabsList>
+      <TabsContent value="contract">
+        <Card className="p-6">
+          <LeaseForm onSubmit={onSubmit} />
+        </Card>
+      </TabsContent>
+      <TabsContent value="documents">
+        <Card className="p-6">
+          <TemplateForm onSubmit={onSubmit} />
+        </Card>
+      </TabsContent>
+    </Tabs>
   );
 }

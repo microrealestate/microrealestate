@@ -2,6 +2,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle
 } from '../ui/card';
@@ -18,30 +19,24 @@ export function DashboardCard({
   className
 }) {
   return (
-    <Card className={className}>
-      <CardHeader className="pb-2 pr-4">
+    <Card className={cn('flex flex-col justify-center', className)}>
+      <CardHeader>
         <CardTitle className="flex items-center justify-between font-normal text-xs xl:text-base">
           {title}
-          {Icon ? <Icon size="20" className="text-muted-foreground" /> : null}
+          {Icon ? <Icon className="size-6 text-muted-foreground" /> : null}
         </CardTitle>
       </CardHeader>
-      <CardContent
-        className={cn(
-          'flex justify-between items-center text-3xl xl:text-4xl font-medium pr-4'
-        )}
-      >
-        <div className="w-full h-full">
-          {renderContent?.()}
-          <CardDescription className="text-xs mt-2">
-            {description}
-          </CardDescription>
-        </div>
+      <CardContent className="flex-grow flex justify-between items-center text-3xl xl:text-4xl font-medium">
+        <div className="w-full h-full">{renderContent?.()}</div>
         {onClick ? (
-          <Button variant="ghost" size="icon" onClick={onClick}>
+          <Button variant="link" className="p-0 m-0 h-fit" onClick={onClick}>
             <LuArrowRightCircle className="size-8" />
           </Button>
         ) : null}
       </CardContent>
+      <CardFooter>
+        <CardDescription className="text-xs">{description}</CardDescription>
+      </CardFooter>
     </Card>
   );
 }

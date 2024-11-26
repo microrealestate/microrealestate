@@ -1,0 +1,31 @@
+<!doctype html>
+<html>
+  <%- include('../__content_parts/html/htmlhead.ejs') %>
+  <body>
+    <div class="email-body">
+      <div class="email-container">
+        <div class="bar"></div>
+        <div class="content">
+          <div class="header">
+            <div class="logo"><%-landlord.name%></div>
+          </div>
+
+          <div class="title"><%- _.t('Invoice') %></div>
+
+          <p><%- include('../__content_parts/html/greetings.ejs') %></p>
+
+          <p>
+            <%- _.t('Thank you for your settlement.') %>
+          </p>
+
+          <p>
+            <%- _.t('Please find in attachment the rent invoice of {{term}}.', { term: _.formatTerm(period, tenant.contract.lease.timeRange) }) %>
+          </p>
+ 
+          <%- include('../__content_parts/html/signature.ejs') %>   
+        </div>
+      </div>
+      <%- include('../__content_parts/html/landlordcontact.ejs') %>   
+    </div>
+  </body>
+</html>

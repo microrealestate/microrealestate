@@ -40,6 +40,9 @@ export default function NewPaymentDialog({
         setRents([]);
       } else {
         setRents(data.rents);
+        if (data.rents.length === 1) {
+          setSelectedRent(data.rents[0]);
+        }
       }
     };
 
