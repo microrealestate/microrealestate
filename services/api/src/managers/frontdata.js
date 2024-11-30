@@ -313,6 +313,10 @@ export function toOccupantData(inputOccupant) {
       if (item.propertyId?._id) {
         item.property = item.property || item.propertyId;
         item.propertyId = item.propertyId._id;
+        item.expenses.forEach((expense) => {
+          expense.beginDate = moment(expense.beginDate).format('DD/MM/YYYY');
+          expense.endDate = moment(expense.endDate).format('DD/MM/YYYY');
+        });
       }
       if (item.property) {
         if (item.property.type === 'parking') {
