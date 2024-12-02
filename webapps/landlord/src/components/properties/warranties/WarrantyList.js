@@ -1,16 +1,28 @@
-import { EmptyIllustration } from '../../components/Illustrations';
+import React from 'react';
+import { observer } from 'mobx-react-lite';
+import { useContext } from 'react';
+import { StoreContext } from '../../../store';
+import WarrantyPropertyListItem from './WarrantyPropertyListItem';
+import { EmptyIllustration } from '../../../components/Illustrations';
 import useTranslation from 'next-translate/useTranslation';
 
-export default function WarrantyList({ data }) {
+const WarrantyList = observer(() => {
   const { t } = useTranslation('common');
+  const store = useContext(StoreContext);
 
-  return data.length > 0 ? (
-    <div className="grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-      {data.map((warranty) => (
-        warranty.name
-      ))}
+  const warranties = store.warranty?.list || [];
+
+  return (
+    <div className="warranty-list">
+      {warranties.length > 0 ? (
+        warranties.map((warranty) => (
+          <WarrantyPropertyListItem key={warranty.id} warranty={warranty} />
+        ))
+      ) : (
+        <EmptyIllustration label={t('No warranties found')} />
+      )}
     </div>
-  ) : (
-    <EmptyIllustration label={t('No Warranties found')} />
   );
-}
+});
+
+export default WarrantyList;
