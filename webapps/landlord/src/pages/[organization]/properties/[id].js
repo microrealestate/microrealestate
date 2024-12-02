@@ -57,6 +57,10 @@ function CreateWarrantyButton() {
     setShowCreateWarranty(true);
   }, []);
 
+  const onCloseWarrantyDialog = useCallback(() => {
+    setShowCreateWarranty(false);
+  }, []);
+
   return (
     <>
       <ShortcutButton
@@ -65,7 +69,7 @@ function CreateWarrantyButton() {
         onClick={onCreateWarranty}
       />
       {openCreateWarranty && (
-        <NewWarrantyDialog open={openCreateWarranty} setOpen={setShowCreateWarranty} />
+        <NewWarrantyDialog open={openCreateWarranty} onClose={onCloseWarrantyDialog} />
       )}
     </>
   );
@@ -199,6 +203,25 @@ function Property() {
     [store, t, router]
   );
 
+  const onSubmitWarranty = useCallback(
+    async (warranty) => {
+      const { status, data } = await store.warranty.create(warranty);
+      if (status !== 200) {
+        switch (status) {
+          case 422:
+            return toast.error(t('Warranty data is missing'));
+          case 403:
+            return toast.error(t('You are not allowed to add a warranty'));
+          default:
+            return toast.error(t('Something went wrong'));
+        }
+      }
+      store.warranty.setSelected(data);
+      setShowCreateWarranty(false);
+    },
+    [store, t]
+  );
+
   return (
     <Page
       loading={fetching}
@@ -238,7 +261,8 @@ function Property() {
             </TabsContent>
             <TabsContent value="warranties">
               <Card className="p-6">
-                <WarrantyList/>
+                <WarrantyList />
+                <WarrantyForm onSubmit={onSubmitWarranty} />
               </Card>
             </TabsContent>
           </Tabs>
