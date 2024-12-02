@@ -110,6 +110,9 @@ async function fetchData(store, router) {
   store.property.setSelected(
     store.property.items.find(({ _id }) => _id === router.query.id)
   );
+  console.log("fetchinc warranties");
+  const warrantyResults = await store.warranty.fetch(router.query.id);
+  console.log("warranties: ", warrantyResults);
   return results;
 }
 
@@ -224,8 +227,8 @@ function Property() {
               <TabsTrigger value="property" className="w-1/2">
                 {t('Property')}
               </TabsTrigger>
-              <TabsTrigger value="warranty" className="w-1/2">
-                {t('warranty')}
+              <TabsTrigger value="warranties" className="w-1/2">
+                {t('Warranties')}
               </TabsTrigger>
             </TabsList>
             <TabsContent value="property">
@@ -233,14 +236,14 @@ function Property() {
                 <PropertyForm onSubmit={onSubmit}/>
               </Card>
             </TabsContent>
-            <TabsContent value="warranty">
+            <TabsContent value="warranties">
               <Card className="p-6">
                 <WarrantyList/>
               </Card>
             </TabsContent>
           </Tabs>
           <div className="hidden md:grid grid-cols-1 gap-4 h-fit">
-            {activeTab === 'warranty' && <CreateWarrantyButton />}
+            {activeTab === 'warranties' && <CreateWarrantyButton />}
             <PropertyOverviewCard />
             <OccupancyHistoryCard />
           </div>
