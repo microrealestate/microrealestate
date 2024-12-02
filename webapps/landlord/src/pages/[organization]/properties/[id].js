@@ -23,6 +23,7 @@ import useFillStore from '../../../hooks/useFillStore';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 import { withAuthentication } from '../../../components/Authentication';
+import WarrantyList from '../../../components/properties/warranties/WarrantyList';
 
 function PropertyOverviewCard() {
   const { t } = useTranslation('common');
@@ -207,6 +208,11 @@ function Property() {
               <Card className="p-6">
                 <PropertyForm onSubmit={onSubmit} />
               </Card>
+            </TabsContent>
+            <TabsContent value="warranty">
+              <Card className="p-6">
+                <WarrantyList/>
+                </Card>
             </TabsContent>
           </Tabs>
           <div className="hidden md:grid grid-cols-1 gap-4 h-fit">
