@@ -3,7 +3,8 @@ import {
   NumberField,
   SelectField,
   SubmitButton,
-  TextField
+  TextField,
+  DateField
 } from '@microrealestate/commonui/components';
 import { Form, Formik } from 'formik';
 import { useContext, useMemo } from 'react';
@@ -13,13 +14,16 @@ import { StoreContext } from '../../../store';
 import useTranslation from 'next-translate/useTranslation';
 
 const validationSchema = Yup.object().shape({
-  type: Yup.string().required(),
   name: Yup.string().required(),
-  description: Yup.string(),
-  warrantyPeriod: Yup.number().min(0).required(),
-  contact: Yup.string().required(),
-  phone: Yup.string(),
-  email: Yup.string().email()
+  provider: Yup.string().required(),
+  coverageScope: Yup.object().shape({
+    coveredItems: Yup.string().required(),
+    typesOfDefects: Yup.string().required()
+  }),
+  warrantyDuration: Yup.object().shape({
+    startDate: Yup.date().required(),
+    expirationDate: Yup.date().required()
+  })
 });
 
 const WarrantyForm = observer(({ onSubmit }) => {
@@ -28,29 +32,18 @@ const WarrantyForm = observer(({ onSubmit }) => {
 
   const initialValues = useMemo(
     () => ({
-      type: store.warranty.selected?.type || '',
       name: store.warranty.selected?.name || '',
-      description: store.warranty.selected?.description || '',
-      warrantyPeriod: store.warranty.selected?.warrantyPeriod || '',
-      contact: store.warranty.selected?.contact || '',
-      phone: store.warranty.selected?.phone || '',
-      email: store.warranty.selected?.email || ''
+      provider: store.warranty.selected?.provider || '',
+      coverageScope: {
+        coveredItems: store.warranty.selected?.coverageScope?.coveredItems || '',
+        typesOfDefects: store.warranty.selected?.coverageScope?.typesOfDefects || ''
+      },
+      warrantyDuration: {
+        startDate: store.warranty.selected?.warrantyDuration?.startDate || '',
+        expirationDate: store.warranty.selected?.warrantyDuration?.expirationDate || ''
+      }
     }),
     [store.warranty.selected]
-  );
-
-  const warrantyTypes = useMemo(
-    () =>
-      [
-        { id: 'electrical', labelId: 'Electrical' },
-        { id: 'plumbing', labelId: 'Plumbing' },
-        { id: 'structural', labelId: 'Structural' }
-      ].map((type) => ({
-        id: type.id,
-        value: type.id,
-        label: t(type.labelId)
-      })),
-    [t]
   );
 
   return (
@@ -63,19 +56,12 @@ const WarrantyForm = observer(({ onSubmit }) => {
         return (
           <Form autoComplete="off">
             <Section label={t('Warranty information')}>
-              <div className="sm:flex sm:gap-2">
-                <SelectField
-                  label={t('Warranty Type')}
-                  name="type"
-                  values={warrantyTypes}
-                />
-                <TextField label={t('Name')} name="name" />
-              </div>
-              <TextField label={t('Description')} name="description" />
-              <NumberField label={t('Warranty Period (months)')} name="warrantyPeriod" />
-              <TextField label={t('Contact')} name="contact" />
-              <TextField label={t('Phone')} name="phone" />
-              <TextField label={t('Email')} name="email" />
+              <TextField label={t('Name')} name="name" />
+              <TextField label={t('Provider')} name="provider" />
+              <TextField label={t('Covered Items')} name="coverageScope.coveredItems" />
+              <TextField label={t('Types of Defects')} name="coverageScope.typesOfDefects" />
+              <DateField label={t('Start Date')} name="warrantyDuration.startDate" />
+              <DateField label={t('Expiration Date')} name="warrantyDuration.expirationDate" />
             </Section>
             <SubmitButton
               size="large"
