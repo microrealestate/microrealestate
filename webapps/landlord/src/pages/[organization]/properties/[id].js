@@ -199,6 +199,9 @@ function Property() {
               <TabsTrigger value="property" className="w-1/2">
                 {t('Property')}
               </TabsTrigger>
+              <TabsTrigger value="warranty" className="w-1/2">
+                {t('warranty')}
+              </TabsTrigger>
             </TabsList>
             <TabsContent value="property">
               <Card className="p-6">
