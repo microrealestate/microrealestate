@@ -24,6 +24,7 @@ import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 import { withAuthentication } from '../../../components/Authentication';
 import WarrantyList from '../../../components/properties/warranties/WarrantyList';
+import NewWarrantyDialog from '../../../components/properties/warranties/NewWarrantyDialog';
 
 function PropertyOverviewCard() {
   const { t } = useTranslation('common');
@@ -64,7 +65,7 @@ function CreateWarrantyButton() {
         onClick={onCreateWarranty}
       />
       {openCreateWarranty && (
-        <WarrantyForm/>
+        <NewWarrantyDialog open={openCreateWarranty} setOpen={setShowCreateWarranty} />
       )}
     </>
   );
