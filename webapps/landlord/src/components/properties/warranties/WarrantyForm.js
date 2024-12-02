@@ -12,18 +12,16 @@ import { observer } from 'mobx-react-lite';
 import { Section } from '../../formfields/Section';
 import { StoreContext } from '../../../store';
 import useTranslation from 'next-translate/useTranslation';
+import types from './types';
 
 const validationSchema = Yup.object().shape({
   name: Yup.string().required(),
+  description: Yup.string().required(),
+  startDate: Yup.date().required(),
+  endDate: Yup.date().required(),
+  amount: Yup.number().required(),
   provider: Yup.string().required(),
-  coverageScope: Yup.object().shape({
-    coveredItems: Yup.string().required(),
-    typesOfDefects: Yup.string().required()
-  }),
-  warrantyDuration: Yup.object().shape({
-    startDate: Yup.date().required(),
-    expirationDate: Yup.date().required()
-  })
+  type: Yup.string().required()
 });
 
 const WarrantyForm = observer(({ onSubmit }) => {
@@ -33,15 +31,12 @@ const WarrantyForm = observer(({ onSubmit }) => {
   const initialValues = useMemo(
     () => ({
       name: store.warranty.selected?.name || '',
+      description: store.warranty.selected?.description || '',
+      startDate: store.warranty.selected?.startDate || '',
+      endDate: store.warranty.selected?.endDate || '',
+      amount: store.warranty.selected?.amount || '',
       provider: store.warranty.selected?.provider || '',
-      coverageScope: {
-        coveredItems: store.warranty.selected?.coverageScope?.coveredItems || '',
-        typesOfDefects: store.warranty.selected?.coverageScope?.typesOfDefects || ''
-      },
-      warrantyDuration: {
-        startDate: store.warranty.selected?.warrantyDuration?.startDate || '',
-        expirationDate: store.warranty.selected?.warrantyDuration?.expirationDate || ''
-      }
+      type: store.warranty.selected?.type || ''
     }),
     [store.warranty.selected]
   );
@@ -57,11 +52,18 @@ const WarrantyForm = observer(({ onSubmit }) => {
           <Form autoComplete="off">
             <Section label={t('Warranty information')}>
               <TextField label={t('Name')} name="name" />
+              <TextField label={t('Description')} name="description" />
+              <DateField label={t('Start Date')} name="startDate" />
+              <DateField label={t('End Date')} name="endDate" />
+              <NumberField label={t('Amount')} name="amount" />
               <TextField label={t('Provider')} name="provider" />
-              <TextField label={t('Covered Items')} name="coverageScope.coveredItems" />
-              <TextField label={t('Types of Defects')} name="coverageScope.typesOfDefects" />
-              <DateField label={t('Start Date')} name="warrantyDuration.startDate" />
-              <DateField label={t('Expiration Date')} name="warrantyDuration.expirationDate" />
+              <SelectField label={t('Type')} name="type">
+                {types.map((type) => (
+                  <option key={type.id} value={type.id}>
+                    {t(type.labelId)}
+                  </option>
+                ))}
+              </SelectField>
             </Section>
             <SubmitButton
               size="large"
