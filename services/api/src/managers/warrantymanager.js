@@ -41,10 +41,10 @@ export async function remove(req, res) {
 }
 
 export async function all(req, res) {
-    const prop = req.prop;
+  const propID = req.params.propId;
 
   const dbWarranties = await Collections.Warranty.find({
-    propertyId: prop._id
+    propertyId: propID
   })
     .sort({
       name: 1
@@ -53,7 +53,6 @@ export async function all(req, res) {
 
   return res.json(dbWarranties);
 }
-
 
 export async function one(req, res) {
   const warrantyId = req.params.id;
