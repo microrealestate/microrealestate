@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Dialog, DialogActions, DialogContent, DialogTitle } from '@material-ui/core';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@material-ui/core';
 import { StoreContext } from '../../../store';
 import WarrantyForm from './WarrantyForm';
 import useTranslation from 'next-translate/useTranslation';
@@ -21,7 +21,7 @@ const NewWarrantyDialog = observer(({ open, onClose }) => {
         <WarrantyForm onSubmit={handleSubmit} />
       </DialogContent>
       <DialogActions>
-        <button onClick={onClose}>{t('Cancel')}</button>
+        <Button onClick={onClose}>{t('Cancel')}</Button>
       </DialogActions>
     </Dialog>
   );
