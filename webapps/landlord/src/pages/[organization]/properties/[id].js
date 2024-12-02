@@ -48,6 +48,28 @@ function PropertyOverviewCard() {
   );
 }
 
+function CreateWarrantyButton() {
+  const { t } = useTranslation('common');
+  const [openCreateWarranty, setShowCreateWarranty] = useState(false);
+
+  const onCreateWarranty = useCallback(() => {
+    setShowCreateWarranty(true);
+  }, []);
+
+  return (
+    <>
+      <ShortcutButton
+        label={t('Create Warranty')}
+        Icon={LuKeyRound}
+        onClick={onCreateWarranty}
+      />
+      {openCreateWarranty && (
+        <WarrantyForm/>
+      )}
+    </>
+  );
+}
+
 function OccupancyHistoryCard() {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
@@ -97,6 +119,7 @@ function Property() {
   const [openConfirmDeletePropertyDialog, setOpenConfirmDeletePropertyDialog] =
     useState(false);
   const [fetching] = useFillStore(fetchData, [router]);
+  const [activeTab, setActiveTab] = useState('property');
 
   const handleBack = useCallback(() => {
     router.push(store.appHistory.previousPath);
@@ -195,7 +218,7 @@ function Property() {
     >
       <>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Tabs defaultValue="property" className="md:col-span-2">
+          <Tabs defaultValue="property" className="md:col-span-2" onValueChange={setActiveTab}>
             <TabsList className="flex justify-start overflow-x-auto overflow-y-hidden">
               <TabsTrigger value="property" className="w-1/2">
                 {t('Property')}
@@ -206,16 +229,17 @@ function Property() {
             </TabsList>
             <TabsContent value="property">
               <Card className="p-6">
-                <PropertyForm onSubmit={onSubmit} />
+                <PropertyForm onSubmit={onSubmit}/>
               </Card>
             </TabsContent>
             <TabsContent value="warranty">
               <Card className="p-6">
                 <WarrantyList/>
-                </Card>
+              </Card>
             </TabsContent>
           </Tabs>
           <div className="hidden md:grid grid-cols-1 gap-4 h-fit">
+            {activeTab === 'warranty' && <CreateWarrantyButton />}
             <PropertyOverviewCard />
             <OccupancyHistoryCard />
           </div>
