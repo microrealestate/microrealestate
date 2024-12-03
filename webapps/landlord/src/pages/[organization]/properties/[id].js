@@ -263,7 +263,6 @@ function Property() {
             <TabsContent value="warranties">
               <Card className="p-6">
                 <WarrantyList />
-                <WarrantyForm onSubmit={onSubmitWarranty} />
               </Card>
             </TabsContent>
           </Tabs>
