@@ -121,7 +121,7 @@ const initValues = (tenant) => {
               ...expense,
               beginDate: moment(expense.beginDate, 'DD/MM/YYYY'),
               endDate: moment(expense.endDate, 'DD/MM/YYYY')
-            })) || [...emptyExpense()],
+            })) || [...emptyExpense(), beginDate, endDate],
             entryDate: property.entryDate
               ? moment(property.entryDate, 'DD/MM/YYYY')
               : moment(beginDate),
@@ -130,7 +130,14 @@ const initValues = (tenant) => {
               : moment(endDate)
           };
         })
-      : [{ ...emptyProperty(), entryDate: beginDate, exitDate: endDate }],
+      : [
+          {
+            ...emptyProperty(),
+            expenses: [{ ...emptyExpense(), beginDate, endDate }],
+            entryDate: beginDate,
+            exitDate: endDate
+          }
+        ],
     guaranty: tenant?.guaranty || 0,
     guarantyPayback: tenant?.guarantyPayback || 0
   };
@@ -351,7 +358,7 @@ function LeaseContractForm({ readOnly, onSubmit }) {
                           disabled={readOnly}
                         />
                       </div>
-                      <div>
+                      <div className="md:w-1/4">
                         <NumberField
                           label={t('Rent')}
                           name={`properties[${index}].rent`}
@@ -364,7 +371,7 @@ function LeaseContractForm({ readOnly, onSubmit }) {
                       addLabel={t('Add a expense')}
                       emptyItem={{
                         ...emptyExpense(),
-                        entryDate: values.beginDate,
+                        beginDate: values.beginDate,
                         endDate: values.endDate
                       }}
                       items={values.properties[index]?.expenses}
