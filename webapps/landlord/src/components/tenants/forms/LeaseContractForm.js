@@ -339,6 +339,13 @@ function LeaseContractForm({ readOnly, onSubmit }) {
                 addLabel={t('Add a property')}
                 emptyItem={{
                   ...emptyProperty(),
+                  expenses: [
+                    {
+                      ...emptyExpense(),
+                      beginDate: values.beginDate,
+                      endDate: values.endDate
+                    }
+                  ],
                   entryDate: values.beginDate,
                   endDate: values.endDate
                 }}
