@@ -25,6 +25,7 @@ import useTranslation from 'next-translate/useTranslation';
 import { withAuthentication } from '../../../components/Authentication';
 import WarrantyList from '../../../components/properties/warranties/WarrantyList';
 import NewWarrantyDialog from '../../../components/properties/warranties/NewWarrantyDialog';
+import WarrantyForm from '../../../components/properties/warranties/WarrantyForm';
 
 function PropertyOverviewCard() {
   const { t } = useTranslation('common');

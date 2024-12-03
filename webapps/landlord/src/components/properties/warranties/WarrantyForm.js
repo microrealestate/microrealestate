@@ -1,7 +1,6 @@
 import * as Yup from 'yup';
 import {
   NumberField,
-  SelectField,
   SubmitButton,
   TextField,
   DateField
@@ -41,33 +40,44 @@ const WarrantyForm = observer(({ onSubmit }) => {
     [store.warranty.selected]
   );
 
-return (
+  return (
     <Formik
-        initialValues={initialValues}
-        validationSchema={validationSchema}
-        onSubmit={onSubmit}
+      initialValues={initialValues}
+      validationSchema={validationSchema}
+      onSubmit={onSubmit}
     >
-        {({ isSubmitting }) => (
-            <Form autoComplete="off">
-                <Section label={t('Warranty information')}>
-                    <TextField label={t('Name')} name="name" />
-                    <TextField label={t('Description')} name="description" />
-                    <DateField label={t('Start Date')} name="startDate" InputLabelProps={{ shrink: true }} />
-                    <DateField label={t('End Date')} name="endDate" InputLabelProps={{ shrink: true }} />
-                    <NumberField label={t('Amount')} name="amount" />
-                    <TextField label={t('Provider')} name="provider" />
-                    <SelectField label={t('Type')} name="type" options={types.map(type => ({ value: type.id, label: type.labelId }))} />
-                </Section>
-                <div className="flex justify-end mt-4">
-                    <SubmitButton
-                        size="large"
-                        label={!isSubmitting ? t('Save') : t('Saving')}
-                    />
-                </div>
-            </Form>
-        )}
+      {({ isSubmitting, setFieldValue, values }) => (
+        <Form autoComplete="off">
+          <Section label={t('Warranty information')}>
+            <TextField label={t('Name')} name="name" />
+            <TextField label={t('Description')} name="description" />
+            <DateField label={t('Start Date')} name="startDate" InputLabelProps={{ shrink: true }} />
+            <DateField label={t('End Date')} name="endDate" InputLabelProps={{ shrink: true }} />
+            <NumberField label={t('Amount')} name="amount" />
+            <TextField label={t('Provider')} name="provider" />
+            <div className="flex flex-wrap gap-2 mt-4">
+              {types.map((type) => (
+                <button
+                  key={type.id}
+                  type="button"
+                  className={`px-4 py-2 border rounded ${values.type === type.id ? 'bg-blue-500 text-white' : 'bg-white text-black'}`}
+                  onClick={() => setFieldValue('type', type.id)}
+                >
+                  {t(type.labelId)}
+                </button>
+              ))}
+            </div>
+          </Section>
+          <div className="flex justify-end mt-4">
+            <SubmitButton
+              size="large"
+              label={!isSubmitting ? t('Save') : t('Saving')}
+            />
+          </div>
+        </Form>
+      )}
     </Formik>
-);
+  );
 });
 
 export default WarrantyForm;
