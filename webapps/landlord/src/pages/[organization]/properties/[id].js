@@ -114,10 +114,13 @@ async function fetchData(store, router) {
   store.property.setSelected(
     store.property.items.find(({ _id }) => _id === router.query.id)
   );
-  console.log("fetchinc warranties");
-  const warrantyResults = await store.warranty.fetch(router.query.id);
-  console.log("warranties: ", warrantyResults);
   return results;
+}
+
+async function fetchWarrantyData(store, router) {
+  const warrantyResults = await store.warranty.fetch(router.query.id);
+
+  return warrantyResults;
 }
 
 function Property() {
@@ -127,6 +130,7 @@ function Property() {
   const [openConfirmDeletePropertyDialog, setOpenConfirmDeletePropertyDialog] =
     useState(false);
   const [fetching] = useFillStore(fetchData, [router]);
+  const [fetchingWarranty] = useFillStore(fetchWarrantyData, [router]);
   const [activeTab, setActiveTab] = useState('property');
 
   const handleBack = useCallback(() => {
@@ -205,7 +209,7 @@ function Property() {
 
   return (
     <Page
-      loading={fetching}
+      loading={fetching || fetchingWarranty}
       ActionBar={
         <div className="grid grid-cols-5 gap-1.5 md:gap-4">
           <ShortcutButton
@@ -242,7 +246,7 @@ function Property() {
             </TabsContent>
             <TabsContent value="warranties">
               <Card className="p-6">
-                <WarrantyList />
+                <WarrantyList data={store.warranty.items} />
               </Card>
             </TabsContent>
           </Tabs>

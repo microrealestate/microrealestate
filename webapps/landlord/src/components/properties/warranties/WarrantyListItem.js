@@ -1,7 +1,7 @@
 import React from 'react';
 import WarrantyIcon from './WarrantyIcon';
 
-const WarrantyPropertyListItem = ({ warranty }) => {
+const WarrantyListItem = ({ warranty }) => {
   return (
     <div className="warranty-item">
       <WarrantyIcon type={warranty.type} />
@@ -13,4 +13,4 @@ const WarrantyPropertyListItem = ({ warranty }) => {
   );
 };
 
-export default WarrantyPropertyListItem;
+export default WarrantyListItem;
