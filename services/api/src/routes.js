@@ -4,6 +4,7 @@ import * as emailManager from './managers/emailmanager.js';
 import * as leaseManager from './managers/leasemanager.js';
 import * as occupantManager from './managers/occupantmanager.js';
 import * as propertyManager from './managers/propertymanager.js';
+import * as warrantyManager from './managers/warrantymanager.js';
 import * as realmManager from './managers/realmmanager.js';
 import * as rentManager from './managers/rentmanager.js';
 import { Middlewares, Service } from '@microrealestate/common';
@@ -83,6 +84,20 @@ export default function routes() {
     Middlewares.asyncWrapper(propertyManager.remove)
   );
   router.use('/properties', propertiesRouter);
+
+  const warrantiesRouter = express.Router();
+  warrantiesRouter.get('/:propId', Middlewares.asyncWrapper(warrantyManager.all));
+  warrantiesRouter.get('/:propId/:id', Middlewares.asyncWrapper(warrantyManager.one));
+  warrantiesRouter.post('/', Middlewares.asyncWrapper(warrantyManager.add));
+  warrantiesRouter.patch(
+    '/:id',
+    Middlewares.asyncWrapper(warrantyManager.update)
+  );
+  warrantiesRouter.delete(
+    '/:ids',
+    Middlewares.asyncWrapper(warrantyManager.remove)
+  );
+  router.use('/warranties', warrantiesRouter);
 
   router.get(
     '/accounting/:year',

@@ -23,6 +23,8 @@ import useFillStore from '../../../hooks/useFillStore';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 import { withAuthentication } from '../../../components/Authentication';
+import WarrantyList from '../../../components/properties/warranties/WarrantyList';
+import NewWarrantyDialog from '../../../components/properties/warranties/NewWarrantyDialog';
 
 function PropertyOverviewCard() {
   const { t } = useTranslation('common');
@@ -44,6 +46,32 @@ function PropertyOverviewCard() {
         </div>
       )}
     />
+  );
+}
+
+function CreateWarrantyButton() {
+  const { t } = useTranslation('common');
+  const [openCreateWarranty, setShowCreateWarranty] = useState(false);
+
+  const onCreateWarranty = useCallback(() => {
+    setShowCreateWarranty(true);
+  }, []);
+
+  const onCloseWarrantyDialog = useCallback(() => {
+    setShowCreateWarranty(false);
+  }, []);
+
+  return (
+    <>
+      <ShortcutButton
+        label={t('Create Warranty')}
+        Icon={LuKeyRound}
+        onClick={onCreateWarranty}
+      />
+      {openCreateWarranty && (
+        <NewWarrantyDialog open={openCreateWarranty} onClose={onCloseWarrantyDialog} />
+      )}
+    </>
   );
 }
 
@@ -89,6 +117,12 @@ async function fetchData(store, router) {
   return results;
 }
 
+async function fetchWarrantyData(store, router) {
+  const warrantyResults = await store.warranty.fetch(router.query.id);
+
+  return warrantyResults;
+}
+
 function Property() {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
@@ -96,6 +130,8 @@ function Property() {
   const [openConfirmDeletePropertyDialog, setOpenConfirmDeletePropertyDialog] =
     useState(false);
   const [fetching] = useFillStore(fetchData, [router]);
+  const [fetchingWarranty] = useFillStore(fetchWarrantyData, [router]);
+  const [activeTab, setActiveTab] = useState('property');
 
   const handleBack = useCallback(() => {
     router.push(store.appHistory.previousPath);
@@ -173,7 +209,7 @@ function Property() {
 
   return (
     <Page
-      loading={fetching}
+      loading={fetching || fetchingWarranty}
       ActionBar={
         <div className="grid grid-cols-5 gap-1.5 md:gap-4">
           <ShortcutButton
@@ -194,19 +230,28 @@ function Property() {
     >
       <>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Tabs defaultValue="property" className="md:col-span-2">
+          <Tabs defaultValue="property" className="md:col-span-2" onValueChange={setActiveTab}>
             <TabsList className="flex justify-start overflow-x-auto overflow-y-hidden">
               <TabsTrigger value="property" className="w-1/2">
                 {t('Property')}
               </TabsTrigger>
+              <TabsTrigger value="warranties" className="w-1/2">
+                {t('Warranties')}
+              </TabsTrigger>
             </TabsList>
             <TabsContent value="property">
               <Card className="p-6">
-                <PropertyForm onSubmit={onSubmit} />
+                <PropertyForm onSubmit={onSubmit}/>
+              </Card>
+            </TabsContent>
+            <TabsContent value="warranties">
+              <Card className="p-6">
+                <WarrantyList data={store.warranty.items} />
               </Card>
             </TabsContent>
           </Tabs>
           <div className="hidden md:grid grid-cols-1 gap-4 h-fit">
+            {activeTab === 'warranties' && <CreateWarrantyButton />}
             <PropertyOverviewCard />
             <OccupancyHistoryCard />
           </div>
