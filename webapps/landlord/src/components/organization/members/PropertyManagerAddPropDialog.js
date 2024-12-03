@@ -79,6 +79,19 @@ export default function PropertyManagerAddPropDialog({
             return (
               <Form autoComplete="off">
                 <div className="pt-6 space-y-4">
+                   <style jsx>{`
+                      @media (min-width: 768px) {
+                          .grid.override {
+                              grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+                          }
+                      }
+
+                      @media (min-width: 1024px) {
+                          .grid.override {
+                              grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+                          }
+                      }
+                  `}</style>
                   <div>{'Currently Assigned Properties'}</div>
                   <PropertyList
                     data={memberProperties}

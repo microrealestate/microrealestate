@@ -6,7 +6,7 @@ export default function PropertyList({ data }) {
   const { t } = useTranslation('common');
 
   return data.length > 0 ? (
-    <div className="grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 override">
       {data.map((property) => (
         <PropertyListItem key={property._id} property={property} />
       ))}
