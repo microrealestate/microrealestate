@@ -4,10 +4,9 @@ import { Collections } from '@microrealestate/common';
 // Exported functions
 ////////////////////////////////////////////////////////////////////////////////
 export async function add(req, res) {
-  const prop = req.prop;
+  console.log('WarrantyManager.add', req.body);
   const warranty = new Collections.Warranty({
     ...req.body,
-    propertyId: prop._id,
   });
   await warranty.save();
   return res.json(warranty);
