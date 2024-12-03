@@ -1,14 +1,8 @@
-/* eslint-disable sort-imports */
-import taskBase from './tasks/1_base.js';
-import taskDebts from './tasks/2_debts.js';
-import taskDiscounts from './tasks/3_discounts.js';
-import taskVATs from './tasks/4_vats.js';
-import taskBalance from './tasks/5_balance.js';
-import taskPayments from './tasks/6_payments.js';
-import taskTotal from './tasks/7_total.js';
+const fs = require('fs');
+const path = require('path');
 
-export function computeRent(contract, rentDate, previousRent, settlements) {
-  let rent = {
+module.exports = function (contract, rentDate, previousRent, settlements) {
+  const rent = {
     term: 0,
     month: 0,
     year: 0,
@@ -61,21 +55,13 @@ export function computeRent(contract, rentDate, previousRent, settlements) {
       discount: 0,
       vat: 0,
       grandTotal: 0,
-      payment: 0
-    }
+      payment: 0,
+    },
   };
-
-  [
-    taskBase,
-    taskDebts,
-    taskDiscounts,
-    taskVATs,
-    taskBalance,
-    taskPayments,
-    taskTotal
-  ].forEach(async (task) => {
-    rent = task(contract, rentDate, previousRent, settlements, rent);
-  });
-
-  return rent;
-}
+  const tasks_dir = path.join(__dirname, 'tasks');
+  const taskFiles = fs.readdirSync(tasks_dir);
+  return taskFiles.reduce((rent, taskFile) => {
+    const task = require(path.join(tasks_dir, taskFile));
+    return task(contract, rentDate, previousRent, settlements, rent);
+  }, rent);
+};
