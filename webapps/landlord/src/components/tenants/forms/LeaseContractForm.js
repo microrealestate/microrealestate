@@ -85,14 +85,16 @@ const validationSchema = Yup.object().shape({
 const emptyExpense = () => ({
   key: nanoid(),
   title: '',
-  amount: 0
+  amount: 0,
+  beginDate: null,
+  endDate: null
 });
 
 const emptyProperty = () => ({
   key: nanoid(),
   _id: '',
   rent: 0,
-  expenses: emptyExpense()
+  expenses: [{ ...emptyExpense() }]
 });
 
 const initValues = (tenant) => {
