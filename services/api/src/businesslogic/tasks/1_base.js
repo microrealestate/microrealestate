@@ -52,10 +52,23 @@ export default function taskBase(
 
         if (expenses.length) {
           rent.charges.push(
-            ...expenses.map(({ title, amount }) => ({
-              description: title,
-              amount
-            }))
+            ...expenses
+              .filter(({ beginDate, endDate }) => {
+                const expenseBegin = moment(beginDate, 'DD/MM/YYYY');
+                const expenseEnd = moment(endDate, 'DD/MM/YYYY')
+                  .add(1, 'day');
+                  
+                return currentMoment.isBetween(
+                  expenseBegin,
+                  expenseEnd,
+                  'day',
+                  '[]'
+                );
+              })
+              .map(({ title, amount }) => ({
+                description: title,
+                amount
+              }))
           );
         }
       }
