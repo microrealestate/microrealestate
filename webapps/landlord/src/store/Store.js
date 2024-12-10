@@ -13,6 +13,7 @@ import Rent from './Rent';
 import Template from './Template';
 import Tenant from './Tenant';
 import User from './User';
+import Warranty from './Warranty';
 
 export default class Store {
   constructor() {
@@ -27,6 +28,7 @@ export default class Store {
     this.document = new Document();
     this.dashboard = new Dashboard();
     this.accounting = new Accounting();
+    this.warranty = new Warranty();
 
     makeObservable(this, {
       user: observable,
@@ -39,6 +41,7 @@ export default class Store {
       document: observable,
       dashboard: observable,
       accounting: observable,
+      warranty: observable,
       appHistory: observable
     });
   }
@@ -63,6 +66,9 @@ export default class Store {
         items: []
       },
       property = {
+        items: []
+      },
+      warranty = {
         items: []
       },
       template = {
@@ -119,6 +125,10 @@ export default class Store {
     this.property.items = property.items;
     this.property.selected = property.selected;
     this.property.filters = property.filters;
+
+    this.warranty.items = warranty.items;
+    this.warranty.selected = warranty.selected;
+    this.warranty.filters = warranty.filters;
 
     this.template.items = template.items;
     this.template.selected = template.selected;

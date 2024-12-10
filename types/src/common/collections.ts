@@ -34,6 +34,7 @@ export namespace CollectionTypes {
       email: string;
       role: UserRole;
       registered: boolean;
+      properties: CollectionTypes.Property[];
     }[];
     applications: {
       name: string;
@@ -264,5 +265,17 @@ export namespace CollectionTypes {
     guarantyPayback: number;
 
     stepperMode: boolean;
+  };
+
+  export type Warranty = {
+    _id: string;
+    propertyId: CollectionTypes.Property;
+    name: string;
+    description: string;
+    startDate: Date;
+    endDate: Date;
+    amount: number;
+    provider: string;
+    type: string;
   };
 }

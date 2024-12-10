@@ -9,12 +9,22 @@ import {
 import axios from 'axios';
 import moment from 'moment';
 
-async function _findOccupants(realm, tenantId, startTerm, endTerm) {
-  const filter = {
+async function _findOccupants(req, tenantId, startTerm, endTerm) {
+  console.log('_findOccupants realm:', req.realm._id);
+  console.log('_findOccupants user:', req.user);
+  let filter = {
     $query: {
-      $and: [{ realmId: realm._id }]
+      $and: [{ realmId: req.realm._id }]
     }
   };
+  // Use the properties assigned to the property manager if this is a prop manager
+  if (req.user.role === 'property manager') {
+    const member = req.realm.members?.find((member) => String(member.email) === String(req.user.email));
+    member?.properties?.forEach((propertyId) => {
+      filter.$query.$and.push({ 'properties._id': propertyId });
+    });
+  } 
+
   if (tenantId) {
     filter['$query']['$and'].push({ _id: tenantId });
   }
@@ -98,13 +108,14 @@ async function _getRentsDataByTerm(
   locale,
   realm,
   currentDate,
-  frequency
+  frequency, 
+  req
 ) {
   const startTerm = Number(currentDate.startOf(frequency).format('YYYYMMDDHH'));
   const endTerm = Number(currentDate.endOf(frequency).format('YYYYMMDDHH'));
 
   const [dbOccupants, emailStatus = {}] = await Promise.all([
-    _findOccupants(realm, null, startTerm, endTerm),
+    _findOccupants(req, null, startTerm, endTerm),
     _getEmailStatus(
       authorizationHeader,
       locale,
@@ -292,7 +303,7 @@ export async function rentsOfOccupant(req, res) {
   const { id } = req.params;
   const term = Number(moment().format('YYYYMMDDHH'));
 
-  const dbOccupants = await _findOccupants(realm, id);
+  const dbOccupants = await _findOccupants(req, id);
   if (!dbOccupants.length) {
     return res.sendStatus(404);
   }
@@ -323,7 +334,8 @@ export async function rentOfOccupantByTerm(req, res) {
       req.headers['accept-language'],
       realm,
       id,
-      term
+      term,
+      req
     )
   );
 }
@@ -333,7 +345,8 @@ async function _rentOfOccupant(
   locale,
   realm,
   tenantId,
-  term
+  term,
+  req
 ) {
   const [dbOccupants = [], emailStatus = {}] = await Promise.all([
     _findOccupants(realm, tenantId, Number(term)).catch(logger.error),
@@ -377,7 +390,8 @@ export async function all(req, res) {
       req.headers['accept-language'],
       realm,
       currentDate,
-      'months'
+      'months',
+      req
     )
   );
 }

@@ -25,6 +25,36 @@ async function _toPropertiesData(realm, inputProperties) {
   });
 }
 
+async function _toPropertiesDataByUser(realm, user, inputProperties) {
+  const member = realm.members?.find((member) => String(member.email) === String(user.email));
+  const memberPropertyIds = member?.properties?.map((property) => String(property)) || [];
+  const filteredProperties = inputProperties.filter(({ _id }) =>
+    memberPropertyIds.includes(String(_id))
+  );
+
+  const allTenants = await Collections.Tenant.find({
+    realmId: realm._id,
+    'properties.propertyId': {
+      $in: filteredProperties.map(({ _id }) => _id)
+    }
+  }).lean();
+
+  return filteredProperties.map((property) => {
+    const tenants = allTenants
+      .filter(({ properties }) =>
+        properties
+          .map(({ propertyId }) => propertyId)
+          .includes(String(property._id))
+      )
+      .sort((t1, t2) => {
+        const t1EndDate = t1.terminationDate || t1.endDate;
+        const t2EndDate = t2.terminationDate || t2.endDate;
+        return t2EndDate - t1EndDate;
+      });
+    return FD.toProperty(property, tenants?.[0], tenants);
+  });
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Exported functions
 ////////////////////////////////////////////////////////////////////////////////
@@ -69,6 +99,29 @@ export async function remove(req, res) {
 }
 
 export async function all(req, res) {
+  const realm = req.realm;
+
+  const dbProperties = await Collections.Property.find({
+    realmId: realm._id
+  })
+    .sort({
+      name: 1
+    })
+    .lean();
+
+  // Use the properties assigned to the property manager if this is a prop manager
+  let properties;
+  if (req.user.role === 'property manager') {
+    properties = await _toPropertiesDataByUser(realm, req.user, dbProperties);
+  } 
+  else {
+    properties = await _toPropertiesData(realm, dbProperties);
+  } 
+
+  return res.json(properties);
+}
+
+export async function allForRealm(req, res) {
   const realm = req.realm;
 
   const dbProperties = await Collections.Property.find({
