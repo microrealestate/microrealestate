@@ -35,7 +35,7 @@ export default function PropertyManagerRemovePropDialog({
   const propValues = useMemo(() => {
     return allProperties?.map((prop) => ({
     id: prop._id,
-    label: prop.name + ": " + prop.address.street1 + ", " + prop.address.city + ", " + prop.address.state,
+    label: prop.name + ": " + prop.address?.street1 + ", " + prop.address?.city + ", " + prop.address?.state,
     value: prop._id,
     }));
   }, [allProperties]);
