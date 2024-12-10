@@ -65,7 +65,7 @@ async function _fetchTenants(req, tenantId) {
   if (req.user.role === 'property manager') {
     const member = req.realm.members?.find((member) => String(member.email) === String(req.user.email));
     const memberPropertyIdsMatch = member?.properties?.map((property) => ({
-       'properties._id': String(property)
+       'properties.propertyId': String(property)
     })) || [];
     $match = {
       $or : memberPropertyIdsMatch
