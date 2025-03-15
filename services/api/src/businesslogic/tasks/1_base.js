@@ -54,14 +54,13 @@ export default function taskBase(
           rent.charges.push(
             ...expenses
               .filter(({ beginDate, endDate }) => {
-                const expenseBegin = moment(beginDate, 'DD/MM/YYYY');
-                const expenseEnd = moment(endDate, 'DD/MM/YYYY')
-                  .add(1, 'day');
+                const expenseBegin = moment(beginDate, 'DD/MM/YYYY').startOf('day');
+                const expenseEnd = moment(endDate, 'DD/MM/YYYY').endOf('day');
                   
                 return currentMoment.isBetween(
                   expenseBegin,
                   expenseEnd,
-                  'day',
+                  contract.frequency,
                   '[]'
                 );
               })

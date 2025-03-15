@@ -313,12 +313,18 @@ export function toOccupantData(inputOccupant) {
       if (item.propertyId?._id) {
         item.property = item.property || item.propertyId;
         item.propertyId = item.propertyId._id;
-        item.expenses.forEach((expense) => {
-          expense.beginDate = moment(expense.beginDate).format('DD/MM/YYYY');
-          expense.endDate = moment(expense.endDate).format('DD/MM/YYYY');
-        });
       }
       if (item.property) {
+        if (item.entryDate) {
+          item.entryDate = moment(item.entryDate).format('DD/MM/YYYY');
+        }
+        if (item.exitDate) {
+          item.exitDate = moment(item.exitDate).format('DD/MM/YYYY');
+        }
+        item.expenses.forEach((expense) => {
+          expense.beginDate = expense.beginDate ? moment(expense.beginDate).format('DD/MM/YYYY') : item.entryDate;
+          expense.endDate = expense.endDate ? moment(expense.endDate).format('DD/MM/YYYY') : item.exitDate;
+        });
         if (item.property.type === 'parking') {
           occupant.parking.price += item.property.price;
           // if (item.property.expense) {
@@ -337,12 +343,6 @@ export function toOccupantData(inputOccupant) {
         (item.expenses?.length &&
           item.expenses.reduce((acc, { amount }) => acc + amount, 0)) ||
         0;
-      if (item.entryDate) {
-        item.entryDate = moment(item.entryDate).format('DD/MM/YYYY');
-      }
-      if (item.exitDate) {
-        item.exitDate = moment(item.exitDate).format('DD/MM/YYYY');
-      }
     });
     occupant.preTaxTotal =
       occupant.rental + occupant.expenses - occupant.discount;
