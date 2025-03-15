@@ -251,7 +251,9 @@ export namespace CollectionTypes {
           propertyId: string;
           property: CollectionTypes.Property;
           rent: number;
-          expenses: [{ title: string; amount: number }];
+          expenses: [
+            { title: string; amount: number; beginDate: Date; endDate: Date }
+          ];
           entryDate: Date;
           exitDate: Date;
         }[]

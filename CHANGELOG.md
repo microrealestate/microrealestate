@@ -8,10 +8,13 @@ All notable changes to this project will be documented here.
 
 - Added html emails - can have issues in German and Brazilian translations
 
+- Added support of multi expenses in leases #231
+
 ### Contributors
 
 - [@camelaissani](https://github.com/camelaissani)
 
+- [@mykael90](https://github.com/mykael90)
 
 ## 1.0.0-alpha.3
 

@@ -37,13 +37,17 @@ const validationSchema = Yup.object().shape({
       Yup.object().shape({
         _id: Yup.string().required(),
         rent: Yup.number().moreThan(0).required(),
-        expense: Yup.object().shape({
-          title: Yup.mixed().when('amount', {
-            is: (val) => val > 0,
-            then: Yup.string().required()
-          }),
-          amount: Yup.number().min(0)
-        }),
+        expenses: Yup.array().of(
+          Yup.object().shape({
+            title: Yup.mixed().when('amount', {
+              is: (val) => val > 0,
+              then: Yup.string().required()
+            }),
+            amount: Yup.number().min(0),
+            beginDate: Yup.date().required(),
+            endDate: Yup.date().required()
+          })
+        ),
         entryDate: Yup.date()
           .required()
           .test(
@@ -78,13 +82,19 @@ const validationSchema = Yup.object().shape({
   guarantyPayback: Yup.number().min(0)
 });
 
-const emptyExpense = () => ({ title: '', amount: 0 });
+const emptyExpense = () => ({
+  key: nanoid(),
+  title: '',
+  amount: 0,
+  beginDate: null,
+  endDate: null
+});
 
 const emptyProperty = () => ({
   key: nanoid(),
   _id: '',
   rent: 0,
-  expense: emptyExpense()
+  expenses: [{ ...emptyExpense() }]
 });
 
 const initValues = (tenant) => {
@@ -109,9 +119,11 @@ const initValues = (tenant) => {
             key: property.property._id,
             _id: property.property._id,
             rent: property.rent || '',
-            expense: property.expenses?.[0] || {
-              ...emptyExpense()
-            },
+            expenses: property.expenses.map((expense) => ({
+              ...expense,
+              beginDate: moment(expense.beginDate, 'DD/MM/YYYY'),
+              endDate: moment(expense.endDate, 'DD/MM/YYYY')
+            })) || [...emptyExpense(), beginDate, endDate],
             entryDate: property.entryDate
               ? moment(property.entryDate, 'DD/MM/YYYY')
               : moment(beginDate),
@@ -120,7 +132,14 @@ const initValues = (tenant) => {
               : moment(endDate)
           };
         })
-      : [{ ...emptyProperty(), entryDate: beginDate, exitDate: endDate }],
+      : [
+          {
+            ...emptyProperty(),
+            expenses: [{ ...emptyExpense(), beginDate, endDate }],
+            entryDate: beginDate,
+            exitDate: endDate
+          }
+        ],
     guaranty: tenant?.guaranty || 0,
     guarantyPayback: tenant?.guarantyPayback || 0
   };
@@ -208,7 +227,13 @@ function LeaseContractForm({ readOnly, onSubmit }) {
             return {
               propertyId: property._id,
               rent: property.rent,
-              expenses: property.expense.title ? [property.expense] : [],
+              expenses: property.expenses.length
+                ? property.expenses.map((expense) => ({
+                    ...expense,
+                    beginDate: expense.beginDate.format('DD/MM/YYYY'),
+                    endDate: expense.endDate.format('DD/MM/YYYY')
+                  }))
+                : [],
               entryDate: property.entryDate?.format('DD/MM/YYYY'),
               exitDate: property.exitDate?.format('DD/MM/YYYY')
             };
@@ -254,11 +279,15 @@ function LeaseContractForm({ readOnly, onSubmit }) {
           if (previousProperty) {
             previousProperty._id = property?._id;
             previousProperty.rent = property?.price || '';
-            previousProperty.expense = {
-              title: t('General expenses'),
-              // TODO: find another way to have expenses configurable
-              amount: Math.round(property.price * 100 * 0.1) / 100
-            };
+            previousProperty.expenses = [
+              {
+                title: t('General expenses'),
+                // TODO: find another way to have expenses configurable
+                amount: Math.round(property.price * 100 * 0.1) / 100,
+                beginDate: values.beginDate,
+                endDate: values.endDate
+              }
+            ];
           }
           handleChange(evt);
         };
@@ -312,6 +341,13 @@ function LeaseContractForm({ readOnly, onSubmit }) {
                 addLabel={t('Add a property')}
                 emptyItem={{
                   ...emptyProperty(),
+                  expenses: [
+                    {
+                      ...emptyExpense(),
+                      beginDate: values.beginDate,
+                      endDate: values.endDate
+                    }
+                  ],
                   entryDate: values.beginDate,
                   endDate: values.endDate
                 }}
@@ -322,31 +358,76 @@ function LeaseContractForm({ readOnly, onSubmit }) {
                 renderContent={(property, index) => (
                   <Fragment key={property.key}>
                     <div className="sm:flex sm:gap-2">
-                      <SelectField
-                        label={t('Property')}
-                        name={`properties[${index}]._id`}
-                        values={availableProperties}
-                        onChange={(evt) => onPropertyChange(evt, property)}
-                        disabled={readOnly}
-                      />
-                      <NumberField
-                        label={t('Rent')}
-                        name={`properties[${index}].rent`}
-                        disabled={!property?._id || readOnly}
-                      />
+                      <div className="md:w-3/4">
+                        <SelectField
+                          label={t('Property')}
+                          name={`properties[${index}]._id`}
+                          values={availableProperties}
+                          onChange={(evt) => onPropertyChange(evt, property)}
+                          disabled={readOnly}
+                        />
+                      </div>
+                      <div className="md:w-1/4">
+                        <NumberField
+                          label={t('Rent')}
+                          name={`properties[${index}].rent`}
+                          disabled={!values.properties[index]?._id || readOnly}
+                        />
+                      </div>
                     </div>
-                    <div className="sm:flex sm:gap-2">
-                      <TextField
-                        label={t('Expense')}
-                        name={`properties[${index}].expense.title`}
-                        disabled={!property?._id || readOnly}
-                      />
-                      <NumberField
-                        label={t('Amount')}
-                        name={`properties[${index}].expense.amount`}
-                        disabled={!property?._id || readOnly}
-                      />
-                    </div>
+                    <ArrayField
+                      name={`properties[${index}].expenses`}
+                      addLabel={t('Add a expense')}
+                      emptyItem={{
+                        ...emptyExpense(),
+                        beginDate: values.beginDate,
+                        endDate: values.endDate
+                      }}
+                      items={values.properties[index]?.expenses}
+                      renderTitle={(expense, index_expense) =>
+                        t('Expense #{{count}}', { count: index_expense + 1 })
+                      }
+                      renderContent={(expense, index_expense) => (
+                        <Fragment key={expense.key}>
+                          <div className="sm:flex sm:gap-2">
+                            <div className="md:w-1/2">
+                              <TextField
+                                label={t('Expense')}
+                                name={`properties[${index}].expenses[${index_expense}].title`}
+                                disabled={
+                                  !values.properties[index]?._id || readOnly
+                                }
+                              />
+                            </div>
+
+                            <div className="md:w-1/6">
+                              <NumberField
+                                label={t('Amount')}
+                                name={`properties[${index}].expenses[${index_expense}].amount`}
+                                disabled={
+                                  !values.properties[index]?._id || readOnly
+                                }
+                              />
+                            </div>
+
+                            <div>
+                              <RangeDateField
+                                beginLabel={t('Start date')}
+                                beginName={`properties[${index}].expenses[${index_expense}].beginDate`}
+                                endLabel={t('End date')}
+                                endName={`properties[${index}].expenses[${index_expense}].endDate`}
+                                minDate={values?.beginDate}
+                                maxDate={values?.endDate}
+                                disabled={
+                                  !values.properties[index]?._id || readOnly
+                                }
+                              />
+                            </div>
+                          </div>
+                        </Fragment>
+                      )}
+                      readOnly={readOnly}
+                    />
                     <RangeDateField
                       beginLabel={t('Entry date')}
                       beginName={`properties[${index}].entryDate`}

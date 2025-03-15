@@ -27,7 +27,12 @@ function _formatTenant(tenant) {
       entryDate:
         _stringToDate(property.entryDate) || _stringToDate(tenant.beginDate),
       exitDate:
-        _stringToDate(property.exitDate) || _stringToDate(tenant.endDate)
+        _stringToDate(property.exitDate) || _stringToDate(tenant.endDate),
+      expenses: property.expenses?.map((expense) => ({
+        ...expense,
+        beginDate: _stringToDate(expense.beginDate),
+        endDate: _stringToDate(expense.endDate)
+      }))
     })),
     reference: tenant.reference || nanoid()
   };
