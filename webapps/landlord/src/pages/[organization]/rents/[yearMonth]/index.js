@@ -26,7 +26,7 @@ import { withAuthentication } from '../../../../components/Authentication';
 function _filterData(data, filters) {
   let filteredItems =
     filters.statuses?.length > 0
-      ? data.rents.filter(({ status }) => filters.statuses.includes(status))
+      ? data.rents?.filter(({ status }) => filters.statuses.includes(status))
       : data.rents;
 
   if (filters.searchText) {

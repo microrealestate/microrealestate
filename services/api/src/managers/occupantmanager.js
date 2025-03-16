@@ -62,10 +62,26 @@ async function _buildPropertyMap(realm) {
   }, {});
 }
 
-async function _fetchTenants(realmId, tenantId) {
-  const $match = {
-    realmId
-  };
+async function _fetchTenants(req, tenantId) {
+  const realmId = req.realm._id
+  let $match;
+
+  // Use the properties assigned to the property manager if this is a prop manager
+  if (req.user.role === 'property manager') {
+    const member = req.realm.members?.find((member) => String(member.email) === String(req.user.email));
+    const memberPropertyIdsMatch = member?.properties?.map((property) => ({
+       'properties.propertyId': String(property)
+    })) || [];
+    $match = {
+      $or : memberPropertyIdsMatch
+    };
+  } 
+  else {
+    $match = {
+      realmId
+    };
+  }
+
   if (tenantId) {
     $match._id = Collections.ObjectId(tenantId);
   }
@@ -228,7 +244,7 @@ export async function add(req, res) {
     realmId: realm._id
   });
 
-  const occupants = await _fetchTenants(req.realm._id, newOccupant._id);
+  const occupants = await _fetchTenants(req, newOccupant._id);
   res.json(FD.toOccupantData(occupants.length ? occupants[0] : null));
 }
 
@@ -343,7 +359,7 @@ export async function update(req, res) {
     newOccupant
   );
 
-  const newOccupants = await _fetchTenants(req.realm._id, newOccupant._id);
+  const newOccupants = await _fetchTenants(req, newOccupant._id);
   res.json(FD.toOccupantData(newOccupants.length ? newOccupants[0] : null));
 }
 
@@ -428,13 +444,13 @@ export async function remove(req, res) {
 }
 
 export async function all(req, res) {
-  const tenants = await _fetchTenants(req.realm._id);
+  const tenants = await _fetchTenants(req);
   res.json(tenants.map((tenant) => FD.toOccupantData(tenant)));
 }
 
 export async function one(req, res) {
   const occupantId = req.params.id;
-  const tenants = await _fetchTenants(req.realm._id, occupantId);
+  const tenants = await _fetchTenants(req, occupantId);
   res.json(FD.toOccupantData(tenants.length ? tenants[0] : null));
 }
 

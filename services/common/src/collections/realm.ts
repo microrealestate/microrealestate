@@ -10,6 +10,12 @@ const RealmSchema = new mongoose.Schema<CollectionTypes.Realm>({
       email: String,
       role: String,
       registered: Boolean,
+      properties: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'Property'
+        },
+      ],
     },
   ],
   applications: [
