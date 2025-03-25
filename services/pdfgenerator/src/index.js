@@ -12,7 +12,7 @@ async function onStartUp(express) {
   await pdf.start();
 
   // parse locale
-  express.use(locale(['fr-FR', 'en-US', 'pt-BR', 'de-DE'], 'en-US'));
+  express.use(locale(['fr-FR', 'en-US', 'pt-BR', 'de-DE', 'es-CO'], 'en-US'));
 
   // api
   express.use(routes());
