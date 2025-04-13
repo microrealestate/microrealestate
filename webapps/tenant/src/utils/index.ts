@@ -3,6 +3,7 @@
 import 'moment/locale/fr';
 import 'moment/locale/pt';
 import 'moment/locale/de';
+import 'moment/locale/es';
 import { type ClassValue, clsx } from 'clsx';
 import { LeaseTimeRange, Locale, TenantAPI } from '@microrealestate/types';
 import { Lease } from '@/types';
@@ -75,7 +76,7 @@ export function toUILease(tenant: TenantAPI.TenantDataType): Lease {
       status: invoice.status,
       methods: invoice.methods
     })),
-    documents: [],
+    documents: []
     //documents: tenant.lease.documents.map((document) => ({}))
   };
 }

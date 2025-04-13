@@ -10,11 +10,15 @@ All notable changes to this project will be documented here.
 
 - Added support of multi expenses in leases #231
 
+- Added Colombian translation #115
+
 ### Contributors
 
 - [@camelaissani](https://github.com/camelaissani)
 
 - [@mykael90](https://github.com/mykael90)
+
+- [@crorodriguezro](https://github.com/crorodriguezro)
 
 ## 1.0.0-alpha.3
 
@@ -22,7 +26,7 @@ All notable changes to this project will be documented here.
 
 - Simplified the self-hosting procedure, using docker-compose.yml and supporting https
 
-- Added brazilian translation #18
+- Added Brazilian translation #18
 
 ### Changed
 
