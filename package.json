@@ -39,21 +39,24 @@
     "build": "yarn run mre build",
     "start": "yarn run mre start",
     "stop": "yarn run mre stop",
-    "ci": "yarn run mre ci"
+    "ci": "yarn run mre ci",
+    "prepare": "husky"
   },
   "lint-staged": {
-    "*.{js,ts,tsx, jsx}": [
-      "eslint --quiet --fix"
+    "*.{js,ts,tsx,jsx}": [
+      "eslint --quiet --fix",
+      "git add"
     ],
     "*.{json,md,html,js,jsx,ts,tsx}": [
-      "prettier --write"
+      "prettier --write",
+      "git add"
     ]
   },
   "devDependencies": {
     "cross-env": "7.0.3",
-    "husky": "8.0.3",
-    "lint-staged": "15.2.0",
-    "prettier": "3.1.1"
+    "husky": "9.1.7",
+    "lint-staged": "15.4.3",
+    "prettier": "3.5.2"
   },
   "resolutions": {
     "axios": "^1.7.4",
