@@ -5,7 +5,12 @@ const chalk = require('chalk');
 const figlet = require('figlet');
 const inquirer = require('inquirer');
 const moment = require('moment');
-const { buildUrl, consoleMoveCursorToPrevLine, destructUrl, fetch } = require('./utils');
+const {
+  buildUrl,
+  consoleMoveCursorToPrevLine,
+  destructUrl,
+  fetch
+} = require('./utils');
 const {
   generateRandomToken,
   runCompose,
@@ -83,7 +88,7 @@ async function start() {
 
   await runCompose('start', [], { runMode: 'prod' });
 
-  if (!await checkHealth()) {
+  if (!(await checkHealth())) {
     return;
   }
 
@@ -165,7 +170,7 @@ async function showConfig(runMode) {
 async function checkHealth() {
   let healthcheckSuccess = true;
   const maxAttempt = 10;
-  const delayAttemptInSecond = 2; 
+  const delayAttemptInSecond = 2;
   for (const attempt of [...Array(maxAttempt).keys()]) {
     let response;
     try {
@@ -197,12 +202,16 @@ async function checkHealth() {
         chalk.red(`failed: ${response.status} ${response.statusText}`)
       );
     } else {
-      console.log(chalk.dim(`  retrying in ${delayAttemptInSecond} seconds...`));
-      await new Promise((resolve) => setTimeout(resolve, delayAttemptInSecond * 1000));
+      console.log(
+        chalk.dim(`  retrying in ${delayAttemptInSecond} seconds...`)
+      );
+      await new Promise((resolve) =>
+        setTimeout(resolve, delayAttemptInSecond * 1000)
+      );
       await consoleMoveCursorToPrevLine(2);
     }
   }
-  
+
   if (!healthcheckSuccess) {
     console.log(chalk.red('💣 Application did not start successfully'));
     displayConfigWarningsAndErrors();

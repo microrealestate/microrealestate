@@ -13,13 +13,13 @@ export function formatNumber(
   if (percent) {
     return Number(value).toLocaleString(locale, {
       style: 'percent',
-      minimumFractionDigits,
+      minimumFractionDigits
     });
   } else {
     return Intl.NumberFormat(locale, {
       style: 'currency',
       currency: currency,
-      minimumFractionDigits,
+      minimumFractionDigits
     }).format(value);
   }
 }
@@ -28,7 +28,7 @@ export function getFormatNumber(locale: Locale, currency: string) {
   return ({
     value,
     minimumFractionDigits = 2,
-    percent = false,
+    percent = false
   }: {
     value: number;
     minimumFractionDigits?: number;

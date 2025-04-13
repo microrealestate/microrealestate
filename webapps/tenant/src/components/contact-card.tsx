@@ -3,7 +3,7 @@ import getTranslation from '@/utils/i18n/server/getTranslation';
 
 export default async function ContactCard({
   variant,
-  contactInfo,
+  contactInfo
 }: {
   variant: 'tenant' | 'landlord';
   contactInfo: {

@@ -322,8 +322,12 @@ export function toOccupantData(inputOccupant) {
           item.exitDate = moment(item.exitDate).format('DD/MM/YYYY');
         }
         item.expenses.forEach((expense) => {
-          expense.beginDate = expense.beginDate ? moment(expense.beginDate).format('DD/MM/YYYY') : item.entryDate;
-          expense.endDate = expense.endDate ? moment(expense.endDate).format('DD/MM/YYYY') : item.exitDate;
+          expense.beginDate = expense.beginDate
+            ? moment(expense.beginDate).format('DD/MM/YYYY')
+            : item.entryDate;
+          expense.endDate = expense.endDate
+            ? moment(expense.endDate).format('DD/MM/YYYY')
+            : item.exitDate;
         });
         if (item.property.type === 'parking') {
           occupant.parking.price += item.property.price;

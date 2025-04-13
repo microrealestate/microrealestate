@@ -15,7 +15,7 @@ const TemplateNode = Node.create({
       HTMLAttributes: {},
       renderLabel({ node }) {
         return node.attrs.label;
-      },
+      }
     };
   },
 
@@ -30,9 +30,9 @@ const TemplateNode = Node.create({
           }
 
           return {
-            'data-template-id': attributes.id,
+            'data-template-id': attributes.id
           };
-        },
+        }
       },
       label: {
         default: null,
@@ -42,18 +42,18 @@ const TemplateNode = Node.create({
             return {};
           }
           return {
-            'data-template-label': attributes.label,
+            'data-template-label': attributes.label
           };
-        },
-      },
+        }
+      }
     };
   },
 
   parseHTML() {
     return [
       {
-        tag: `span[data-type="${this.name}"]`,
-      },
+        tag: `span[data-type="${this.name}"]`
+      }
     ];
   },
 
@@ -67,15 +67,15 @@ const TemplateNode = Node.create({
       ),
       this.options.renderLabel({
         options: this.options,
-        node,
-      }),
+        node
+      })
     ];
   },
 
   renderText({ node }) {
     return this.options.renderLabel({
       options: this.options,
-      node,
+      node
     });
   },
 
@@ -83,23 +83,23 @@ const TemplateNode = Node.create({
     return {
       addTemplate:
         (id, label) =>
-          ({ commands }) => {
-            return commands.insertContent([
-              {
-                type: this.name,
-                attrs: {
-                  id,
-                  label,
-                },
-              },
-              {
-                type: 'text',
-                text: ' ',
-              },
-            ]);
-          },
+        ({ commands }) => {
+          return commands.insertContent([
+            {
+              type: this.name,
+              attrs: {
+                id,
+                label
+              }
+            },
+            {
+              type: 'text',
+              text: ' '
+            }
+          ]);
+        }
     };
-  },
+  }
 });
 
 export default TemplateNode;

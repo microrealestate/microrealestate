@@ -16,7 +16,7 @@ export default class Document {
       fetchOne: flow,
       create: flow,
       update: flow,
-      delete: flow,
+      delete: flow
     });
   }
 

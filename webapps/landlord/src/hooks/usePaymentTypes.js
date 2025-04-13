@@ -9,23 +9,23 @@ export default function usePaymentTypes() {
       {
         id: 'cheque',
         label: t('Cheque'),
-        value: 'cheque',
+        value: 'cheque'
       },
       {
         id: 'cash',
         label: t('Cash'),
-        value: 'cash',
+        value: 'cash'
       },
       {
         id: 'levy',
         label: t('Levy'),
-        value: 'levy',
+        value: 'levy'
       },
       {
         id: 'transfer',
         label: t('Transfer'),
-        value: 'transfer',
-      },
+        value: 'transfer'
+      }
     ];
 
     return {
@@ -33,7 +33,7 @@ export default function usePaymentTypes() {
       itemMap: itemList.reduce((acc, { id, label, value }) => {
         acc[id] = { label, value };
         return acc;
-      }, {}),
+      }, {})
     };
   }, [t]);
 }

@@ -22,7 +22,7 @@ export default function useFormatNumber() {
           store.organization.selected.locale,
           {
             style: 'percent',
-            minimumFractionDigits,
+            minimumFractionDigits
           }
         );
       }

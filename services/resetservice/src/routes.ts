@@ -19,9 +19,8 @@ routes.delete(
           'properties',
           'realms',
           'templates'
-        ].map(
-          (collection) =>
-            mongoClient?.dropCollection(collection).catch(console.error)
+        ].map((collection) =>
+          mongoClient?.dropCollection(collection).catch(console.error)
         )
       );
 

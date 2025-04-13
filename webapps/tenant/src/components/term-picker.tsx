@@ -7,7 +7,7 @@ export default function TermPicker({
   timeRange,
   fromDate,
   toDate,
-  onValueChange,
+  onValueChange
 }: {
   timeRange: LeaseTimeRange;
   fromDate: Date;

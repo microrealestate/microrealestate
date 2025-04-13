@@ -11,7 +11,7 @@ function _avoidWeekend(aMoment) {
     aMoment.add(1, 'days');
   }
   return aMoment;
-};
+}
 
 export async function get(tenantId, params) {
   const momentTerm = moment(params.term, 'YYYYMMDDHH');
@@ -47,6 +47,6 @@ export async function get(tenantId, params) {
     billingRef: `${moment(params.term, 'YYYYMMDDHH').format('MM_YY')}_${
       tenant.reference
     }`,
-    dueDate: dueDate.format('DD/MM/YYYY'),
+    dueDate: dueDate.format('DD/MM/YYYY')
   };
 }

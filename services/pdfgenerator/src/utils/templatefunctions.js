@@ -8,10 +8,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 i18n.configure({
   locales: ['en', 'fr-FR', 'pt-BR', 'de-DE', 'es-CO'],
   directory: path.join(__dirname, '..', '..', 'templates', 'locales'),
-  updateFiles: false,
+  updateFiles: false
 });
 
-export default function({ locale, currency }) {
+export default function ({ locale, currency }) {
   moment.locale(locale);
   i18n.setLocale(locale);
 
@@ -24,14 +24,14 @@ export default function({ locale, currency }) {
         return Intl.NumberFormat(locale, {
           style,
           currency,
-          minimumFractionDigits,
+          minimumFractionDigits
         }).format(value);
       }
 
       if (style === 'percent') {
         return Number(value).toLocaleString(locale, {
           style: 'percent',
-          minimumFractionDigits,
+          minimumFractionDigits
         });
       }
 
@@ -50,7 +50,7 @@ export default function({ locale, currency }) {
         return i18n.__('{{month}} {{startDay}} to {{endDay}}', {
           month: term.format('MMM'),
           startDay: term.startOf('week').format('Do'),
-          endDay: term.endOf('week').format('Do'),
+          endDay: term.endOf('week').format('Do')
         });
       }
 
@@ -62,6 +62,6 @@ export default function({ locale, currency }) {
         return term.format('YYYY');
       }
       return termTxt;
-    },
+    }
   };
-};
+}

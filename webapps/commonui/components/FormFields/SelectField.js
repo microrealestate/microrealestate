@@ -3,7 +3,7 @@ import {
   FormHelperText,
   InputLabel,
   MenuItem,
-  Select,
+  Select
 } from '@material-ui/core';
 import { useField, useFormikContext } from 'formik';
 

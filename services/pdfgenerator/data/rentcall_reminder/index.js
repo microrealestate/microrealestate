@@ -13,9 +13,7 @@ export async function get(params) {
     if (momentToday.isAfter(endOfTerm, 'day')) {
       rent.documentDate = utils.avoidWeekend(endOfTerm).format('DD/MM/YYYY');
     } else {
-      rent.documentDate = utils
-        .avoidWeekend(momentToday)
-        .format('DD/MM/YYYY');
+      rent.documentDate = utils.avoidWeekend(momentToday).format('DD/MM/YYYY');
     }
   });
 

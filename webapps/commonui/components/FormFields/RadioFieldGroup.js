@@ -3,7 +3,7 @@ import {
   FormControl,
   FormHelperText,
   FormLabel,
-  RadioGroup,
+  RadioGroup
 } from '@material-ui/core';
 
 import { useField } from 'formik';

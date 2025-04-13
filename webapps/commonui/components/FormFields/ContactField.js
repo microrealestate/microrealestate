@@ -7,7 +7,7 @@ export function ContactField({
   emailName,
   phone1Name,
   phone2Name,
-  disabled,
+  disabled
 }) {
   const { t } = useTranslation('common');
   return (

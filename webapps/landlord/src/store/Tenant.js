@@ -20,7 +20,7 @@ export default class Tenant {
       fetchOne: flow,
       create: flow,
       update: flow,
-      delete: flow,
+      delete: flow
     });
   }
 
@@ -29,8 +29,8 @@ export default class Tenant {
       this.filters.status?.length === 0
         ? this.items
         : this.items.filter(({ status }) =>
-          this.filters.status.includes(status)
-        );
+            this.filters.status.includes(status)
+          );
 
     if (this.filters.searchText) {
       const regExp = /\s|\.|-/gi;
@@ -60,7 +60,7 @@ export default class Tenant {
               ?.map(({ contact = '', email = '', phone = '' }) => ({
                 contact: contact.replace(regExp, '').toLowerCase(),
                 email: email.toLowerCase(),
-                phone: phone.replace(regExp, ''),
+                phone: phone.replace(regExp, '')
               }))
               .filter(
                 ({ contact, email, phone }) =>

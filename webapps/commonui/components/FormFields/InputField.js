@@ -4,7 +4,7 @@ import {
   IconButton,
   Input,
   InputAdornment,
-  InputLabel,
+  InputLabel
 } from '@material-ui/core';
 import { useCallback, useState } from 'react';
 import { useField, useFormikContext } from 'formik';

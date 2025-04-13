@@ -7,6 +7,6 @@ export const formatNumber = (
   return Intl.NumberFormat(locale, {
     style: 'currency',
     currency: currency,
-    minimumFractionDigits,
+    minimumFractionDigits
   }).format(value);
 };

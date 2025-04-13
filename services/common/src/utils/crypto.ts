@@ -40,6 +40,6 @@ export function decrypt(encryptedText: string) {
   );
   return [
     decipher.update(encryptedText, 'hex', 'binary'),
-    decipher.final('binary'),
+    decipher.final('binary')
   ].join('');
 }

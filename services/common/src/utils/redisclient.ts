@@ -45,7 +45,7 @@ export default class RedisClient {
     }
     this.client = redis.createClient({
       url: config.REDIS_URL,
-      password: config.REDIS_PASSWORD,
+      password: config.REDIS_PASSWORD
     });
     this.client.on('error', (err) => logger.error(`Redis Error: ${err}`));
     this.client.on('connect', () => logger.debug('Redis connected'));

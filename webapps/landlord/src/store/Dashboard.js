@@ -10,7 +10,7 @@ export default class Dashboard {
     makeObservable(this, {
       data: observable,
       fetch: flow,
-      currentRevenues: computed,
+      currentRevenues: computed
     });
   }
 
@@ -21,7 +21,7 @@ export default class Dashboard {
     ) || {
       month: currentMonth,
       paid: 0,
-      notPaid: 0,
+      notPaid: 0
     };
 
     revenues.notPaid = Math.abs(revenues.notPaid);

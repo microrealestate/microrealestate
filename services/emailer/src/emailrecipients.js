@@ -18,4 +18,4 @@ export async function build(locale, templateName, recordId, params, data) {
 
   const recipients = await import(recipientsPackagePath);
   return await recipients.get(recordId, params, data);
-};
+}

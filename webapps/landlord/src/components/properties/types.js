@@ -6,7 +6,7 @@ const types = [
   { id: 'office', labelId: 'Office' },
   { id: 'garage', labelId: 'Garage' },
   { id: 'parking', labelId: 'Parking spot' },
-  { id: 'letterbox', labelId: 'Mailbox' },
+  { id: 'letterbox', labelId: 'Mailbox' }
 ];
 
 export default types;

@@ -22,7 +22,7 @@ export function destructUrl(baseUrl: string) {
     subDomain,
     domain,
     port: url.port,
-    basePath,
+    basePath
   };
 }
 
@@ -31,7 +31,7 @@ export function buildUrl({
   subDomain,
   domain,
   port,
-  basePath,
+  basePath
 }: {
   protocol: string;
   subDomain?: string;

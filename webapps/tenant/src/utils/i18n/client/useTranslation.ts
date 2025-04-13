@@ -8,6 +8,6 @@ export default function useTranslation() {
 
   return {
     locale,
-    t,
+    t
   };
 }

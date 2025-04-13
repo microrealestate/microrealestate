@@ -8,7 +8,7 @@ export function Section({
   visible = true,
   withSwitch = false,
   switchName,
-  children,
+  children
 }) {
   return (
     <Box pb={4}>

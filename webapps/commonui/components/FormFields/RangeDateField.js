@@ -17,7 +17,7 @@ export function RangeDateField({
   minDate,
   maxDate,
   duration,
-  disabled,
+  disabled
 }) {
   const { setFieldValue } = useFormikContext();
   const [beginField] = useField(beginName);
@@ -43,7 +43,7 @@ export function RangeDateField({
     endName,
     setFieldValue,
     maxDate,
-    endLabel,
+    endLabel
   ]);
 
   return (

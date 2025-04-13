@@ -19,7 +19,7 @@ export default class Template {
       update: flow,
       delete: flow,
       fields: observable,
-      fetchFields: flow,
+      fetchFields: flow
     });
   }
 

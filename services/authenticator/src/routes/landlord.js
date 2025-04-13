@@ -200,7 +200,9 @@ export default function () {
   const landlordRouter = express.Router();
 
   // parse locale
-  landlordRouter.use(locale(['fr-FR', 'en-US', 'pt-BR', 'de-DE', 'es-CO'], 'en-US'));
+  landlordRouter.use(
+    locale(['fr-FR', 'en-US', 'pt-BR', 'de-DE', 'es-CO'], 'en-US')
+  );
 
   if (SIGNUP) {
     landlordRouter.post(

@@ -9,14 +9,14 @@ export function formatNumber(
   if (style === 'decimal') {
     return Intl.NumberFormat(locale, {
       style,
-      minimumFractionDigits,
+      minimumFractionDigits
     }).format(value);
   }
 
   if (style === 'percent') {
     return Number(value).toLocaleString(locale, {
       style: 'percent',
-      minimumFractionDigits,
+      minimumFractionDigits
     });
   }
 
@@ -32,6 +32,6 @@ export function formatCurrency(
   return Intl.NumberFormat(locale, {
     style: 'currency',
     currency,
-    minimumFractionDigits,
+    minimumFractionDigits
   }).format(value);
 }

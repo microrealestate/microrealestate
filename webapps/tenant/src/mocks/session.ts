@@ -5,7 +5,7 @@ const mockedSession: {
   email: string;
 } = {
   status: 'authenticated',
-  email: 'john.doe@mco.com',
+  email: 'john.doe@mco.com'
 };
 
 export default mockedSession;

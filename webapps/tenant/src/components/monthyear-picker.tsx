@@ -4,7 +4,7 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
+  SelectValue
 } from '@/components/ui/select';
 import { useEffect, useMemo, useState } from 'react';
 import moment from 'moment';
@@ -14,14 +14,14 @@ export default function MonthYearPicker({
   variant = 'monthyear',
   fromDate,
   toDate,
-  onValueChange,
+  onValueChange
 }: {
   variant: 'monthyear' | 'year';
   fromDate: Date;
   toDate: Date;
   onValueChange?: ({
     month,
-    year,
+    year
   }: {
     month?: number | undefined;
     year: number;
@@ -44,7 +44,7 @@ export default function MonthYearPicker({
 
   useEffect(() => {
     onValueChange?.({
-      year: moment().year(),
+      year: moment().year()
     });
   }, [onValueChange]);
 
@@ -52,7 +52,7 @@ export default function MonthYearPicker({
     setMonth(Number(value));
     onValueChange?.({
       month: Number(value),
-      year,
+      year
     });
   };
 
@@ -60,7 +60,7 @@ export default function MonthYearPicker({
     setYear(Number(value));
     onValueChange?.({
       month,
-      year: Number(value),
+      year: Number(value)
     });
   };
 

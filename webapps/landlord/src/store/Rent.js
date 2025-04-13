@@ -47,7 +47,7 @@ export default class Rent {
       fetchOneTenantRent: flow,
       fetchTenantRents: flow,
       pay: flow,
-      sendEmail: flow,
+      sendEmail: flow
     });
   }
 
@@ -64,8 +64,8 @@ export default class Rent {
       this.filters.status?.length === 0
         ? this.items
         : this.items.filter(({ status }) =>
-          this.filters.status.includes(status)
-        );
+            this.filters.status.includes(status)
+          );
 
     if (this.filters.searchText) {
       const regExp = /\s|\.|-/gi;
@@ -95,7 +95,7 @@ export default class Rent {
               ?.map(({ contact = '', email = '', phone = '' }) => ({
                 contact: contact.replace(regExp, '').toLowerCase(),
                 email: email.toLowerCase(),
-                phone: phone.replace(regExp, ''),
+                phone: phone.replace(regExp, '')
               }))
               .filter(
                 ({ contact, email, phone }) =>
@@ -154,7 +154,7 @@ export default class Rent {
             this.countNotPaid,
             this.totalToPay,
             this.totalPaid,
-            this.totalNotPaid,
+            this.totalNotPaid
           ],
           [
             response.data.overview.countAll,
@@ -163,7 +163,7 @@ export default class Rent {
             response.data.overview.countNotPaid,
             response.data.overview.totalToPay,
             response.data.overview.totalPaid,
-            response.data.overview.totalNotPaid,
+            response.data.overview.totalNotPaid
           ]
         )
       ) {

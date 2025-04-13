@@ -230,8 +230,9 @@ export function checkOrganization() {
     switch (req.user.type) {
       case 'user': {
         const user = req.user as UserServicePrincipal;
-        user.role = req.realm.members.find(({ email }) => email === user.email)
-          ?.role;
+        user.role = req.realm.members.find(
+          ({ email }) => email === user.email
+        )?.role;
         break;
       }
       case 'application':

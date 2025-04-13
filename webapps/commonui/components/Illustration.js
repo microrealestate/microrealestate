@@ -6,7 +6,7 @@ export function Illustration({
   label,
   alt,
   width = '100%',
-  height = 200,
+  height = 200
 }) {
   return (
     <Box

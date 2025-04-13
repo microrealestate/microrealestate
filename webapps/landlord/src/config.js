@@ -8,7 +8,7 @@ const config = {
   DOCKER_GATEWAY_URL: env('DOCKER_GATEWAY_URL'),
   GATEWAY_URL: env('GATEWAY_URL'),
   NODE_ENV: env('NODE_ENV'),
-  SIGNUP: env('SIGNUP') === 'true',
+  SIGNUP: env('SIGNUP') === 'true'
 };
 
 export default config;

@@ -2,10 +2,10 @@
 const nextConfig = {
   output: 'standalone',
   experimental: {
-    externalDir: true,
+    externalDir: true
   },
   basePath: process.env.BASE_PATH || '',
-  productionBrowserSourceMaps: true,
+  productionBrowserSourceMaps: true
 };
 
 module.exports = nextConfig;

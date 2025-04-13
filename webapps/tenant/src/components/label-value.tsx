@@ -4,7 +4,7 @@ import { Label } from '@/components/ui/label';
 export function LabelValue({
   label,
   value,
-  className,
+  className
 }: {
   label: string;
   value: string;

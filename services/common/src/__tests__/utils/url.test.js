@@ -5,7 +5,7 @@ describe('utils', () => {
     expect(
       URL.buildUrl({
         protocol: 'http:',
-        domain: 'localhost',
+        domain: 'localhost'
       })
     ).toBe('http://localhost');
 
@@ -14,14 +14,14 @@ describe('utils', () => {
         protocol: 'http:',
         domain: 'localhost',
         port: '8080',
-        basePath: '/app',
+        basePath: '/app'
       })
     ).toBe('http://localhost:8080/app');
 
     expect(
       URL.buildUrl({
         protocol: 'https:',
-        domain: '10.1.1.2',
+        domain: '10.1.1.2'
       })
     ).toBe('https://10.1.1.2');
 
@@ -30,14 +30,14 @@ describe('utils', () => {
         protocol: 'https:',
         domain: '10.1.1.2',
         port: '8080',
-        basePath: '/app',
+        basePath: '/app'
       })
     ).toBe('https://10.1.1.2:8080/app');
 
     expect(
       URL.buildUrl({
         protocol: 'http:',
-        domain: 'example.com',
+        domain: 'example.com'
       })
     ).toBe('http://example.com');
 
@@ -46,7 +46,7 @@ describe('utils', () => {
         protocol: 'https:',
         domain: 'example.com',
         port: '8080',
-        basePath: '/app',
+        basePath: '/app'
       })
     ).toBe('https://example.com:8080/app');
 
@@ -55,7 +55,7 @@ describe('utils', () => {
         protocol: 'https:',
         subDomain: 'mre',
         domain: 'example.com',
-        basePath: '/app',
+        basePath: '/app'
       })
     ).toBe('https://mre.example.com/app');
   });

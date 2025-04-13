@@ -20,7 +20,7 @@ export default class Property {
       fetchOne: flow,
       create: flow,
       update: flow,
-      delete: flow,
+      delete: flow
     });
   }
 

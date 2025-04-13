@@ -8,7 +8,7 @@ export function updateItems(updatedItem, items) {
     return [
       ...items.slice(0, index),
       updatedItem,
-      ...items.slice(index + 1, items.length),
+      ...items.slice(index + 1, items.length)
     ];
   }
 

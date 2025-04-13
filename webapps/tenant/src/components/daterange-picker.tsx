@@ -6,7 +6,7 @@ import { de, enUS, fr, ptBR } from 'date-fns/locale';
 import {
   Popover,
   PopoverContent,
-  PopoverTrigger,
+  PopoverTrigger
 } from '@/components/ui/popover';
 import { useCallback, useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -18,7 +18,7 @@ import useTranslation from '@/utils/i18n/client/useTranslation';
 
 export function DateRangePicker({
   className,
-  onValueChange,
+  onValueChange
 }: {
   className?: string;
   onValueChange?: (range: DateRange | undefined) => void;

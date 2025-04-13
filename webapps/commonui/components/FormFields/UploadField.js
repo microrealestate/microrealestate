@@ -5,7 +5,7 @@ import {
   IconButton,
   Input,
   InputLabel,
-  withStyles,
+  withStyles
 } from '@material-ui/core';
 import { useField, useFormikContext } from 'formik';
 
@@ -13,7 +13,7 @@ import { AttachFile } from '@material-ui/icons';
 import { useCallback } from 'react';
 
 const HiddenInput = withStyles({
-  root: { display: 'none' },
+  root: { display: 'none' }
 })(Input);
 
 export function UploadField({ label, disabled, ...props }) {

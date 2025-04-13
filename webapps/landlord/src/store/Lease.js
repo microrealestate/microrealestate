@@ -16,7 +16,7 @@ export default class Lease {
       fetchOne: flow,
       create: flow,
       update: flow,
-      delete: flow,
+      delete: flow
     });
   }
 

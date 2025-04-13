@@ -7,24 +7,24 @@ const AccountSchema = new mongoose.Schema<CollectionTypes.Account>({
   firstname: {
     type: String,
     trim: true,
-    required: true,
+    required: true
   },
   lastname: {
     type: String,
     trim: true,
-    required: true,
+    required: true
   },
   email: {
     type: String,
     trim: true,
-    required: true,
+    required: true
   },
   password: {
     type: String,
     trim: true,
-    required: true,
+    required: true
   },
-  createdDate: Date,
+  createdDate: Date
 });
 
 // lowercase email
@@ -43,14 +43,14 @@ AccountSchema.post('save', function (account) {
   RealmModel.updateMany(
     {
       members: {
-        $elemMatch: { email: account.email },
-      },
+        $elemMatch: { email: account.email }
+      }
     },
     {
       $set: {
         'members.$.registered': true,
-        'members.$.name': name,
-      },
+        'members.$.name': name
+      }
     },
     (error: CallbackError) => {
       if (error) {
