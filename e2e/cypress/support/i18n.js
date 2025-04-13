@@ -15,6 +15,9 @@ import i18next, { init } from 'i18next';
       'de-DE': {
         translation: require('../../../webapps/landlord/locales/de-DE/common.json'),
       },
+      'es-CO': {
+        translation: require('../../../webapps/landlord/locales/es-CO/common.json'),
+      },
     },
   });
 })();

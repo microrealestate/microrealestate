@@ -6,7 +6,7 @@ import path from 'path';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 i18n.configure({
-  locales: ['en', 'fr-FR', 'pt-BR', 'de-DE'],
+  locales: ['en', 'fr-FR', 'pt-BR', 'de-DE', 'es-CO'],
   directory: path.join(__dirname, '..', '..', 'templates', 'locales'),
   updateFiles: false,
 });
