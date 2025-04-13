@@ -25,7 +25,7 @@ const baseEnvironmentValues = {
   CIPHER_IV_KEY: process.env.CIPHER_IV_KEY
 } as const;
 
-const valuesToEscape: string[] = [
+const keysToEscape: string[] = [
   'password',
   'token',
   'secret',
@@ -36,19 +36,19 @@ const valuesToEscape: string[] = [
 const urlsToEscape: string[] = ['url', 'uri', 'endpoint'];
 
 function obfuscateValue<T>(key: string, value: T): T {
-  if (value instanceof String) {
+  if (typeof value === 'string') {
     if (
-      valuesToEscape.some(
-        (valueToEscape) =>
-          key.toLowerCase().indexOf(valueToEscape.toLowerCase()) !== -1
+      keysToEscape.some(
+        (keyToEscape) =>
+          key.toLowerCase().indexOf(keyToEscape.toLowerCase()) !== -1
       )
     ) {
       return '****' as T;
     }
 
     if (
-      urlsToEscape.some((candidateKey) =>
-        key.toLowerCase().endsWith(candidateKey)
+      urlsToEscape.some(
+        (urlToEscape) => key.toLowerCase().indexOf(urlToEscape) !== -1
       )
     ) {
       return value.replace(/:\/\/.*@/, '://****:****@') as T;
@@ -56,7 +56,7 @@ function obfuscateValue<T>(key: string, value: T): T {
   }
 
   if (value instanceof Object) {
-    const obfuscatedObject: Record<string, string> = {};
+    const obfuscatedObject: Record<string, T> = {};
     Object.entries(value).forEach(([subKey, subValue]) => {
       obfuscatedObject[subKey] = obfuscateValue(subKey, subValue);
     });
