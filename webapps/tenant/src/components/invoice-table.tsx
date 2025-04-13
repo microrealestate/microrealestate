@@ -173,7 +173,7 @@ export function InvoiceTable({ lease }: { lease: Lease }) {
                 </TableCell>
                 <TableCell className="text-center hidden lg:table-cell">
                   {invoice.methods
-                    .reduce<string[]>((acc, method) => {
+                    .reduce((acc, method) => {
                       if (!acc.includes(method)) {
                         acc.push(method);
                       }

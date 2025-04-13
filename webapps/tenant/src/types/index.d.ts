@@ -41,7 +41,7 @@ type Invoice = {
   grandTotal: number;
   payment: number;
   status: PaymentStatus;
-  methods: PaymentMethod[] | [];
+  methods: PaymentMethod[];
 };
 
 type Document = {
@@ -92,6 +92,6 @@ type Lease = {
   properties: Property[];
   balance: number;
   deposit: number;
-  invoices: Invoice[] | [];
-  documents: Document[] | [];
+  invoices: Invoice[];
+  documents: Document[];
 };
