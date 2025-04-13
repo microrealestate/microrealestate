@@ -177,11 +177,11 @@ Cypress.Commands.add(
           cy.get('[data-cy=addPropertiesItem]').click();
         }
         cy.muiSelectText(`properties[${index}]._id`, name);
-        cy.get(`input[name="properties[${index}].expense.title"]`).type(
+        cy.get(`input[name="properties[${index}].expenses[0].title"]`).type(
           expense.title
         );
-        cy.get(`input[name="properties[${index}].expense.amount"]`).clear();
-        cy.get(`input[name="properties[${index}].expense.amount"]`).type(
+        cy.get(`input[name="properties[${index}].expenses[0].amount"]`).clear();
+        cy.get(`input[name="properties[${index}].expenses[0].amount"]`).type(
           expense.amount
         );
         cy.get(`input[name="properties[${index}].entryDate"]`).clear();
