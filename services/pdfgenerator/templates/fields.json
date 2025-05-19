@@ -268,5 +268,10 @@
     "_id": "lease_expensesAmount",
     "marker": "{{properties.total.expensesAmount}}",
     "type": "amount"
+  },
+  {
+    "_id": "lease_totalRentAndExpenses",
+    "marker": "{{properties.total.rentAndExpensesAmount}}",
+    "type": "amount"
   }
 ]
