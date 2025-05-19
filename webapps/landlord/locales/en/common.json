@@ -220,7 +220,7 @@
   "lease_expensesAmount": "lease.expenses.amount",
   "lease_reference": "lease.reference",
   "lease_rentAmount": "lease.rent.amount",
-  "lease_totalRentAndExpenses": "bail.rentAndExpenses.amount",
+  "lease_totalRentAndExpenses": "lease.rentAndExpenses.amount",
   "Legal representative": "Legal representative",
   "Legal structure": "Legal structure",
   "Levy": "Levy",

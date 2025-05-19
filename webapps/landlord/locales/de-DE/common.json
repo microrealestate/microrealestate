@@ -218,6 +218,7 @@
   "lease_expensesAmount": "miet.kosten.höhe",
   "lease_reference": "miet.referenz",
   "lease_rentAmount": "miet.mieten.höhe",
+  "lease_totalRentAndExpenses": "miet.mietenUndKosten.höhe",
   "Legal representative": "Gesetzlicher Vertreter",
   "Legal structure": "Rechtsform",
   "Levy": "Abgaben",
