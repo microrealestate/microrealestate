@@ -218,6 +218,8 @@
   "lease_expensesAmount": "bail.montant.charges",
   "lease_reference": "bail.référence",
   "lease_rentAmount": "bail.montant.loyer",
+  "lease_allInclusiveRentAmount": "bail.montant.loyer.CC",
+  "lease_allInclusiveRentWithVATAmount": "bail.montant.loyer.CC.TVA",
   "Legal representative": "Représentant légal",
   "Legal structure": "Structure juridique",
   "Levy": "Prélèvement",

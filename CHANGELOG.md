@@ -12,6 +12,8 @@ All notable changes to this project will be documented here.
 
 - Added Colombian translation #115
 
+- Added Total Rent Including Charges and VAT fields in the text editor #237
+
 ### Contributors
 
 - [@camelaissani](https://github.com/camelaissani)
@@ -19,6 +21,8 @@ All notable changes to this project will be documented here.
 - [@mykael90](https://github.com/mykael90)
 
 - [@crorodriguezro](https://github.com/crorodriguezro)
+
+- [@maellacour](https://github.com/maellacour)
 
 ## 1.0.0-alpha.3
 

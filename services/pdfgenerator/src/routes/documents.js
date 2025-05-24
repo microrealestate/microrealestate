@@ -49,8 +49,23 @@ async function _getTemplateValues(organization, tenantId, leaseId) {
       acc.surface += surface;
       return acc;
     },
-    { rentAmount: 0, expensesAmount: 0, surface: 0 }
+    { rentAmount: 0, expensesAmount: 0, vatAmount: 0, surface: 0 }
   );
+
+  // manage legacy discount
+  if (tenant.discount) {
+    PropertyGlobals.rentAmount -= tenant.discount;
+  }
+
+  // manage vat
+  if (tenant.isVat && tenant.vatRatio) {
+    PropertyGlobals.vatAmount =
+      Math.round(
+        (PropertyGlobals.rentAmount + PropertyGlobals.expensesAmount) *
+          tenant.vatRatio *
+          100
+      ) / 100;
+  }
 
   const landlordCompanyInfo = organization.companyInfo
     ? {
@@ -129,6 +144,18 @@ async function _getTemplateValues(organization, tenantId, leaseId) {
           organization.locale,
           organization.currency,
           PropertyGlobals.expensesAmount
+        ),
+        allInclusiveRentAmount: Format.formatCurrency(
+          organization.locale,
+          organization.currency,
+          PropertyGlobals.rentAmount + PropertyGlobals.expensesAmount
+        ),
+        allInclusiveRentWithVATAmount: Format.formatCurrency(
+          organization.locale,
+          organization.currency,
+          PropertyGlobals.rentAmount +
+            PropertyGlobals.expensesAmount +
+            PropertyGlobals.vatAmount
         )
       },
       list: tenant?.properties.map(
@@ -456,7 +483,9 @@ export default function () {
           .filter((doc) => doc.type === 'file')
           .map(({ url, versionId }) => ({ url, versionId }));
 
-        s3.deleteFiles(req.realm.thirdParties.b2, urlsIds);
+        s3.deleteFiles(req.realm.thirdParties.b2, urlsIds).catch((err) => {
+          logger.error('error deleting files from s3', err);
+        });
       }
 
       // delete documents from mongo
