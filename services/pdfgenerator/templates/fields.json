@@ -270,8 +270,13 @@
     "type": "amount"
   },
   {
-    "_id": "lease_totalRentAndExpenses",
-    "marker": "{{properties.total.rentAndExpensesAmount}}",
+    "_id": "lease_allInclusiveRentAmount",
+    "marker": "{{properties.total.allInclusiveRentAmount}}",
+    "type": "amount"
+  },
+  {
+    "_id": "lease_allInclusiveRentWithVATAmount",
+    "marker": "{{properties.total.allInclusiveRentWithVATAmount}}",
     "type": "amount"
   }
 ]
