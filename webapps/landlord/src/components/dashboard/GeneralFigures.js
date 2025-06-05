@@ -15,29 +15,15 @@ function GeneralFigures({ className }) {
 
   const overview = store.dashboard.data.overview;
   return (
-    <div
-      className={cn(
-        'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4',
-        className
-      )}
-    >
+    <div className={cn('space-y-4', className)}>
       <DashboardCard
-        Icon={LuUserCircle}
-        title={t('Tenants')}
-        description={t('Total number of tenants')}
-        renderContent={() => overview?.tenantCount}
-        onClick={() => {
-          router.push(`/${store.organization.selected.name}/tenants`);
-        }}
-      />
-      <DashboardCard
-        Icon={LuKeyRound}
-        title={t('Properties')}
-        description={t('Total number of properties')}
-        renderContent={() => overview?.propertyCount}
-        onClick={() => {
-          router.push(`/${store.organization.selected.name}/properties`);
-        }}
+        Icon={LuCoins}
+        title={t('Revenues')}
+        description={t('Total revenues for the year')}
+        renderContent={() => (
+          <NumberFormat value={overview?.totalYearRevenues} showZero={true} />
+        )}
+        className="text-end"
       />
       <DashboardCard
         Icon={LuPercent}
@@ -51,14 +37,27 @@ function GeneralFigures({ className }) {
             style="percent"
           />
         )}
+        className="text-end"
       />
       <DashboardCard
-        Icon={LuCoins}
-        title={t('Revenues')}
-        description={t('Total revenues for the year')}
-        renderContent={() => (
-          <NumberFormat value={overview?.totalYearRevenues} showZero={true} />
-        )}
+        Icon={LuUserCircle}
+        title={t('Tenants')}
+        description={t('Total number of tenants')}
+        renderContent={() => overview?.tenantCount}
+        onClick={() => {
+          router.push(`/${store.organization.selected.name}/tenants`);
+        }}
+        className="text-end"
+      />
+      <DashboardCard
+        Icon={LuKeyRound}
+        title={t('Properties')}
+        description={t('Total number of properties')}
+        renderContent={() => overview?.propertyCount}
+        onClick={() => {
+          router.push(`/${store.organization.selected.name}/properties`);
+        }}
+        className="text-end"
       />
     </div>
   );

@@ -60,11 +60,11 @@ function Dashboard() {
         {isFirstConnection ? (
           <Shortcuts firstConnection className="w-full" />
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Shortcuts className="md:col-span-3" />
-            <GeneralFigures className="md:col-span-3" />
-            <YearFigures className=" md:col-span-3 lg:col-span-2" />
-            <MonthFigures className="md:col-span-3 lg:col-span-1" />
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <Shortcuts className="md:col-span-5" />
+            <MonthFigures className="md:col-span-3" />
+            <GeneralFigures className="md:col-span-2" />
+            <YearFigures className="md:col-span-5" />
           </div>
         )}
       </div>

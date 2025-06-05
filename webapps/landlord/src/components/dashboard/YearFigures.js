@@ -67,7 +67,7 @@ function YearFigures({ className }) {
             paid: { color: 'hsl(var(--chart-2))' },
             notPaid: { color: 'hsl(var(--chart-1))' }
           }}
-          className="h-full w-full"
+          className="h-[450px] w-full"
         >
           <BarChart data={data} layout="vertical" stackOffset="sign">
             <XAxis
@@ -149,7 +149,7 @@ function YearFigures({ className }) {
           </BarChart>
         </ChartContainer>
       )}
-      className={cn('min-h-[600px]', className)}
+      className={className}
     />
   ) : null;
 }

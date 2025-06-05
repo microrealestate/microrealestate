@@ -93,7 +93,7 @@ function RentRow({ rent, isSelected, onSelect, onEdit, onHistory }) {
   return (
     <>
       <div className="flex flex-col gap-4 md:gap-0 md:flex-row md:items-center">
-        <div className="w-full md:w-1/2 space-y-2">
+        <div className="w-full md:w-2/6 space-y-2">
           <div className="flex items-center gap-4">
             {store.organization.canSendEmails ? (
               rent.occupant.hasContactEmails ? (
@@ -116,7 +116,7 @@ function RentRow({ rent, isSelected, onSelect, onEdit, onHistory }) {
 
             <Button
               variant="link"
-              className="p-0 h-fit text-xl whitespace-normal text-left"
+              className="p-0 h-fit text-lg whitespace-normal text-left"
               onClick={onEdit(rent)}
             >
               {rent.occupant.name}
@@ -124,7 +124,7 @@ function RentRow({ rent, isSelected, onSelect, onEdit, onHistory }) {
           </div>
           <Reminder rent={rent} className="hidden md:inline-flex ml-8" />
         </div>
-        <div className="flex pl-8 md:pl-0 md:grid md:grid-cols-3 lg:grid-cols-5 gap-4 w-full md:w-1/2">
+        <div className="flex pl-8 md:pl-0 md:grid md:grid-cols-3 lg:grid-cols-5 gap-4 w-full md:w-4/6">
           <RentAmount
             label={t('Rent')}
             amount={rentAmounts.rent}

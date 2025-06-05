@@ -24,7 +24,7 @@ export function RentOverview({ data }) {
   );
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-5 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-10 gap-4">
       <DashboardCard
         Icon={LuCalendar}
         title={t('Period')}
@@ -39,7 +39,7 @@ export function RentOverview({ data }) {
         title={t('Rents')}
         description={t('Rents for the period')}
         renderContent={() => data.countAll}
-        className="hidden sm:block 2xl:col-span-1"
+        className="hidden sm:block 2xl:col-span-2 text-center"
       />
       <DashboardCard
         Icon={LuTrendingDown}
@@ -54,7 +54,7 @@ export function RentOverview({ data }) {
             className="flex-grow"
           />
         )}
-        className="hidden sm:block 2xl:col-span-1"
+        className="hidden sm:block 2xl:col-span-3 text-end"
       />
       <DashboardCard
         Icon={LuTrendingUp}
@@ -70,7 +70,7 @@ export function RentOverview({ data }) {
             className="flex-grow"
           />
         )}
-        className="hidden sm:block 2xl:col-span-1"
+        className="hidden sm:block 2xl:col-span-3 text-end"
       />
     </div>
   );

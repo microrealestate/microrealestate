@@ -51,6 +51,56 @@ function MonthFigures({ className }) {
   return (
     <div className={cn('grid grid-cols-1 gap-4', className)}>
       <DashboardCard
+        Icon={store.dashboard.data.topUnpaid?.length ? LuAlertTriangle : null}
+        title={
+          store.dashboard.data.topUnpaid?.length
+            ? t('Top 5 of not paid rents')
+            : ''
+        }
+        description={
+          store.dashboard.data.topUnpaid?.length
+            ? t('Tenants with the highest unpaid balance')
+            : ''
+        }
+        renderContent={() =>
+          store.dashboard.data.topUnpaid?.length ? (
+            <div className="flex flex-col gap-2 min-h-48">
+              {store.dashboard.data.topUnpaid.map(
+                ({ tenant, balance, rent }) => (
+                  <div
+                    key={tenant._id}
+                    className="flex items-center text-sm md:text-base"
+                  >
+                    <Button
+                      variant="link"
+                      onClick={() => {
+                        store.rent.setSelected(rent);
+                        store.rent.setFilters({ searchText: tenant.name });
+                        router.push(
+                          `/${store.organization.selected.name}/rents/${yearMonth}?search=${tenant.name}`
+                        );
+                      }}
+                      className="justify-start flex-grow p-0 m-0"
+                    >
+                      {tenant.name}
+                    </Button>
+                    <NumberFormat
+                      value={balance}
+                      withColor
+                      className="font-semibold"
+                    />
+                  </div>
+                )
+              )}
+            </div>
+          ) : (
+            <CelebrationIllustration
+              label={t('Well done! All rents are paid')}
+            />
+          )
+        }
+      />
+      <DashboardCard
         Icon={LuBanknote}
         title={t('Settlements')}
         description={t('Rents of {{monthYear}}', {
@@ -62,7 +112,7 @@ function MonthFigures({ className }) {
               paid: { color: 'hsl(var(--chart-2))' },
               notPaid: { color: 'hsl(var(--chart-1))' }
             }}
-            className="h-full w-full"
+            className="h-[220px] w-full"
           >
             <RadialBarChart
               data={data}
@@ -119,57 +169,6 @@ function MonthFigures({ className }) {
             </RadialBarChart>
           </ChartContainer>
         )}
-      />
-
-      <DashboardCard
-        Icon={store.dashboard.data.topUnpaid?.length ? LuAlertTriangle : null}
-        title={
-          store.dashboard.data.topUnpaid?.length
-            ? t('Top 5 of not paid rents')
-            : ''
-        }
-        description={
-          store.dashboard.data.topUnpaid?.length
-            ? t('Tenants with the highest unpaid balance')
-            : ''
-        }
-        renderContent={() =>
-          store.dashboard.data.topUnpaid?.length ? (
-            <div className="flex flex-col gap-2 min-h-48">
-              {store.dashboard.data.topUnpaid.map(
-                ({ tenant, balance, rent }) => (
-                  <div
-                    key={tenant._id}
-                    className="flex items-center text-sm md:text-base"
-                  >
-                    <Button
-                      variant="link"
-                      onClick={() => {
-                        store.rent.setSelected(rent);
-                        store.rent.setFilters({ searchText: tenant.name });
-                        router.push(
-                          `/${store.organization.selected.name}/rents/${yearMonth}?search=${tenant.name}`
-                        );
-                      }}
-                      className="justify-start flex-grow p-0 m-0"
-                    >
-                      {tenant.name}
-                    </Button>
-                    <NumberFormat
-                      value={balance}
-                      withColor
-                      className="font-semibold"
-                    />
-                  </div>
-                )
-              )}
-            </div>
-          ) : (
-            <CelebrationIllustration
-              label={t('Well done! All rents are paid')}
-            />
-          )
-        }
       />
     </div>
   );

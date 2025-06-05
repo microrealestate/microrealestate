@@ -41,7 +41,7 @@ export default function PeriodPicker({
 
   return (
     <div
-      className={cn('flex items-center justify-between uppercase', className)}
+      className={cn('flex flex-col items-center uppercase gap-2', className)}
     >
       <span>{month.format(format)}</span>
       <div className="flex gap-2">

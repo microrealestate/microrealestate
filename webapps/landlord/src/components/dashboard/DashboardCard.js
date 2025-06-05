@@ -26,7 +26,7 @@ export function DashboardCard({
           {Icon ? <Icon className="size-6 text-muted-foreground" /> : null}
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex-grow flex justify-between items-center text-3xl xl:text-4xl font-medium">
+      <CardContent className="flex-grow flex justify-between items-center text-3xl xl:text-4xl font-medium space-x-2">
         <div className="w-full h-full">{renderContent?.()}</div>
         {onClick ? (
           <Button variant="link" className="p-0 m-0 h-fit" onClick={onClick}>
@@ -34,9 +34,11 @@ export function DashboardCard({
           </Button>
         ) : null}
       </CardContent>
-      <CardFooter>
-        <CardDescription className="text-xs">{description}</CardDescription>
-      </CardFooter>
+      {description ? (
+        <CardFooter>
+          <CardDescription className="text-xs">{description}</CardDescription>
+        </CardFooter>
+      ) : null}
     </Card>
   );
 }
