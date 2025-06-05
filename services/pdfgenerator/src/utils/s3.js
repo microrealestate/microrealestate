@@ -32,7 +32,7 @@ export function downloadFile(b2Config, url) {
       })
       .createReadStream();
   } catch (error) {
-    reject(error);
+    logger.error(error);
   }
 }
 
