@@ -23,17 +23,13 @@ export function isEnabled(b2Config) {
 
 export function downloadFile(b2Config, url) {
   logger.debug(`download ${url} from s3`);
-  try {
-    const s3 = _initS3(b2Config);
-    return s3
-      .getObject({
-        Bucket: b2Config.bucket,
-        Key: url
-      })
-      .createReadStream();
-  } catch (error) {
-    throw error;
-  }
+  const s3 = _initS3(b2Config);
+  return s3
+    .getObject({
+      Bucket: b2Config.bucket,
+      Key: url
+    })
+    .createReadStream();
 }
 
 export function uploadFile(b2Config, { file, fileName, url }) {

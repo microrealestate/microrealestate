@@ -60,7 +60,9 @@ export default function ResponsiveDialog({
           dismissible={dismissible}
           onInteractOutside={(e) => e.preventDefault()}
           onEscapeKeyDown={(e) => {
-            !dismissible && e.preventDefault();
+            if (!dismissible) {
+              e.preventDefault();
+            }
           }}
           className={fullScreen ? 'h-5/6 w-5/6 max-w-none' : 'max-w-fit'}
         >

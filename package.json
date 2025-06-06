@@ -40,7 +40,7 @@
     "start": "yarn run mre start",
     "stop": "yarn run mre stop",
     "ci": "yarn run mre ci",
-    "prepare": "husky"
+    "prepare": "husky install"
   },
   "lint-staged": {
     "*.{js,ts,tsx,jsx}": [

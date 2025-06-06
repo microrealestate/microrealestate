@@ -36,8 +36,8 @@ export default function useSession(): {
     if (getEnv('DEMO_MODE') === 'true') {
       setSession(mockedSession);
       setStatus(mockedSession.status);
-    } else {
-      !hasBeenFetched.current && fetch();
+    } else if (!hasBeenFetched.current) {
+      fetch();
     }
   }, [apiFetcher]);
 
