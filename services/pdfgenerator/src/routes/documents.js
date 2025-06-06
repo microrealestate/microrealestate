@@ -305,14 +305,30 @@ export default function () {
         // first try to download from file system
         const filePath = path.join(UPLOADS_DIRECTORY, documentFound.url);
         if (fs.existsSync(filePath)) {
-          return fs.createReadStream(filePath).pipe(res);
+          try {
+            return fs.createReadStream(filePath).pipe(res);
+          } catch (error) {
+            logger.error(
+              `cannot download file ${documentFound.url} from file system`,
+              error
+            );
+            throw new ServiceError('cannot download file', 404);
+          }
         }
 
         // otherwise download from s3
         if (s3.isEnabled(req.realm.thirdParties.b2)) {
-          return s3
-            .downloadFile(req.realm.thirdParties.b2, documentFound.url)
-            .pipe(res);
+          try {
+            return s3
+              .downloadFile(req.realm.thirdParties.b2, documentFound.url)
+              .pipe(res);
+          } catch (error) {
+            logger.error(
+              `cannot download file ${documentFound.url} from s3`,
+              error
+            );
+            throw new ServiceError('cannot download file', 404);
+          }
         }
       }
 
