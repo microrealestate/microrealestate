@@ -62,7 +62,7 @@ export async function send(
     logger.debug('fetch email data');
     data = await EmailData.build(templateName, recordId, params);
   } catch (error) {
-    logger.error(error);
+    logger.error('error getting email data:', error);
     throw new ServiceError(
       `no data found for ${templateName} recordId: ${recordId}`,
       404
@@ -71,28 +71,35 @@ export async function send(
   logger.debug(data);
 
   let recipientsList;
-  try {
-    logger.debug('get email recipients');
-    recipientsList = await EmailRecipients.build(
-      locale,
-      templateName,
-      recordId,
-      params,
-      data
-    );
-  } catch (error) {
-    logger.error(error);
-    throw new ServiceError(`missing recipients for ${templateName}`, 422);
-  }
+  if (ALLOW_SENDING_EMAILS) {
+    try {
+      logger.debug('get email recipients');
+      recipientsList = await EmailRecipients.build(
+        locale,
+        templateName,
+        recordId,
+        params,
+        data
+      );
+    } catch (error) {
+      logger.error('error getting recipients:', error);
+      throw new ServiceError(`missing recipients for ${templateName}`, 422);
+    }
 
-  if (!recipientsList?.length) {
-    throw new ServiceError(`missing recipient list for ${templateName}`, 422);
-  }
+    if (!recipientsList?.length) {
+      throw new ServiceError(`missing recipient list for ${templateName}`, 422);
+    }
 
-  if (recipientsList.some((r) => !r.to)) {
-    throw new ServiceError(`missing recipient email for ${templateName}`, 422);
+    if (recipientsList.some((r) => !r.to)) {
+      throw new ServiceError(
+        `missing recipient email for ${templateName}`,
+        422
+      );
+    }
+    logger.debug(recipientsList);
+  } else {
+    recipientsList = [{ to: 'test@example.com' }];
   }
-  logger.debug(recipientsList);
 
   let attachments;
   try {
@@ -107,7 +114,7 @@ export async function send(
       data
     );
   } catch (error) {
-    logger.error(error);
+    logger.error('error getting attachments:', error);
     throw new ServiceError(`attachment not found ${templateName}`, 404);
   }
 
@@ -123,7 +130,7 @@ export async function send(
       data
     );
   } catch (error) {
-    logger.error(error.message || error);
+    logger.error('error getting content:', error);
     throw new ServiceError(`missing content for ${templateName}`, 422);
   }
 
