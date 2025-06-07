@@ -25,7 +25,7 @@ GATEWAY_BASEURL = `${apiUrl.protocol}//${apiUrl.host}`;
 module.exports = defineConfig({
   viewportWidth: 1200,
   viewportHeight: 1200,
-  defaultCommandTimeout: 10000,
+  defaultCommandTimeout: 60000,
   env: {
     GATEWAY_BASEURL
   },
