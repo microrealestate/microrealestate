@@ -59,8 +59,8 @@
     "prettier": "3.5.2"
   },
   "resolutions": {
-    "axios": "^1.7.4",
-    "braces": "^3.0.3",
+    "axios": "1.8.4",
+    "braces": "3.0.3",
     "typescript": "5.5.4"
   },
   "engines": {

@@ -35,4 +35,6 @@ FROM gcr.io/distroless/nodejs20-debian12
 ENV NODE_ENV production
 WORKDIR /usr/app
 COPY --from=deps /usr/app ./
+
+USER 1000
 CMD ["services/resetservice/dist/index.js"]

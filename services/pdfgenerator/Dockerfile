@@ -47,4 +47,16 @@ ENV CHROMIUM_BIN /usr/bin/chromium-browser
 WORKDIR /usr/app
 COPY --from=deps /usr/app ./
 COPY services/pdfgenerator ./services/pdfgenerator
+# prepare temp directories
+RUN mkdir -p ./services/pdfgenerator/tmp \
+    && mkdir -p ./services/pdfgenerator/pdf_documents \
+    && mkdir -p ./services/pdfgenerator/uploads
+
+RUN chown -R 1000 ./services/pdfgenerator/data \
+    && chown -R 1000 ./services/pdfgenerator/templates \
+    && chown -R 1000 ./services/pdfgenerator/tmp \
+    && chown -R 1000 ./services/pdfgenerator/pdf_documents \
+    && chown -R 1000 ./services/pdfgenerator/uploads
+
+USER 1000
 CMD ["node", "services/pdfgenerator/src/index.js"]

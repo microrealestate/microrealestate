@@ -97,7 +97,9 @@ async function cleanupUnusedAttributes() {
       property.set('occupant', undefined, { strict: false });
       property.set('occupantLabel', undefined, { strict: false });
       property.set('priceWithExpenses', undefined, { strict: false });
-      property.set('price', Math.round(property.price * 100) / 100);
+      if (property.price) {
+        property.set('price', Math.round(property.price * 100) / 100);
+      }
       return await property.save();
     })
   );
@@ -130,7 +132,7 @@ export default async function migratedb() {
     await updateThirdPartyConfiguration();
     logger.info('Migration done');
   } catch (error) {
-    logger.error(error);
+    logger.error(String(error));
     failure = true;
   } finally {
     if (isRunningAsScript()) {
@@ -139,7 +141,7 @@ export default async function migratedb() {
         try {
           await db.disconnect();
         } catch (error) {
-          logger.error(error);
+          logger.error(String(error));
           failure = true;
         }
       }

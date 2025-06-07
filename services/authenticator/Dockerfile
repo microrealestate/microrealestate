@@ -34,4 +34,6 @@ ENV NODE_ENV production
 WORKDIR /usr/app
 COPY --from=deps /usr/app ./
 COPY services/authenticator /usr/app/services/authenticator
+
+USER 1000
 CMD ["services/authenticator/src/index.js"]

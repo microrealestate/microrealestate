@@ -38,4 +38,6 @@ RUN apk --no-cache add mongodb-tools
 WORKDIR /usr/app
 COPY --from=deps /usr/app ./
 COPY services/api /usr/app/services/api
+
+USER 1000
 CMD ["node", "services/api/src/index.js"]

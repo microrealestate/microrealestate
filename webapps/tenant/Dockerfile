@@ -41,4 +41,6 @@ COPY --from=build /usr/app/webapps/tenant/.next/standalone/webapps/tenant ./
 COPY --from=build /usr/app/webapps/tenant/.next/static ./.next/static
 COPY --from=build /usr/app/webapps/commonui/scripts/replacebasepath.js ./
 COPY --from=build /usr/app/webapps/commonui/scripts/runner.js ./
+
+USER 1000
 CMD ["runner.js"]

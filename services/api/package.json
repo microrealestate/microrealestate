@@ -26,14 +26,14 @@
   "license": "MIT",
   "dependencies": {
     "@microrealestate/common": "*",
-    "axios": "1.7.4",
+    "axios": "1.8.4",
     "i18n": "0.13.3",
     "json2csv": "5.0.6",
     "jsonwebtoken": "9.0.0",
     "lodash": "4.17.21",
     "moment": "2.29.4",
     "mongobackup": "0.3.5",
-    "nanoid": "5.0.7"
+    "nanoid": "5.1.0"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "7.15.0",

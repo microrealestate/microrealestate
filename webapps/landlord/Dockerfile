@@ -44,4 +44,6 @@ COPY --from=build /usr/app/webapps/landlord/.next/static ./.next/static
 COPY --from=build /usr/app/webapps/commonui/scripts/generateruntimeenvfile.js ./
 COPY --from=build /usr/app/webapps/commonui/scripts/replacebasepath.js ./
 COPY --from=build /usr/app/webapps/commonui/scripts/runner.js ./
+
+USER 1000
 CMD ["runner.js"]

@@ -161,9 +161,7 @@ describe('User access', () => {
     cy.get('[data-cy=signup]').click();
     cy.signUp(userWithPersonalAccount);
     cy.checkUrl('/signup');
-    cy.get('ol.toaster > li').should(
-      'have.text',
-      i18n.getFixedT('en')('This user is already registered')
-    );
+    cy.get('input[name=email]').should('be.empty');
+    cy.get('input[name=password]').should('be.empty');
   });
 });
