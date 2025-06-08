@@ -61,6 +61,11 @@
   "resolutions": {
     "axios": "1.8.4",
     "braces": "3.0.3",
+    "cross-spawn": "7.0.5",
+    "esbuild": "0.25.0",
+    "nanoid": "3.3.8",
+    "path-to-regexp": "0.1.12",
+    "tar-fs": "3.0.9",
     "typescript": "5.5.4"
   },
   "engines": {

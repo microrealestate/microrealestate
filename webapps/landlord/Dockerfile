@@ -33,6 +33,9 @@ COPY webapps/landlord/postcss.config.js webapps/landlord
 COPY webapps/landlord/tailwind.config.js webapps/landlord
 COPY webapps/landlord/tsconfig.json webapps/landlord
 RUN  yarn workspace @microrealestate/landlord run build
+# following lines needed to be able to run webapps/commonui/scripts at container runtime
+RUN chown -R 1000 /usr/app/webapps/landlord/.next && \
+    chown -R 1000 /usr/app/webapps/landlord/public
 
 FROM gcr.io/distroless/nodejs20-debian12
 WORKDIR /usr/app
