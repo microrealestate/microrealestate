@@ -11,7 +11,7 @@ export namespace CollectionTypes {
   export type PartAddress = {
     street1: string;
     street2?: string;
-    zipCode: string;
+    zipCode?: string;
     city: string;
     state?: string;
     country: string;
@@ -232,7 +232,7 @@ export namespace CollectionTypes {
     capital: number;
     street1: string;
     street2: string;
-    zipCode: string;
+    zipCode?: string;
     city: string;
     country: string;
     contacts: {
