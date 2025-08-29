@@ -85,6 +85,9 @@ async function _getTemplateValues(organization, tenantId, leaseId) {
   const templateValues = {
     current: {
       date: today.format('LL'),
+      day: today.format('D'),
+      month: today.format('MMMM'),
+      year: today.format('YYYY'),
       location: organization.addresses?.[0]?.city
     },
 
