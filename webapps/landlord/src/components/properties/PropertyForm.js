@@ -29,7 +29,8 @@ const validationSchema = Yup.object().shape({
     state: Yup.string(),
     country: Yup.string()
   }),
-  rent: Yup.number().min(0).required()
+  rent: Yup.number().min(0).required(),
+  constructionDate: Yup.date().nullable()
 });
 
 const PropertyForm = observer(({ onSubmit }) => {

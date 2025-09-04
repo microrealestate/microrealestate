@@ -21,7 +21,8 @@ const PropertySchema = new mongoose.Schema<CollectionTypes.Property>({
     country: String
   },
 
-  price: Number
+  price: Number,
+  constructionDate: Date
 });
 export default mongoose.model<CollectionTypes.Property>(
   'Property',

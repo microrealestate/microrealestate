@@ -40,6 +40,11 @@ export default function PropertyListItem({ property }) {
             <div className="text-xs font-normal text-muted-foreground">
               {property.description}
             </div>
+            {property.constructionDate && (
+              <div className="text-xs text-muted-foreground mt-1">
+                {t('Construction Date')}: {new Date(property.constructionDate).toLocaleDateString()}
+              </div>
+            )}
           </div>
         </CardTitle>
       </CardHeader>

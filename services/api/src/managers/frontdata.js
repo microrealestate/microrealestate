@@ -388,6 +388,8 @@ export function toProperty(inputProperty, inputOccupant, inputOccupants) {
 
     price: inputProperty.price,
 
+    constructionDate: inputProperty.constructionDate,
+    
     beginDate: '',
     endDate: '',
     lastBusyDay: '',
