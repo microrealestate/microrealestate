@@ -92,7 +92,8 @@ async function _getTemplateValues(organization, tenantId, leaseId) {
       name: organization.name,
       contact: organization.contacts?.[0] || {},
       address: organization.addresses?.[0] || {},
-      companyInfo: landlordCompanyInfo
+      companyInfo: landlordCompanyInfo,
+      signature: organization.signature || ''
     },
 
     tenant: {
