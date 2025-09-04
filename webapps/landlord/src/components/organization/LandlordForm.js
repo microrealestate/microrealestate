@@ -12,15 +12,17 @@ import {
   RadioFieldGroup,
   SelectField,
   SubmitButton,
-  TextField
+  TextField,
+  UploadField
 } from '@microrealestate/commonui/components';
-import { useCallback, useContext, useMemo } from 'react';
+import { useCallback, useContext, useMemo, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import cc from 'currency-codes';
 import config from '../../config';
 import getSymbolFromCurrency from 'currency-symbol-map';
 import { StoreContext } from '../../store';
 import { toast } from 'sonner';
+import { uploadDocument } from '../../utils/fetch';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 
@@ -87,6 +89,7 @@ export default function LandlordForm({ organization, firstAccess }) {
   const store = useContext(StoreContext);
   const router = useRouter();
   const queryClient = useQueryClient();
+  const [signatureUploading, setSignatureUploading] = useState(false);
   const mutateCreateOrganization = useMutation({
     mutationFn: createOrganization,
     onSuccess: (createdOrgpanization) => {
@@ -120,13 +123,35 @@ export default function LandlordForm({ organization, firstAccess }) {
       company: organization?.companyInfo?.name || '',
       ein: organization?.companyInfo?.ein || '',
       dos: organization?.companyInfo?.dos || '',
-      capital: organization?.companyInfo?.capital || ''
+      capital: organization?.companyInfo?.capital || '',
+      signature: null
     }),
     [organization]
   );
 
   const onSubmit = useCallback(
     async (landlord) => {
+      // Handle signature upload if present
+      let signatureUrl = organization?.signature || '';
+      if (landlord.signature) {
+        try {
+          setSignatureUploading(true);
+          const response = await uploadDocument({
+            endpoint: '/documents/upload',
+            documentName: `signature_${Date.now()}`,
+            file: landlord.signature,
+            folder: 'signatures'
+          });
+          signatureUrl = response.data.key;
+        } catch (error) {
+          console.error(error);
+          toast.error(t('Cannot upload signature'));
+          return;
+        } finally {
+          setSignatureUploading(false);
+        }
+      }
+
       if (firstAccess) {
         const createdOrgpanization = {
           ...landlord,
@@ -155,7 +180,8 @@ export default function LandlordForm({ organization, firstAccess }) {
           name: landlord.name,
           isCompany: landlord.isCompany === 'true',
           currency: landlord.currency,
-          locale: landlord.locale
+          locale: landlord.locale,
+          signature: signatureUrl
         };
 
         if (updatedOrgPart.isCompany) {
@@ -258,9 +284,28 @@ export default function LandlordForm({ organization, firstAccess }) {
                 <NumberField label={t('Capital')} name="capital" />
               </>
             )}
+            <div className="mt-6">
+              <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                {t('Signature')}
+              </label>
+              <div className="text-xs text-muted-foreground mt-1 mb-2">
+                {t('Upload your signature image or SVG to be included in documents')}
+              </div>
+              {organization?.signature && (
+                <div className="mb-2 text-xs text-green-600">
+                  {t('Current signature uploaded')}
+                </div>
+              )}
+              <UploadField
+                name="signature"
+                accept="image/*,.svg"
+                disabled={signatureUploading}
+              />
+            </div>
             <SubmitButton
               size="large"
               label={!isSubmitting ? t('Save') : t('Saving')}
+              disabled={signatureUploading}
             />
           </Form>
         );
