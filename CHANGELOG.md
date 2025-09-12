@@ -14,6 +14,8 @@ All notable changes to this project will be documented here.
 
 - Added Total Rent Including Charges and VAT fields in the text editor #237
 
+- Added keywords for current date (day, month, year) in the text editor #238
+
 ### Contributors
 
 - [@camelaissani](https://github.com/camelaissani)
@@ -43,7 +45,6 @@ All notable changes to this project will be documented here.
 - [@camelaissani](https://github.com/camelaissani)
 
 - [@mykael90](https://github.com/mykael90)
-
 
 ## 1.0.0-alpha.2
 
@@ -106,7 +107,6 @@ All notable changes to this project will be documented here.
 - [@MrTob](https://github.com/MrTob)
 
 - [@gasp](https://github.com/gasp)
-
 
 ## 1.0.0-alpha.1
 
