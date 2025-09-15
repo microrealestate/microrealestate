@@ -343,7 +343,7 @@ export default function () {
     uploadMiddleware(),
     Middlewares.asyncWrapper(async (req, res) => {
       const key = [req.body.s3Dir, req.body.fileName].join('/');
-      if (s3.isEnabled(req.realm.thirdParties.b2)) {
+      if (s3.isEnabled(req.realm.thirdParties?.b2)) {
         try {
           const data = await s3.uploadFile(req.realm.thirdParties.b2, {
             file: req.file,
