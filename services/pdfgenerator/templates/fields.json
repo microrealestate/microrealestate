@@ -10,6 +10,21 @@
     "type": "date"
   },
   {
+    "_id": "current_day",
+    "marker": "{{current.day}}",
+    "type": "string"
+  },
+  {
+    "_id": "current_month",
+    "marker": "{{current.month}}",
+    "type": "string"
+  },
+  {
+    "_id": "current_year",
+    "marker": "{{current.year}}",
+    "type": "string"
+  },
+  {
     "_id": "landlord_name",
     "marker": "{{landlord.name}}",
     "type": "string"
