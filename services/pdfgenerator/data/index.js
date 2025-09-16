@@ -1,5 +1,8 @@
-import { Collections, logger } from '@microrealestate/common';
+import { Collections, logger, Service } from '@microrealestate/common';
+import fileUrl from 'file-url';
+import fs from 'fs-extra';
 import moment from 'moment';
+import path from 'path';
 
 export async function getRentsData(params) {
   const { id: tenantId, term } = params;
@@ -26,6 +29,20 @@ export async function getRentsData(params) {
   landlord.hasBankInfo = !!landlord.bankInfo;
   landlord.hasAddress = !!landlord.addresses?.length;
   landlord.hasContact = !!landlord.contacts?.length;
+  landlord.hasSignature = !!landlord.signature;
+  if (landlord.signature) {
+    // Create the signature file URL for EJS templates (similar to logo)
+    const { UPLOADS_DIRECTORY } = Service.getInstance().envConfig.getValues();
+    const signaturePath = path.join(UPLOADS_DIRECTORY, landlord.signature);
+
+    // Check if signature file exists
+    if (fs.existsSync(signaturePath)) {
+      landlord.signatureUrl = fileUrl(signaturePath);
+    } else {
+      logger.warn(`Signature file not found: ${signaturePath}`);
+      landlord.hasSignature = false;
+    }
+  }
 
   let rents = [];
   if (dbTenant.rents.length) {
