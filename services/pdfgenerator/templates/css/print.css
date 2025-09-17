@@ -162,6 +162,17 @@ span.error {
   left: 10mm;
   right: 10mm;
 }
+.signature {
+  position: absolute;
+  bottom: 35mm;
+  right: 10mm;
+  text-align: right;
+}
+.signature img {
+  max-width: 80mm;
+  max-height: 25mm;
+  display: block;
+}
 .txtAlignRight,
 .subtotal,
 .total,
