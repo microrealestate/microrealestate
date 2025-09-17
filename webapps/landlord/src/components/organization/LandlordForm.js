@@ -150,6 +150,7 @@ export default function LandlordForm({ organization, firstAccess }) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [signatureUploading, setSignatureUploading] = useState(false);
+  const [signatureRemoving, setSignatureRemoving] = useState(false);
   const mutateCreateOrganization = useMutation({
     mutationFn: createOrganization,
     onSuccess: (createdOrgpanization) => {
@@ -163,6 +164,27 @@ export default function LandlordForm({ organization, firstAccess }) {
       queryClient.invalidateQueries({ queryKey: [QueryKeys.ORGANIZATIONS] });
     }
   });
+  const removeSignature = useCallback(async () => {
+    try {
+      setSignatureRemoving(true);
+      
+      const updatedOrgPart = {
+        signature: '' // Clear the signature
+      };
+
+      await mutateUpdateOrganization.mutateAsync({
+        store,
+        organization: mergeOrganization(organization, updatedOrgPart)
+      });
+      
+      toast.success(t('Signature removed successfully'));
+    } catch (error) {
+      console.error(error);
+      toast.error(t('Cannot remove signature'));
+    } finally {
+      setSignatureRemoving(false);
+    }
+  }, [store, organization, mutateUpdateOrganization, t]);
 
   if (mutateCreateOrganization.isError) {
     toast.error(t('Error creating organization'));
@@ -363,22 +385,30 @@ export default function LandlordForm({ organization, firstAccess }) {
                       signature={organization.signature}
                       alt={t('Current signature')}
                     />
-                    <div className="text-xs text-muted-foreground">
+                    <div className="flex-1 text-xs text-muted-foreground">
                       {t('Your signature will appear in generated documents')}
                     </div>
+                    <button
+                      type="button"
+                      onClick={removeSignature}
+                      disabled={signatureRemoving || isSubmitting}
+                      className="px-3 py-1 text-xs bg-red-500 hover:bg-red-600 disabled:bg-red-300 text-white rounded transition-colors"
+                    >
+                      {signatureRemoving ? t('Removing...') : t('Remove')}
+                    </button>
                   </div>
                 </div>
               )}
               <UploadField
                 name="signature"
                 accept="image/*,.svg"
-                disabled={signatureUploading}
+                disabled={signatureUploading || signatureRemoving}
               />
             </div>
             <SubmitButton
               size="large"
               label={!isSubmitting ? t('Save') : t('Saving')}
-              disabled={signatureUploading}
+              disabled={signatureUploading || signatureRemoving}
             />
           </Form>
         );
