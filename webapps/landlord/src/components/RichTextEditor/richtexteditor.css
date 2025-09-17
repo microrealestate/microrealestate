@@ -198,6 +198,23 @@
   border-radius: 16px;
 }
 
+.ProseMirror .editor-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.ProseMirror .editor-image:hover {
+  opacity: 0.8;
+}
+
+.ProseMirror .editor-image.ProseMirror-selectednode {
+  border: 2px solid #68cef8;
+  outline: none;
+}
+
 .tableWrapper {
   padding: 1rem 0;
   overflow-x: auto;

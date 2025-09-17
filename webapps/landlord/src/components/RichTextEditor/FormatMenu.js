@@ -7,6 +7,7 @@ import {
   RiBold,
   RiDoubleQuotesR,
   RiFormatClear,
+  RiImageFill,
   RiItalic,
   RiListOrdered,
   RiListUnordered,
@@ -28,6 +29,7 @@ import { Button } from '../ui/button';
 import { handlePrint } from './helpers';
 import { Separator } from '../ui/separator';
 import { Toggle } from '../ui/toggle';
+import { useRef } from 'react';
 import useTranslation from 'next-translate/useTranslation';
 
 const getHeadingLevel = (editor) => {
@@ -91,6 +93,8 @@ function HeadingSelect({ editor }) {
 }
 
 const FormatMenu = ({ editor, showPrintButton }) => {
+  const fileInputRef = useRef(null);
+
   if (!editor) {
     return null;
   }
@@ -106,6 +110,41 @@ const FormatMenu = ({ editor, showPrintButton }) => {
   const orderedListActive = editor.isActive('orderedList');
   const blockquoteActive = editor.isActive('blockquote');
   const superscriptActive = editor.isActive('superscript');
+
+  const handleImageClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleImageUpload = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Check if file is an image
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file');
+      return;
+    }
+
+    // Convert to base64 and insert into editor
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const src = e.target?.result;
+      if (src) {
+        editor.chain().focus().setImage({ src }).run();
+      }
+    };
+    reader.readAsDataURL(file);
+
+    // Reset the input
+    event.target.value = '';
+  };
+
+  const handleImageByUrl = () => {
+    const url = window.prompt('Enter image URL:');
+    if (url) {
+      editor.chain().focus().setImage({ src: url }).run();
+    }
+  };
 
   return (
     <div className="flex">
@@ -235,6 +274,32 @@ const FormatMenu = ({ editor, showPrintButton }) => {
       >
         <RiSeparator />
       </Button>
+      <Separator orientation="vertical" />
+      <Button
+        variant="ghost"
+        size="icon"
+        disabled={!editor.isEditable}
+        onClick={handleImageClick}
+        title="Insert image from file"
+      >
+        <RiImageFill />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        disabled={!editor.isEditable}
+        onClick={handleImageByUrl}
+        title="Insert image from URL"
+      >
+        🔗
+      </Button>
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleImageUpload}
+        accept="image/*"
+        style={{ display: 'none' }}
+      />
       {showPrintButton && (
         <>
           <Separator orientation="vertical" />

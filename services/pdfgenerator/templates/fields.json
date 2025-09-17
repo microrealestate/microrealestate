@@ -45,6 +45,11 @@
     "type": "string"
   },
   {
+    "_id": "landlord_signature",
+    "marker": "{{landlord.signature}}",
+    "type": "image"
+  },
+  {
     "_id": "landlord_address_street1",
     "marker": "{{landlord.address.street1}}",
     "type": "string"
