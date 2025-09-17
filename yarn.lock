@@ -2129,6 +2129,7 @@ __metadata:
     "@react-pdf-viewer/print": 3.12.0
     "@tanstack/react-query": 5.29.0
     "@tiptap/core": 2.6.6
+    "@tiptap/extension-image": ^3.4.3
     "@tiptap/extension-placeholder": 2.6.6
     "@tiptap/extension-superscript": 2.6.6
     "@tiptap/extension-table": 2.6.6
@@ -5148,6 +5149,15 @@ __metadata:
     "@tiptap/core": ^2.7.0
     "@tiptap/pm": ^2.7.0
   checksum: cea7d7f8bdc69f6395d4a5fc6ba250e10a358f75cc3e314eb357ad8e1fe3b0879f41808cb711d045940737991772042195bb80364568b7e2dcea40bf41426b60
+  languageName: node
+  linkType: hard
+
+"@tiptap/extension-image@npm:^3.4.3":
+  version: 3.4.3
+  resolution: "@tiptap/extension-image@npm:3.4.3"
+  peerDependencies:
+    "@tiptap/core": ^3.4.3
+  checksum: 5e8a7301a4a596f7fb852dc7df26347266be6365737e0fb987c6d257e78f628f3e6f68f7b86640e1c45dc2b2b74d8e35e45ca730b3d0a8b0de315e0af6b6bc8f
   languageName: node
   linkType: hard
 
