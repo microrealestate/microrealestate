@@ -4,6 +4,7 @@ import {
   QueryKeys,
   updateOrganization
 } from '../../utils/restcalls';
+import { apiFetcher } from '../../utils/fetch';
 import { Form, Formik } from 'formik';
 import { mergeOrganization, updateStoreOrganization } from './utils';
 import {
@@ -15,7 +16,7 @@ import {
   TextField,
   UploadField
 } from '@microrealestate/commonui/components';
-import { useCallback, useContext, useMemo, useState } from 'react';
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import cc from 'currency-codes';
 import config from '../../config';
@@ -83,6 +84,65 @@ const languages = [
   { id: 'de-DE', label: 'Deutsch (Deutschland)', value: 'de-DE' },
   { id: 'es-CO', label: 'Español (Colombia)', value: 'es-CO' }
 ];
+
+// Component to handle authenticated signature thumbnail display
+function SignatureThumbnail({ signature, alt }) {
+  const { t } = useTranslation('common');
+  const [imageSrc, setImageSrc] = useState(null);
+  const [hasError, setHasError] = useState(false);
+
+  useEffect(() => {
+    const fetchSignatureImage = async () => {
+      try {
+        // Extract filename from the full path
+        const filename = signature.split('/').pop() || signature;
+        const response = await apiFetcher().get(
+          `/documents/signature/${encodeURIComponent(filename)}`,
+          {
+            responseType: 'blob'
+          }
+        );
+
+        // Create a blob URL for the image
+        const imageUrl = URL.createObjectURL(response.data);
+        setImageSrc(imageUrl);
+      } catch (error) {
+        console.error('Failed to load signature image:', error);
+        setHasError(true);
+      }
+    };
+
+    if (signature) {
+      fetchSignatureImage();
+    }
+
+    // Cleanup blob URL when component unmounts
+    return () => {
+      if (imageSrc) {
+        URL.revokeObjectURL(imageSrc);
+      }
+    };
+  }, [signature]);
+
+  return (
+    <div className="flex items-center justify-center min-h-16 max-h-16 min-w-32 max-w-32 border border-border rounded bg-white p-2">
+      {!hasError && imageSrc ? (
+        <img
+          src={imageSrc}
+          alt={alt}
+          className="max-h-full max-w-full object-contain"
+          onError={() => setHasError(true)}
+        />
+      ) : (
+        <div className="text-xs text-muted-foreground text-center">
+          📝
+          <br />
+          {t('Signature uploaded')}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function LandlordForm({ organization, firstAccess }) {
   const { t } = useTranslation('common');
@@ -289,11 +349,24 @@ export default function LandlordForm({ organization, firstAccess }) {
                 {t('Signature')}
               </label>
               <div className="text-xs text-muted-foreground mt-1 mb-2">
-                {t('Upload your signature image or SVG to be included in documents')}
+                {t(
+                  'Upload your signature image or SVG to be included in documents'
+                )}
               </div>
               {organization?.signature && (
-                <div className="mb-2 text-xs text-green-600">
-                  {t('Current signature uploaded')}
+                <div className="mb-4 p-3 border border-border rounded-lg bg-muted/50">
+                  <div className="text-xs text-green-600 mb-2">
+                    {t('Current signature:')}
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <SignatureThumbnail
+                      signature={organization.signature}
+                      alt={t('Current signature')}
+                    />
+                    <div className="text-xs text-muted-foreground">
+                      {t('Your signature will appear in generated documents')}
+                    </div>
+                  </div>
                 </div>
               )}
               <UploadField

@@ -88,6 +88,7 @@ export namespace CollectionTypes {
     };
     locale: Locale;
     currency: string;
+    signature?: string;
   };
 
   export type Document = {

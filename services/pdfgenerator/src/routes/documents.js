@@ -272,6 +272,74 @@ export default function () {
   );
 
   documentsApi.get(
+    '/signature/:filename',
+    Middlewares.asyncWrapper(async (req, res) => {
+      const filename = req.params.filename;
+
+      if (!filename) {
+        logger.error('missing signature filename');
+        throw new ServiceError('missing fields', 422);
+      }
+
+      // Decode the filename and check for path traversal
+      const decodedFilename = decodeURIComponent(filename);
+      if (decodedFilename.indexOf('..') !== -1) {
+        logger.error('signature filename invalid containing ".."');
+        throw new ServiceError('missing fields', 422);
+      }
+
+      // Check if the current organization has this signature file
+      // Extract filename from the organization's signature path for comparison
+      const organizationSignatureFilename = req.realm.signature
+        ? req.realm.signature.split('/').pop()
+        : null;
+
+      if (
+        !organizationSignatureFilename ||
+        organizationSignatureFilename !== decodedFilename
+      ) {
+        logger.warn(
+          `signature access denied for filename: ${decodedFilename}, organization signature: ${req.realm.signature}`
+        );
+        throw new ServiceError('signature not found', 404);
+      }
+
+      // first try to download from file system
+      // Use the full signature path from the organization
+      const filePath = path.join(UPLOADS_DIRECTORY, req.realm.signature);
+      if (fs.existsSync(filePath)) {
+        try {
+          return fs.createReadStream(filePath).pipe(res);
+        } catch (error) {
+          logger.error(
+            `cannot download signature file ${req.realm.signature} from file system`,
+            error
+          );
+          throw new ServiceError('cannot download signature file', 404);
+        }
+      }
+
+      // otherwise download from s3
+      if (s3.isEnabled(req.realm.thirdParties.b2)) {
+        try {
+          return s3
+            .downloadFile(req.realm.thirdParties.b2, req.realm.signature)
+            .pipe(res);
+        } catch (error) {
+          logger.error(
+            `cannot download signature file ${req.realm.signature} from s3`,
+            error
+          );
+          throw new ServiceError('cannot download signature file', 404);
+        }
+      }
+
+      logger.error(`signature file ${decodedFilename} not found`);
+      throw new ServiceError('signature file not found', 404);
+    })
+  );
+
+  documentsApi.get(
     '/:id',
     Middlewares.asyncWrapper(async (req, res) => {
       const documentId = req.params.id;

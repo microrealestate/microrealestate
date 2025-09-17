@@ -88,7 +88,8 @@ const RealmSchema = new mongoose.Schema<CollectionTypes.Realm>({
     }
   },
   locale: String,
-  currency: String
+  currency: String,
+  signature: String
 });
 //
 // hash application secrets before saving into database

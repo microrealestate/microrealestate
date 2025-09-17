@@ -94,7 +94,7 @@ function HeadingSelect({ editor }) {
 
 const FormatMenu = ({ editor, showPrintButton }) => {
   const fileInputRef = useRef(null);
-  
+
   if (!editor) {
     return null;
   }
