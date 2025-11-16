@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import EditorMenu from './EditorMenu';
 import { handlePageBreaks } from './helpers';
-import Image from '@tiptap/extension-image';
+import Image from './ImageExtension';
 import jsesc from 'jsesc';
 import Placeholder from '@tiptap/extension-placeholder';
 import StarterKit from '@tiptap/starter-kit';
@@ -45,7 +45,7 @@ const RichTextEditor = ({
       }),
       Underline,
       TextAlign.configure({
-        types: ['heading', 'paragraph']
+        types: ['heading', 'paragraph', 'image']
       }),
       Superscript,
       Table.configure({
@@ -58,7 +58,7 @@ const RichTextEditor = ({
         inline: true,
         allowBase64: true,
         HTMLAttributes: {
-          class: 'editor-image'
+          class: 'editor-image',
         }
       }),
       TemplateNode.configure({

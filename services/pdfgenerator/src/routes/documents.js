@@ -216,8 +216,23 @@ function _resolveTemplates(element, templateValues) {
   }
 
   if (element.type === 'template') {
+    const resolvedTemplate = Handlebars.compile(element.attrs.id)(
+      templateValues
+    );
+
+    if (element.attrs?.id === '{{landlord.signature}}') {
+      element.type = 'image';
+      element.attrs = {
+        ...element.attrs,
+        'data-template-id': 'template.landlord.signature',
+        src: resolvedTemplate || null,
+        alt: 'Landlord signature'
+      };
+      return element;
+    }
+
     element.type = 'text';
-    element.text = Handlebars.compile(element.attrs.id)(templateValues) || ' '; // empty text node are not allowed in tiptap editor
+    element.text = resolvedTemplate || ' '; // empty text node are not allowed in tiptap editor
     // TODO check if this doesn't open XSS issues
     element.text = element.text.replace(/&#x27;/g, "'");
     delete element.attrs;
@@ -268,74 +283,6 @@ export default function () {
       }
 
       return res.status(200).json(documentsFound);
-    })
-  );
-
-  documentsApi.get(
-    '/signature/:filename',
-    Middlewares.asyncWrapper(async (req, res) => {
-      const filename = req.params.filename;
-
-      if (!filename) {
-        logger.error('missing signature filename');
-        throw new ServiceError('missing fields', 422);
-      }
-
-      // Decode the filename and check for path traversal
-      const decodedFilename = decodeURIComponent(filename);
-      if (decodedFilename.indexOf('..') !== -1) {
-        logger.error('signature filename invalid containing ".."');
-        throw new ServiceError('missing fields', 422);
-      }
-
-      // Check if the current organization has this signature file
-      // Extract filename from the organization's signature path for comparison
-      const organizationSignatureFilename = req.realm.signature
-        ? req.realm.signature.split('/').pop()
-        : null;
-
-      if (
-        !organizationSignatureFilename ||
-        organizationSignatureFilename !== decodedFilename
-      ) {
-        logger.warn(
-          `signature access denied for filename: ${decodedFilename}, organization signature: ${req.realm.signature}`
-        );
-        throw new ServiceError('signature not found', 404);
-      }
-
-      // first try to download from file system
-      // Use the full signature path from the organization
-      const filePath = path.join(UPLOADS_DIRECTORY, req.realm.signature);
-      if (fs.existsSync(filePath)) {
-        try {
-          return fs.createReadStream(filePath).pipe(res);
-        } catch (error) {
-          logger.error(
-            `cannot download signature file ${req.realm.signature} from file system`,
-            error
-          );
-          throw new ServiceError('cannot download signature file', 404);
-        }
-      }
-
-      // otherwise download from s3
-      if (s3.isEnabled(req.realm.thirdParties.b2)) {
-        try {
-          return s3
-            .downloadFile(req.realm.thirdParties.b2, req.realm.signature)
-            .pipe(res);
-        } catch (error) {
-          logger.error(
-            `cannot download signature file ${req.realm.signature} from s3`,
-            error
-          );
-          throw new ServiceError('cannot download signature file', 404);
-        }
-      }
-
-      logger.error(`signature file ${decodedFilename} not found`);
-      throw new ServiceError('signature file not found', 404);
     })
   );
 
@@ -444,16 +391,6 @@ export default function () {
     '/',
     Middlewares.asyncWrapper(async (req, res) => {
       const dataSet = req.body || {};
-
-      if (!dataSet.tenantId) {
-        logger.error('missing tenant Id to generate document');
-        throw new ServiceError('missing fields', 422);
-      }
-
-      if (!dataSet.leaseId) {
-        logger.error('missing lease Id to generate document');
-        throw new ServiceError('missing fields', 422);
-      }
 
       let template;
       if (dataSet.templateId) {

@@ -103,7 +103,10 @@ const FormatMenu = ({ editor, showPrintButton }) => {
   const italicActive = editor.isActive('italic');
   const underlineActive = editor.isActive('underline');
   const strikeActive = editor.isActive('strike');
-  const alignLeftActive = editor.isActive({ textAlign: 'left' });
+  const alignLeftActive =
+    editor.isActive({ textAlign: 'left' }) &&
+    !editor.isActive({ textAlign: 'center' }) &&
+    !editor.isActive({ textAlign: 'right' });
   const alignCenterActive = editor.isActive({ textAlign: 'center' });
   const alignRightActive = editor.isActive({ textAlign: 'right' });
   const bulletListActive = editor.isActive('bulletList');

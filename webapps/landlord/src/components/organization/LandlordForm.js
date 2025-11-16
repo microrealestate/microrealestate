@@ -4,7 +4,6 @@ import {
   QueryKeys,
   updateOrganization
 } from '../../utils/restcalls';
-import { apiFetcher } from '../../utils/fetch';
 import { Form, Formik } from 'formik';
 import { mergeOrganization, updateStoreOrganization } from './utils';
 import {
@@ -16,11 +15,12 @@ import {
   TextField,
   UploadField
 } from '@microrealestate/commonui/components';
-import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { useCallback, useContext, useMemo, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import cc from 'currency-codes';
 import config from '../../config';
 import getSymbolFromCurrency from 'currency-symbol-map';
+import SignatureThumbnail from './SignatureThumbnail';
 import { StoreContext } from '../../store';
 import { toast } from 'sonner';
 import { uploadDocument } from '../../utils/fetch';
@@ -85,64 +85,12 @@ const languages = [
   { id: 'es-CO', label: 'Español (Colombia)', value: 'es-CO' }
 ];
 
-// Component to handle authenticated signature thumbnail display
-function SignatureThumbnail({ signature, alt }) {
-  const { t } = useTranslation('common');
-  const [imageSrc, setImageSrc] = useState(null);
-  const [hasError, setHasError] = useState(false);
+// Create a hash from file attributes to uniquely identify files
+const createFileHash = (file) => {
+  if (!file || typeof file !== 'object') return null;
 
-  useEffect(() => {
-    const fetchSignatureImage = async () => {
-      try {
-        // Extract filename from the full path
-        const filename = signature.split('/').pop() || signature;
-        const response = await apiFetcher().get(
-          `/documents/signature/${encodeURIComponent(filename)}`,
-          {
-            responseType: 'blob'
-          }
-        );
-
-        // Create a blob URL for the image
-        const imageUrl = URL.createObjectURL(response.data);
-        setImageSrc(imageUrl);
-      } catch (error) {
-        console.error('Failed to load signature image:', error);
-        setHasError(true);
-      }
-    };
-
-    if (signature) {
-      fetchSignatureImage();
-    }
-
-    // Cleanup blob URL when component unmounts
-    return () => {
-      if (imageSrc) {
-        URL.revokeObjectURL(imageSrc);
-      }
-    };
-  }, [signature]);
-
-  return (
-    <div className="flex items-center justify-center min-h-16 max-h-16 min-w-32 max-w-32 border border-border rounded bg-white p-2">
-      {!hasError && imageSrc ? (
-        <img
-          src={imageSrc}
-          alt={alt}
-          className="max-h-full max-w-full object-contain"
-          onError={() => setHasError(true)}
-        />
-      ) : (
-        <div className="text-xs text-muted-foreground text-center">
-          📝
-          <br />
-          {t('Signature uploaded')}
-        </div>
-      )}
-    </div>
-  );
-}
+  return `${file.lastModified}-${file.name}-${file.size}-${file.type}`;
+};
 
 export default function LandlordForm({ organization, firstAccess }) {
   const { t } = useTranslation('common');
@@ -151,6 +99,8 @@ export default function LandlordForm({ organization, firstAccess }) {
   const queryClient = useQueryClient();
   const [signatureUploading, setSignatureUploading] = useState(false);
   const [signatureRemoving, setSignatureRemoving] = useState(false);
+  const lastSignatureHashRef = useRef(null);
+
   const mutateCreateOrganization = useMutation({
     mutationFn: createOrganization,
     onSuccess: (createdOrgpanization) => {
@@ -164,20 +114,18 @@ export default function LandlordForm({ organization, firstAccess }) {
       queryClient.invalidateQueries({ queryKey: [QueryKeys.ORGANIZATIONS] });
     }
   });
-  const removeSignature = useCallback(async () => {
+
+  const handleRemoveSignature = useCallback(async () => {
     try {
       setSignatureRemoving(true);
-      
-      const updatedOrgPart = {
-        signature: '' // Clear the signature
-      };
-
       await mutateUpdateOrganization.mutateAsync({
         store,
-        organization: mergeOrganization(organization, updatedOrgPart)
+        organization: mergeOrganization(organization, { signature: '' })
       });
-      
-      toast.success(t('Signature removed successfully'));
+      await store.document.delete([organization.signature]);
+
+      // Reset ref to allow future uploads
+      lastSignatureHashRef.current = null;
     } catch (error) {
       console.error(error);
       toast.error(t('Cannot remove signature'));
@@ -206,32 +154,57 @@ export default function LandlordForm({ organization, firstAccess }) {
       ein: organization?.companyInfo?.ein || '',
       dos: organization?.companyInfo?.dos || '',
       capital: organization?.companyInfo?.capital || '',
-      signature: null
+      signature: organization?.signature
     }),
     [organization]
   );
 
   const onSubmit = useCallback(
     async (landlord) => {
-      // Handle signature upload if present
-      let signatureUrl = organization?.signature || '';
-      if (landlord.signature) {
+      let signatureId;
+      // Only upload if it's a new file (check hash of file attributes against ref)
+      const isSignatureChanged =
+        typeof landlord.signature === 'object' &&
+        createFileHash(landlord.signature) !== lastSignatureHashRef.current;
+      if (isSignatureChanged) {
         try {
           setSignatureUploading(true);
+          // TODO rework POST /documents/upload endpoint to automatically create
+          // the associated document (POST /documents)
           const response = await uploadDocument({
             endpoint: '/documents/upload',
             documentName: `signature_${Date.now()}`,
             file: landlord.signature,
             folder: 'signatures'
           });
-          signatureUrl = response.data.key;
+          const { status, data: signatureDocument } =
+            await store.document.create({
+              type: 'file',
+              name: response.data.fileName,
+              url: response.data.key,
+              mimeType: landlord.signature.type
+            });
+
+          signatureId = signatureDocument._id;
+
+          // Update ref to track this file's hash
+          if (typeof landlord.signature === 'object') {
+            lastSignatureHashRef.current = createFileHash(landlord.signature);
+          }
+
+          if (status !== 200) {
+            throw new Error('Failed to upload signature');
+          }
         } catch (error) {
           console.error(error);
+          signatureId = null;
           toast.error(t('Cannot upload signature'));
-          return;
         } finally {
           setSignatureUploading(false);
         }
+      } else {
+        // Keep existing signature (UUID) or set to null if no signature
+        signatureId = organization.signature || null;
       }
 
       if (firstAccess) {
@@ -263,7 +236,7 @@ export default function LandlordForm({ organization, firstAccess }) {
           isCompany: landlord.isCompany === 'true',
           currency: landlord.currency,
           locale: landlord.locale,
-          signature: signatureUrl
+          signature: signatureId
         };
 
         if (updatedOrgPart.isCompany) {
@@ -299,6 +272,7 @@ export default function LandlordForm({ organization, firstAccess }) {
     [
       firstAccess,
       store,
+      t,
       mutateCreateOrganization,
       router,
       mutateUpdateOrganization,
@@ -366,45 +340,20 @@ export default function LandlordForm({ organization, firstAccess }) {
                 <NumberField label={t('Capital')} name="capital" />
               </>
             )}
-            <div className="mt-6">
-              <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                {t('Signature')}
-              </label>
-              <div className="text-xs text-muted-foreground mt-1 mb-2">
-                {t(
-                  'Upload your signature image or SVG to be included in documents'
-                )}
-              </div>
-              {organization?.signature && (
-                <div className="mb-4 p-3 border border-border rounded-lg bg-muted/50">
-                  <div className="text-xs text-green-600 mb-2">
-                    {t('Current signature:')}
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <SignatureThumbnail
-                      signature={organization.signature}
-                      alt={t('Current signature')}
-                    />
-                    <div className="flex-1 text-xs text-muted-foreground">
-                      {t('Your signature will appear in generated documents')}
-                    </div>
-                    <button
-                      type="button"
-                      onClick={removeSignature}
-                      disabled={signatureRemoving || isSubmitting}
-                      className="px-3 py-1 text-xs bg-red-500 hover:bg-red-600 disabled:bg-red-300 text-white rounded transition-colors"
-                    >
-                      {signatureRemoving ? t('Removing...') : t('Remove')}
-                    </button>
-                  </div>
-                </div>
-              )}
+            <SignatureThumbnail
+              signature={organization.signature}
+              onRemove={handleRemoveSignature}
+              disabled={signatureRemoving || isSubmitting}
+              className="mt-2"
+            />
+            {!organization?.signature ? (
               <UploadField
+                label={t('Signature')}
                 name="signature"
                 accept="image/*,.svg"
                 disabled={signatureUploading || signatureRemoving}
               />
-            </div>
+            ) : null}
             <SubmitButton
               size="large"
               label={!isSubmitting ? t('Save') : t('Saving')}
