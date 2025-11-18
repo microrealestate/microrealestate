@@ -140,8 +140,6 @@ X: [@camelaissani](https://x.com/camelaissani)
 
 ## License
 
-The project is licensed under the MIT License. To view the license details, please follow the link below:
+As of December 15th, 2025, this project and all prior contributions are licensed under the Apache License 2.0, with additional terms.
 
-[MIT License](./LICENSE)
-
-Feel free to review the license terms and conditions to understand the permissions and restrictions associated with the project.
+Please review the full license in the [LICENSE.md](./LICENSE.md) file for detailed information on the permissions and restrictions associated with this project.

@@ -23,7 +23,7 @@
     "format": "prettier --write '**/*.{js,jsx,ts,tsx,json,css}'"
   },
   "author": "Camel Aissani",
-  "license": "MIT",
+  "license": "SEE LICENSE IN LICENSE.md",
   "dependencies": {
     "@microrealestate/common": "*",
     "axios": "1.8.4",
