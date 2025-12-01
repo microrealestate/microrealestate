@@ -1,4 +1,4 @@
-import URL from '../utils/url';
+import * as URL from '../../utils/url';
 
 describe('utils', () => {
   it('can build an url', () => {

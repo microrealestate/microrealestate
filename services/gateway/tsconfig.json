@@ -5,7 +5,9 @@
     "outDir": "./dist",
     "skipLibCheck": true,
     "strict": true,
-    "target": "ESNext"
+    "target": "ESNext",
+    "isolatedModules": true,
+    "esModuleInterop": true
   },
   "include": ["src/**/*"]
 }

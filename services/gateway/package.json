@@ -7,7 +7,9 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "clean:types": "rimraf ../../types/dist",
     "clean:common": "rimraf ../common/dist",
     "clean:service": "rimraf dist",
@@ -30,17 +32,22 @@
     "@microrealestate/common": "*",
     "axios": "1.8.4",
     "cors": "2.8.5",
-    "http-proxy-middleware": "2.0.7"
+    "http-proxy-middleware": "2.0.7",
+    "swagger-ui-express": "^5.0.0"
   },
   "devDependencies": {
     "@microrealestate/types": "*",
     "@types/cors": "2.8.15",
+    "@types/swagger-ui-express": "^4.1.6",
+    "@vitest/coverage-v8": "^4.0.14",
     "eslint": "8.57.0",
     "eslint-config-prettier": "9.1.0",
     "eslint-plugin-import": "2.29.1",
+    "fast-check": "^3.22.0",
     "npm-run-all": "4.1.5",
     "rimraf": "6.0.1",
     "tsx": "3.14.0",
-    "typescript": "5.5.4"
+    "typescript": "5.5.4",
+    "vitest": "^4.0.14"
   }
 }

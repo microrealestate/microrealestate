@@ -31,7 +31,7 @@
 - **Authentication**: JWT (jsonwebtoken)
 - **Email**: Nodemailer with Gmail/Mailgun/SMTP support
 - **PDF Generation**: Custom service using Canvas
-- **Testing**: Jest 29.x, Supertest
+- **Testing**: Vitest 2.x, Supertest
 
 ### TypeScript vs JavaScript by Service
 
@@ -89,8 +89,20 @@ yarn workspace @microrealestate/api build
 ### Testing
 ```bash
 # Run unit tests for services with test suites
-yarn workspace @microrealestate/api test      # Runs: node --experimental-vm-modules ../../node_modules/jest/bin/jest.js
-yarn workspace @microrealestate/common test   # Runs: jest
+yarn workspace @microrealestate/api test          # Runs: vitest run
+yarn workspace @microrealestate/common test       # Runs: vitest run
+yarn workspace @microrealestate/gateway test      # Runs: vitest run
+yarn workspace @microrealestate/cli test          # Runs: vitest run --passWithNoTests
+
+# Run tests in watch mode (interactive, re-runs on file changes)
+yarn workspace @microrealestate/api test:watch
+yarn workspace @microrealestate/common test:watch
+yarn workspace @microrealestate/gateway test:watch
+
+# Run tests with coverage reports
+yarn workspace @microrealestate/api test:coverage
+yarn workspace @microrealestate/common test:coverage
+yarn workspace @microrealestate/gateway test:coverage
 
 # Run E2E tests (requires app running in CI mode)
 yarn e2e:ci          # Headless
@@ -99,13 +111,14 @@ yarn e2e:open        # Cypress UI
 ```
 
 **Services with Unit Tests:**
-- `api` - Jest test suite (uses experimental VM modules for ES modules support)
-- `common` - Jest test suite (standard Jest configuration)
+- `api` - Vitest test suite (16 tests for contract manager functionality)
+- `common` - Vitest test suite (3 tests for URL utilities)
+- `gateway` - Vitest test suite (6 property-based tests for OpenAPI aggregation using fast-check)
+- `cli` - Vitest configured (no tests yet, uses --passWithNoTests flag)
 
 **Services without Unit Tests:**
 - `authenticator` - No unit tests configured
 - `tenantapi` - No unit tests configured
-- `gateway` - No unit tests configured
 - `emailer` - No unit tests configured
 - `pdfgenerator` - No unit tests configured
 - `resetservice` - No unit tests configured (dev/CI utility only)

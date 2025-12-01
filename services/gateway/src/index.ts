@@ -10,6 +10,7 @@ import {
 import axios from 'axios';
 import cors from 'cors';
 import { createProxyMiddleware } from 'http-proxy-middleware';
+import { setupSwaggerDocs } from './openapi.js';
 
 Main();
 
@@ -18,6 +19,7 @@ async function onStartUp(application: Express.Application) {
   exposeFrontends(application);
   configureCORS(application);
   exposeServices(application);
+  await setupSwaggerDocs(application);
 }
 
 async function Main() {
@@ -39,7 +41,8 @@ async function Main() {
         DOMAIN_URL: process.env.DOMAIN_URL || 'http://localhost', // deprecated
         APP_DOMAIN: process.env.APP_DOMAIN,
         CORS_ENABLED: process.env.CORS_ENABLED === 'true',
-        TENANTAPI_URL: process.env.TENANTAPI_URL
+        TENANTAPI_URL: process.env.TENANTAPI_URL,
+        ENABLE_API_DOCS: process.env.ENABLE_API_DOCS || 'true'
       })
     );
     await service.init({

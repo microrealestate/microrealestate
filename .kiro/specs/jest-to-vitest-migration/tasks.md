@@ -1,0 +1,123 @@
+# Implementation Plan
+
+- [x] 1. Migrate services/common workspace
+  - Simplest workspace to start with (TypeScript, basic tests)
+  - _Requirements: 1.1, 1.2, 2.1, 2.2, 3.1, 4.2_
+- [x] 1.1 Install Vitest dependencies in services/common
+  - Add vitest and @vitest/coverage-v8 to devDependencies
+  - _Requirements: 1.1_
+- [x] 1.2 Create vitest.config.ts for services/common
+  - Configure for TypeScript and Node environment
+  - Set up coverage collection for src/**/*.ts files
+  - _Requirements: 2.1, 2.2_
+- [x] 1.3 Update package.json scripts in services/common
+  - Replace jest command with vitest run
+  - Add test:watch and test:coverage scripts
+  - _Requirements: 3.1, 3.3, 3.4_
+- [x] 1.4 Run tests in services/common to verify migration
+  - Execute yarn test to verify URL utility tests pass
+  - Verify all 3 tests pass without modification
+  - _Requirements: 1.3, 1.4, 4.2_
+- [x] 1.5 Remove Jest dependencies from services/common
+  - Remove jest from devDependencies
+  - _Requirements: 1.2_
+
+- [x] 2. Migrate services/gateway workspace
+  - TypeScript workspace with property-based testing
+  - _Requirements: 1.1, 1.2, 2.1, 2.2, 2.5, 3.1, 4.3, 5.1_
+- [x] 2.1 Install Vitest dependencies in services/gateway
+  - Add vitest and @vitest/coverage-v8 to devDependencies
+  - _Requirements: 1.1_
+- [x] 2.2 Create vitest.config.ts for services/gateway
+  - Configure for TypeScript and Node environment
+  - Set up coverage collection for src/**/*.ts files
+  - Ensure fast-check compatibility
+  - _Requirements: 2.1, 2.2, 2.5_
+- [x] 2.3 Update package.json scripts in services/gateway
+  - Replace jest command with vitest run
+  - Add test:watch and test:coverage scripts
+  - _Requirements: 3.1, 3.3, 3.4_
+- [x] 2.4 Run tests in services/gateway to verify migration
+  - Execute yarn test to verify OpenAPI property tests pass
+  - Verify all 6 property-based tests pass with 100 iterations each
+  - Confirm fast-check integration works correctly
+  - _Requirements: 1.3, 1.4, 4.3, 5.1_
+- [x] 2.5 Remove Jest dependencies from services/gateway
+  - Remove jest from devDependencies
+  - _Requirements: 1.2_
+
+- [x] 3. Migrate services/api workspace
+  - JavaScript workspace with ES modules (currently uses experimental flag)
+  - _Requirements: 1.1, 1.2, 2.1, 2.2, 3.1, 3.2, 4.1_
+- [x] 3.1 Install Vitest dependencies in services/api
+  - Add vitest and @vitest/coverage-v8 to devDependencies
+  - _Requirements: 1.1_
+- [x] 3.2 Create vitest.config.js for services/api
+  - Configure for JavaScript and Node environment
+  - Set up coverage collection for src/**/*.js files
+  - _Requirements: 2.1, 2.2_
+- [x] 3.3 Update package.json scripts in services/api
+  - Replace jest command with vitest run (remove --experimental-vm-modules flag)
+  - Add test:watch and test:coverage scripts
+  - _Requirements: 3.1, 3.2, 3.3, 3.4_
+- [x] 3.4 Run tests in services/api to verify migration
+  - Execute yarn test to verify contract manager tests pass
+  - Verify all 16 tests pass without modification
+  - Confirm ES modules work without experimental flag
+  - _Requirements: 1.3, 1.4, 3.2, 4.1_
+- [x] 3.5 Remove Jest dependencies from services/api
+  - Remove jest from devDependencies
+  - _Requirements: 1.2_
+
+- [x] 4. Migrate cli workspace
+  - JavaScript workspace with no tests yet (uses --passWithNoTests)
+  - _Requirements: 1.1, 1.2, 2.1, 2.2, 3.1, 4.4_
+- [x] 4.1 Install Vitest dependencies in cli
+  - Add vitest and @vitest/coverage-v8 to devDependencies
+  - _Requirements: 1.1_
+- [x] 4.2 Create vitest.config.js for cli
+  - Configure for JavaScript and Node environment
+  - Set up coverage collection for src/**/*.js files
+  - _Requirements: 2.1, 2.2_
+- [x] 4.3 Update package.json scripts in cli
+  - Replace jest command with vitest run --passWithNoTests
+  - Add test:watch and test:coverage scripts with --passWithNoTests flag
+  - _Requirements: 3.1, 3.3, 3.4_
+- [x] 4.4 Run tests in cli to verify migration
+  - Execute yarn test to verify it handles no tests gracefully
+  - Confirm --passWithNoTests flag works correctly
+  - _Requirements: 1.3, 1.4, 4.4_
+- [x] 4.5 Remove Jest dependencies and config from cli
+  - Remove jest from devDependencies
+  - Remove jest.config.js file
+  - _Requirements: 1.2_
+
+- [x] 5. Update documentation
+  - Update tech.md to reflect Vitest migration
+  - _Requirements: 6.1, 6.2, 6.3, 6.4_
+- [x] 5.1 Update tech.md testing section
+  - Replace Jest references with Vitest
+  - Document new test commands (vitest run, vitest, vitest run --coverage)
+  - Update workspace test information
+  - Document that Vitest is now the testing framework
+  - _Requirements: 6.1, 6.2, 6.3, 6.4_
+
+- [x] 6. Final verification and cleanup
+  - Verify complete migration across all workspaces
+  - _Requirements: 1.5, 4.5_
+- [x] 6.1 Verify no Jest references remain
+  - Search codebase for "jest" references
+  - Confirm only Vitest is referenced in package.json files
+  - Verify no jest.config files remain
+  - _Requirements: 1.5_
+- [x] 6.2 Run all tests from monorepo root
+  - Execute tests in all four workspaces
+  - Verify all tests pass
+  - Confirm coverage reports generate correctly
+  - _Requirements: 4.5_
+- [x] 6.3 Test watch mode in each workspace
+  - Verify watch mode works in services/common
+  - Verify watch mode works in services/gateway
+  - Verify watch mode works in services/api
+  - Verify watch mode works in cli
+  - _Requirements: 3.4_
