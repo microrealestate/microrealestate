@@ -89,8 +89,8 @@ yarn workspace @microrealestate/api build
 ### Testing
 ```bash
 # Run unit tests for services with test suites
-yarn workspace @microrealestate/api test      # API service (Jest)
-yarn workspace @microrealestate/common test   # Common utilities (Jest)
+yarn workspace @microrealestate/api test      # Runs: node --experimental-vm-modules ../../node_modules/jest/bin/jest.js
+yarn workspace @microrealestate/common test   # Runs: jest
 
 # Run E2E tests (requires app running in CI mode)
 yarn e2e:ci          # Headless
@@ -99,8 +99,8 @@ yarn e2e:open        # Cypress UI
 ```
 
 **Services with Unit Tests:**
-- `api` - Has Jest test suite
-- `common` - Has Jest test suite
+- `api` - Jest test suite (uses experimental VM modules for ES modules support)
+- `common` - Jest test suite (standard Jest configuration)
 
 **Services without Unit Tests:**
 - `authenticator` - No unit tests configured
