@@ -6,21 +6,22 @@ import * as occupantManager from './managers/occupantmanager.js';
 import * as propertyManager from './managers/propertymanager.js';
 import * as realmManager from './managers/realmmanager.js';
 import * as rentManager from './managers/rentmanager.js';
+import * as irlController from './controllers/irlController.js';
 import { Middlewares, Service } from '@microrealestate/common';
 import express from 'express';
 
 export default function routes() {
   const { ACCESS_TOKEN_SECRET } = Service.getInstance().envConfig.getValues();
   const router = express.Router();
+
+  // Apply common middlewares
   router.use(
-    // protect the api access by checking the access token
     Middlewares.needAccessToken(ACCESS_TOKEN_SECRET),
-    // update req with the user organizations
     Middlewares.checkOrganization(),
-    // forbid access to tenant
     Middlewares.notRoles(['tenant'])
   );
 
+  // --- Realms ---
   const realmsRouter = express.Router();
   realmsRouter.get('/', realmManager.all);
   realmsRouter.get('/:id', realmManager.one);
@@ -28,10 +29,12 @@ export default function routes() {
   realmsRouter.patch('/:id', Middlewares.asyncWrapper(realmManager.update));
   router.use('/realms', realmsRouter);
 
+  // --- Dashboard ---
   const dashboardRouter = express.Router();
   dashboardRouter.get('/', Middlewares.asyncWrapper(dashboardManager.all));
   router.use('/dashboard', dashboardRouter);
 
+  // --- Leases ---
   const leasesRouter = express.Router();
   leasesRouter.get('/', Middlewares.asyncWrapper(leaseManager.all));
   leasesRouter.get('/:id', Middlewares.asyncWrapper(leaseManager.one));
@@ -40,54 +43,34 @@ export default function routes() {
   leasesRouter.delete('/:ids', Middlewares.asyncWrapper(leaseManager.remove));
   router.use('/leases', leasesRouter);
 
+  // --- Tenants (Occupants) ---
   const occupantsRouter = express.Router();
   occupantsRouter.get('/', Middlewares.asyncWrapper(occupantManager.all));
   occupantsRouter.get('/:id', Middlewares.asyncWrapper(occupantManager.one));
   occupantsRouter.post('/', Middlewares.asyncWrapper(occupantManager.add));
-  occupantsRouter.patch(
-    '/:id',
-    Middlewares.asyncWrapper(occupantManager.update)
-  );
-  occupantsRouter.delete(
-    '/:ids',
-    Middlewares.asyncWrapper(occupantManager.remove)
-  );
+  occupantsRouter.patch('/:id', Middlewares.asyncWrapper(occupantManager.update));
+  occupantsRouter.delete('/:ids', Middlewares.asyncWrapper(occupantManager.remove));
   router.use('/tenants', occupantsRouter);
 
+  // --- Rents ---
   const rentsRouter = express.Router();
-  rentsRouter.patch(
-    '/payment/:id/:term',
-    Middlewares.asyncWrapper(rentManager.updateByTerm)
-  );
-  rentsRouter.get(
-    '/tenant/:id',
-    Middlewares.asyncWrapper(rentManager.rentsOfOccupant)
-  );
-  rentsRouter.get(
-    '/tenant/:id/:term',
-    Middlewares.asyncWrapper(rentManager.rentOfOccupantByTerm)
-  );
+  rentsRouter.patch('/payment/:id/:term', Middlewares.asyncWrapper(rentManager.updateByTerm));
+  rentsRouter.get('/tenant/:id', Middlewares.asyncWrapper(rentManager.rentsOfOccupant));
+  rentsRouter.get('/tenant/:id/:term', Middlewares.asyncWrapper(rentManager.rentOfOccupantByTerm));
   rentsRouter.get('/:year/:month', Middlewares.asyncWrapper(rentManager.all));
   router.use('/rents', rentsRouter);
 
+  // --- Properties ---
   const propertiesRouter = express.Router();
   propertiesRouter.get('/', Middlewares.asyncWrapper(propertyManager.all));
   propertiesRouter.get('/:id', Middlewares.asyncWrapper(propertyManager.one));
   propertiesRouter.post('/', Middlewares.asyncWrapper(propertyManager.add));
-  propertiesRouter.patch(
-    '/:id',
-    Middlewares.asyncWrapper(propertyManager.update)
-  );
-  propertiesRouter.delete(
-    '/:ids',
-    Middlewares.asyncWrapper(propertyManager.remove)
-  );
+  propertiesRouter.patch('/:id', Middlewares.asyncWrapper(propertyManager.update));
+  propertiesRouter.delete('/:ids', Middlewares.asyncWrapper(propertyManager.remove));
   router.use('/properties', propertiesRouter);
 
-  router.get(
-    '/accounting/:year',
-    Middlewares.asyncWrapper(accountingManager.all)
-  );
+  // --- Accounting ---
+  router.get('/accounting/:year', Middlewares.asyncWrapper(accountingManager.all));
   router.get(
     '/csv/tenants/incoming/:year',
     Middlewares.asyncWrapper(accountingManager.csv.incomingTenants)
@@ -101,10 +84,19 @@ export default function routes() {
     Middlewares.asyncWrapper(accountingManager.csv.settlements)
   );
 
+  // --- Emails ---
   const emailRouter = express.Router();
   emailRouter.post('/', Middlewares.asyncWrapper(emailManager.send));
   router.use('/emails', emailRouter);
 
+  // --- IRL (Indice de Référence des Loyers) ---
+  const irlRouter = express.Router();
+  irlRouter.get('/', Middlewares.asyncWrapper(irlController.list));
+  irlRouter.get('/latest', Middlewares.asyncWrapper(irlController.latest));
+  irlRouter.post('/sync', Middlewares.asyncWrapper(irlController.sync));
+  router.use('/irl', irlRouter);
+
+  // --- Final API Mount ---
   const apiRouter = express.Router();
   apiRouter.use('/api/v2', router);
 
