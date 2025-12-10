@@ -1,3 +1,14 @@
+## Table of Contents
+- [Overview](#microrealestate)
+- [Key Features](#key-features)
+- [Screenshots](#screenshots)
+- [Installation & Setup](#self-host-the-application)
+- [Backup & Restore](#backup-and-restore-the-data)
+- [Development](#developers)
+- [Contributing](#contributing)
+- [Support & Contact](#contact)
+- [License](#license)
+
 # MicroRealEstate
 
 [![Continuous Integration](https://github.com/microrealestate/microrealestate/actions/workflows/ci.yml/badge.svg?event=push)](https://github.com/microrealestate/microrealestate/actions/workflows/ci.yml)

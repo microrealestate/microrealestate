@@ -1,4 +1,17 @@
 # Microrealestate
+## Architecture Overview
+
+MicroRealEstate follows a microservices architecture with separate services for authentication, PDF generation, emailing, and REST APIs for both landlords and tenants.  
+All services communicate through the Gateway, which acts as a reverse proxy and API router.
+
+**Workflow Example:**
+1. A landlord logs in via the Landlord UI.
+2. The Gateway routes the request to the Authenticator for token verification.
+3. The Authenticator validates credentials and issues a JWT.
+4. The Landlord UI then interacts with the API service for managing properties and rents.
+5. Emails and PDFs (contracts, receipts) are generated asynchronously via the Emailer and PDFGenerator services.
+
+Each service runs in its own Docker container, making the application modular and easy to maintain.
 
 Here is a diagram showcasing the microservices on the backend and the two frontend applications:
 
