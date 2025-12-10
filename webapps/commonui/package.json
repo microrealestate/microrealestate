@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Common modules required for the MicroRealEstate application'",
   "author": "Camel Aissani",
-  "license": "MIT",
+  "license": "SEE LICENSE IN LICENSE.md",
   "private": true,
   "dependencies": {
     "@material-ui/core": "4.12.4",

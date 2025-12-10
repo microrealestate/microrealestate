@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Common modules required by the MicroRealEstate services'",
   "author": "Camel Aissani",
-  "license": "MIT",
+  "license": "SEE LICENSE IN LICENSE.md",
   "type": "module",
   "private": true,
   "main": "dist/index.js",
