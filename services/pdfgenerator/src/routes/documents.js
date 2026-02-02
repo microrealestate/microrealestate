@@ -82,6 +82,10 @@ async function _getTemplateValues(organization, tenantId, leaseId) {
 
   moment.locale(organization.locale);
   const today = moment();
+  const signatureKey = organization.signature || '';
+  const signatureUrl = signatureKey
+    ? `/documents/signature/${encodeURIComponent(signatureKey)}`
+    : '';
   const templateValues = {
     current: {
       date: today.format('LL'),
@@ -96,7 +100,7 @@ async function _getTemplateValues(organization, tenantId, leaseId) {
       contact: organization.contacts?.[0] || {},
       address: organization.addresses?.[0] || {},
       companyInfo: landlordCompanyInfo,
-      signature: organization.signature || ''
+      signature: signatureUrl
     },
 
     tenant: {
@@ -283,6 +287,81 @@ export default function () {
       }
 
       return res.status(200).json(documentsFound);
+    })
+  );
+
+  documentsApi.get(
+    '/signature/*',
+    Middlewares.asyncWrapper(async (req, res) => {
+      const keyParam = req.params[0];
+      if (!keyParam) {
+        logger.error('missing signature key');
+        throw new ServiceError('missing fields', 422);
+      }
+
+      const signatureKey = decodeURIComponent(keyParam);
+      if (signatureKey.indexOf('..') !== -1) {
+        logger.error('signature key invalid containing ".."');
+        throw new ServiceError('missing fields', 422);
+      }
+
+      const filePath = path.join(UPLOADS_DIRECTORY, signatureKey);
+      if (fs.existsSync(filePath)) {
+        try {
+          return fs.createReadStream(filePath).pipe(res);
+        } catch (error) {
+          logger.error(`cannot download signature ${signatureKey}`, error);
+          throw new ServiceError('cannot download file', 404);
+        }
+      }
+
+      if (s3.isEnabled(req.realm.thirdParties.b2)) {
+        try {
+          return s3
+            .downloadFile(req.realm.thirdParties.b2, signatureKey)
+            .pipe(res);
+        } catch (error) {
+          logger.error(
+            `cannot download signature ${signatureKey} from s3`,
+            error
+          );
+          throw new ServiceError('cannot download file', 404);
+        }
+      }
+
+      throw new ServiceError('signature not found', 404);
+    })
+  );
+
+  documentsApi.delete(
+    '/signature/*',
+    Middlewares.asyncWrapper(async (req, res) => {
+      const keyParam = req.params[0];
+      if (!keyParam) {
+        logger.error('missing signature key');
+        throw new ServiceError('missing fields', 422);
+      }
+
+      const signatureKey = decodeURIComponent(keyParam);
+      if (signatureKey.indexOf('..') !== -1) {
+        logger.error('signature key invalid containing ".."');
+        throw new ServiceError('missing fields', 422);
+      }
+
+      const filePath = path.join(UPLOADS_DIRECTORY, signatureKey);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+
+      if (s3.isEnabled(req.realm.thirdParties.b2)) {
+        s3.deleteFiles(req.realm.thirdParties.b2, [
+          { url: signatureKey }
+        ]).catch((err) => {
+          logger.error('error deleting signature from s3', err);
+        });
+      }
+
+      return res.sendStatus(204);
     })
   );
 

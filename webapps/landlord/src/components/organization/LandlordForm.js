@@ -23,7 +23,7 @@ import getSymbolFromCurrency from 'currency-symbol-map';
 import SignatureThumbnail from './SignatureThumbnail';
 import { StoreContext } from '../../store';
 import { toast } from 'sonner';
-import { uploadDocument } from '../../utils/fetch';
+import { apiFetcher, uploadDocument } from '../../utils/fetch';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 
@@ -118,11 +118,15 @@ export default function LandlordForm({ organization, firstAccess }) {
   const handleRemoveSignature = useCallback(async () => {
     try {
       setSignatureRemoving(true);
+      if (organization.signature) {
+        await apiFetcher().delete(
+          `/documents/signature/${encodeURIComponent(organization.signature)}`
+        );
+      }
       await mutateUpdateOrganization.mutateAsync({
         store,
         organization: mergeOrganization(organization, { signature: '' })
       });
-      await store.document.delete([organization.signature]);
 
       // Reset ref to allow future uploads
       lastSignatureHashRef.current = null;
@@ -161,7 +165,7 @@ export default function LandlordForm({ organization, firstAccess }) {
 
   const onSubmit = useCallback(
     async (landlord) => {
-      let signatureId;
+      let signatureKey;
       // Only upload if it's a new file (check hash of file attributes against ref)
       const isSignatureChanged =
         typeof landlord.signature === 'object' &&
@@ -177,39 +181,32 @@ export default function LandlordForm({ organization, firstAccess }) {
             file: landlord.signature,
             folder: 'signatures'
           });
-          const { status, data: signatureDocument } =
-            await store.document.create({
-              type: 'file',
-              name: response.data.fileName,
-              url: response.data.key,
-              mimeType: landlord.signature.type
-            });
-
-          signatureId = signatureDocument._id;
+          signatureKey = response.data.key;
 
           // Update ref to track this file's hash
           if (typeof landlord.signature === 'object') {
             lastSignatureHashRef.current = createFileHash(landlord.signature);
           }
 
-          if (status !== 200) {
+          if (!signatureKey) {
             throw new Error('Failed to upload signature');
           }
         } catch (error) {
           console.error(error);
-          signatureId = null;
+          signatureKey = null;
           toast.error(t('Cannot upload signature'));
         } finally {
           setSignatureUploading(false);
         }
       } else {
         // Keep existing signature (UUID) or set to null if no signature
-        signatureId = organization.signature || null;
+        signatureKey = organization.signature || null;
       }
 
       if (firstAccess) {
         const createdOrgpanization = {
           ...landlord,
+          signature: signatureKey,
           members: [
             {
               name: `${store.user.firstName} ${store.user.lastName}`,
@@ -236,7 +233,7 @@ export default function LandlordForm({ organization, firstAccess }) {
           isCompany: landlord.isCompany === 'true',
           currency: landlord.currency,
           locale: landlord.locale,
-          signature: signatureId
+          signature: signatureKey
         };
 
         if (updatedOrgPart.isCompany) {

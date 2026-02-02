@@ -22,7 +22,7 @@ export default function SignatureThumbnail({
       try {
         // Extract filename from the full path
         const response = await apiFetcher().get(
-          `/documents/${encodeURIComponent(signature)}`,
+          `/documents/signature/${encodeURIComponent(signature)}`,
           {
             responseType: 'blob'
           }
