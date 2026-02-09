@@ -1,5 +1,5 @@
 import { apiFetcher } from '../../utils/fetch';
-import { Image } from '@tiptap/extension-image';
+import Image from '@tiptap/extension-image';
 import { mergeAttributes } from '@tiptap/core';
 
 const ImageExtension = Image.extend({
