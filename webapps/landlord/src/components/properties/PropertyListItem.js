@@ -20,9 +20,10 @@ export default function PropertyListItem({ property }) {
   const store = useContext(StoreContext);
 
   const onClick = useCallback(async () => {
+    store.property.setSelected(property);
     store.appHistory.setPreviousPath(router.asPath);
-    await router.push(`/${property.name}/properties/${property._id}`);
-  }, [property._id, property.name, router, store]);
+    await router.push(`/${store.organization.selected.name}/properties/${property._id}`);
+  }, [store.property, store.appHistory, store.organization.selected.name, property, router]);
 
   return (
     <Card className="cursor-pointer" onClick={onClick}>
