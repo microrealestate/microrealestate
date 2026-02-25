@@ -1,0 +1,32 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build API (Docker)",
+      "type": "shell",
+      "command": "docker",
+      "args": [
+        "build",
+        "-t",
+        "bakematt/mre-api:dev",
+        "-f",
+        "services/api/Dockerfile",
+        "."
+      ],
+      "options": {
+        "env": {
+          "DOCKER_BUILDKIT": "1"
+        }
+      },
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Push API (Docker)",
+      "type": "shell",
+      "command": "docker",
+      "args": ["push", "bakematt/mre-api:dev"],
+      "problemMatcher": []
+    }
+  ]
+}
