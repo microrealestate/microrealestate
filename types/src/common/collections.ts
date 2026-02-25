@@ -134,7 +134,11 @@ export namespace CollectionTypes {
   export type Property = {
     _id: string;
     realmId: string;
+
+    // ORIGINAL FIELD — PROPERTY TYPE (BUILDING, APARTMENT, OFFICE, ETC.)
     type: string;
+
+    // ORIGINAL CORE FIELDS
     name: string;
     description: string;
     surface: number;
@@ -143,7 +147,20 @@ export namespace CollectionTypes {
     address: CollectionTypes.PartAddress;
     price: number;
 
-    // TODO to remove, replaced by address
+    // NEW FIELD — BUILDING / UNIT RELATIONSHIP
+    // IF SET → THIS PROPERTY BELONGS TO ANOTHER PROPERTY (LIKELY A BUILDING)
+    // IF NULL / UNDEFINED → THIS IS A BUILDING OR STANDALONE PROPERTY
+    parentPropertyId?: string | null;
+
+    // NEW FIELDS — RENT RANGE IN $ / SQ FT / YEAR
+    // OPTIONAL — USED FOR MARKET RANGE / COMPS
+    rentLowSqftYear?: number | null;
+    rentMedianSqftYear?: number | null;
+    rentHighSqftYear?: number | null;
+
+    // ORIGINAL LEGACY FIELDS (COMMENT SAYS THEY ARE TO BE REMOVED LATER)
+    // KEEPING THEM TO AVOID BREAKING EXISTING CODE
+    // TODO TO REMOVE, REPLACED BY address
     building: string;
     level: string;
     location: string;
