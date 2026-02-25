@@ -28,12 +28,25 @@ const PropertySchema = new mongoose.Schema<CollectionTypes.Property>({
     - IF SET → THIS PROPERTY BELONGS TO A BUILDING
     - REFERENCES ANOTHER PROPERTY DOCUMENT
   */
+  /*
+    NEW FIELD — BUILDING → UNIT RELATIONSHIP
+
+    - IF NULL → THIS IS A BUILDING OR STANDALONE PROPERTY
+    - IF SET → THIS PROPERTY BELONGS TO A BUILDING
+    - EMPTY STRING FROM FRONTEND IS NORMALIZED TO NULL
+  */
   parentPropertyId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Property',
-    default: null
+    default: null,
+    set: (value: unknown) => {
+      // HANDLE EMPTY STRING COMING FROM FORMS
+      if (value === '' || value === undefined) {
+        return null;
+      }
+      return value;
+    }
   },
-
   /*
     ORIGINAL FIELDS — PROPERTY CORE DATA
   */
