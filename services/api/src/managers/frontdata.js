@@ -376,8 +376,12 @@ export function toOccupantData(inputOccupant) {
 
 export function toProperty(inputProperty, inputOccupant, inputOccupants) {
   const currentDate = moment();
+  // PROPERTY OBJECT SENT TO FRONTEND
+  // ADDED: PARENT PROPERTY RELATIONSHIP + RENT RANGE
   let property = {
     _id: inputProperty._id,
+
+    // ORIGINAL FIELDS — BASIC PROPERTY INFO
     type: inputProperty.type,
     name: inputProperty.name,
     description: inputProperty.description,
@@ -386,8 +390,20 @@ export function toProperty(inputProperty, inputOccupant, inputOccupants) {
     digicode: inputProperty.digicode,
     address: inputProperty.address,
 
+    // NEW FIELD — BUILDING / UNIT RELATIONSHIP
+    // IF SET → THIS PROPERTY BELONGS TO ANOTHER PROPERTY (LIKELY A BUILDING)
+    // IF NULL → THIS IS A BUILDING OR STANDALONE PROPERTY
+    parentPropertyId: inputProperty.parentPropertyId,
+
+    // ORIGINAL FIELD — CURRENT RENT PRICE
     price: inputProperty.price,
 
+    // NEW FIELDS — RENT RANGE STORED AS $ / SQ FT / YEAR
+    rentLowSqftYear: inputProperty.rentLowSqftYear,
+    rentMedianSqftYear: inputProperty.rentMedianSqftYear,
+    rentHighSqftYear: inputProperty.rentHighSqftYear,
+
+    // ORIGINAL FIELDS — THESE GET FILLED IN LATER IN THIS FUNCTION
     beginDate: '',
     endDate: '',
     lastBusyDay: '',

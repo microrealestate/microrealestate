@@ -15,6 +15,16 @@ import { StoreContext } from '../../store';
 import types from './types';
 import useTranslation from 'next-translate/useTranslation';
 
+/*
+  VALIDATION SCHEMA
+
+  ORIGINAL FIELDS:
+  - type, name, description, phone, digicode, address, rent
+
+  NEW FIELDS (OPTIONAL NUMBERS):
+  - rentLowSqftYear, rentMedianSqftYear, rentHighSqftYear
+  - parentPropertyId (STRING / ID, OPTIONAL)
+*/
 const validationSchema = Yup.object().shape({
   type: Yup.string().required(),
   name: Yup.string().required(),
@@ -29,13 +39,31 @@ const validationSchema = Yup.object().shape({
     state: Yup.string(),
     country: Yup.string()
   }),
-  rent: Yup.number().min(0).required()
+  rent: Yup.number().min(0).required(),
+
+  // NEW OPTIONAL FIELDS FOR MARKET RENT RANGE
+  rentLowSqftYear: Yup.number().min(0).nullable(),
+  rentMedianSqftYear: Yup.number().min(0).nullable(),
+  rentHighSqftYear: Yup.number().min(0).nullable(),
+
+  // NEW OPTIONAL FIELD FOR BUILDING RELATIONSHIP
+  parentPropertyId: Yup.string().nullable()
 });
 
 const PropertyForm = observer(({ onSubmit }) => {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
 
+  /*
+    INITIAL VALUES
+
+    ORIGINAL FIELDS:
+    - type, name, description, surface, phone, digicode, address, rent
+
+    NEW FIELDS:
+    - parentPropertyId
+    - rentLowSqftYear, rentMedianSqftYear, rentHighSqftYear
+  */
   const initialValues = useMemo(
     () => ({
       type: store.property.selected?.type || '',
@@ -52,11 +80,23 @@ const PropertyForm = observer(({ onSubmit }) => {
         state: '',
         country: ''
       },
-      rent: store.property.selected?.price || ''
+      // ORIGINAL RENT FIELD (BACKED BY price ON THE BACKEND)
+      rent: store.property.selected?.price || '',
+
+      // NEW FIELD — BUILDING / UNIT RELATIONSHIP
+      parentPropertyId: store.property.selected?.parentPropertyId || '',
+
+      // NEW FIELDS — RENT RANGE IN $ / SQ FT / YEAR
+      rentLowSqftYear: store.property.selected?.rentLowSqftYear ?? '',
+      rentMedianSqftYear: store.property.selected?.rentMedianSqftYear ?? '',
+      rentHighSqftYear: store.property.selected?.rentHighSqftYear ?? ''
     }),
     [store.property.selected]
   );
 
+  /*
+    PROPERTY TYPES DROPDOWN — ORIGINAL LOGIC
+  */
   const propertyTypes = useMemo(
     () =>
       types.map((type) => ({
@@ -68,13 +108,45 @@ const PropertyForm = observer(({ onSubmit }) => {
     [t]
   );
 
+  /*
+    NEW — BUILDING OPTIONS
+
+    - FILTER ALL PROPERTIES TO ONLY KEEP type === 'building'
+    - USED FOR parentPropertyId WHEN CREATING / EDITING UNITS
+  */
+  const buildingOptions = useMemo(
+    () =>
+      store.property.items
+        .filter((p) => p.type === 'building')
+        .map((b) => ({
+          id: b._id,
+          value: b._id,
+          label: b.name
+        })),
+    [store.property.items]
+  );
+
+  // WHICH TYPES SHOULD HAVE A "BUILDING" DROPDOWN?
+  const unitTypes = [
+    'apartment',
+    'room',
+    'office',
+    'store',
+    'garage',
+    'parking',
+    'letterbox'
+  ];
+
   return (
     <Formik
       initialValues={initialValues}
       validationSchema={validationSchema}
+      // ORIGINAL BEHAVIOR: onSubmit IS PASSED DOWN FROM PARENT
       onSubmit={onSubmit}
     >
       {({ values, isSubmitting }) => {
+        const isUnit = unitTypes.includes(values.type);
+
         return (
           <Form autoComplete="off">
             <Section label={t('Property information')}>
@@ -88,30 +160,72 @@ const PropertyForm = observer(({ onSubmit }) => {
               </div>
               <TextField label={t('Description')} name="description" />
 
-              {[
-                'store',
-                'building',
-                'apartment',
-                'room',
-                'office',
-                'garage'
-              ].includes(values.type) && (
-                <div className="sm:flex sm:gap-2">
-                  <NumberField label={t('Surface')} name="surface" />
-                  <TextField label={t('Phone')} name="phone" />
-                  <TextField label={t('Digicode')} name="digicode" />
+              {/*
+                NEW SECTION — BUILDING RELATIONSHIP
+
+                - ONLY SHOWN WHEN type IS ONE OF THE UNIT TYPES
+                - LETS YOU ASSOCIATE THIS PROPERTY WITH A PARENT BUILDING
+              */}
+              {isUnit && (
+                <div className="sm:flex sm:gap-2 mt-2">
+                  <SelectField
+                    label={t('Building')}
+                    name="parentPropertyId"
+                    values={[
+                      { id: '', value: '', label: t('No building') },
+                      ...buildingOptions
+                    ]}
+                  />
                 </div>
               )}
             </Section>
+
+            <Section label={t('Details')}>
+              <div className="sm:flex sm:gap-2">
+                <NumberField
+                  label={t('Surface')}
+                  name="surface"
+                  endAdornment={t('sqm')}
+                />
+                <TextField label={t('Phone')} name="phone" />
+                <TextField label={t('Digicode')} name="digicode" />
+              </div>
+            </Section>
+
             <Section label={t('Address')}>
               <AddressField />
             </Section>
+
             <Section label={t('Rent')}>
+              {/*
+                ORIGINAL RENT FIELD — THIS IS YOUR CURRENT RENT PRICE
+              */}
               <NumberField
                 label={t('Rent excluding tax and expenses')}
                 name="rent"
               />
+
+              {/*
+                NEW FIELDS — RENT RANGE ($ / SQ FT / YEAR)
+
+                THESE ARE OPTIONAL AND PURELY FOR MARKET INFO / COMPARISON.
+              */}
+              <div className="sm:flex sm:gap-2 mt-2">
+                <NumberField
+                  label={t('Rent low ($ / sq ft / year)')}
+                  name="rentLowSqftYear"
+                />
+                <NumberField
+                  label={t('Rent median ($ / sq ft / year)')}
+                  name="rentMedianSqftYear"
+                />
+                <NumberField
+                  label={t('Rent high ($ / sq ft / year)')}
+                  name="rentHighSqftYear"
+                />
+              </div>
             </Section>
+
             <SubmitButton
               size="large"
               label={!isSubmitting ? t('Save') : t('Saving')}
