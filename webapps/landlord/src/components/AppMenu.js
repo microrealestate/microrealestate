@@ -4,7 +4,8 @@ import {
   LuMenu,
   LuSettings,
   LuUserCircle,
-  LuWallet
+  LuWallet,
+  LuStickyNote
 } from 'react-icons/lu';
 import {
   Sheet,
@@ -35,6 +36,13 @@ const menuItems = [
     pathname: '/dashboard',
     Icon: LuLayoutDashboard,
     dataCy: 'dashboardNav'
+  },
+  {
+    key: 'notes',
+    labelId: 'Notes',
+    pathname: '/notes',
+    Icon: LuStickyNote,
+    dataCy: 'notesNav'
   },
   {
     key: 'rents',

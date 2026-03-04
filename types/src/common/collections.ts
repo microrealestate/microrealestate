@@ -284,4 +284,32 @@ export namespace CollectionTypes {
 
     stepperMode: boolean;
   };
+
+   export type NoteAttachment = {
+     _id?: string;
+     originalName: string;
+     mimeType: string;
+     sizeBytes: number;
+     storageKey: string; // where the file is stored (path/key)
+     uploadedBy: string; // userId
+     uploadedAt: Date;
+   };
+
+   export type NoteEntityType = 'property' | 'contact' | 'contract' | 'project';
+
+   export type Note = {
+     _id?: string;
+     realmId?: string; // optional now; we’ll decide in next steps if we enforce it
+     entityType: NoteEntityType;
+     entityId: string; // ObjectId string
+     authorId: string; // ObjectId string
+     authorName?: string;
+     content: string;
+     tags?: string[];
+     pinned?: boolean;
+     attachments?: NoteAttachment[];
+     deletedAt?: Date | null;
+     createdAt?: Date;
+     updatedAt?: Date;
+   };
 }

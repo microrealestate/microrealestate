@@ -250,3 +250,31 @@ export const uploadDocument = async ({
     }
   });
 };
+
+export async function getNotes({ entityType, entityId, q } = {}) {
+  const params = {};
+  if (entityType) params.entityType = entityType;
+  if (entityId) params.entityId = entityId;
+  if (q) params.q = q;
+
+  const response = await apiFetcher().get('/notes', { params });
+  return response.data;
+}
+
+export async function createNote({
+  entityType,
+  entityId,
+  content,
+  tags,
+  pinned
+} = {}) {
+  const response = await apiFetcher().post('/notes', {
+    entityType,
+    entityId,
+    content,
+    tags,
+    pinned
+  });
+  return response.data;
+}
+

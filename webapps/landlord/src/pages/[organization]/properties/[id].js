@@ -23,6 +23,7 @@ import useFillStore from '../../../hooks/useFillStore';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 import { withAuthentication } from '../../../components/Authentication';
+import NotesPanel from '../../../components/NotesPanel';
 
 function PropertyOverviewCard() {
   const { t } = useTranslation('common');
@@ -199,11 +200,20 @@ function Property() {
               <TabsTrigger value="property" className="w-1/2">
                 {t('Property')}
               </TabsTrigger>
+              <TabsTrigger value="notes" className="w-1/2">
+                {t('Notes')}
+              </TabsTrigger>
             </TabsList>
             <TabsContent value="property">
               <Card className="p-6">
                 <PropertyForm onSubmit={onSubmit} />
               </Card>
+            </TabsContent>
+            <TabsContent value="notes">
+              <NotesPanel
+                entityType="property"
+                entityId={store.property.selected?._id}
+              />
             </TabsContent>
           </Tabs>
           <div className="hidden md:grid grid-cols-1 gap-4 h-fit">
