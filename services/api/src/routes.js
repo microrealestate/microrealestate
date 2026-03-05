@@ -52,7 +52,10 @@ export default function routes() {
   );
 
   const notesRouter = express.Router();
-  notesRouter.get('/', Middlewares.asyncWrapper(notesManager.all));
+  notesRouter.get(
+    '/:id/attachments/:attachmentId',
+    Middlewares.asyncWrapper(notesManager.downloadAttachment)
+  );
   notesRouter.post(
     '/:id/attachments',
     upload.single('file'),

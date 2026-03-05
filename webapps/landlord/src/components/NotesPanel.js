@@ -39,6 +39,23 @@ export default function NotesPanel({ entityType, entityId }) {
     }
   }
 
+  async function uploadFile(noteId, file) {
+    const form = new FormData();
+    form.append('file', file);
+
+    const response = await fetch(`/notes/${noteId}/attachments`, {
+      method: 'POST',
+      body: form
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(text || 'Upload failed');
+    }
+
+    return await response.json();
+  }
+
   useEffect(() => {
     if (!entityType || !entityId) return;
     refresh('');
@@ -111,14 +128,64 @@ export default function NotesPanel({ entityType, entityId }) {
       ) : notes.length === 0 ? (
         <div className="text-sm text-muted-foreground">{t('No notes yet')}</div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-4">
           {notes.map((n) => (
-            <div key={n._id} className="space-y-1">
+            <div key={n._id} className="space-y-2">
               <div className="whitespace-pre-wrap text-sm">{n.content}</div>
+
               <div className="text-xs text-muted-foreground">
                 {n.authorName ? `${n.authorName} • ` : ''}
                 {n.createdDate ? new Date(n.createdDate).toLocaleString() : ''}
               </div>
+
+              {/* Attachments */}
+              {Array.isArray(n.attachments) && n.attachments.length > 0 ? (
+                <div className="space-y-1">
+                  <div className="text-xs text-muted-foreground">
+                    {t('Attachments') || 'Attachments'}
+                  </div>
+
+                  {n.attachments.map((a) => (
+                    <div key={a._id} className="text-sm">
+                      <a
+                        className="underline"
+                        href={`/api/v2/notes/${n._id}/attachments/${a._id}`}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {a.originalName || 'file'}
+                      </a>
+                      <span className="text-xs text-muted-foreground">
+                        {' '}
+                        ({Math.round(((a.sizeBytes || 0) / 1024) * 10) / 10} KB)
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+
+              {/* Upload */}
+              <div className="pt-1">
+                <input
+                  type="file"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+
+                    setError(null);
+                    try {
+                      await uploadFile(n._id, file);
+                      await refresh(q);
+                    } catch (err) {
+                      setError(err?.message || 'Upload failed');
+                    } finally {
+                      // allow selecting the same file twice
+                      e.target.value = '';
+                    }
+                  }}
+                />
+              </div>
+
               <Separator />
             </div>
           ))}
@@ -132,4 +199,4 @@ NotesPanel.propTypes = {
   entityType: PropTypes.oneOf(['property', 'contact', 'contract', 'project'])
     .isRequired,
   entityId: PropTypes.string.isRequired
-}
+};

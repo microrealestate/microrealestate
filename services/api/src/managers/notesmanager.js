@@ -2,6 +2,7 @@ import { Collections } from '@microrealestate/common';
 import path from 'path';
 import fs from 'fs-extra';
 import { nanoid } from 'nanoid';
+import mime from 'mime-types';
 
 function ensureEntityType(entityType) {
   const allowed = ['property', 'contact', 'contract', 'project'];
@@ -166,4 +167,48 @@ export async function uploadAttachment(req, res) {
   // Return the attachment we just added (including its _id)
   const saved = note.attachments[note.attachments.length - 1];
   return res.status(201).json(saved);
+}
+
+export async function downloadAttachment(req, res) {
+  const noteId = req.params.id;
+  const attachmentId = req.params.attachmentId;
+
+  const note = await Collections.Note.findOne({
+    _id: noteId,
+    realmId: req.realm?._id,
+    deletedDate: null
+  }).lean();
+
+  if (!note) return res.status(404).json({ message: 'Note not found' });
+
+  const attachment = (note.attachments || []).find(
+    (a) => String(a._id) === String(attachmentId)
+  );
+
+  if (!attachment) {
+    return res.status(404).json({ message: 'Attachment not found' });
+  }
+
+  const filePath = path.resolve(
+    process.cwd(),
+    'data',
+    'uploads',
+    'notes',
+    attachment.storageKey
+  );
+
+  const exists = await fs.pathExists(filePath);
+  if (!exists)
+    return res.status(404).json({ message: 'File missing on server' });
+
+  res.setHeader(
+    'Content-Type',
+    attachment.mimeType || 'application/octet-stream'
+  );
+  res.setHeader(
+    'Content-Disposition',
+    `attachment; filename="${encodeURIComponent(attachment.originalName)}"`
+  );
+
+  return res.sendFile(filePath);
 }
