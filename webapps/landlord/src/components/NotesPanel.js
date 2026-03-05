@@ -134,6 +134,33 @@ export default function NotesPanel({ entityType, entityId }) {
     return String(attachment?.mimeType || '').startsWith('image/');
   }
 
+  function getFileIdentity(file) {
+    return `${file.name}-${file.size}-${file.lastModified}`;
+  }
+
+  function appendPendingFiles(selectedFiles) {
+    if (!selectedFiles?.length) return;
+
+    setNewFiles((prev) => {
+      const existingIds = new Set(prev.map((file) => getFileIdentity(file)));
+      const next = [...prev];
+
+      selectedFiles.forEach((file) => {
+        const id = getFileIdentity(file);
+        if (!existingIds.has(id)) {
+          next.push(file);
+          existingIds.add(id);
+        }
+      });
+
+      return next;
+    });
+  }
+
+  function removePendingFile(indexToRemove) {
+    setNewFiles((prev) => prev.filter((_, index) => index !== indexToRemove));
+  }
+
   async function ensureAttachmentPreview(noteId, attachmentId) {
     const key = attachmentKey(noteId, attachmentId);
     if (previewUrlsRef.current[key]) return previewUrlsRef.current[key];
@@ -340,12 +367,23 @@ export default function NotesPanel({ entityType, entityId }) {
 
           {/* Optional attachments for NEW note */}
           <div className="flex items-center gap-2">
-            <Input
+            <input
               ref={newFileInputRef}
               type="file"
-              multiple
-              onChange={(e) => setNewFiles(Array.from(e.target.files || []))}
+              className="hidden"
+              onChange={(e) => {
+                appendPendingFiles(Array.from(e.target.files || []));
+                e.target.value = '';
+              }}
             />
+            <Button
+              type="button"
+              variant="secondary"
+              className="rounded-full"
+              onClick={() => newFileInputRef.current?.click()}
+            >
+              {t('Add file') || 'Add file'}
+            </Button>
             {newFiles.length > 0 ? (
               <div className="text-xs text-muted-foreground">
                 {newFiles.length}{' '}
@@ -354,8 +392,35 @@ export default function NotesPanel({ entityType, entityId }) {
             ) : null}
           </div>
 
+          {newFiles.length > 0 ? (
+            <div className="space-y-1">
+              {newFiles.map((file, index) => (
+                <div
+                  key={getFileIdentity(file)}
+                  className="flex items-center gap-2 text-xs"
+                >
+                  <span className="truncate max-w-[360px] text-muted-foreground">
+                    {file.name}
+                  </span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="h-6 px-2 rounded-full"
+                    onClick={() => removePendingFile(index)}
+                  >
+                    {t('Remove') || 'Remove'}
+                  </Button>
+                </div>
+              ))}
+            </div>
+          ) : null}
+
           <div className="flex justify-end">
-            <Button onClick={onAdd} disabled={!canSubmit || adding}>
+            <Button
+              onClick={onAdd}
+              disabled={!canSubmit || adding}
+              className="rounded-full"
+            >
               {adding
                 ? uploadProgress.total > 1
                   ? `${t('Add')}… (${uploadProgress.current}/${uploadProgress.total})`
@@ -387,6 +452,7 @@ export default function NotesPanel({ entityType, entityId }) {
                   <div className="flex gap-2">
                     <Button
                       variant="secondary"
+                      className="rounded-full"
                       disabled={savingNoteId === n._id}
                       onClick={() => onSaveEdit(n._id)}
                     >
@@ -415,6 +481,7 @@ export default function NotesPanel({ entityType, entityId }) {
               <div className="flex gap-2">
                 <Button
                   variant="secondary"
+                  className="rounded-full"
                   onClick={() => startEdit(n)}
                   disabled={deletingNoteId === n._id || savingNoteId === n._id}
                 >
@@ -422,7 +489,7 @@ export default function NotesPanel({ entityType, entityId }) {
                 </Button>
                 <Button
                   variant="secondary"
-                  className="text-red-600 hover:text-red-700"
+                  className="rounded-full"
                   onClick={() => onDelete(n._id)}
                   disabled={deletingNoteId === n._id || savingNoteId === n._id}
                 >
@@ -495,7 +562,7 @@ export default function NotesPanel({ entityType, entityId }) {
                         previewUrls[attachmentKey(n._id, a._id)] ? (
                           <button
                             type="button"
-                            className="shrink-0 border rounded-md overflow-hidden"
+                            className="group relative shrink-0 border rounded-md bg-background"
                             onClick={async () => {
                               try {
                                 await openDocumentInNewTab({
@@ -509,8 +576,18 @@ export default function NotesPanel({ entityType, entityId }) {
                             <img
                               src={previewUrls[attachmentKey(n._id, a._id)]}
                               alt={a.originalName || 'attachment preview'}
-                              className="w-40 h-28 object-cover"
+                              className="w-40 h-28 rounded-md object-cover transition-transform duration-200 group-hover:scale-105"
                             />
+                            <div className="pointer-events-none absolute left-1/2 top-1/2 z-20 hidden -translate-x-1/2 -translate-y-1/2 group-hover:block">
+                              <img
+                                src={previewUrls[attachmentKey(n._id, a._id)]}
+                                alt={
+                                  a.originalName ||
+                                  'attachment preview enlarged'
+                                }
+                                className="w-72 h-52 rounded-md border object-cover bg-background"
+                              />
+                            </div>
                           </button>
                         ) : previewLoading[attachmentKey(n._id, a._id)] ? (
                           <div className="w-40 h-28 shrink-0 border rounded-md flex items-center justify-center text-xs text-muted-foreground">
