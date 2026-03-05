@@ -231,6 +231,29 @@ export const downloadDocument = async ({ endpoint, documentName }) => {
   FileDownload(response.data, documentName);
 };
 
+export const openDocumentInNewTab = async ({ endpoint }) => {
+  const response = await apiFetcher().get(endpoint, {
+    responseType: 'blob'
+  });
+  const blob = response.data;
+  const url = window.URL.createObjectURL(blob);
+  const newWindow = window.open(url, '_blank', 'noopener,noreferrer');
+
+  // Clean up the object URL after a delay (to ensure the window has loaded)
+  if (newWindow) {
+    setTimeout(() => {
+      window.URL.revokeObjectURL(url);
+    }, 100);
+  }
+};
+
+export const getDocumentBlobUrl = async ({ endpoint }) => {
+  const response = await apiFetcher().get(endpoint, {
+    responseType: 'blob'
+  });
+  return window.URL.createObjectURL(response.data);
+};
+
 export const uploadDocument = async ({
   endpoint,
   documentName,
@@ -278,3 +301,11 @@ export async function createNote({
   return response.data;
 }
 
+export async function updateNote(id, payload = {}) {
+  const response = await apiFetcher().patch(`/notes/${id}`, payload);
+  return response.data;
+}
+
+export async function removeNote(id) {
+  await apiFetcher().delete(`/notes/${id}`);
+}
