@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import useTranslation from 'next-translate/useTranslation';
 
@@ -8,7 +8,7 @@ import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
 import { Separator } from './ui/separator';
 
-import { createNote, getNotes } from '../utils/fetch';
+import { createNote, getNotes, uploadDocument } from '../utils/fetch';
 
 export default function NotesPanel({ entityType, entityId }) {
   const { t } = useTranslation('common');
@@ -17,7 +17,13 @@ export default function NotesPanel({ entityType, entityId }) {
   const [notes, setNotes] = useState([]);
   const [q, setQ] = useState('');
   const [content, setContent] = useState('');
+  const [newFile, setNewFile] = useState(null);
+
   const [error, setError] = useState(null);
+  const [uploadingNoteId, setUploadingNoteId] = useState(null);
+  const [adding, setAdding] = useState(false);
+
+  const newFileInputRef = useRef(null);
 
   const canSubmit = useMemo(() => content.trim().length > 0, [content]);
 
@@ -39,21 +45,13 @@ export default function NotesPanel({ entityType, entityId }) {
     }
   }
 
-  async function uploadFile(noteId, file) {
-    const form = new FormData();
-    form.append('file', file);
-
-    const response = await fetch(`/notes/${noteId}/attachments`, {
-      method: 'POST',
-      body: form
+  async function uploadAttachment(noteId, file) {
+    // IMPORTANT: this uses apiFetcher under the hood, so it includes accessToken
+    return uploadDocument({
+      endpoint: `/notes/${noteId}/attachments`,
+      documentName: file.name,
+      file
     });
-
-    if (!response.ok) {
-      const text = await response.text();
-      throw new Error(text || 'Upload failed');
-    }
-
-    return await response.json();
   }
 
   useEffect(() => {
@@ -63,17 +61,46 @@ export default function NotesPanel({ entityType, entityId }) {
   }, [entityType, entityId]);
 
   async function onAdd() {
+    if (!canSubmit) return;
+
+    setAdding(true);
     setError(null);
+
     try {
-      await createNote({
+      // createNote() (in your utils/fetch.js) returns response.data
+      // which should be the created note object (including _id)
+      const created = await createNote({
         entityType,
         entityId,
         content: content.trim()
       });
+
+      const createdId = created?._id;
+
+      // Clear text immediately so it feels responsive
       setContent('');
-      await refresh('');
+
+      // If user selected a file for the new note, upload it now
+      if (newFile && createdId) {
+        setUploadingNoteId(createdId);
+        try {
+          await uploadAttachment(createdId, newFile);
+        } finally {
+          setUploadingNoteId(null);
+          setNewFile(null);
+          if (newFileInputRef.current) newFileInputRef.current.value = '';
+        }
+      } else {
+        // no file chosen
+        setNewFile(null);
+        if (newFileInputRef.current) newFileInputRef.current.value = '';
+      }
+
+      await refresh(q);
     } catch (e) {
       setError(e?.message || t('Something went wrong'));
+    } finally {
+      setAdding(false);
     }
   }
 
@@ -82,6 +109,7 @@ export default function NotesPanel({ entityType, entityId }) {
       <div className="flex flex-col gap-2">
         <div className="text-lg font-semibold">{t('Notes')}</div>
 
+        {/* Search */}
         <div className="flex gap-2">
           <Input
             placeholder={t('Search')}
@@ -105,15 +133,31 @@ export default function NotesPanel({ entityType, entityId }) {
           </Button>
         </div>
 
+        {/* Add note */}
         <div className="flex flex-col gap-2">
           <Textarea
             placeholder={t('Add a note')}
             value={content}
             onChange={(e) => setContent(e.target.value)}
           />
+
+          {/* Optional attachment for NEW note */}
+          <div className="flex items-center gap-2">
+            <Input
+              ref={newFileInputRef}
+              type="file"
+              onChange={(e) => setNewFile(e.target.files?.[0] || null)}
+            />
+            {newFile ? (
+              <div className="text-xs text-muted-foreground truncate max-w-[240px]">
+                {newFile.name}
+              </div>
+            ) : null}
+          </div>
+
           <div className="flex justify-end">
-            <Button onClick={onAdd} disabled={!canSubmit}>
-              {t('Add')}
+            <Button onClick={onAdd} disabled={!canSubmit || adding}>
+              {adding ? `${t('Add')}…` : t('Add')}
             </Button>
           </div>
         </div>
@@ -138,7 +182,7 @@ export default function NotesPanel({ entityType, entityId }) {
                 {n.createdDate ? new Date(n.createdDate).toLocaleString() : ''}
               </div>
 
-              {/* Attachments */}
+              {/* Attachments list */}
               {Array.isArray(n.attachments) && n.attachments.length > 0 ? (
                 <div className="space-y-1">
                   <div className="text-xs text-muted-foreground">
@@ -164,26 +208,35 @@ export default function NotesPanel({ entityType, entityId }) {
                 </div>
               ) : null}
 
-              {/* Upload */}
-              <div className="pt-1">
-                <input
+              {/* Upload to existing note */}
+              <div className="pt-1 flex items-center gap-2">
+                <Input
                   type="file"
+                  disabled={uploadingNoteId === n._id}
                   onChange={async (e) => {
                     const file = e.target.files?.[0];
                     if (!file) return;
 
                     setError(null);
+                    setUploadingNoteId(n._id);
+
                     try {
-                      await uploadFile(n._id, file);
+                      await uploadAttachment(n._id, file);
                       await refresh(q);
                     } catch (err) {
                       setError(err?.message || 'Upload failed');
                     } finally {
+                      setUploadingNoteId(null);
                       // allow selecting the same file twice
                       e.target.value = '';
                     }
                   }}
                 />
+                {uploadingNoteId === n._id ? (
+                  <div className="text-xs text-muted-foreground">
+                    {t('Uploading') || 'Uploading'}…
+                  </div>
+                ) : null}
               </div>
 
               <Separator />
