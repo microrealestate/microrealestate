@@ -82,6 +82,13 @@
       "localRoot": "${workspaceFolder}/",
       "remoteRoot": "/usr/app/",
       "restart": true
+    },
+    {
+      "type": "PowerShell",
+      "request": "launch",
+      "name": "🚀 Zip Project for AI",
+      "script": "${workspaceFolder}/zip-project.ps1",
+      "cwd": "${workspaceFolder}"
     }
   ]
 }

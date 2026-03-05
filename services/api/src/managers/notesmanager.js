@@ -1,8 +1,7 @@
 import { Collections } from '@microrealestate/common';
-import path from 'path';
 import fs from 'fs-extra';
 import { nanoid } from 'nanoid';
-import mime from 'mime-types';
+import path from 'path';
 
 function ensureEntityType(entityType) {
   const allowed = ['property', 'contact', 'contract', 'project'];

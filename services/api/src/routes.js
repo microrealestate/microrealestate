@@ -2,11 +2,11 @@ import * as accountingManager from './managers/accountingmanager.js';
 import * as dashboardManager from './managers/dashboardmanager.js';
 import * as emailManager from './managers/emailmanager.js';
 import * as leaseManager from './managers/leasemanager.js';
+import * as notesManager from './managers/notesmanager.js';
 import * as occupantManager from './managers/occupantmanager.js';
 import * as propertyManager from './managers/propertymanager.js';
 import * as realmManager from './managers/realmmanager.js';
 import * as rentManager from './managers/rentmanager.js';
-import * as notesManager from './managers/notesmanager.js';
 import { upload } from './utils/upload.js';
 import { Middlewares, Service } from '@microrealestate/common';
 import express from 'express';
@@ -52,23 +52,29 @@ export default function routes() {
   );
 
   const notesRouter = express.Router();
-  notesRouter.get(
-    '/:id/attachments/:attachmentId',
-    Middlewares.asyncWrapper(notesManager.downloadAttachment)
-  );
+
+  // list notes
+  notesRouter.get('/', Middlewares.asyncWrapper(notesManager.all));
+
+  // create note
+  notesRouter.post('/', Middlewares.asyncWrapper(notesManager.add));
+
+  // attachments (upload)
   notesRouter.post(
     '/:id/attachments',
     upload.single('file'),
     Middlewares.asyncWrapper(notesManager.uploadAttachment)
   );
+
+  // attachments (download)
+  notesRouter.get(
+    '/:id/attachments/:attachmentId',
+    Middlewares.asyncWrapper(notesManager.downloadAttachment)
+  );
+
+  // update/delete note
   notesRouter.patch('/:id', Middlewares.asyncWrapper(notesManager.update));
   notesRouter.delete('/:id', Middlewares.asyncWrapper(notesManager.remove));
-
-  // attachments
-  notesRouter.post(
-    '/:id/attachments',
-    Middlewares.asyncWrapper(notesManager.uploadAttachment)
-  );
 
   router.use('/notes', notesRouter);
 

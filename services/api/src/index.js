@@ -31,6 +31,7 @@ async function onStartUp(application) {
 async function Main() {
   let service;
   try {
+    logger.info('Initializing service...');
     service = Service.getInstance(
       new EnvironmentConfig({
         DEMO_MODE: process.env.DEMO_MODE
@@ -45,16 +46,19 @@ async function Main() {
       })
     );
 
+    logger.info('Calling service.init...');
     await service.init({
       name: 'api',
       useMongo: true,
       useAxios: true,
       onStartUp
     });
+    logger.info('Calling service.startUp...');
     await service.startUp();
+    logger.info('Service started successfully');
   } catch (err) {
-    logger.error(err);
-    service.shutdown(1);
+    logger.error('Error during startup:', err || 'Unknown error occurred');
+    service?.shutDown(-1);
   }
 }
 

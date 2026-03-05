@@ -37,3 +37,6 @@ mre
 mre.exe
 mre-macos
 
+# AI Context Zips
+*.zip
+MicroRealEstate-AI-Context.zip
