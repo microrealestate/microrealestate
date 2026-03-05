@@ -1,4 +1,7 @@
 import { Collections } from '@microrealestate/common';
+import path from 'path';
+import fs from 'fs-extra';
+import { nanoid } from 'nanoid';
 
 function ensureEntityType(entityType) {
   const allowed = ['property', 'contact', 'contract', 'project'];
@@ -111,4 +114,56 @@ export async function remove(req, res) {
 
   if (!note) return res.status(404).json({ message: 'Not found' });
   return res.sendStatus(204);
+}
+
+export async function uploadAttachment(req, res) {
+  const noteId = req.params.id;
+
+  // multer puts the uploaded file on req.file
+  if (!req.file) {
+    return res
+      .status(400)
+      .json({ message: 'Missing file (field name must be "file")' });
+  }
+
+  const note = await Collections.Note.findOne({
+    _id: noteId,
+    realmId: req.realm?._id,
+    deletedDate: null
+  });
+
+  if (!note) {
+    return res.status(404).json({ message: 'Note not found' });
+  }
+
+  // Ensure upload directory exists
+  const uploadDir = path.resolve(process.cwd(), 'data', 'uploads', 'notes');
+  await fs.ensureDir(uploadDir);
+
+  // Build a storage key and write file to disk
+  const storageKey = `${noteId}_${nanoid(12)}`;
+  const filePath = path.join(uploadDir, storageKey);
+
+  await fs.writeFile(filePath, req.file.buffer);
+
+  const uploadedBy =
+    req.user?.email || req.user?.clientId || req.user?.serviceId || 'unknown';
+
+  const attachment = {
+    originalName: req.file.originalname,
+    mimeType: req.file.mimetype,
+    sizeBytes: req.file.size,
+    storageKey,
+    uploadedBy,
+    uploadedAt: new Date()
+  };
+
+  note.attachments = note.attachments || [];
+  note.attachments.push(attachment);
+
+  await note.save();
+
+  // Return the attachment we just added (including its _id)
+  const saved = note.attachments[note.attachments.length - 1];
+  return res.status(201).json(saved);
 }

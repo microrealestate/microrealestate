@@ -27,12 +27,14 @@
   "dependencies": {
     "@microrealestate/common": "*",
     "axios": "1.8.4",
+    "fs-extra": "11.2.0",
     "i18n": "0.13.3",
     "json2csv": "5.0.6",
     "jsonwebtoken": "9.0.0",
     "lodash": "4.17.21",
     "moment": "2.29.4",
     "mongobackup": "0.3.5",
+    "multer": "1.4.5-lts.1",
     "nanoid": "5.1.0"
   },
   "devDependencies": {

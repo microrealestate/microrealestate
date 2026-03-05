@@ -4,12 +4,12 @@ import Realm from './realm.js';
 
 const NoteAttachmentSchema = new mongoose.Schema(
   {
-    originalName: String,
-    mimeType: String,
-    sizeBytes: Number,
-    storageKey: String,
-    uploadedBy: String,
-    uploadedAt: Date
+    originalName: { type: String, required: true }, // filename user uploaded
+    mimeType: { type: String, required: true },
+    sizeBytes: { type: Number, required: true },
+    storageKey: { type: String, required: true, index: true }, // how we find file on disk
+    uploadedBy: { type: String, required: true }, // email/clientId/serviceId
+    uploadedAt: { type: Date, default: Date.now }
   },
   { _id: true }
 );
