@@ -100,6 +100,8 @@ services:
     build:
       context: .
       dockerfile: services/api/Dockerfile
+    volumes:
+      - ./data/uploads:/usr/app/data/uploads
     # logging:
     #   driver: syslog
     #   options:

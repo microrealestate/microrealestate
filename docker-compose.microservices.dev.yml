@@ -152,6 +152,7 @@ services:
       - ./services/api/scripts:/usr/app/services/api/scripts
       - ./services/api/src:/usr/app/services/api/src
       - ./services/api/package.json:/usr/app/services/api/package.json
+      - ./data/uploads:/usr/app/data/uploads
     ports:
       - '$API_DEBUG_PORT:9229'
   ###############################################################################

@@ -206,6 +206,7 @@ services:
     image: 'ghcr.io/microrealestate/microrealestate/api:${MRE_VERSION:-latest}'
     volumes:
       - ./backup:/usr/app/backup
+      - ./data/uploads:/usr/app/data/uploads
     environment:
       NODE_ENV: production
       PORT: 8200
