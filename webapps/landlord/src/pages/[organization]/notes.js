@@ -41,9 +41,19 @@ export default function NotesPage() {
   }, []);
 
   function goToContext(note) {
-    // For now, only properties are wired. We’ll expand later.
-    if (note.entityType === 'property') {
-      router.push(`/${router.query.organization}/properties/${note.entityId}`);
+    // Route to the appropriate page based on entity type
+    switch (note.entityType) {
+      case 'property':
+        router.push(
+          `/${router.query.organization}/properties/${note.entityId}`
+        );
+        break;
+      case 'contact':
+        router.push(`/${router.query.organization}/tenants/${note.entityId}`);
+        break;
+      default:
+        // No navigation available for this entity type yet
+        break;
     }
   }
 
@@ -97,10 +107,11 @@ export default function NotesPage() {
 
                 <div className="text-xs text-muted-foreground flex items-center gap-2">
                   <span>
-                    {t('Context')}: {n.entityType} / {n.entityId}
+                    {t('Context')}: {n.entityLabel || n.entityType}{' '}
+                    {n.entityLabel ? '' : `/ ${n.entityId}`}
                   </span>
 
-                  {n.entityType === 'property' ? (
+                  {['property', 'contact'].includes(n.entityType) ? (
                     <Button
                       variant="link"
                       className="h-auto p-0"

@@ -72,6 +72,9 @@ export default function routes() {
     Middlewares.asyncWrapper(notesManager.downloadAttachment)
   );
 
+  // get single note
+  notesRouter.get('/:id', Middlewares.asyncWrapper(notesManager.one));
+
   // update/delete note
   notesRouter.patch('/:id', Middlewares.asyncWrapper(notesManager.update));
   notesRouter.delete('/:id', Middlewares.asyncWrapper(notesManager.remove));

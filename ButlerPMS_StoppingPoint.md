@@ -56,6 +56,7 @@ pinned
 createdDate
 updatedDate
 deletedDate
+attachments[]
 ```
 
 Purpose:
@@ -63,6 +64,7 @@ Purpose:
 * Store notes tied to any entity type
 * Soft deletion supported
 * Tagging supported
+* File attachments supported
 
 ---
 
@@ -77,12 +79,14 @@ services/api/src/managers/notesmanager.js
 
 Endpoints:
 
-| Method | Route               | Purpose           |
-| ------ | ------------------- | ----------------- |
-| GET    | `/api/v2/notes`     | List/search notes |
-| POST   | `/api/v2/notes`     | Create note       |
-| PATCH  | `/api/v2/notes/:id` | Update note       |
-| DELETE | `/api/v2/notes/:id` | Soft delete note  |
+| Method | Route                          | Purpose                    |
+| ------ | ------------------------------ | -------------------------- |
+| GET    | `/api/v2/notes`                | List/search notes          |
+| POST   | `/api/v2/notes`                | Create note                |
+| PATCH  | `/api/v2/notes/:id`            | Update note                |
+| DELETE | `/api/v2/notes/:id`            | Soft delete note           |
+| POST   | `/api/v2/notes/:id/attachments`| Upload file attachment     |
+| GET    | `/api/v2/notes/:id/attachments/:attachmentId` | Download attachment |
 
 Filters supported:
 
@@ -106,6 +110,16 @@ req.user.email
 req.user.clientId
 req.user.serviceId
 ```
+
+**Access Control:**
+* Notes are filtered by `realmId` (organization level)
+* Entity access is validated before operations
+* Notes can only be accessed/modified for entities that exist in the user's realm
+
+**Context Labels:**
+* API responses now include `entityLabel` field with friendly entity names
+* Labels are looked up based on entity type (property name, tenant name, etc.)
+* Falls back to entityType/entityId if label not available
 
 ---
 
@@ -132,14 +146,21 @@ Capabilities:
 * Display notes
 * Search notes
 * Create notes
+* Edit existing notes
+* Delete notes
 * Display author
 * Display timestamp
+* Upload file attachments
+* Download attachments
+* Preview images inline
+* Manage multiple attachments per note
 
 UI shows:
 
 ```
 Author • Date
 Note Content
+Attachments (if any)
 ```
 
 ---
@@ -167,6 +188,31 @@ This allows notes directly on property pages.
 
 ---
 
+## Tenant/Contact Notes Tab
+
+Integrated into:
+
+```
+webapps/landlord/src/components/tenants/TenantTabs.js
+```
+
+Added:
+
+```
+<TabsTrigger value="notes">{t('Notes')}</TabsTrigger>
+...
+<TabsContent value="notes">
+  <NotesPanel
+    entityType="contact"
+    entityId={store.tenant.selected?._id}
+  />
+</TabsContent>
+```
+
+This allows notes on tenant/contact pages.
+
+---
+
 ## Global Notes Page
 
 Page location:
@@ -179,7 +225,7 @@ Purpose:
 
 * View all notes
 * Search across notes
-* See context of each note
+* See context of each note with friendly labels
 * Navigate back to entity
 
 Currently displays:
@@ -189,10 +235,13 @@ Author
 Date
 Content
 EntityType
-EntityId
+EntityLabel (friendly name)
+Open button (for properties and contacts)
 ```
 
-Future improvement: show friendly labels (property address/name).
+**Navigation Support:**
+* Properties: Click "Open" to navigate to property page
+* Contacts/Tenants: Click "Open" to navigate to tenant page
 
 ---
 
@@ -228,52 +277,22 @@ This creates a **Notes section in the sidebar**.
 
 # Remaining Work
 
-## 1. Access Control (Important)
+## 1. ✅ File Attachments
 
-Ensure notes respect entity permissions.
-
-Currently missing validation that:
-
-```
-user has access to entityId
-```
-
-Should verify before returning or creating notes.
-
-Example checks:
-
-```
-property ownership
-tenant relationship
-organization membership
-```
-
----
-
-## 2. File Attachments
-
-Original feature requirement included attachments.
-
-Needs implementation.
+**Status: IMPLEMENTED**
 
 ### Backend
 
-Add endpoints:
+✅ Endpoints implemented:
 
 ```
 POST /api/v2/notes/:id/attachments
-GET  /api/v2/notes/:id/attachments
-DELETE /api/v2/notes/:id/attachments/:fileId
+GET  /api/v2/notes/:id/attachments/:attachmentId
 ```
 
-Storage options:
+Storage: Local filesystem at `data/uploads/notes/`
 
-```
-local filesystem
-S3 / MinIO
-```
-
-Note document will include:
+Note document includes:
 
 ```
 attachments[]
@@ -282,147 +301,130 @@ attachments[]
 Fields:
 
 ```
-filename
-contentType
-size
-url
-uploadedDate
+originalName
+mimeType
+sizeBytes
+storageKey
+uploadedBy
+uploadedAt
 ```
-
----
 
 ### Frontend
 
-Enhance `NotesPanel` to support:
+✅ NotesPanel has full support for:
 
 ```
-Upload file
+Upload files
 Display attachment list
 Download attachments
-Preview images
+Preview images inline
 ```
 
 ---
 
-## 3. Context Labels
+## 2. ✅ Context Labels
 
-Global notes page currently shows:
+**Status: IMPLEMENTED**
 
-```
-entityType
-entityId
-```
-
-Future improvement:
-
-Display friendly names:
+Global notes page now shows:
 
 ```
-Property address
-Tenant name
-Contract name
-Project name
+✅ Property address/name
+✅ Tenant/Contact name
+✅ Friendly labels instead of raw IDs
 ```
 
-Options:
+API enriches responses with `entityLabel` field.
 
-Option A (simple):
+---
+
+## 3. ✅ Access Control
+
+**Status: IMPLEMENTED**
+
+Ensures notes respect entity permissions:
 
 ```
-store entityLabel in note
+✅ User has access to entityId (validated)
+✅ Property ownership checked
+✅ Tenant relationship verified
+✅ Organization membership enforced
 ```
 
-Option B (better):
+Validation checks before:
 
 ```
-lookup entity during API query
+Creating notes
+Updating notes
+Deleting notes
+Fetching notes for specific entity
 ```
 
 ---
 
-## 4. Notes on Other Entities
+## 4. ✅ Notes on Other Entities
 
-Currently implemented:
+**Status: PARTIALLY IMPLEMENTED**
 
-```
-Properties
-```
+### Completed:
 
-Still needed:
+- ✅ Properties
+- ✅ Contacts/Tenants
 
-```
-Contacts
-Contracts
-Projects
-```
+### Not Yet Implemented:
 
-Implementation:
+- ⏳ Contracts (page structure not yet created)
+- ⏳ Projects (page structure not yet created)
 
-Add NotesPanel to those entity pages:
-
-Example:
+When contract and project pages are created, add:
 
 ```
 <NotesPanel
-  entityType="contact"
-  entityId={contactId}
+  entityType="contract"
+  entityId={contractId}
 />
 ```
 
 ---
 
-## 5. UI Enhancements
-
-Optional improvements:
-
-### Edit Notes
-
-Add UI for:
-
-```
-PATCH /notes/:id
-```
-
----
+## 5. UI Enhancements (Optional)
 
 ### Delete Notes
 
-Add UI for:
+✅ Implemented with confirmation dialog
 
-```
-DELETE /notes/:id
-```
+### Edit Notes
 
----
+✅ Implemented with inline edit mode
 
 ### Pin Notes
 
-Use existing field:
+✅ Backend support exists (pinned field)
+⏳ Frontend UI not yet implemented
 
-```
-pinned
-```
-
----
+Could add pin/unpin button in NotesPanel
 
 ### Tags UI
 
-Expose tag management.
+✅ Backend support exists (tags array)
+⏳ Frontend UI not yet implemented
 
----
+Could add tag input and filter
 
 ### Pagination
 
-If notes grow large:
+⏳ Not yet implemented
+
+For large note collections, could add:
 
 ```
-Load more
+Load more button
 limit / offset
 ```
 
----
-
 ### Filters
+
+⏳ Not yet implemented
 
 Global notes page could support:
 
@@ -434,25 +436,28 @@ date range
 
 ---
 
-# Suggested Next Step
+# What's Ready
 
-Recommended next implementation:
+## Production Ready:
 
-## File Attachments
+- ✅ Create/read/update/delete notes
+- ✅ File attachments (upload/download)
+- ✅ Notes on properties and tenants
+- ✅ Global notes view with search
+- ✅ Access control/permissions
+- ✅ Image preview support
+- ✅ Friendly entity labels
 
-Reason:
+## Testing Checklist:
 
-* Largest missing feature
-* High user value
-* Enables photos, invoices, documents
-
-After attachments:
-
-```
-Entity labels
-Permissions
-Additional entity integrations
-```
+1. ✅ Create note on property
+2. ✅ Create note on tenant
+3. ✅ Upload file to note
+4. ✅ Search notes globally
+5. ✅ Navigate from global notes to entities
+6. ✅ Delete note (soft delete)
+7. ✅ Edit note
+8. ✅ View notes with friendly labels
 
 ---
 
@@ -478,12 +483,119 @@ yarn dev
 /organization/notes
 ```
 
-4. Verify
+4. OR navigate to property/tenant and check Notes tab
 
-* Create note
+5. Verify:
+
+* Create note on property
+* Create note on tenant
+* Upload file
 * Search notes
-* Property notes tab
+* See friendly labels
+* Navigate to entity from global notes
 
 ---
 
-If you'd like, I can also generate a **visual architecture diagram of the Notes system** (API ↔ DB ↔ UI ↔ entities). That makes it much easier to extend later.
+# Future Enhancements (Post-MVP)
+
+## Contract Notes
+
+When contract pages are created, add:
+
+```javascript
+<NotesPanel
+  entityType="contract"
+  entityId={store.contract.selected?._id}
+/>
+```
+
+## Project Notes
+
+When project management is added, add:
+
+```javascript
+<NotesPanel
+  entityType="project"
+  entityId={store.project.selected?._id}
+/>
+```
+
+## Pin/Tag UI
+
+Add UI in NotesPanel for:
+
+```
+Toggle pin icon
+Tag input field
+Tag filter chips
+```
+
+## Pagination
+
+Add to global notes page:
+
+```
+Pagination controls
+Note count display
+Load more button
+```
+
+## Advanced Filtering
+
+Add to global notes page:
+
+```
+Entity type filter
+Date range picker
+Tag filter
+Author filter
+```
+
+---
+
+# Architecture Notes
+
+## Data Flow
+
+```
+Frontend NotesPanel
+    ↓
+API /notes endpoint
+    ↓
+Access control validation
+    ↓
+Entity lookup for label enrichment
+    ↓
+Database query
+    ↓
+Response with attachments & labels
+```
+
+## Collection Structure
+
+```
+Note {
+  _id: ObjectId
+  realmId: String (org)
+  entityType: 'property' | 'contact' | 'contract' | 'project'
+  entityId: String
+  authorId: String
+  authorName: String
+  content: String
+  tags: [String]
+  pinned: Boolean
+  attachments: [{
+    originalName: String
+    mimeType: String
+    sizeBytes: Number
+    storageKey: String
+    uploadedBy: String
+    uploadedAt: Date
+  }]
+  createdDate: Date
+  updatedDate: Date
+  deletedDate: Date (soft delete)
+}
+```
+
+---

@@ -7,6 +7,7 @@ import { LuAlertTriangle } from 'react-icons/lu';
 import { observer } from 'mobx-react-lite';
 import { StoreContext } from '../../store';
 import TenantForm from './forms/TenantForm';
+import NotesPanel from '../NotesPanel';
 import { useContext } from 'react';
 import useTranslation from 'next-translate/useTranslation';
 
@@ -37,6 +38,9 @@ function TenantTabs({ onSubmit /*, setError*/, readOnly }) {
             <div>{t('Documents')}</div>
           </div>
         </TabsTrigger>
+        <TabsTrigger value="notes" className="min-w-48 sm:w-full">
+          {t('Notes')}
+        </TabsTrigger>
       </TabsList>
       <TabsContent value="tenant">
         <Card className="p-6">
@@ -57,6 +61,12 @@ function TenantTabs({ onSubmit /*, setError*/, readOnly }) {
         <Card className="p-6">
           <DocumentsForm onSubmit={onSubmit} readOnly={readOnly} />
         </Card>
+      </TabsContent>
+      <TabsContent value="notes">
+        <NotesPanel
+          entityType="contact"
+          entityId={store.tenant.selected?._id}
+        />
       </TabsContent>
     </Tabs>
   );

@@ -19,6 +19,110 @@ function getAuthorId(req) {
   return req.user.email || req.user.clientId || req.user.serviceId || null;
 }
 
+async function validateEntityAccess(entityType, entityId, realmId) {
+  // Verify that the entity belongs to the realm for basic access control
+  const query = {
+    _id: entityId,
+    realmId: realmId
+  };
+
+  let entity = null;
+
+  switch (entityType) {
+    case 'property':
+      entity = await Collections.Property.findOne(query).lean();
+      break;
+    case 'contact':
+      // Contact/Tenant is stored in Tenant collection
+      entity = await Collections.Tenant.findOne(query).lean();
+      break;
+    case 'contract':
+      // Lease/Contract
+      entity = await Collections.Lease.findOne(query).lean();
+      break;
+    case 'project':
+      // Project if it exists
+      entity = null; // Projects not yet implemented
+      break;
+    default:
+      return false;
+  }
+
+  return !!entity;
+}
+
+async function enrichNotesWithLabels(notes, realmId) {
+  // Enrich each note with a friendly entity label
+  // Batch lookups by entity type for efficiency
+  const labelsByType = {
+    property: {},
+    contact: {},
+    contract: {},
+    project: {}
+  };
+
+  // First pass: collect all entity IDs we need to look up
+  for (const note of notes) {
+    if (note.entityType && note.entityId) {
+      if (!labelsByType[note.entityType]) {
+        labelsByType[note.entityType] = {};
+      }
+      labelsByType[note.entityType][note.entityId] = null;
+    }
+  }
+
+  // Load all entities in batch queries
+  try {
+    if (Object.keys(labelsByType.property).length > 0) {
+      const properties = await Collections.Property.find({
+        _id: { $in: Object.keys(labelsByType.property) },
+        realmId: realmId
+      })
+        .select('_id name')
+        .lean();
+      properties.forEach((p) => {
+        labelsByType.property[String(p._id)] = p.name;
+      });
+    }
+
+    if (Object.keys(labelsByType.contact).length > 0) {
+      const tenants = await Collections.Tenant.find({
+        _id: { $in: Object.keys(labelsByType.contact) },
+        realmId: realmId
+      })
+        .select('_id name')
+        .lean();
+      tenants.forEach((t) => {
+        labelsByType.contact[String(t._id)] = t.name;
+      });
+    }
+
+    if (Object.keys(labelsByType.contract).length > 0) {
+      const leases = await Collections.Lease.find({
+        _id: { $in: Object.keys(labelsByType.contract) },
+        realmId: realmId
+      })
+        .select('_id name')
+        .lean();
+      leases.forEach((l) => {
+        labelsByType.contract[String(l._id)] = l.name;
+      });
+    }
+  } catch (err) {
+    // Silently fail if bulk lookups fail
+    console.error('Error enriching notes with labels:', err.message);
+  }
+
+  // Second pass: add labels to notes
+  return notes.map((note) => {
+    const label = labelsByType[note.entityType]?.[String(note.entityId)];
+    return {
+      ...note,
+      entityLabel: label || null
+    };
+  });
+}
+
 export async function add(req, res) {
   const { entityType, entityId, content, tags, pinned } = req.body;
 
@@ -29,6 +133,19 @@ export async function add(req, res) {
   }
 
   ensureEntityType(entityType);
+
+  // Validate access to the entity
+  const hasAccess = await validateEntityAccess(
+    entityType,
+    entityId,
+    req.realm?._id
+  );
+
+  if (!hasAccess) {
+    return res.status(403).json({
+      message: 'You do not have access to this resource'
+    });
+  }
 
   const authorId = getAuthorId(req);
   if (!authorId) return res.status(401).json({ message: 'Unauthorized' });
@@ -45,7 +162,26 @@ export async function add(req, res) {
     deletedDate: null
   });
 
-  return res.status(201).json(note);
+  const enriched = await enrichNotesWithLabels(
+    [note.toObject()],
+    req.realm?._id
+  );
+  return res.status(201).json(enriched[0]);
+}
+
+export async function one(req, res) {
+  const id = req.params.id;
+
+  const note = await Collections.Note.findOne({
+    _id: id,
+    realmId: req.realm?._id,
+    deletedDate: null
+  }).lean();
+
+  if (!note) return res.status(404).json({ message: 'Not found' });
+
+  const enriched = await enrichNotesWithLabels([note], req.realm?._id);
+  return res.json(enriched[0]);
 }
 
 export async function all(req, res) {
@@ -64,6 +200,21 @@ export async function all(req, res) {
     filter.entityId = String(entityId);
   }
 
+  // Validate access to specific entity if requested
+  if (entityType && entityId) {
+    const hasAccess = await validateEntityAccess(
+      entityType,
+      entityId,
+      req.realm?._id
+    );
+
+    if (!hasAccess) {
+      return res.status(403).json({
+        message: 'You do not have access to this resource'
+      });
+    }
+  }
+
   // Text search if q is provided
   if (q && String(q).trim()) {
     const search = String(q).trim();
@@ -74,45 +225,90 @@ export async function all(req, res) {
       .sort({ score: { $meta: 'textScore' }, createdDate: -1 })
       .lean();
 
-    return res.json(notes);
+    const enriched = await enrichNotesWithLabels(notes, req.realm?._id);
+    return res.json(enriched);
   }
 
   const notes = await Collections.Note.find(filter)
     .sort({ pinned: -1, createdDate: -1 })
     .lean();
 
-  return res.json(notes);
+  const enriched = await enrichNotesWithLabels(notes, req.realm?._id);
+  return res.json(enriched);
 }
 
 export async function update(req, res) {
   const id = req.params.id;
   const { content, tags, pinned } = req.body;
 
+  // First, find the note to get the entity info for access validation
+  const note = await Collections.Note.findOne({
+    _id: id,
+    realmId: req.realm?._id,
+    deletedDate: null
+  }).lean();
+
+  if (!note) return res.status(404).json({ message: 'Not found' });
+
+  // Validate access to the entity this note is tied to
+  const hasAccess = await validateEntityAccess(
+    note.entityType,
+    note.entityId,
+    req.realm?._id
+  );
+
+  if (!hasAccess) {
+    return res.status(403).json({
+      message: 'You do not have access to this resource'
+    });
+  }
+
   const updateDoc = {};
   if (typeof content === 'string') updateDoc.content = content;
   if (Array.isArray(tags)) updateDoc.tags = tags;
   if (typeof pinned === 'boolean') updateDoc.pinned = pinned;
 
-  const note = await Collections.Note.findOneAndUpdate(
+  const updatedNote = await Collections.Note.findOneAndUpdate(
     { _id: id, realmId: req.realm?._id, deletedDate: null },
     { $set: updateDoc },
     { new: true }
   ).lean();
 
-  if (!note) return res.status(404).json({ message: 'Not found' });
-  return res.json(note);
+  const enriched = await enrichNotesWithLabels([updatedNote], req.realm?._id);
+  return res.json(enriched[0]);
 }
 
 export async function remove(req, res) {
   const id = req.params.id;
 
-  const note = await Collections.Note.findOneAndUpdate(
+  // First, find the note to validate access before deleting
+  const note = await Collections.Note.findOne({
+    _id: id,
+    realmId: req.realm?._id,
+    deletedDate: null
+  }).lean();
+
+  if (!note) return res.status(404).json({ message: 'Not found' });
+
+  // Validate access to the entity this note is tied to
+  const hasAccess = await validateEntityAccess(
+    note.entityType,
+    note.entityId,
+    req.realm?._id
+  );
+
+  if (!hasAccess) {
+    return res.status(403).json({
+      message: 'You do not have access to this resource'
+    });
+  }
+
+  await Collections.Note.findOneAndUpdate(
     { _id: id, realmId: req.realm?._id, deletedDate: null },
     { $set: { deletedDate: new Date() } },
     { new: true }
   ).lean();
 
-  if (!note) return res.status(404).json({ message: 'Not found' });
   return res.sendStatus(204);
 }
 
