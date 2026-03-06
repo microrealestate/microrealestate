@@ -29,6 +29,19 @@ function PropertyOverviewCard() {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
 
+  // Calculate total square footage from children if this is a parent property
+  const totalSquareFootage =
+    store.property.selected?.childProperties?.reduce((sum, child) => {
+      return sum + (child.surface || 0);
+    }, 0) || 0;
+
+  // Check if this property has children (is a parent)
+  const isParentProperty =
+    (store.property.selected?.childProperties?.length || 0) > 0;
+  const displayedSquareFootage = isParentProperty
+    ? totalSquareFootage
+    : store.property.selected?.surface || 0;
+
   return (
     <DashboardCard
       Icon={LuKeyRound}
@@ -41,6 +54,16 @@ function PropertyOverviewCard() {
             </span>
             <NumberFormat value={store.property.selected.price} />
           </div>
+          {displayedSquareFootage > 0 && (
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">
+                {t('Total Surface Area')}:
+              </span>
+              <span>
+                {displayedSquareFootage} {t('sqm')}
+              </span>
+            </div>
+          )}
           <Map address={store.property.selected.address} />
         </div>
       )}
@@ -79,6 +102,89 @@ function OccupancyHistoryCard() {
         )
       }
     />
+  );
+}
+
+function RentCard() {
+  const { t } = useTranslation('common');
+  const store = useContext(StoreContext);
+
+  // Calculate total square footage from children if this is a parent property
+  const totalSquareFootage =
+    store.property.selected?.childProperties?.reduce((sum, child) => {
+      return sum + (child.surface || 0);
+    }, 0) || 0;
+
+  // Check if this property has children (is a parent)
+  const isParentProperty =
+    (store.property.selected?.childProperties?.length || 0) > 0;
+  const displayedSquareFootage = isParentProperty
+    ? totalSquareFootage
+    : store.property.selected?.surface || 0;
+
+  return (
+    <Card className="p-6 space-y-6">
+      <div>
+        <h3 className="text-sm font-semibold mb-4">{t('Rent Information')}</h3>
+        <div className="space-y-3">
+          <div className="flex justify-between items-center py-2 border-b">
+            <span className="text-sm text-muted-foreground">
+              {t('Rent excluding tax and expenses')}
+            </span>
+            <NumberFormat
+              value={store.property.selected?.price}
+              className="text-lg font-semibold"
+            />
+          </div>
+          {displayedSquareFootage > 0 && (
+            <div className="flex justify-between items-center py-2 border-b">
+              <span className="text-sm text-muted-foreground">
+                {isParentProperty ? t('Total Surface Area') : t('Surface')}
+              </span>
+              <span className="text-lg font-semibold">
+                {displayedSquareFootage} {t('sqm')}
+              </span>
+            </div>
+          )}
+          {displayedSquareFootage > 0 && store.property.selected?.price > 0 && (
+            <div className="flex justify-between items-center py-2 border-b">
+              <span className="text-sm text-muted-foreground">
+                {t('Rent per sqm')}
+              </span>
+              <span className="text-lg font-semibold">
+                <NumberFormat
+                  value={store.property.selected.price / displayedSquareFootage}
+                />{' '}
+                / {t('sqm')}
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+      {isParentProperty && (
+        <div>
+          <h3 className="text-sm font-semibold mb-4">{t('Sub-properties')}</h3>
+          <div className="space-y-2">
+            {store.property.selected.childProperties?.map((child) => (
+              <div
+                key={child._id}
+                className="flex justify-between items-center py-2 border-b"
+              >
+                <div>
+                  <div className="text-sm">{child.name}</div>
+                  {child.surface > 0 && (
+                    <div className="text-xs text-muted-foreground">
+                      {child.surface} {t('sqm')}
+                    </div>
+                  )}
+                </div>
+                <NumberFormat value={child.price} />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </Card>
   );
 }
 
@@ -197,10 +303,13 @@ function Property() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Tabs defaultValue="property" className="md:col-span-2">
             <TabsList className="flex justify-start overflow-x-auto overflow-y-hidden">
-              <TabsTrigger value="property" className="w-1/2">
+              <TabsTrigger value="property" className="w-1/3">
                 {t('Property')}
               </TabsTrigger>
-              <TabsTrigger value="notes" className="w-1/2">
+              <TabsTrigger value="rent" className="w-1/3">
+                {t('Rent')}
+              </TabsTrigger>
+              <TabsTrigger value="notes" className="w-1/3">
                 {t('Notes')}
               </TabsTrigger>
             </TabsList>
@@ -208,6 +317,9 @@ function Property() {
               <Card className="p-6">
                 <PropertyForm onSubmit={onSubmit} />
               </Card>
+            </TabsContent>
+            <TabsContent value="rent">
+              <RentCard />
             </TabsContent>
             <TabsContent value="notes">
               <NotesPanel

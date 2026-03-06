@@ -5,13 +5,11 @@ import useTranslation from 'next-translate/useTranslation';
 /*
   PROPERTY LIST
 
-  ORIGINAL BEHAVIOR:
-  - FLAT GRID OF PROPERTIES (NO BUILDING / UNIT GROUPING)
-
-  NEW BEHAVIOR:
-  - GROUP PROPERTIES BY BUILDING
-  - SHOW UNITS UNDER THEIR PARENT BUILDING
-  - STILL SHOW STANDALONE PROPERTIES (NO PARENT, NOT A BUILDING)
+  BEHAVIOR:
+  - GROUP PROPERTIES BY PARENT/CHILD RELATIONSHIP
+  - SHOW PARENT PROPERTIES WITH EXPANDABLE/COLLAPSIBLE CHILDREN
+  - PARENT PROPERTIES CALCULATE TOTAL RENT FROM ALL CHILDREN
+  - SHOW STANDALONE PROPERTIES (NO PARENT, NOT A BUILDING)
 */
 
 export default function PropertyList({ data }) {
@@ -21,82 +19,91 @@ export default function PropertyList({ data }) {
     return <EmptyIllustration label={t('No properties found')} />;
   }
 
-  /*
-    SPLIT PROPERTIES INTO:
-    - BUILDINGS
-    - STANDALONE (NO PARENT, NOT BUILDINGS)
-    - UNITS (HAVE parentPropertyId)
-  */
+  // Create a map of all properties by ID for quick lookup
+  const propertyMap = data.reduce((acc, property) => {
+    acc[property._id] = property;
+    return acc;
+  }, {});
 
-  // ALL BUILDINGS (type === 'building')
-  const buildings = data.filter((p) => p.type === 'building');
+  // Identify parent IDs (all unique parentPropertyId values)
+  const parentIds = new Set();
+  data.forEach((property) => {
+    if (property.parentPropertyId) {
+      const parentId =
+        typeof property.parentPropertyId === 'object' &&
+        property.parentPropertyId._id
+          ? property.parentPropertyId._id
+          : property.parentPropertyId;
+      parentIds.add(parentId);
+    }
+  });
 
-  // ALL UNITS (parentPropertyId SET)
-  const unitsByBuilding = data.reduce((acc, p) => {
-    if (p.parentPropertyId) {
-      const key =
-        typeof p.parentPropertyId === 'object' && p.parentPropertyId._id
-          ? p.parentPropertyId._id
-          : p.parentPropertyId;
+  // Create a map of children by parent ID
+  const childrenByParent = data.reduce((acc, property) => {
+    if (property.parentPropertyId) {
+      const parentId =
+        typeof property.parentPropertyId === 'object' &&
+        property.parentPropertyId._id
+          ? property.parentPropertyId._id
+          : property.parentPropertyId;
 
-      if (!acc[key]) {
-        acc[key] = [];
+      if (!acc[parentId]) {
+        acc[parentId] = [];
       }
-      acc[key].push(p);
+      acc[parentId].push(property);
     }
     return acc;
   }, {});
 
-  // STANDALONE PROPERTIES:
-  // - NOT BUILDINGS
-  // - NO parentPropertyId
-  const standalone = data.filter(
-    (p) => p.type !== 'building' && !p.parentPropertyId
+  // Separate properties into:
+  // 1. Parent properties (have children)
+  // 2. Standalone properties (no parent, no children)
+  const parentProperties = data.filter((p) => parentIds.has(p._id));
+  const standaloneProperties = data.filter(
+    (p) => !parentIds.has(p._id) && !p.parentPropertyId
   );
 
   return (
     <div className="space-y-8">
       {/*
-        SECTION 1 — BUILDINGS WITH THEIR UNITS UNDERNEATH
+        SECTION 1 — PARENT PROPERTIES WITH THEIR CHILDREN
       */}
-      {buildings.map((building) => {
-        const buildingId =
-          typeof building.parentPropertyId === 'object' &&
-          building.parentPropertyId?._id
-            ? building._id
-            : building._id;
-
-        const childUnits = unitsByBuilding[buildingId] || [];
+      {parentProperties.map((parentProperty) => {
+        const children = childrenByParent[parentProperty._id] || [];
+        // Sort children by name for consistent display
+        const sortedChildren = [...children].sort((a, b) =>
+          (a.name || '').localeCompare(b.name || '')
+        );
 
         return (
-          <div key={building._id}>
-            {/* BUILDING CARD (ORIGINAL COMPONENT, UNCHANGED) */}
-            <PropertyListItem property={building} />
-
-            {/* UNITS NESTED UNDER THIS BUILDING */}
-            {childUnits.length > 0 && (
-              <div className="ml-6 mt-2 grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                {childUnits.map((unit) => (
-                  <PropertyListItem key={unit._id} property={unit} />
-                ))}
-              </div>
-            )}
-          </div>
+          <PropertyListItem
+            key={parentProperty._id}
+            property={parentProperty}
+            childProperties={sortedChildren}
+            isChild={false}
+          />
         );
       })}
 
       {/*
         SECTION 2 — STANDALONE PROPERTIES
-        (NO PARENT, NOT MARKED AS BUILDING)
+        (NO PARENT, NO CHILDREN)
       */}
-      {standalone.length > 0 && (
+      {standaloneProperties.length > 0 && (
         <div>
-          <h3 className="text-sm font-semibold mb-2">
-            {t('Standalone properties')}
-          </h3>
+          {standaloneProperties.length > 0 && parentProperties.length > 0 && (
+            <h3 className="text-sm font-semibold mb-4 text-muted-foreground">
+              {t('Other properties')}
+            </h3>
+          )}
           <div className="grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-            {standalone.map((property) => (
-              <PropertyListItem key={property._id} property={property} />
+            {standaloneProperties.map((property) => (
+              <PropertyListItem
+                key={property._id}
+                property={property}
+                childProperties={[]}
+                isChild={false}
+              />
             ))}
           </div>
         </div>
