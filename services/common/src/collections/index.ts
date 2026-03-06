@@ -1,6 +1,8 @@
 import mongoose from 'mongoose';
 
 export { default as Account } from './account.js';
+export { default as Contractor } from './contractor.js';
+export { default as ContractorWork } from './contractorwork.js';
 export { default as Document } from './document.js';
 export { default as Email } from './email.js';
 export { default as Lease } from './lease.js';

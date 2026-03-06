@@ -1,4 +1,5 @@
 import * as accountingManager from './managers/accountingmanager.js';
+import * as contractorManager from './managers/contractormanager.js';
 import * as dashboardManager from './managers/dashboardmanager.js';
 import * as emailManager from './managers/emailmanager.js';
 import * as leaseManager from './managers/leasemanager.js';
@@ -86,6 +87,46 @@ export default function routes() {
     Middlewares.asyncWrapper(occupantManager.remove)
   );
   router.use('/tenants', occupantsRouter);
+
+  const contractorsRouter = express.Router();
+  contractorsRouter.get('/', Middlewares.asyncWrapper(contractorManager.all));
+  contractorsRouter.get(
+    '/:id',
+    Middlewares.asyncWrapper(contractorManager.one)
+  );
+  contractorsRouter.post('/', Middlewares.asyncWrapper(contractorManager.add));
+  contractorsRouter.patch(
+    '/:id',
+    Middlewares.asyncWrapper(contractorManager.update)
+  );
+  contractorsRouter.delete(
+    '/:ids',
+    Middlewares.asyncWrapper(contractorManager.remove)
+  );
+
+  // Work records endpoints
+  contractorsRouter.get(
+    '/:contractorId/work',
+    Middlewares.asyncWrapper(contractorManager.getWork)
+  );
+  contractorsRouter.get(
+    '/:contractorId/work/:workId',
+    Middlewares.asyncWrapper(contractorManager.getWorkById)
+  );
+  contractorsRouter.post(
+    '/:contractorId/work',
+    Middlewares.asyncWrapper(contractorManager.addWork)
+  );
+  contractorsRouter.patch(
+    '/work/:workId',
+    Middlewares.asyncWrapper(contractorManager.updateWork)
+  );
+  contractorsRouter.delete(
+    '/work/:workId',
+    Middlewares.asyncWrapper(contractorManager.removeWork)
+  );
+
+  router.use('/contractors', contractorsRouter);
 
   const rentsRouter = express.Router();
   rentsRouter.patch(

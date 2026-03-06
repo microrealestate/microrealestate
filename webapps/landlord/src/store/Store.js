@@ -3,6 +3,7 @@ import { setAccessToken, setOrganizationId } from '../utils/fetch';
 
 import Accounting from './Accounting';
 import AppHistory from './AppHistory';
+import Contractor from './Contractor';
 import Dashboard from './Dashboard';
 import Document from './Document';
 import Lease from './Lease';
@@ -22,6 +23,7 @@ export default class Store {
     this.lease = new Lease();
     this.rent = new Rent();
     this.tenant = new Tenant();
+    this.contractor = new Contractor();
     this.property = new Property();
     this.template = new Template();
     this.document = new Document();
@@ -34,6 +36,7 @@ export default class Store {
       lease: observable,
       rent: observable,
       tenant: observable,
+      contractor: observable,
       property: observable,
       template: observable,
       document: observable,

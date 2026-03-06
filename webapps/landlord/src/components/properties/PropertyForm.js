@@ -39,7 +39,7 @@ const validationSchema = Yup.object().shape({
     state: Yup.string(),
     country: Yup.string()
   }),
-  rent: Yup.number().min(0).required(),
+  rent: Yup.number().min(0),
 
   // NEW OPTIONAL FIELDS FOR MARKET RENT RANGE
   rentLowSqftYear: Yup.number().min(0).nullable(),
@@ -194,36 +194,6 @@ const PropertyForm = observer(({ onSubmit }) => {
 
             <Section label={t('Address')}>
               <AddressField />
-            </Section>
-
-            <Section label={t('Rent')}>
-              {/*
-                ORIGINAL RENT FIELD — THIS IS YOUR CURRENT RENT PRICE
-              */}
-              <NumberField
-                label={t('Rent excluding tax and expenses')}
-                name="rent"
-              />
-
-              {/*
-                NEW FIELDS — RENT RANGE ($ / SQ FT / YEAR)
-
-                THESE ARE OPTIONAL AND PURELY FOR MARKET INFO / COMPARISON.
-              */}
-              <div className="sm:flex sm:gap-2 mt-2">
-                <NumberField
-                  label={t('Rent low ($ / sq ft / year)')}
-                  name="rentLowSqftYear"
-                />
-                <NumberField
-                  label={t('Rent median ($ / sq ft / year)')}
-                  name="rentMedianSqftYear"
-                />
-                <NumberField
-                  label={t('Rent high ($ / sq ft / year)')}
-                  name="rentHighSqftYear"
-                />
-              </div>
             </Section>
 
             <SubmitButton

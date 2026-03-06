@@ -370,6 +370,7 @@ export default function NotesPanel({ entityType, entityId }) {
             <input
               ref={newFileInputRef}
               type="file"
+              multiple
               className="hidden"
               onChange={(e) => {
                 appendPendingFiles(Array.from(e.target.files || []));

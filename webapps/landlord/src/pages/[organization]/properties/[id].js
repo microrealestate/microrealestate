@@ -105,9 +105,22 @@ function OccupancyHistoryCard() {
   );
 }
 
-function RentCard() {
+function RentCard({ onSubmit }) {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
+  const [editMode, setEditMode] = useState(false);
+  const [rentValue, setRentValue] = useState(
+    store.property.selected?.price || ''
+  );
+  const [rentLow, setRentLow] = useState(
+    store.property.selected?.rentLowSqftYear || ''
+  );
+  const [rentMedian, setRentMedian] = useState(
+    store.property.selected?.rentMedianSqftYear || ''
+  );
+  const [rentHigh, setRentHigh] = useState(
+    store.property.selected?.rentHighSqftYear || ''
+  );
 
   // Calculate total square footage from children if this is a parent property
   const totalSquareFootage =
@@ -122,44 +135,121 @@ function RentCard() {
     ? totalSquareFootage
     : store.property.selected?.surface || 0;
 
+  const handleSaveRent = async () => {
+    await onSubmit({
+      rent: parseFloat(rentValue) || 0,
+      rentLowSqftYear: rentLow ? parseFloat(rentLow) : null,
+      rentMedianSqftYear: rentMedian ? parseFloat(rentMedian) : null,
+      rentHighSqftYear: rentHigh ? parseFloat(rentHigh) : null
+    });
+    setEditMode(false);
+  };
+
   return (
     <Card className="p-6 space-y-6">
       <div>
-        <h3 className="text-sm font-semibold mb-4">{t('Rent Information')}</h3>
-        <div className="space-y-3">
-          <div className="flex justify-between items-center py-2 border-b">
-            <span className="text-sm text-muted-foreground">
-              {t('Rent excluding tax and expenses')}
-            </span>
-            <NumberFormat
-              value={store.property.selected?.price}
-              className="text-lg font-semibold"
-            />
-          </div>
-          {displayedSquareFootage > 0 && (
-            <div className="flex justify-between items-center py-2 border-b">
-              <span className="text-sm text-muted-foreground">
-                {isParentProperty ? t('Total Surface Area') : t('Surface')}
-              </span>
-              <span className="text-lg font-semibold">
-                {displayedSquareFootage} {t('sqm')}
-              </span>
-            </div>
-          )}
-          {displayedSquareFootage > 0 && store.property.selected?.price > 0 && (
-            <div className="flex justify-between items-center py-2 border-b">
-              <span className="text-sm text-muted-foreground">
-                {t('Rent per sqm')}
-              </span>
-              <span className="text-lg font-semibold">
-                <NumberFormat
-                  value={store.property.selected.price / displayedSquareFootage}
-                />{' '}
-                / {t('sqm')}
-              </span>
-            </div>
-          )}
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-sm font-semibold">{t('Rent Information')}</h3>
+          <button
+            onClick={() => setEditMode(!editMode)}
+            className="text-xs text-blue-600 hover:text-blue-800"
+          >
+            {editMode ? t('Cancel') : t('Edit')}
+          </button>
         </div>
+        {editMode ? (
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm text-muted-foreground">
+                {t('Rent excluding tax and expenses')}
+              </label>
+              <input
+                type="number"
+                value={rentValue}
+                onChange={(e) => setRentValue(e.target.value)}
+                className="w-full px-2 py-1 border rounded"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm text-muted-foreground">
+                {t('Rent Range ($ / sq ft / year)')}
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                <div>
+                  <input
+                    type="number"
+                    placeholder={t('Low')}
+                    value={rentLow}
+                    onChange={(e) => setRentLow(e.target.value)}
+                    className="w-full px-2 py-1 border rounded text-sm"
+                  />
+                </div>
+                <div>
+                  <input
+                    type="number"
+                    placeholder={t('Median')}
+                    value={rentMedian}
+                    onChange={(e) => setRentMedian(e.target.value)}
+                    className="w-full px-2 py-1 border rounded text-sm"
+                  />
+                </div>
+                <div>
+                  <input
+                    type="number"
+                    placeholder={t('High')}
+                    value={rentHigh}
+                    onChange={(e) => setRentHigh(e.target.value)}
+                    className="w-full px-2 py-1 border rounded text-sm"
+                  />
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={handleSaveRent}
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+            >
+              {t('Save')}
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <div className="flex justify-between items-center py-2 border-b">
+              <span className="text-sm text-muted-foreground">
+                {t('Rent excluding tax and expenses')}
+              </span>
+              <NumberFormat
+                value={store.property.selected?.price}
+                className="text-lg font-semibold"
+              />
+            </div>
+            {displayedSquareFootage > 0 && (
+              <div className="flex justify-between items-center py-2 border-b">
+                <span className="text-sm text-muted-foreground">
+                  {isParentProperty ? t('Total Surface Area') : t('Surface')}
+                </span>
+                <span className="text-lg font-semibold">
+                  {displayedSquareFootage} {t('sqm')}
+                </span>
+              </div>
+            )}
+            {displayedSquareFootage > 0 &&
+              store.property.selected?.price > 0 && (
+                <div className="flex justify-between items-center py-2 border-b">
+                  <span className="text-sm text-muted-foreground">
+                    {t('Rent per sqm')}
+                  </span>
+                  <span className="text-lg font-semibold">
+                    <NumberFormat
+                      value={
+                        store.property.selected.price / displayedSquareFootage
+                      }
+                    />{' '}
+                    / {t('sqm')}
+                  </span>
+                </div>
+              )}
+          </div>
+        )}
       </div>
       {isParentProperty && (
         <div>
@@ -319,7 +409,7 @@ function Property() {
               </Card>
             </TabsContent>
             <TabsContent value="rent">
-              <RentCard />
+              <RentCard onSubmit={onSubmit} />
             </TabsContent>
             <TabsContent value="notes">
               <NotesPanel

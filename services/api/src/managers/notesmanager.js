@@ -4,7 +4,7 @@ import { nanoid } from 'nanoid';
 import path from 'path';
 
 function ensureEntityType(entityType) {
-  const allowed = ['property', 'contact', 'contract', 'project'];
+  const allowed = ['property', 'contact', 'contract', 'project', 'contractor'];
   if (!allowed.includes(entityType)) {
     const err = new Error(`Invalid entityType: ${entityType}`);
     err.status = 400;
@@ -44,6 +44,10 @@ async function validateEntityAccess(entityType, entityId, realmId) {
       // Project if it exists
       entity = null; // Projects not yet implemented
       break;
+    case 'contractor':
+      // Contractor
+      entity = await Collections.Contractor.findOne(query).lean();
+      break;
     default:
       return false;
   }
@@ -58,7 +62,8 @@ async function enrichNotesWithLabels(notes, realmId) {
     property: {},
     contact: {},
     contract: {},
-    project: {}
+    project: {},
+    contractor: {}
   };
 
   // First pass: collect all entity IDs we need to look up
@@ -106,6 +111,18 @@ async function enrichNotesWithLabels(notes, realmId) {
         .lean();
       leases.forEach((l) => {
         labelsByType.contract[String(l._id)] = l.name;
+      });
+    }
+
+    if (Object.keys(labelsByType.contractor).length > 0) {
+      const contractors = await Collections.Contractor.find({
+        _id: { $in: Object.keys(labelsByType.contractor) },
+        realmId: realmId
+      })
+        .select('_id name')
+        .lean();
+      contractors.forEach((c) => {
+        labelsByType.contractor[String(c._id)] = c.name;
       });
     }
   } catch (err) {

@@ -285,31 +285,103 @@ export namespace CollectionTypes {
     stepperMode: boolean;
   };
 
-   export type NoteAttachment = {
-     _id?: string;
-     originalName: string;
-     mimeType: string;
-     sizeBytes: number;
-     storageKey: string; // where the file is stored (path/key)
-     uploadedBy: string; // userId
-     uploadedAt: Date;
-   };
+  export type NoteAttachment = {
+    _id?: string;
+    originalName: string;
+    mimeType: string;
+    sizeBytes: number;
+    storageKey: string; // where the file is stored (path/key)
+    uploadedBy: string; // userId
+    uploadedAt: Date;
+  };
 
-   export type NoteEntityType = 'property' | 'contact' | 'contract' | 'project';
+  export type NoteEntityType =
+    | 'property'
+    | 'contact'
+    | 'contract'
+    | 'project'
+    | 'contractor';
 
-   export type Note = {
-     _id?: string;
-     realmId?: string; // optional now; we’ll decide in next steps if we enforce it
-     entityType: NoteEntityType;
-     entityId: string; // ObjectId string
-     authorId: string; // ObjectId string
-     authorName?: string;
-     content: string;
-     tags?: string[];
-     pinned?: boolean;
-     attachments?: NoteAttachment[];
-     deletedAt?: Date | null;
-     createdAt?: Date;
-     updatedAt?: Date;
-   };
+  export type Note = {
+    _id?: string;
+    realmId?: string; // optional now; we'll decide in next steps if we enforce it
+    entityType: NoteEntityType;
+    entityId: string; // ObjectId string
+    authorId: string; // ObjectId string
+    authorName?: string;
+    content: string;
+    tags?: string[];
+    pinned?: boolean;
+    attachments?: NoteAttachment[];
+    deletedAt?: Date | null;
+    createdAt?: Date;
+    updatedAt?: Date;
+  };
+
+  export type Contractor = {
+    _id?: string;
+    realmId: string;
+    name: string;
+    isCompany?: boolean;
+    company?: string;
+    manager?: string;
+    legalForm?: string;
+    siret?: string;
+    rcs?: string;
+    capital?: number;
+    street1?: string;
+    street2?: string;
+    zipCode?: string;
+    city?: string;
+    country?: string;
+    contacts?: {
+      contact?: string;
+      phone?: string;
+      email?: string;
+    }[];
+    businessType?: string;
+    insurance?: string;
+    licenseNumber?: string;
+    taxId?: string;
+    notes?: string;
+    active?: boolean;
+    rating?: number;
+    createdDate?: Date;
+    updatedDate?: Date;
+  };
+
+  export type ContractorWork = {
+    _id?: string;
+    realmId: string;
+    contractorId: string;
+    propertyId?: string;
+    title: string;
+    description?: string;
+    workType?: string;
+    status: 'pending' | 'in-progress' | 'completed' | 'cancelled';
+    startDate?: Date;
+    completionDate?: Date;
+    dueDate?: Date;
+    estimatedCost?: number;
+    actualCost?: number;
+    currency?: string;
+    paymentStatus?: 'unpaid' | 'partial' | 'paid';
+    paidDate?: Date;
+    receiptUrl?: string;
+    receiptFileName?: string;
+    bidUrl?: string;
+    bidFileName?: string;
+    invoiceUrl?: string;
+    invoiceFileName?: string;
+    attachments?: {
+      fileName?: string;
+      fileUrl?: string;
+      uploadedAt?: Date;
+      uploadedBy?: string;
+    }[];
+    notes?: string;
+    internalNotes?: string;
+    createdDate?: Date;
+    updatedDate?: Date;
+  };
 }
