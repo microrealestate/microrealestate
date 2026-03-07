@@ -43,14 +43,7 @@ async function onStartUp(application) {
   }
 
   application.use(routes());
-},
-        ONEDRIVE_ENABLED: process.env.ONEDRIVE_ENABLED
-          ? process.env.ONEDRIVE_ENABLED.toLowerCase() === 'true'
-          : false,
-        ONEDRIVE_TENANT_ID: process.env.ONEDRIVE_TENANT_ID,
-        ONEDRIVE_CLIENT_ID: process.env.ONEDRIVE_CLIENT_ID,
-        ONEDRIVE_CLIENT_SECRET: process.env.ONEDRIVE_CLIENT_SECRET,
-        ONEDRIVE_ROOT_FOLDER: process.env.ONEDRIVE_ROOT_FOLDER || 'ButlerPMS'
+}
 
 async function Main() {
   let service;
@@ -66,7 +59,14 @@ async function Main() {
           : undefined,
         EMAILER_URL: process.env.EMAILER_URL || 'http://localhost:8083/emailer',
         PDFGENERATOR_URL:
-          process.env.PDFGENERATOR_URL || 'http://localhost:8082/pdfgenerator'
+          process.env.PDFGENERATOR_URL || 'http://localhost:8082/pdfgenerator',
+        ONEDRIVE_ENABLED: process.env.ONEDRIVE_ENABLED
+          ? process.env.ONEDRIVE_ENABLED.toLowerCase() === 'true'
+          : false,
+        ONEDRIVE_TENANT_ID: process.env.ONEDRIVE_TENANT_ID,
+        ONEDRIVE_CLIENT_ID: process.env.ONEDRIVE_CLIENT_ID,
+        ONEDRIVE_CLIENT_SECRET: process.env.ONEDRIVE_CLIENT_SECRET,
+        ONEDRIVE_ROOT_FOLDER: process.env.ONEDRIVE_ROOT_FOLDER || 'ButlerPMS'
       })
     );
 

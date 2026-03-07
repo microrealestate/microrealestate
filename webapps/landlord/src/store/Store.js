@@ -9,6 +9,7 @@ import Document from './Document';
 import Lease from './Lease';
 import moment from 'moment';
 import Organization from './Organization';
+import Project from './Project';
 import Property from './Property';
 import Rent from './Rent';
 import Template from './Template';
@@ -24,6 +25,7 @@ export default class Store {
     this.rent = new Rent();
     this.tenant = new Tenant();
     this.contractor = new Contractor();
+    this.project = new Project();
     this.property = new Property();
     this.template = new Template();
     this.document = new Document();
@@ -37,6 +39,7 @@ export default class Store {
       rent: observable,
       tenant: observable,
       contractor: observable,
+      project: observable,
       property: observable,
       template: observable,
       document: observable,

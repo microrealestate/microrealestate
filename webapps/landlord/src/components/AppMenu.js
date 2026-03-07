@@ -6,7 +6,8 @@ import {
   LuUserCircle,
   LuWallet,
   LuStickyNote,
-  LuWrench
+  LuWrench,
+  LuClipboardList
 } from 'react-icons/lu';
 import {
   Sheet,
@@ -66,6 +67,13 @@ const menuItems = [
     pathname: '/contractors',
     Icon: LuWrench,
     dataCy: 'contractorsNav'
+  },
+  {
+    key: 'projects',
+    labelId: 'Projects',
+    pathname: '/projects',
+    Icon: LuClipboardList,
+    dataCy: 'projectsNav'
   },
   {
     key: 'properties',

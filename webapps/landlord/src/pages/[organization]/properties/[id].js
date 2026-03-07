@@ -359,6 +359,7 @@ function CityEstimatesCard({
 function PropertyOverviewCard() {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
+  const router = useRouter();
   const SQFT_PER_SQM = 10.7639;
 
   // Calculate total square footage from children if this is a parent property
@@ -374,6 +375,27 @@ function PropertyOverviewCard() {
     ? totalSquareFootage
     : store.property.selected?.surface || 0;
   const displayedSquareFeet = displayedSquareMeters * SQFT_PER_SQM;
+
+  // Get parent property if this is a unit
+  const parentPropertyId = getParentPropertyIdValue(
+    store.property.selected?.parentPropertyId
+  );
+  const parentProperty = parentPropertyId
+    ? store.property.items.find((p) => p._id === parentPropertyId)
+    : null;
+
+  // Get child units if this is a building
+  const childUnits = (store.property.items || []).filter(
+    (item) =>
+      String(getParentPropertyIdValue(item?.parentPropertyId) || '') ===
+      String(store.property.selected?._id || '')
+  );
+
+  const navigateToProperty = (propertyId) => {
+    router.push(
+      `/${store.organization.selected.name}/properties/${propertyId}`
+    );
+  };
 
   return (
     <DashboardCard
@@ -393,6 +415,37 @@ function PropertyOverviewCard() {
                 {t('Total Surface Area')}:
               </span>
               <span>{displayedSquareFeet.toFixed(2)} sq ft</span>
+            </div>
+          )}
+          {parentProperty && (
+            <div className="pt-2 border-t">
+              <div className="text-xs text-muted-foreground mb-1">
+                {t('Part of Building')}:
+              </div>
+              <button
+                onClick={() => navigateToProperty(parentProperty._id)}
+                className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+              >
+                {parentProperty.name}
+              </button>
+            </div>
+          )}
+          {childUnits.length > 0 && (
+            <div className="pt-2 border-t">
+              <div className="text-xs text-muted-foreground mb-1">
+                {t('Units')} ({childUnits.length}):
+              </div>
+              <div className="space-y-1">
+                {childUnits.map((unit) => (
+                  <button
+                    key={unit._id}
+                    onClick={() => navigateToProperty(unit._id)}
+                    className="block text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                  >
+                    {unit.name}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
           <Map address={store.property.selected.address} />
@@ -520,7 +573,8 @@ function RentCard({ onSubmit, cityRentEstimates }) {
     store.property.selected,
     store.property.items || []
   );
-  const displayedSquareFeet = displayedSquareFootage * SQFT_PER_SQM;
+  // Note: Despite the function name, surface is stored in sq ft
+  const displayedSquareFeet = displayedSquareFootage;
   const formattedSquareFeet = Number(displayedSquareFeet.toFixed(2));
 
   const handleSaveRent = async () => {
@@ -826,6 +880,336 @@ function RentCard({ onSubmit, cityRentEstimates }) {
   );
 }
 
+function FilesPanel() {
+  const { t } = useTranslation('common');
+  const store = useContext(StoreContext);
+  const [files, setFiles] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+
+  const fetchFiles = useCallback(async () => {
+    if (!store.property.selected?._id) return;
+    setLoading(true);
+    try {
+      const response = await apiFetcher().get(
+        `/properties/${store.property.selected._id}/attachments`
+      );
+      setFiles(response.data || []);
+    } catch (error) {
+      toast.error(t('Failed to load files'));
+    } finally {
+      setLoading(false);
+    }
+  }, [store.property.selected?._id, t]);
+
+  useEffect(() => {
+    fetchFiles();
+  }, [fetchFiles]);
+
+  const handleFileUpload = async (event) => {
+    const fileInput = event.target;
+    const file = fileInput.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('targetType', 'property');
+      formData.append('targetId', store.property.selected._id);
+      formData.append('category', 'property_photo');
+
+      await apiFetcher().post('/attachments', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+
+      toast.success(t('File uploaded successfully'));
+      fetchFiles();
+    } catch (error) {
+      toast.error(t('Failed to upload file'));
+    } finally {
+      setUploading(false);
+      fileInput.value = '';
+    }
+  };
+
+  const handleDownload = async (attachmentId, filename) => {
+    try {
+      const response = await apiFetcher().get(
+        `/attachments/${attachmentId}/download`,
+        { responseType: 'blob' }
+      );
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (error) {
+      toast.error(t('Failed to download file'));
+    }
+  };
+
+  return (
+    <Card className="p-6 space-y-4">
+      <div className="flex justify-between items-center">
+        <h3 className="text-sm font-semibold">{t('Files & Documents')}</h3>
+        <label className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm cursor-pointer">
+          {uploading ? t('Uploading...') : t('Upload File')}
+          <input
+            type="file"
+            onChange={handleFileUpload}
+            className="hidden"
+            disabled={uploading}
+          />
+        </label>
+      </div>
+      {loading ? (
+        <div className="text-sm text-muted-foreground">{t('Loading...')}</div>
+      ) : files.length === 0 ? (
+        <div className="text-sm text-muted-foreground">
+          {t('No files uploaded yet')}
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {files.map((file) => (
+            <div
+              key={file._id}
+              className="flex justify-between items-center py-2 px-3 border rounded hover:bg-gray-50"
+            >
+              <div>
+                <div className="text-sm font-medium">{file.filename}</div>
+                <div className="text-xs text-muted-foreground">
+                  {new Date(file.createdAt).toLocaleDateString()} •{' '}
+                  {(file.size / 1024).toFixed(1)} KB
+                  {file.backupStatus === 'success' && ' • Backed up ✓'}
+                  {file.backupStatus === 'pending' && ' • Backup pending...'}
+                  {file.backupStatus === 'failed' && ' • Backup failed ⚠'}
+                </div>
+              </div>
+              <button
+                onClick={() => handleDownload(file._id, file.filename)}
+                className="px-3 py-1 text-sm text-blue-600 hover:text-blue-800"
+              >
+                {t('Download')}
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </Card>
+  );
+}
+
+function ProjectsPanel() {
+  const { t } = useTranslation('common');
+  const store = useContext(StoreContext);
+  const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [newProject, setNewProject] = useState({
+    title: '',
+    description: '',
+    status: 'planned',
+    startDate: '',
+    endDate: ''
+  });
+
+  const fetchProjects = useCallback(async () => {
+    if (!store.property.selected?._id) return;
+    setLoading(true);
+    try {
+      const response = await apiFetcher().get(
+        `/properties/${store.property.selected._id}/projects`
+      );
+      setProjects(response.data || []);
+    } catch (error) {
+      toast.error(t('Failed to load projects'));
+    } finally {
+      setLoading(false);
+    }
+  }, [store.property.selected?._id, t]);
+
+  useEffect(() => {
+    fetchProjects();
+  }, [fetchProjects]);
+
+  const handleCreateProject = async () => {
+    if (!newProject.title) {
+      toast.error(t('Project title is required'));
+      return;
+    }
+
+    try {
+      await apiFetcher().post(
+        `/properties/${store.property.selected._id}/projects`,
+        {
+          ...newProject,
+          targetType: 'property',
+          targetId: store.property.selected._id
+        }
+      );
+      toast.success(t('Project created successfully'));
+      setShowCreateForm(false);
+      setNewProject({
+        title: '',
+        description: '',
+        status: 'planned',
+        startDate: '',
+        endDate: ''
+      });
+      fetchProjects();
+    } catch (error) {
+      toast.error(t('Failed to create project'));
+    }
+  };
+
+  const statusColors = {
+    planned: 'bg-gray-200 text-gray-800',
+    'in-progress': 'bg-blue-200 text-blue-800',
+    completed: 'bg-green-200 text-green-800',
+    'on-hold': 'bg-yellow-200 text-yellow-800',
+    cancelled: 'bg-red-200 text-red-800'
+  };
+
+  return (
+    <Card className="p-6 space-y-4">
+      <div className="flex justify-between items-center">
+        <h3 className="text-sm font-semibold">{t('Projects')}</h3>
+        <button
+          onClick={() => setShowCreateForm(!showCreateForm)}
+          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+        >
+          {showCreateForm ? t('Cancel') : t('New Project')}
+        </button>
+      </div>
+
+      {showCreateForm && (
+        <div className="border rounded p-4 space-y-3">
+          <input
+            type="text"
+            value={newProject.title}
+            onChange={(e) =>
+              setNewProject({ ...newProject, title: e.target.value })
+            }
+            placeholder={t('Project title')}
+            className="w-full px-3 py-2 border rounded"
+          />
+          <textarea
+            value={newProject.description}
+            onChange={(e) =>
+              setNewProject({ ...newProject, description: e.target.value })
+            }
+            placeholder={t('Description')}
+            className="w-full px-3 py-2 border rounded"
+            rows={3}
+          />
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {t('Start Date')}
+              </label>
+              <input
+                type="date"
+                value={newProject.startDate}
+                onChange={(e) =>
+                  setNewProject({ ...newProject, startDate: e.target.value })
+                }
+                className="w-full px-3 py-2 border rounded"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {t('End Date')}
+              </label>
+              <input
+                type="date"
+                value={newProject.endDate}
+                onChange={(e) =>
+                  setNewProject({ ...newProject, endDate: e.target.value })
+                }
+                className="w-full px-3 py-2 border rounded"
+              />
+            </div>
+          </div>
+          <select
+            value={newProject.status}
+            onChange={(e) =>
+              setNewProject({ ...newProject, status: e.target.value })
+            }
+            className="w-full px-3 py-2 border rounded"
+          >
+            <option value="planned">{t('Planned')}</option>
+            <option value="in-progress">{t('In Progress')}</option>
+            <option value="completed">{t('Completed')}</option>
+            <option value="on-hold">{t('On Hold')}</option>
+            <option value="cancelled">{t('Cancelled')}</option>
+          </select>
+          <button
+            onClick={handleCreateProject}
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+          >
+            {t('Create Project')}
+          </button>
+        </div>
+      )}
+
+      {loading ? (
+        <div className="text-sm text-muted-foreground">{t('Loading...')}</div>
+      ) : projects.length === 0 ? (
+        <div className="text-sm text-muted-foreground">
+          {t('No projects yet')}
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {projects.map((project) => (
+            <div key={project._id} className="border rounded p-4 space-y-2">
+              <div className="flex justify-between items-start">
+                <h4 className="font-medium">{project.title}</h4>
+                <span
+                  className={`px-2 py-1 rounded text-xs ${statusColors[project.status] || statusColors.planned}`}
+                >
+                  {t(project.status)}
+                </span>
+              </div>
+              {project.description && (
+                <p className="text-sm text-muted-foreground">
+                  {project.description}
+                </p>
+              )}
+              {(project.startDate || project.endDate) && (
+                <div className="text-xs text-muted-foreground">
+                  {project.startDate && (
+                    <span>
+                      Start: {new Date(project.startDate).toLocaleDateString()}
+                    </span>
+                  )}
+                  {project.endDate && (
+                    <span className="ml-3">
+                      End: {new Date(project.endDate).toLocaleDateString()}
+                    </span>
+                  )}
+                </div>
+              )}
+              {(project.estimatedCost || project.actualCost) && (
+                <div className="text-xs text-muted-foreground">
+                  {project.estimatedCost && (
+                    <span>Estimated: ${project.estimatedCost}</span>
+                  )}
+                  {project.actualCost && (
+                    <span className="ml-3">Actual: ${project.actualCost}</span>
+                  )}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </Card>
+  );
+}
+
 async function fetchData(store, router) {
   const results = await store.property.fetchOne(router.query.id);
   store.property.setSelected(
@@ -993,13 +1377,19 @@ function Property() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Tabs defaultValue="property" className="md:col-span-2">
             <TabsList className="flex justify-start overflow-x-auto overflow-y-hidden">
-              <TabsTrigger value="property" className="w-1/4">
+              <TabsTrigger value="property" className="w-1/5">
                 {t('Property')}
               </TabsTrigger>
-              <TabsTrigger value="rent" className="w-1/4">
+              <TabsTrigger value="rent" className="w-1/5">
                 {t('Rent')}
               </TabsTrigger>
-              <TabsTrigger value="notes" className="w-1/4">
+              <TabsTrigger value="files" className="w-1/5">
+                {t('Files')}
+              </TabsTrigger>
+              <TabsTrigger value="projects" className="w-1/5">
+                {t('Projects')}
+              </TabsTrigger>
+              <TabsTrigger value="notes" className="w-1/5">
                 {t('Notes')}
               </TabsTrigger>
             </TabsList>
@@ -1021,6 +1411,12 @@ function Property() {
                 onSubmit={onSubmit}
                 cityRentEstimates={cityRentEstimates}
               />
+            </TabsContent>
+            <TabsContent value="files">
+              <FilesPanel />
+            </TabsContent>
+            <TabsContent value="projects">
+              <ProjectsPanel />
             </TabsContent>
             <TabsContent value="notes">
               <NotesPanel
