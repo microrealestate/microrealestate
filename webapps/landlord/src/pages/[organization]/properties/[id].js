@@ -359,6 +359,7 @@ function CityEstimatesCard({
 function PropertyOverviewCard() {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
+  const SQFT_PER_SQM = 10.7639;
 
   // Calculate total square footage from children if this is a parent property
   const totalSquareFootage =
@@ -369,9 +370,10 @@ function PropertyOverviewCard() {
   // Check if this property has children (is a parent)
   const isParentProperty =
     (store.property.selected?.childProperties?.length || 0) > 0;
-  const displayedSquareFootage = isParentProperty
+  const displayedSquareMeters = isParentProperty
     ? totalSquareFootage
     : store.property.selected?.surface || 0;
+  const displayedSquareFeet = displayedSquareMeters * SQFT_PER_SQM;
 
   return (
     <DashboardCard
@@ -533,8 +535,8 @@ function RentCard({ onSubmit, cityRentEstimates }) {
 
   const toMonthlyRate = (annualSqftRate) => {
     const parsedRate = Number(annualSqftRate);
-    if (!parsedRate || !displayedSquareFeet) return null;
-    return (parsedRate * displayedSquareFeet) / 12;
+    if (!parsedRate || !displayedSquareFootage) return null;
+    return (parsedRate * displayedSquareFootage) / 12;
   };
 
   const applyCityEstimate = () => {
@@ -1020,10 +1022,10 @@ function Property() {
                 cityRentEstimates={cityRentEstimates}
               />
             </TabsContent>
-            <TabsContent value="estimates">
-              <CityEstimatesCard
-                cityList={cityList}
-                cityRentEstimateproperty.selected?._id}
+            <TabsContent value="notes">
+              <NotesPanel
+                entityType="property"
+                entityId={store.property.selected?._id}
               />
             </TabsContent>
           </Tabs>
