@@ -94,6 +94,10 @@ export default function routes() {
   const contractorsRouter = express.Router();
   contractorsRouter.get('/', Middlewares.asyncWrapper(contractorManager.all));
   contractorsRouter.get(
+    '/work',
+    Middlewares.asyncWrapper(contractorManager.allWork)
+  );
+  contractorsRouter.get(
     '/:id',
     Middlewares.asyncWrapper(contractorManager.one)
   );

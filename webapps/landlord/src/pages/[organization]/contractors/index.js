@@ -104,7 +104,15 @@ function Contractors() {
                     key={contractor._id}
                     className="border-b hover:bg-muted/50"
                   >
-                    <td className="p-2 font-medium">{contractor.name}</td>
+                    <td className="p-2 font-medium">
+                      <button
+                        type="button"
+                        className="text-blue-600 hover:underline"
+                        onClick={() => handleEdit(contractor)}
+                      >
+                        {contractor.name}
+                      </button>
+                    </td>
                     <td className="p-2">{contractor.businessType || '-'}</td>
                     <td className="p-2">
                       {contractor.contacts?.[0]?.phone ||

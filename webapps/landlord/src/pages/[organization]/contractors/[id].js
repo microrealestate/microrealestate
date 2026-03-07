@@ -13,6 +13,7 @@ import useTranslation from 'next-translate/useTranslation';
 import { withAuthentication } from '../../../components/Authentication';
 import { observer } from 'mobx-react-lite';
 import useFillStore from '../../../hooks/useFillStore';
+import { apiFetcher } from '../../../utils/fetch';
 import ConfirmDialog from '../../../components/ConfirmDialog';
 import NotesPanel from '../../../components/NotesPanel';
 import {
@@ -37,6 +38,8 @@ function ContractorDetail() {
   const [openConfirmDelete, setOpenConfirmDelete] = useState(false);
   const [workRecords, setWorkRecords] = useState([]);
   const [loadingWork, setLoadingWork] = useState(false);
+  const [projects, setProjects] = useState([]);
+  const [loadingProjects, setLoadingProjects] = useState(false);
 
   const isNew = router.query.id === 'new';
   const contractor = store.contractor.selected;
@@ -68,6 +71,7 @@ function ContractorDetail() {
       // Load work records
       if (contractor._id) {
         loadWorkRecords(contractor._id);
+        loadProjects(contractor._id);
       }
     } else if (!isNew) {
       setFormData({});
@@ -83,6 +87,21 @@ function ContractorDetail() {
       console.error('Error loading work records:', err);
     } finally {
       setLoadingWork(false);
+    }
+  };
+
+  const loadProjects = async (contractorId) => {
+    setLoadingProjects(true);
+    try {
+      const response = await apiFetcher().get('/projects', {
+        params: { contractorId }
+      });
+      setProjects(response.data || []);
+    } catch (err) {
+      console.error('Error loading contractor projects:', err);
+      setProjects([]);
+    } finally {
+      setLoadingProjects(false);
     }
   };
 
@@ -172,6 +191,7 @@ function ContractorDetail() {
             <TabsList className="flex justify-start overflow-x-auto overflow-y-hidden">
               <TabsTrigger value="info">{t('Information')}</TabsTrigger>
               <TabsTrigger value="work">{t('Work Records')}</TabsTrigger>
+              <TabsTrigger value="projects">{t('Projects')}</TabsTrigger>
               <TabsTrigger value="notes">{t('Notes')}</TabsTrigger>
             </TabsList>
 
@@ -333,8 +353,71 @@ function ContractorDetail() {
               </Card>
             </TabsContent>
 
+            <TabsContent value="projects">
+              <Card className="p-6 space-y-4">
+                <h3 className="text-lg font-semibold">{t('Projects')}</h3>
+
+                {loadingProjects ? (
+                  <p className="text-muted-foreground">{t('Loading...')}</p>
+                ) : projects.length === 0 ? (
+                  <p className="text-muted-foreground">
+                    {t('No projects yet')}
+                  </p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead className="border-b">
+                        <tr>
+                          <th className="text-left p-2">{t('Title')}</th>
+                          <th className="text-left p-2">{t('Status')}</th>
+                          <th className="text-left p-2">{t('Start Date')}</th>
+                          <th className="text-left p-2">{t('End Date')}</th>
+                          <th className="text-left p-2">{t('Cost')}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {projects.map((project) => (
+                          <tr
+                            key={project._id}
+                            className="border-b hover:bg-muted/50 cursor-pointer"
+                            onClick={() =>
+                              router.push(
+                                `/${router.query.organization}/projects/${project._id}`
+                              )
+                            }
+                          >
+                            <td className="p-2 font-medium text-blue-600">
+                              {project.title}
+                            </td>
+                            <td className="p-2">{t(project.status)}</td>
+                            <td className="p-2">
+                              {project.startDate
+                                ? new Date(
+                                    project.startDate
+                                  ).toLocaleDateString()
+                                : '-'}
+                            </td>
+                            <td className="p-2">
+                              {project.endDate
+                                ? new Date(project.endDate).toLocaleDateString()
+                                : '-'}
+                            </td>
+                            <td className="p-2">
+                              {project.actualCost || project.estimatedCost
+                                ? `${project.actualCost || project.estimatedCost} ${project.currency || ''}`
+                                : '-'}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </Card>
+            </TabsContent>
+
             <TabsContent value="notes">
-              <NotesPanel entityType="contact" entityId={contractor._id} />
+              <NotesPanel entityType="contractor" entityId={contractor._id} />
             </TabsContent>
           </Tabs>
         ) : (

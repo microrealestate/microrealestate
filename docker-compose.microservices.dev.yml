@@ -141,6 +141,7 @@ services:
       dockerfile: services/api/dev.Dockerfile
     environment:
       - NODE_OPTIONS=--trace-warnings
+      - CHOKIDAR_USEPOLLING=true
     volumes:
       - ./package.json:/usr/app/package.json
       - ./types/src:/usr/app/types/src
@@ -164,6 +165,7 @@ services:
       dockerfile: services/tenantapi/dev.Dockerfile
     environment:
       - NODE_OPTIONS=--trace-warnings
+      - CHOKIDAR_USEPOLLING=true
     volumes:
       - ./package.json:/usr/app/package.json
       - ./types/src:/usr/app/types/src
@@ -187,6 +189,9 @@ services:
       # base path cannot be set at runtime: https://github.com/vercel/next.js/discussions/41769
       args:
         - BASE_PATH=$LANDLORD_BASE_PATH
+    environment:
+      - WATCHPACK_POLLING=true
+      - CHOKIDAR_USEPOLLING=true
     volumes:
       - ./package.json:/usr/app/package.json
       - ./webapps/commonui/components:/usr/app/webapps/commonui/components
@@ -214,6 +219,9 @@ services:
       # base path cannot be set at runtime: https://github.com/vercel/next.js/discussions/41769
       args:
         - BASE_PATH=$TENANT_BASE_PATH
+    environment:
+      - WATCHPACK_POLLING=true
+      - CHOKIDAR_USEPOLLING=true
     volumes:
       - ./package.json:/usr/app/package.json
       - ./types/src:/usr/app/types/src

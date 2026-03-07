@@ -167,7 +167,7 @@ export async function removeWork(req, res) {
 
 export async function allWork(req, res) {
   const realm = req.realm;
-  const { propertyId, status } = req.query;
+  const { propertyId, projectId, status } = req.query;
 
   const filter = {
     realmId: realm._id
@@ -175,6 +175,10 @@ export async function allWork(req, res) {
 
   if (propertyId) {
     filter.propertyId = propertyId;
+  }
+
+  if (projectId) {
+    filter.projectId = projectId;
   }
 
   if (status) {

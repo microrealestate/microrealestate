@@ -50,12 +50,7 @@ function Projects() {
 
   const handleViewProject = useCallback(
     (project) => {
-      // Navigate to property detail with projects tab
-      if (project.targetType === 'property' && project.targetId) {
-        router.push(
-          `/${router.query.organization}/properties/${project.targetId}?tab=projects`
-        );
-      }
+      router.push(`/${router.query.organization}/projects/${project._id}`);
     },
     [router]
   );

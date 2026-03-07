@@ -30,9 +30,7 @@ class Project {
       this.items = this.items.map((p) =>
         p._id === updatedProject._id ? updatedProject : p
       );
-      if (this.selected?._id === updatedProject._id) {
-        this.setSelected(updatedProject);
-      }
+      this.setSelected(updatedProject);
       return { status: 200, data: updatedProject };
     } catch (err) {
       console.error('Error fetching project:', err);

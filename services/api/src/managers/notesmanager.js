@@ -20,10 +20,11 @@ function getAuthorId(req) {
 }
 
 async function validateEntityAccess(entityType, entityId, realmId) {
+  const normalizedRealmId = String(realmId);
   // Verify that the entity belongs to the realm for basic access control
   const query = {
     _id: entityId,
-    realmId: realmId
+    realmId: normalizedRealmId
   };
 
   let entity = null;
@@ -42,7 +43,7 @@ async function validateEntityAccess(entityType, entityId, realmId) {
       break;
     case 'project':
       // Project if it exists
-      entity = null; // Projects not yet implemented
+      entity = await Collections.Project.findOne(query).lean();
       break;
     case 'contractor':
       // Contractor
@@ -56,6 +57,7 @@ async function validateEntityAccess(entityType, entityId, realmId) {
 }
 
 async function enrichNotesWithLabels(notes, realmId) {
+  const normalizedRealmId = String(realmId);
   // Enrich each note with a friendly entity label
   // Batch lookups by entity type for efficiency
   const labelsByType = {
@@ -81,7 +83,7 @@ async function enrichNotesWithLabels(notes, realmId) {
     if (Object.keys(labelsByType.property).length > 0) {
       const properties = await Collections.Property.find({
         _id: { $in: Object.keys(labelsByType.property) },
-        realmId: realmId
+        realmId: normalizedRealmId
       })
         .select('_id name')
         .lean();
@@ -93,7 +95,7 @@ async function enrichNotesWithLabels(notes, realmId) {
     if (Object.keys(labelsByType.contact).length > 0) {
       const tenants = await Collections.Tenant.find({
         _id: { $in: Object.keys(labelsByType.contact) },
-        realmId: realmId
+        realmId: normalizedRealmId
       })
         .select('_id name')
         .lean();
@@ -105,7 +107,7 @@ async function enrichNotesWithLabels(notes, realmId) {
     if (Object.keys(labelsByType.contract).length > 0) {
       const leases = await Collections.Lease.find({
         _id: { $in: Object.keys(labelsByType.contract) },
-        realmId: realmId
+        realmId: normalizedRealmId
       })
         .select('_id name')
         .lean();
@@ -114,10 +116,22 @@ async function enrichNotesWithLabels(notes, realmId) {
       });
     }
 
+    if (Object.keys(labelsByType.project).length > 0) {
+      const projects = await Collections.Project.find({
+        _id: { $in: Object.keys(labelsByType.project) },
+        realmId: normalizedRealmId
+      })
+        .select('_id title')
+        .lean();
+      projects.forEach((p) => {
+        labelsByType.project[String(p._id)] = p.title;
+      });
+    }
+
     if (Object.keys(labelsByType.contractor).length > 0) {
       const contractors = await Collections.Contractor.find({
         _id: { $in: Object.keys(labelsByType.contractor) },
-        realmId: realmId
+        realmId: normalizedRealmId
       })
         .select('_id name')
         .lean();

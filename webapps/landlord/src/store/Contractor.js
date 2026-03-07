@@ -99,6 +99,18 @@ class Contractor {
     }
   }
 
+  *fetchAllWork(filters = {}) {
+    try {
+      const response = yield apiFetcher().get('/contractors/work', {
+        params: filters
+      });
+      return { status: 200, data: response.data };
+    } catch (err) {
+      console.error('Error fetching all work records:', err);
+      throw err;
+    }
+  }
+
   *createWork(contractorId, work) {
     try {
       const response = yield apiFetcher().post(

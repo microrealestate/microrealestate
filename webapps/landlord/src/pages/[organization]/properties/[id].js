@@ -21,6 +21,7 @@ import { StoreContext } from '../../../store';
 import { toast } from 'sonner';
 import { toJS } from 'mobx';
 import useFillStore from '../../../hooks/useFillStore';
+import { apiFetcher } from '../../../utils/fetch';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 import { withAuthentication } from '../../../components/Authentication';
@@ -1004,6 +1005,7 @@ function FilesPanel() {
 
 function ProjectsPanel() {
   const { t } = useTranslation('common');
+  const router = useRouter();
   const store = useContext(StoreContext);
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -1019,13 +1021,46 @@ function ProjectsPanel() {
   const fetchProjects = useCallback(async () => {
     if (!store.property.selected?._id) return;
     setLoading(true);
+    const request = () =>
+      apiFetcher().get('/projects', {
+        baseURL: '/api/v2',
+        params: {
+          targetType: 'property',
+          targetId: store.property.selected._id,
+          _: Date.now()
+        }
+      });
     try {
-      const response = await apiFetcher().get(
-        `/properties/${store.property.selected._id}/projects`
-      );
+      const response = await request();
       setProjects(response.data || []);
     } catch (error) {
-      toast.error(t('Failed to load projects'));
+      if (error?.response?.status === 401) {
+        try {
+          const response = await request();
+          setProjects(response.data || []);
+          return;
+        } catch (retryError) {
+          const retryMessage = retryError?.response?.data?.message;
+          toast.error(
+            retryMessage
+              ? `${t('Failed to load projects')}: ${retryMessage}`
+              : t('Failed to load projects')
+          );
+          return;
+        }
+      }
+
+      if (error?.code === 'ERR_CANCELED') {
+        return;
+      }
+
+      const errorMessage = error?.response?.data?.message;
+      const status = error?.response?.status;
+      toast.error(
+        errorMessage || status
+          ? `${t('Failed to load projects')}: ${errorMessage || status}`
+          : `${t('Failed to load projects')}: ${error?.message || 'unknown error'}`
+      );
     } finally {
       setLoading(false);
     }
@@ -1041,15 +1076,24 @@ function ProjectsPanel() {
       return;
     }
 
+    const payload = {
+      ...newProject,
+      targetType: 'property',
+      targetId: store.property.selected._id
+    };
+
+    if (!payload.startDate) {
+      delete payload.startDate;
+    }
+
+    if (!payload.endDate) {
+      delete payload.endDate;
+    }
+
     try {
-      await apiFetcher().post(
-        `/properties/${store.property.selected._id}/projects`,
-        {
-          ...newProject,
-          targetType: 'property',
-          targetId: store.property.selected._id
-        }
-      );
+      await apiFetcher().post('/projects', payload, {
+        baseURL: '/api/v2'
+      });
       toast.success(t('Project created successfully'));
       setShowCreateForm(false);
       setNewProject({
@@ -1061,7 +1105,13 @@ function ProjectsPanel() {
       });
       fetchProjects();
     } catch (error) {
-      toast.error(t('Failed to create project'));
+      const errorMessage = error?.response?.data?.message;
+      const status = error?.response?.status;
+      toast.error(
+        errorMessage || status
+          ? `${t('Failed to create project')}: ${errorMessage || status}`
+          : `${t('Failed to create project')}: ${error?.message || 'unknown error'}`
+      );
     }
   };
 
@@ -1164,7 +1214,15 @@ function ProjectsPanel() {
       ) : (
         <div className="space-y-3">
           {projects.map((project) => (
-            <div key={project._id} className="border rounded p-4 space-y-2">
+            <div
+              key={project._id}
+              className="border rounded p-4 space-y-2 cursor-pointer hover:bg-muted/30"
+              onClick={() =>
+                router.push(
+                  `/${router.query.organization}/projects/${project._id}`
+                )
+              }
+            >
               <div className="flex justify-between items-start">
                 <h4 className="font-medium">{project.title}</h4>
                 <span

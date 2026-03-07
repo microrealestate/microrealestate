@@ -389,6 +389,7 @@ export namespace CollectionTypes {
     realmId: string;
     contractorId: string;
     propertyId?: string;
+    projectId?: string;
     title: string;
     description?: string;
     workType?: string;

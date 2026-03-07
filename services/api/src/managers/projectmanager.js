@@ -4,26 +4,27 @@ import { Collections } from '@microrealestate/common';
  * Validate that the user has access to the target entity
  */
 async function _validateTargetAccess(targetType, targetId, realmId) {
+  const normalizedRealmId = String(realmId);
   let targetExists = false;
 
   switch (targetType) {
     case 'property':
       targetExists = await Collections.Property.exists({
         _id: targetId,
-        realmId
+        realmId: normalizedRealmId
       });
       break;
     case 'contact':
     case 'tenant':
       targetExists = await Collections.Tenant.exists({
         _id: targetId,
-        realmId
+        realmId: normalizedRealmId
       });
       break;
     case 'contractor':
       targetExists = await Collections.Contractor.exists({
         _id: targetId,
-        realmId
+        realmId: normalizedRealmId
       });
       break;
     default:
@@ -39,10 +40,17 @@ async function _validateTargetAccess(targetType, targetId, realmId) {
  */
 export async function all(req, res) {
   const realm = req.realm;
+  const realmId = String(realm._id);
   const { targetType, targetId, status, contractorId } = req.query;
 
+  if (targetId && !targetType) {
+    return res.status(400).json({
+      message: 'targetType is required when targetId is provided'
+    });
+  }
+
   const query = {
-    realmId: realm._id
+    realmId
   };
 
   if (targetType) {
@@ -54,7 +62,7 @@ export async function all(req, res) {
     const hasAccess = await _validateTargetAccess(
       targetType,
       targetId,
-      realm._id
+      realmId
     );
 
     if (!hasAccess) {
@@ -87,11 +95,12 @@ export async function all(req, res) {
  */
 export async function one(req, res) {
   const realm = req.realm;
+  const realmId = String(realm._id);
   const projectId = req.params.id;
 
   const project = await Collections.Project.findOne({
     _id: projectId,
-    realmId: realm._id
+    realmId
   }).lean();
 
   if (!project) {
@@ -102,7 +111,7 @@ export async function one(req, res) {
   const hasAccess = await _validateTargetAccess(
     project.targetType,
     project.targetId,
-    realm._id
+    realmId
   );
 
   if (!hasAccess) {
@@ -120,6 +129,7 @@ export async function one(req, res) {
  */
 export async function add(req, res) {
   const realm = req.realm;
+  const realmId = String(realm._id);
   const { targetType, targetId } = req.body;
 
   if (!targetType || !targetId) {
@@ -129,11 +139,7 @@ export async function add(req, res) {
   }
 
   // Verify access to target entity
-  const hasAccess = await _validateTargetAccess(
-    targetType,
-    targetId,
-    realm._id
-  );
+  const hasAccess = await _validateTargetAccess(targetType, targetId, realmId);
 
   if (!hasAccess) {
     return res.status(404).json({
@@ -150,7 +156,7 @@ export async function add(req, res) {
 
   const project = new Collections.Project({
     ...req.body,
-    realmId: realm._id,
+    realmId,
     createdById,
     createdByName
   });
@@ -166,11 +172,12 @@ export async function add(req, res) {
  */
 export async function update(req, res) {
   const realm = req.realm;
+  const realmId = String(realm._id);
   const projectId = req.params.id;
 
   const existingProject = await Collections.Project.findOne({
     _id: projectId,
-    realmId: realm._id
+    realmId
   }).lean();
 
   if (!existingProject) {
@@ -181,7 +188,7 @@ export async function update(req, res) {
   const hasAccess = await _validateTargetAccess(
     existingProject.targetType,
     existingProject.targetId,
-    realm._id
+    realmId
   );
 
   if (!hasAccess) {
@@ -203,7 +210,7 @@ export async function update(req, res) {
   const updatedProject = await Collections.Project.findOneAndUpdate(
     {
       _id: projectId,
-      realmId: realm._id
+      realmId
     },
     updates,
     { new: true }
@@ -218,11 +225,12 @@ export async function update(req, res) {
  */
 export async function remove(req, res) {
   const realm = req.realm;
+  const realmId = String(realm._id);
   const projectId = req.params.id;
 
   const project = await Collections.Project.findOne({
     _id: projectId,
-    realmId: realm._id
+    realmId
   }).lean();
 
   if (!project) {
@@ -233,7 +241,7 @@ export async function remove(req, res) {
   const hasAccess = await _validateTargetAccess(
     project.targetType,
     project.targetId,
-    realm._id
+    realmId
   );
 
   if (!hasAccess) {
@@ -244,7 +252,7 @@ export async function remove(req, res) {
 
   await Collections.Project.deleteOne({
     _id: projectId,
-    realmId: realm._id
+    realmId
   });
 
   // TODO: Optionally delete associated attachments and notes
