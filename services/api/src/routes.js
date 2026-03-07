@@ -1,10 +1,13 @@
 import * as accountingManager from './managers/accountingmanager.js';
+import * as attachmentManager from './managers/attachmentmanager.js';
+import * as backupManager from './managers/backupmanager.js';
 import * as contractorManager from './managers/contractormanager.js';
 import * as dashboardManager from './managers/dashboardmanager.js';
 import * as emailManager from './managers/emailmanager.js';
 import * as leaseManager from './managers/leasemanager.js';
 import * as notesManager from './managers/notesmanager.js';
 import * as occupantManager from './managers/occupantmanager.js';
+import * as projectManager from './managers/projectmanager.js';
 import * as propertyManager from './managers/propertymanager.js';
 import * as realmManager from './managers/realmmanager.js';
 import * as rentManager from './managers/rentmanager.js';
@@ -182,6 +185,46 @@ export default function routes() {
   const emailRouter = express.Router();
   emailRouter.post('/', Middlewares.asyncWrapper(emailManager.send));
   router.use('/emails', emailRouter);
+
+  const attachmentsRouter = express.Router();
+  attachmentsRouter.post(
+    '/',
+    upload.single('file'),
+    Middlewares.asyncWrapper(attachmentManager.upload)
+  );
+  attachmentsRouter.get('/', Middlewares.asyncWrapper(attachmentManager.list));
+  attachmentsRouter.get(
+    '/:id/download',
+    Middlewares.asyncWrapper(attachmentManager.download)
+  );
+  attachmentsRouter.delete(
+    '/:id',
+    Middlewares.asyncWrapper(attachmentManager.remove)
+  );
+  router.use('/attachments', attachmentsRouter);
+
+  const projectsRouter = express.Router();
+  projectsRouter.get('/', Middlewares.asyncWrapper(projectManager.all));
+  projectsRouter.get('/:id', Middlewares.asyncWrapper(projectManager.one));
+  projectsRouter.post('/', Middlewares.asyncWrapper(projectManager.add));
+  projectsRouter.patch('/:id', Middlewares.asyncWrapper(projectManager.update));
+  projectsRouter.delete(
+    '/:id',
+    Middlewares.asyncWrapper(projectManager.remove)
+  );
+  router.use('/projects', projectsRouter);
+
+  const backupsRouter = express.Router();
+  backupsRouter.post(
+    '/process',
+    Middlewares.asyncWrapper(backupManager.processBackups)
+  );
+  backupsRouter.post(
+    '/attachment/:id',
+    Middlewares.asyncWrapper(backupManager.backupOne)
+  );
+  backupsRouter.get('/stats', Middlewares.asyncWrapper(backupManager.stats));
+  router.use('/backups', backupsRouter);
 
   const apiRouter = express.Router();
   apiRouter.use('/api/v2', router);

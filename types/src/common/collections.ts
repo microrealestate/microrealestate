@@ -285,6 +285,40 @@ export namespace CollectionTypes {
     stepperMode: boolean;
   };
 
+  export type Attachment = {
+    _id: string;
+    realmId: string;
+    targetType:
+      | 'property'
+      | 'note'
+      | 'project'
+      | 'contact'
+      | 'tenant'
+      | 'contractor'
+      | 'contract';
+    targetId: string;
+    storageKey: string;
+    filename: string;
+    mimeType: string;
+    size: number;
+    category:
+      | 'property_photo'
+      | 'property_record'
+      | 'property_map'
+      | 'note_attachment'
+      | 'project_attachment'
+      | 'other';
+    uploadedById: string;
+    uploadedByName?: string;
+    backupProvider: 'onedrive' | null;
+    backupPath: string | null;
+    backupStatus: 'pending' | 'success' | 'failed' | null;
+    backupLastTriedAt: Date | null;
+    backupError: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+  };
+
   export type NoteAttachment = {
     _id?: string;
     originalName: string;
@@ -383,5 +417,27 @@ export namespace CollectionTypes {
     internalNotes?: string;
     createdDate?: Date;
     updatedDate?: Date;
+  };
+
+  export type Project = {
+    _id: string;
+    realmId: string;
+    targetType: 'property' | 'contact' | 'tenant' | 'contractor';
+    targetId: string;
+    title: string;
+    description: string;
+    status: 'planned' | 'in-progress' | 'completed' | 'on-hold' | 'cancelled';
+    startDate: Date | null;
+    endDate: Date | null;
+    completedDate: Date | null;
+    estimatedCost: number | null;
+    actualCost: number | null;
+    currency: string;
+    createdById: string;
+    createdByName?: string;
+    contractorId: string | null;
+    contractorName: string | null;
+    createdAt: Date;
+    updatedAt: Date;
   };
 }
