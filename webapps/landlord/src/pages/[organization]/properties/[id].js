@@ -997,17 +997,22 @@ function Property() {
               <TabsTrigger value="rent" className="w-1/4">
                 {t('Rent')}
               </TabsTrigger>
-              <TabsTrigger value="estimates" className="w-1/4">
-                Estimates
-              </TabsTrigger>
               <TabsTrigger value="notes" className="w-1/4">
                 {t('Notes')}
               </TabsTrigger>
             </TabsList>
             <TabsContent value="property">
-              <Card className="p-6">
-                <PropertyForm onSubmit={onSubmit} />
-              </Card>
+              <div className="space-y-4">
+                <Card className="p-6">
+                  <PropertyForm onSubmit={onSubmit} />
+                </Card>
+                <CityEstimatesCard
+                  cityList={cityList}
+                  cityRentEstimates={cityRentEstimates}
+                  properties={store.property.items}
+                  onSave={onSaveCityRentEstimates}
+                />
+              </div>
             </TabsContent>
             <TabsContent value="rent">
               <RentCard
@@ -1018,15 +1023,7 @@ function Property() {
             <TabsContent value="estimates">
               <CityEstimatesCard
                 cityList={cityList}
-                cityRentEstimates={cityRentEstimates}
-                properties={store.property.items}
-                onSave={onSaveCityRentEstimates}
-              />
-            </TabsContent>
-            <TabsContent value="notes">
-              <NotesPanel
-                entityType="property"
-                entityId={store.property.selected?._id}
+                cityRentEstimateproperty.selected?._id}
               />
             </TabsContent>
           </Tabs>
