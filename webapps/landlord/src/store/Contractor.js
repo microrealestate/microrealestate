@@ -30,9 +30,7 @@ class Contractor {
       this.items = this.items.map((c) =>
         c._id === updatedContractor._id ? updatedContractor : c
       );
-      if (this.selected?._id === updatedContractor._id) {
-        this.setSelected(updatedContractor);
-      }
+      this.setSelected(updatedContractor);
       return { status: 200, data: updatedContractor };
     } catch (err) {
       console.error('Error fetching contractor:', err);

@@ -1008,6 +1008,7 @@ function ProjectsPanel() {
   const router = useRouter();
   const store = useContext(StoreContext);
   const [projects, setProjects] = useState([]);
+  const [projectsByPropertyId, setProjectsByPropertyId] = useState({});
   const [loading, setLoading] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newProject, setNewProject] = useState({
@@ -1020,36 +1021,66 @@ function ProjectsPanel() {
 
   const fetchProjects = useCallback(async () => {
     if (!store.property.selected?._id) return;
+
     setLoading(true);
-    const request = () =>
-      apiFetcher().get('/projects', {
-        baseURL: '/api/v2',
-        params: {
-          targetType: 'property',
-          targetId: store.property.selected._id,
-          _: Date.now()
-        }
-      });
+
     try {
-      const response = await request();
-      setProjects(response.data || []);
-    } catch (error) {
-      if (error?.response?.status === 401) {
-        try {
-          const response = await request();
-          setProjects(response.data || []);
-          return;
-        } catch (retryError) {
-          const retryMessage = retryError?.response?.data?.message;
-          toast.error(
-            retryMessage
-              ? `${t('Failed to load projects')}: ${retryMessage}`
-              : t('Failed to load projects')
-          );
-          return;
-        }
+      let allProperties = store.property.items || [];
+      if (!allProperties.length) {
+        const propertiesResult = await store.property.fetch();
+        allProperties = propertiesResult?.data || [];
       }
 
+      const currentProperty = store.property.selected;
+      const currentPropertyId = String(currentProperty._id);
+
+      const subProperties = allProperties.filter((property) => {
+        const parentId = getParentPropertyIdValue(property?.parentPropertyId);
+        return String(parentId || '') === currentPropertyId;
+      });
+
+      const propertyTargets = [currentProperty, ...subProperties].filter(
+        (property, index, array) => {
+          const propertyId = String(property?._id || '');
+          return (
+            propertyId &&
+            array.findIndex(
+              (item) => String(item?._id || '') === propertyId
+            ) === index
+          );
+        }
+      );
+
+      const projectResponses = await Promise.all(
+        propertyTargets.map(async (property, index) => {
+          const response = await apiFetcher().get('/projects', {
+            baseURL: '/api/v2',
+            params: {
+              targetType: 'property',
+              targetId: property._id,
+              _: Date.now() + index
+            }
+          });
+
+          return {
+            propertyId: property._id,
+            propertyName: property.name,
+            projects: response.data || []
+          };
+        })
+      );
+
+      const groupedProjects = projectResponses.reduce((acc, group) => {
+        acc[group.propertyId] = {
+          propertyName: group.propertyName,
+          projects: group.projects
+        };
+        return acc;
+      }, {});
+
+      setProjectsByPropertyId(groupedProjects);
+      setProjects(projectResponses.flatMap((group) => group.projects));
+    } catch (error) {
       if (error?.code === 'ERR_CANCELED') {
         return;
       }
@@ -1212,53 +1243,73 @@ function ProjectsPanel() {
           {t('No projects yet')}
         </div>
       ) : (
-        <div className="space-y-3">
-          {projects.map((project) => (
-            <div
-              key={project._id}
-              className="border rounded p-4 space-y-2 cursor-pointer hover:bg-muted/30"
-              onClick={() =>
-                router.push(
-                  `/${router.query.organization}/projects/${project._id}`
-                )
-              }
-            >
-              <div className="flex justify-between items-start">
-                <h4 className="font-medium">{project.title}</h4>
-                <span
-                  className={`px-2 py-1 rounded text-xs ${statusColors[project.status] || statusColors.planned}`}
-                >
-                  {t(project.status)}
-                </span>
-              </div>
-              {project.description && (
-                <p className="text-sm text-muted-foreground">
-                  {project.description}
-                </p>
-              )}
-              {(project.startDate || project.endDate) && (
-                <div className="text-xs text-muted-foreground">
-                  {project.startDate && (
-                    <span>
-                      Start: {new Date(project.startDate).toLocaleDateString()}
-                    </span>
-                  )}
-                  {project.endDate && (
-                    <span className="ml-3">
-                      End: {new Date(project.endDate).toLocaleDateString()}
-                    </span>
-                  )}
+        <div className="space-y-4">
+          {Object.entries(projectsByPropertyId).map(([propertyId, group]) => (
+            <div key={propertyId} className="space-y-2">
+              <h4 className="text-sm font-semibold">
+                {String(propertyId) === String(store.property.selected?._id)
+                  ? `${t('Property')}: ${group.propertyName || t('Current Property')}`
+                  : `${t('Sub Property')}: ${group.propertyName || '-'}`}
+              </h4>
+
+              {group.projects.length === 0 ? (
+                <div className="text-xs text-muted-foreground rounded border border-dashed p-3">
+                  {t('No projects yet')}
                 </div>
-              )}
-              {(project.estimatedCost || project.actualCost) && (
-                <div className="text-xs text-muted-foreground">
-                  {project.estimatedCost && (
-                    <span>Estimated: ${project.estimatedCost}</span>
-                  )}
-                  {project.actualCost && (
-                    <span className="ml-3">Actual: ${project.actualCost}</span>
-                  )}
-                </div>
+              ) : (
+                group.projects.map((project) => (
+                  <div
+                    key={project._id}
+                    className="border rounded p-4 space-y-2 cursor-pointer hover:bg-muted/30"
+                    onClick={() =>
+                      router.push(
+                        `/${router.query.organization}/projects/${project._id}`
+                      )
+                    }
+                  >
+                    <div className="flex justify-between items-start">
+                      <h4 className="font-medium">{project.title}</h4>
+                      <span
+                        className={`px-2 py-1 rounded text-xs ${statusColors[project.status] || statusColors.planned}`}
+                      >
+                        {t(project.status)}
+                      </span>
+                    </div>
+                    {project.description && (
+                      <p className="text-sm text-muted-foreground">
+                        {project.description}
+                      </p>
+                    )}
+                    {(project.startDate || project.endDate) && (
+                      <div className="text-xs text-muted-foreground">
+                        {project.startDate && (
+                          <span>
+                            Start:{' '}
+                            {new Date(project.startDate).toLocaleDateString()}
+                          </span>
+                        )}
+                        {project.endDate && (
+                          <span className="ml-3">
+                            End:{' '}
+                            {new Date(project.endDate).toLocaleDateString()}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                    {(project.estimatedCost || project.actualCost) && (
+                      <div className="text-xs text-muted-foreground">
+                        {project.estimatedCost && (
+                          <span>Estimated: ${project.estimatedCost}</span>
+                        )}
+                        {project.actualCost && (
+                          <span className="ml-3">
+                            Actual: ${project.actualCost}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))
               )}
             </div>
           ))}

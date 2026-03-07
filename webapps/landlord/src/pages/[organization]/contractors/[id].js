@@ -22,6 +22,22 @@ import {
   TabsList,
   TabsTrigger
 } from '../../../components/ui/tabs';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter
+} from '../../../components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '../../../components/ui/select';
+
+const WORK_ATTACHMENT_CATEGORY = 'work_record_attachment';
 
 async function fetchData(store, router) {
   if (router.query.id && router.query.id !== 'new') {
@@ -38,8 +54,22 @@ function ContractorDetail() {
   const [openConfirmDelete, setOpenConfirmDelete] = useState(false);
   const [workRecords, setWorkRecords] = useState([]);
   const [loadingWork, setLoadingWork] = useState(false);
+  const [workAttachmentsByRecord, setWorkAttachmentsByRecord] = useState({});
+  const [uploadingWorkAttachmentId, setUploadingWorkAttachmentId] =
+    useState(null);
   const [projects, setProjects] = useState([]);
   const [loadingProjects, setLoadingProjects] = useState(false);
+  const [openWorkModal, setOpenWorkModal] = useState(false);
+  const [workFormData, setWorkFormData] = useState({
+    title: '',
+    description: '',
+    status: 'pending',
+    startDate: '',
+    endDate: '',
+    estimatedCost: '',
+    actualCost: '',
+    currency: 'USD'
+  });
 
   const isNew = router.query.id === 'new';
   const contractor = store.contractor.selected;
@@ -82,11 +112,100 @@ function ContractorDetail() {
     setLoadingWork(true);
     try {
       const result = await store.contractor.fetchWork(contractorId);
-      setWorkRecords(result.data || []);
+      const records = result.data || [];
+      setWorkRecords(records);
+      await loadWorkAttachments(records);
     } catch (err) {
       console.error('Error loading work records:', err);
+      setWorkAttachmentsByRecord({});
     } finally {
       setLoadingWork(false);
+    }
+  };
+
+  const loadWorkAttachments = async (records) => {
+    if (!records?.length) {
+      setWorkAttachmentsByRecord({});
+      return;
+    }
+
+    try {
+      const attachmentResponses = await Promise.all(
+        records.map(async (work) => {
+          const response = await apiFetcher().get('/attachments', {
+            params: {
+              targetType: 'contractor_work',
+              targetId: work._id,
+              category: WORK_ATTACHMENT_CATEGORY
+            }
+          });
+
+          return {
+            workId: work._id,
+            attachments: response.data || []
+          };
+        })
+      );
+
+      const map = attachmentResponses.reduce((acc, item) => {
+        acc[item.workId] = item.attachments;
+        return acc;
+      }, {});
+
+      setWorkAttachmentsByRecord(map);
+    } catch (err) {
+      console.error('Error loading work attachments:', err);
+      setWorkAttachmentsByRecord({});
+    }
+  };
+
+  const handleWorkAttachmentUpload = async (workId, event) => {
+    const fileInput = event.target;
+    const file = fileInput.files?.[0];
+    if (!file) return;
+
+    setUploadingWorkAttachmentId(workId);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('targetType', 'contractor_work');
+      formData.append('targetId', workId);
+      formData.append('category', WORK_ATTACHMENT_CATEGORY);
+
+      await apiFetcher().post('/attachments', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+
+      toast.success(t('File uploaded successfully'));
+      await loadWorkRecords(contractor._id);
+    } catch (err) {
+      toast.error(t('Failed to upload file'));
+      console.error('Error uploading work attachment:', err);
+    } finally {
+      setUploadingWorkAttachmentId(null);
+      fileInput.value = '';
+    }
+  };
+
+  const handleDownloadAttachment = async (attachmentId, filename) => {
+    try {
+      const response = await apiFetcher().get(
+        `/attachments/${attachmentId}/download`,
+        { responseType: 'blob' }
+      );
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      toast.error(t('Failed to download file'));
+      console.error('Error downloading attachment:', err);
     }
   };
 
@@ -162,6 +281,42 @@ function ContractorDetail() {
       [field]: value
     }));
   };
+
+  const handleWorkFormChange = (field, value) => {
+    setWorkFormData((prev) => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleAddWork = useCallback(() => {
+    setWorkFormData({
+      title: '',
+      description: '',
+      status: 'pending',
+      startDate: '',
+      endDate: '',
+      estimatedCost: '',
+      actualCost: '',
+      currency: 'USD'
+    });
+    setOpenWorkModal(true);
+  }, []);
+
+  const handleSaveWork = useCallback(async () => {
+    try {
+      await apiFetcher().post(
+        `/contractors/${contractor._id}/work`,
+        workFormData
+      );
+      toast.success(t('Work record created'));
+      setOpenWorkModal(false);
+      loadWorkRecords(contractor._id);
+    } catch (err) {
+      toast.error(t('Error creating work record'));
+      console.error(err);
+    }
+  }, [workFormData, contractor, t]);
 
   return (
     <Page
@@ -300,20 +455,15 @@ function ContractorDetail() {
               <Card className="p-6 space-y-4">
                 <div className="flex justify-between items-center">
                   <h3 className="text-lg font-semibold">{t('Work Records')}</h3>
-                  <Button
-                    size="sm"
-                    onClick={() =>
-                      router.push(
-                        `/${router.query.organization}/contractors/${contractor._id}/work`
-                      )
-                    }
-                  >
+                  <Button size="sm" onClick={handleAddWork}>
                     <LuPlusCircle className="w-4 h-4 mr-2" />
                     {t('Add Work')}
                   </Button>
                 </div>
 
-                {workRecords.length === 0 ? (
+                {loadingWork ? (
+                  <p className="text-muted-foreground">{t('Loading...')}</p>
+                ) : workRecords.length === 0 ? (
                   <p className="text-muted-foreground">
                     {t('No work records')}
                   </p>
@@ -326,6 +476,7 @@ function ContractorDetail() {
                           <th className="text-left p-2">{t('Date')}</th>
                           <th className="text-left p-2">{t('Status')}</th>
                           <th className="text-left p-2">{t('Cost')}</th>
+                          <th className="text-left p-2">{t('Attachments')}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -343,6 +494,45 @@ function ContractorDetail() {
                               {work.actualCost
                                 ? `${work.actualCost} ${work.currency}`
                                 : '-'}
+                            </td>
+                            <td className="p-2 space-y-2">
+                              <label className="inline-flex cursor-pointer items-center rounded border px-2 py-1 text-xs hover:bg-muted">
+                                {uploadingWorkAttachmentId === work._id
+                                  ? t('Uploading...')
+                                  : t('Upload File')}
+                                <input
+                                  type="file"
+                                  className="hidden"
+                                  onChange={(event) =>
+                                    handleWorkAttachmentUpload(work._id, event)
+                                  }
+                                  disabled={
+                                    uploadingWorkAttachmentId === work._id
+                                  }
+                                />
+                              </label>
+                              {(workAttachmentsByRecord[work._id] || [])
+                                .length > 0 && (
+                                <div className="space-y-1">
+                                  {workAttachmentsByRecord[work._id].map(
+                                    (attachment) => (
+                                      <button
+                                        key={attachment._id}
+                                        type="button"
+                                        className="block text-left text-xs text-blue-600 hover:underline"
+                                        onClick={() =>
+                                          handleDownloadAttachment(
+                                            attachment._id,
+                                            attachment.filename
+                                          )
+                                        }
+                                      >
+                                        {attachment.filename}
+                                      </button>
+                                    )
+                                  )}
+                                </div>
+                              )}
                             </td>
                           </tr>
                         ))}
@@ -513,6 +703,113 @@ function ContractorDetail() {
         setOpen={setOpenConfirmDelete}
         onConfirm={handleConfirmDelete}
       />
+
+      <Dialog open={openWorkModal} onOpenChange={setOpenWorkModal}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{t('Add Work Record')}</DialogTitle>
+          </DialogHeader>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="md:col-span-2">
+              <label className="text-sm font-medium">{t('Title')}</label>
+              <Input
+                value={workFormData.title}
+                onChange={(e) => handleWorkFormChange('title', e.target.value)}
+                placeholder={t('Title')}
+              />
+            </div>
+            <div className="md:col-span-2">
+              <label className="text-sm font-medium">{t('Description')}</label>
+              <Textarea
+                value={workFormData.description}
+                onChange={(e) =>
+                  handleWorkFormChange('description', e.target.value)
+                }
+                placeholder={t('Description')}
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">{t('Status')}</label>
+              <Select
+                value={workFormData.status}
+                onValueChange={(value) => handleWorkFormChange('status', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="pending">{t('Pending')}</SelectItem>
+                  <SelectItem value="in-progress">
+                    {t('In Progress')}
+                  </SelectItem>
+                  <SelectItem value="completed">{t('Completed')}</SelectItem>
+                  <SelectItem value="cancelled">{t('Cancelled')}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-sm font-medium">{t('Currency')}</label>
+              <Input
+                value={workFormData.currency}
+                onChange={(e) =>
+                  handleWorkFormChange('currency', e.target.value)
+                }
+                placeholder={t('Currency')}
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">{t('Start Date')}</label>
+              <Input
+                type="date"
+                value={workFormData.startDate}
+                onChange={(e) =>
+                  handleWorkFormChange('startDate', e.target.value)
+                }
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">{t('End Date')}</label>
+              <Input
+                type="date"
+                value={workFormData.endDate}
+                onChange={(e) =>
+                  handleWorkFormChange('endDate', e.target.value)
+                }
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">
+                {t('Estimated Cost')}
+              </label>
+              <Input
+                type="number"
+                value={workFormData.estimatedCost}
+                onChange={(e) =>
+                  handleWorkFormChange('estimatedCost', e.target.value)
+                }
+                placeholder={t('Estimated Cost')}
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">{t('Actual Cost')}</label>
+              <Input
+                type="number"
+                value={workFormData.actualCost}
+                onChange={(e) =>
+                  handleWorkFormChange('actualCost', e.target.value)
+                }
+                placeholder={t('Actual Cost')}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setOpenWorkModal(false)}>
+              {t('Cancel')}
+            </Button>
+            <Button onClick={handleSaveWork}>{t('Save')}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Page>
   );
 }

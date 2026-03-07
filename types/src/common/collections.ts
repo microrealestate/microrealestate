@@ -295,6 +295,7 @@ export namespace CollectionTypes {
       | 'contact'
       | 'tenant'
       | 'contractor'
+      | 'contractor_work'
       | 'contract';
     targetId: string;
     storageKey: string;
@@ -307,6 +308,7 @@ export namespace CollectionTypes {
       | 'property_map'
       | 'note_attachment'
       | 'project_attachment'
+      | 'work_record_attachment'
       | 'other';
     uploadedById: string;
     uploadedByName?: string;

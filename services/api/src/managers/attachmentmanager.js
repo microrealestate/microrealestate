@@ -29,6 +29,12 @@ async function _validateTargetAccess(targetType, targetId, realmId) {
         realmId
       });
       break;
+    case 'contractor_work':
+      targetExists = await Collections.ContractorWork.exists({
+        _id: targetId,
+        realmId
+      });
+      break;
     case 'contract':
     case 'project':
       // TODO: Implement when Contract and Project collections are added

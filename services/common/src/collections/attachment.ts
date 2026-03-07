@@ -25,6 +25,7 @@ const AttachmentSchema = new mongoose.Schema<CollectionTypes.Attachment>(
         'contact',
         'tenant',
         'contractor',
+        'contractor_work',
         'contract'
       ],
       required: true,
@@ -55,6 +56,7 @@ const AttachmentSchema = new mongoose.Schema<CollectionTypes.Attachment>(
         'property_map',
         'note_attachment',
         'project_attachment',
+        'work_record_attachment',
         'other'
       ],
       default: 'other',
