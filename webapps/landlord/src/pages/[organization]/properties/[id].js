@@ -385,14 +385,12 @@ function PropertyOverviewCard() {
             </span>
             <NumberFormat value={store.property.selected.price} />
           </div>
-          {displayedSquareFootage > 0 && (
+          {displayedSquareFeet > 0 && (
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">
                 {t('Total Surface Area')}:
               </span>
-              <span>
-                {displayedSquareFootage} {t('sqm')}
-              </span>
+              <span>{displayedSquareFeet.toFixed(2)} sq ft</span>
             </div>
           )}
           <Map address={store.property.selected.address} />

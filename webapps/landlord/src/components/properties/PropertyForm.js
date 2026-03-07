@@ -185,7 +185,7 @@ const PropertyForm = observer(({ onSubmit }) => {
                 <NumberField
                   label={t('Surface')}
                   name="surface"
-                  endAdornment={t('sqm')}
+                  endAdornment="sq ft"
                 />
                 <TextField label={t('Phone')} name="phone" />
                 <TextField label={t('Digicode')} name="digicode" />
