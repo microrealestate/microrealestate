@@ -763,7 +763,7 @@ function RentCard({ onSubmit, cityRentEstimates }) {
                   <span className="text-lg font-semibold">
                     <NumberFormat
                       value={
-                        store.property.selected.price / displayedSquareFeet
+                        store.property.selected.price / formattedSquareFeet
                       }
                     />{' '}
                     / sq ft
