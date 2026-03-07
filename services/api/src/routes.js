@@ -146,6 +146,10 @@ export default function routes() {
 
   const propertiesRouter = express.Router();
   propertiesRouter.get('/', Middlewares.asyncWrapper(propertyManager.all));
+  propertiesRouter.get(
+    '/:id/units',
+    Middlewares.asyncWrapper(propertyManager.units)
+  );
   propertiesRouter.get('/:id', Middlewares.asyncWrapper(propertyManager.one));
   propertiesRouter.post('/', Middlewares.asyncWrapper(propertyManager.add));
   propertiesRouter.patch(
