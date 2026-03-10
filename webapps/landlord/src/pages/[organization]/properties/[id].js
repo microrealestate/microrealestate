@@ -740,7 +740,7 @@ function RentCard({ onSubmit, cityRentEstimates }) {
                 </div>
               </div>
             </div>
-            {displayedSquareFootage > 0 && (
+            {formattedSquareFeet > 0 && (
               <div className="space-y-2">
                 <label className="text-sm text-muted-foreground">
                   Estimated monthly rent
@@ -782,7 +782,7 @@ function RentCard({ onSubmit, cityRentEstimates }) {
                 className="text-lg font-semibold"
               />
             </div>
-            {displayedSquareFootage > 0 && (
+            {formattedSquareFeet > 0 && (
               <div className="flex justify-between items-center py-2 border-b">
                 <span className="text-sm text-muted-foreground">
                   {isParentProperty ? t('Total Surface Area') : t('Surface')}
@@ -792,22 +792,19 @@ function RentCard({ onSubmit, cityRentEstimates }) {
                 </span>
               </div>
             )}
-            {displayedSquareFootage > 0 &&
-              store.property.selected?.price > 0 && (
-                <div className="flex justify-between items-center py-2 border-b">
-                  <span className="text-sm text-muted-foreground">
-                    Rent per sq ft
-                  </span>
-                  <span className="text-lg font-semibold">
-                    <NumberFormat
-                      value={
-                        store.property.selected.price / formattedSquareFeet
-                      }
-                    />{' '}
-                    / sq ft
-                  </span>
-                </div>
-              )}
+            {formattedSquareFeet > 0 && store.property.selected?.price > 0 && (
+              <div className="flex justify-between items-center py-2 border-b">
+                <span className="text-sm text-muted-foreground">
+                  Rent per sq ft
+                </span>
+                <span className="text-lg font-semibold">
+                  <NumberFormat
+                    value={store.property.selected.price / formattedSquareFeet}
+                  />{' '}
+                  / sq ft
+                </span>
+              </div>
+            )}
             <div className="space-y-2 py-2 border-b">
               <span className="text-sm text-muted-foreground">
                 {t('Rent Range ($ / sq ft / year)')}
