@@ -2,6 +2,7 @@
 node_modules
 tmp
 /data
+base.env*
 .env*
 !.env.domain
 .vscode/ipch
