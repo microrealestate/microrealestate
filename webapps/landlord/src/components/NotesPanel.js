@@ -7,13 +7,13 @@ import {
   updateNote,
   uploadDocument
 } from '../utils/fetch';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
 import { Input } from './ui/input';
+import PropTypes from 'prop-types';
 import { Separator } from './ui/separator';
 import { Textarea } from './ui/textarea';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import PropTypes from 'prop-types';
 import useTranslation from 'next-translate/useTranslation';
 
 export default function NotesPanel({ entityType, entityId }) {

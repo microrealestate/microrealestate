@@ -1,6 +1,3 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Button } from '../../components/ui/button';
-import { Card } from '../../components/ui/card';
 import {
   createNote,
   getDocumentBlobUrl,
@@ -10,11 +7,14 @@ import {
   updateNote,
   uploadDocument
 } from '../../utils/fetch';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Button } from '../../components/ui/button';
+import { Card } from '../../components/ui/card';
 import { Input } from '../../components/ui/input';
+import Page from '../../components/Page';
 import { Separator } from '../../components/ui/separator';
 import { Textarea } from '../../components/ui/textarea';
 import { useRouter } from 'next/router';
-import Page from '../../components/Page';
 import useTranslation from 'next-translate/useTranslation';
 
 export default function NotesPage() {

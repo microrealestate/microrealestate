@@ -12,8 +12,8 @@ import * as propertyManager from './managers/propertymanager.js';
 import * as realmManager from './managers/realmmanager.js';
 import * as rentManager from './managers/rentmanager.js';
 import { Middlewares, Service } from '@microrealestate/common';
-import { upload } from './utils/upload.js';
 import express from 'express';
+import { upload } from './utils/upload.js';
 
 export default function routes() {
   const { ACCESS_TOKEN_SECRET } = Service.getInstance().envConfig.getValues();

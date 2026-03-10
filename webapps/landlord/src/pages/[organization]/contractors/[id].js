@@ -1,8 +1,3 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react';
-import { apiFetcher } from '../../../utils/fetch';
-import { Button } from '../../../components/ui/button';
-import { Card } from '../../../components/ui/card';
-import ConfirmDialog from '../../../components/ConfirmDialog';
 import {
   Dialog,
   DialogContent,
@@ -10,11 +5,8 @@ import {
   DialogHeader,
   DialogTitle
 } from '../../../components/ui/dialog';
-import { Input } from '../../../components/ui/input';
 import { LuArrowLeft, LuPencil, LuPlusCircle, LuTrash } from 'react-icons/lu';
-import NotesPanel from '../../../components/NotesPanel';
-import { observer } from 'mobx-react-lite';
-import Page from '../../../components/Page';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import {
   Select,
   SelectContent,
@@ -22,14 +14,22 @@ import {
   SelectTrigger,
   SelectValue
 } from '../../../components/ui/select';
-import ShortcutButton from '../../../components/ShortcutButton';
-import { StoreContext } from '../../../store';
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger
 } from '../../../components/ui/tabs';
+import { apiFetcher } from '../../../utils/fetch';
+import { Button } from '../../../components/ui/button';
+import { Card } from '../../../components/ui/card';
+import ConfirmDialog from '../../../components/ConfirmDialog';
+import { Input } from '../../../components/ui/input';
+import NotesPanel from '../../../components/NotesPanel';
+import { observer } from 'mobx-react-lite';
+import Page from '../../../components/Page';
+import ShortcutButton from '../../../components/ShortcutButton';
+import { StoreContext } from '../../../store';
 import { Textarea } from '../../../components/ui/textarea';
 import { toast } from 'sonner';
 import useFillStore from '../../../hooks/useFillStore';

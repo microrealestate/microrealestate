@@ -1,5 +1,5 @@
-import Contractor from './contractor.js';
 import { CollectionTypes } from '@microrealestate/types';
+import Contractor from './contractor.js';
 import mongoose from 'mongoose';
 import Property from './property.js';
 import Realm from './realm.js';
