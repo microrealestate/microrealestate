@@ -31,6 +31,12 @@ export default function PropertyListItem({
     return sum + (child.price || 0);
   }, 0);
 
+  // Calculate rented and unrented child properties
+  const rentedCount = childProperties.filter(
+    (child) => child.status !== 'vacant'
+  ).length;
+  const unrentedCount = childProperties.length - rentedCount;
+
   // Check if this property is a parent (has children)
   const isParent = childProperties.length > 0;
 
@@ -111,17 +117,17 @@ export default function PropertyListItem({
             </div>
           </CardTitle>
         </CardHeader>
-        <CardContent className="text-right space-y-2 pb-4">
-          <div className="text-sm text-muted-foreground">
-            {isParent
-              ? t('Total rent from units')
-              : t('Rent excluding tax and expenses')}
-          </div>
-          <NumberFormat
-            value={rentDisplayValue}
-            className="text-3xl font-medium border py-2 px-4 rounded bg-card"
-          />
-        </CardContent>
+        {!isParent && (
+          <CardContent className="text-right space-y-2 pb-4">
+            <div className="text-sm text-muted-foreground">
+              {t('Rent excluding tax and expenses')}
+            </div>
+            <NumberFormat
+              value={rentDisplayValue}
+              className="text-3xl font-medium border py-2 px-4 rounded bg-card"
+            />
+          </CardContent>
+        )}
         <CardFooter className="p-0 flex-col">
           <div className="flex items-center justify-between w-full py-4 px-6">
             <div className="text-xs text-muted-foreground">
@@ -130,7 +136,7 @@ export default function PropertyListItem({
                     tenant: property.occupantLabel
                   })
                 : isParent
-                  ? t('Building with units')
+                  ? `${rentedCount} ${t('rented')}, ${unrentedCount} ${t('vacant')}`
                   : null}
             </div>
             <Badge
@@ -143,21 +149,85 @@ export default function PropertyListItem({
         </CardFooter>
       </Card>
 
-      {/* Expanded child properties */}
+      {/* Expanded child properties - compact list with thumbnails */}
       {isParent && isExpanded && childProperties.length > 0 && (
-        <div className="mt-3 ml-4 space-y-3 border-l-2 border-gray-200 pl-4 py-3">
-          {childProperties.map((child) => (
-            <div key={child._id} className="bg-gray-50 rounded-lg p-3">
-              <PropertyListItem
+        <div className="mt-4 pt-4 border-t">
+          <h4 className="text-sm font-semibold text-muted-foreground mb-3 px-6">
+            Sub Properties
+          </h4>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 px-6 pb-4">
+            {childProperties.map((child) => (
+              <SubPropertyCard
+                key={child._id}
                 property={child}
-                childProperties={[]}
-                isChild={true}
-                onPropertyClick={onPropertyClick}
+                t={t}
+                router={router}
+                store={store}
               />
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// Compact card component for sub-properties
+function SubPropertyCard({ property, t, router, store }) {
+  const onClick = useCallback(
+    async (e) => {
+      e.stopPropagation();
+      store.property.setSelected(property);
+      store.appHistory.setPreviousPath(router.asPath);
+      await router.push(
+        `/${store.organization.selected.name}/properties/${property._id}`
+      );
+    },
+    [
+      store.property,
+      store.appHistory,
+      store.organization.selected.name,
+      property,
+      router
+    ]
+  );
+
+  return (
+    <div
+      onClick={onClick}
+      className="bg-card rounded-lg border border-input overflow-hidden hover:shadow-md transition-shadow cursor-pointer h-full flex flex-col"
+    >
+      {/* Thumbnail */}
+      <div className="h-20 bg-muted flex items-center justify-center overflow-hidden border-b border-input">
+        <PropertyAvatar property={property} />
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 flex flex-col p-2">
+        <h5 className="text-xs font-semibold leading-tight mb-1 line-clamp-2">
+          {property.name}
+        </h5>
+        <div className="text-xs text-muted-foreground mb-2 flex-1">
+          {property.description && (
+            <p className="line-clamp-1">{property.description}</p>
+          )}
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="border-t border-input p-2 space-y-1">
+        <div className="text-xs text-muted-foreground">{t('Rent')}</div>
+        <NumberFormat
+          value={property.price || 0}
+          className="text-sm font-semibold"
+        />
+        <Badge
+          variant={property.status === 'vacant' ? 'success' : 'secondary'}
+          className="text-xs font-normal w-full justify-center"
+        >
+          {property.status === 'vacant' ? t('Vacant') : t('Rented')}
+        </Badge>
+      </div>
     </div>
   );
 }
