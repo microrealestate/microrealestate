@@ -1,80 +1,186 @@
-import { Marker, Map as PigeonMap } from 'pigeon-maps';
-import { useEffect, useState } from 'react';
-import axios from 'axios';
+import { useEffect, useRef, useState } from 'react';
 import Loading from './Loading';
 import { LocationIllustration } from './Illustrations';
 import { useTheme } from '@material-ui/core';
-
-const nominatimBaseURL = 'https://nominatim.openstreetmap.org';
+import { useAzureMaps } from '../hooks/useAzureMaps';
 
 export default function Map({ address }) {
-  const [center, setCenter] = useState();
+  const mapContainer = useRef(null);
+  const mapInstance = useRef(null);
+  const [mapReady, setMapReady] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [center, setCenter] = useState(null);
   const theme = useTheme();
+  const {
+    geocodeAddress,
+    isAvailable: azureMapsAvailable,
+    config
+  } = useAzureMaps();
 
+  // Load Azure Maps script
   useEffect(() => {
-    const getLatLong = async () => {
-      setLoading(true);
+    if (!azureMapsAvailable || !mapContainer.current) return;
 
-      if (address) {
-        let queryAddress;
-        if (typeof address === 'object') {
-          queryAddress = `q=${encodeURIComponent(
-            [
-              address.street1,
-              address.street2,
-              address.zipCode,
-              address.city,
-              //`state=${encodeURIComponent(address.state)}`, // state often not recognized
-              address.country
-            ].join(' ')
-          )}`;
-        } else {
-          queryAddress = `q=${encodeURIComponent(address)}`;
-        }
+    // Check if Azure Maps is already loaded
+    if (window.atlas) {
+      setMapReady(true);
+      return;
+    }
 
-        try {
-          const response = await axios.get(
-            `${nominatimBaseURL}/search?${queryAddress}&format=json&addressdetails=1`
-          );
+    // Load Azure Maps Web Control script
+    const script = document.createElement('script');
+    script.async = true;
+    script.src =
+      'https://atlas.microsoft.com/sdk/javascript/mapcontrol/3/atlas.min.js';
 
-          if (response.data?.[0]?.lat && response.data?.[0]?.lon) {
-            setCenter([
-              Number(response.data[0].lat),
-              Number(response.data[0].lon)
-            ]);
-          } else {
-            setCenter();
-          }
-        } catch (error) {
-          console.error(error);
-        }
-      }
-
-      setLoading(false);
+    script.onload = () => {
+      // Load Azure Maps services
+      const servicesScript = document.createElement('script');
+      servicesScript.async = true;
+      servicesScript.src =
+        'https://atlas.microsoft.com/sdk/javascript/service/2/atlas-service.min.js';
+      servicesScript.onload = () => setMapReady(true);
+      document.head.appendChild(servicesScript);
     };
 
-    getLatLong();
-  }, [address]);
+    document.head.appendChild(script);
+
+    // Load Azure Maps CSS
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href =
+      'https://atlas.microsoft.com/sdk/javascript/mapcontrol/3/atlas.min.css';
+    document.head.appendChild(link);
+  }, [azureMapsAvailable]);
+
+  // Initialize and update map when address changes
+  useEffect(() => {
+    const initializeMap = async () => {
+      if (!mapReady || !window.atlas || !mapContainer.current) {
+        return;
+      }
+
+      setLoading(true);
+
+      try {
+        let coordinates = null;
+
+        if (address) {
+          const result = await geocodeAddress(address);
+          if (result) {
+            coordinates = {
+              lat: result.lat,
+              lon: result.lon
+            };
+            setCenter(coordinates);
+          }
+        }
+
+        // Initialize map if not already done
+        if (!mapInstance.current) {
+          mapInstance.current = new window.atlas.Map(mapContainer.current, {
+            center: coordinates
+              ? [coordinates.lon, coordinates.lat]
+              : [-95, 40],
+            zoom: coordinates ? 16 : 3,
+            authOptions: {
+              authType: 'subscriptionKey',
+              subscriptionKey: config.apiKey
+            }
+          });
+
+          mapInstance.current.events.add('ready', () => {
+            if (coordinates) {
+              // Add marker
+              const dataSource = new window.atlas.source.DataSource();
+              mapInstance.current.sources.add(dataSource);
+
+              const point = new window.atlas.data.Point([
+                coordinates.lon,
+                coordinates.lat
+              ]);
+              dataSource.add(point);
+
+              // Create a symbol layer for the marker
+              const symbolLayer = new window.atlas.layer.SymbolLayer(
+                dataSource,
+                null,
+                {
+                  iconOptions: {
+                    image: 'pin-red',
+                    anchor: 'center'
+                  }
+                }
+              );
+              mapInstance.current.layers.add(symbolLayer);
+            }
+          });
+        } else if (coordinates) {
+          // Update existing map
+          mapInstance.current.setCamera({
+            center: [coordinates.lon, coordinates.lat],
+            zoom: 16
+          });
+
+          // Clear existing layers and add new marker
+          if (mapInstance.current.sources) {
+            mapInstance.current.sources.remove(
+              mapInstance.current.sources.toArray()[0]
+            );
+          }
+
+          const dataSource = new window.atlas.source.DataSource();
+          mapInstance.current.sources.add(dataSource);
+
+          const point = new window.atlas.data.Point([
+            coordinates.lon,
+            coordinates.lat
+          ]);
+          dataSource.add(point);
+
+          const symbolLayer = new window.atlas.layer.SymbolLayer(
+            dataSource,
+            null,
+            {
+              iconOptions: {
+                image: 'pin-red',
+                anchor: 'center'
+              }
+            }
+          );
+          mapInstance.current.layers.add(symbolLayer);
+        }
+      } catch (error) {
+        console.error('Map initialization error:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initializeMap();
+  }, [mapReady, address, geocodeAddress]);
+
+  if (!azureMapsAvailable) {
+    return (
+      <div className={`flex items-center justify-center w-full h-64`}>
+        <LocationIllustration />
+      </div>
+    );
+  }
 
   return (
-    <div className={`flex items-center justify-center w-full h-64`}>
-      {!loading ? (
-        center ? (
-          <PigeonMap height={256} center={center} zoom={16}>
-            <Marker
-              height={35}
-              width={35}
-              color={theme.palette.info.main}
-              anchor={center}
-            />
-          </PigeonMap>
-        ) : (
-          <LocationIllustration />
-        )
-      ) : (
-        <Loading fullScreen={false} />
+    <div className={`relative w-full h-64`}>
+      {loading && (
+        <div className="absolute inset-0 flex items-center justify-center z-10">
+          <Loading fullScreen={false} />
+        </div>
       )}
+      {!center && !loading && (
+        <div className="absolute inset-0 flex items-center justify-center z-10">
+          <LocationIllustration />
+        </div>
+      )}
+      <div ref={mapContainer} style={{ width: '100%', height: '256px' }} />
     </div>
   );
 }

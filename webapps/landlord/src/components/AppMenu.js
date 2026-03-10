@@ -1,13 +1,13 @@
 import {
+  LuClipboardList,
   LuKeyRound,
   LuLayoutDashboard,
   LuMenu,
   LuSettings,
+  LuStickyNote,
   LuUserCircle,
   LuWallet,
-  LuStickyNote,
-  LuWrench,
-  LuClipboardList
+  LuWrench
 } from 'react-icons/lu';
 import {
   Sheet,

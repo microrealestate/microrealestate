@@ -17,7 +17,8 @@ function createRuntimeEnvFile() {
     NEXT_PUBLIC_SIGNUP: process.env.SIGNUP,
     NEXT_PUBLIC_GATEWAY_URL: process.env.GATEWAY_URL,
     NEXT_PUBLIC_BASE_PATH: process.env.BASE_PATH,
-    NEXT_PUBLIC_DEMO_MODE: process.env.DEMO_MODE
+    NEXT_PUBLIC_DEMO_MODE: process.env.DEMO_MODE,
+    NEXT_PUBLIC_AZURE_MAPS_API_KEY: process.env.NEXT_PUBLIC_AZURE_MAPS_API_KEY
   };
 
   let workingDir = process.cwd();

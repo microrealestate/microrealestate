@@ -192,6 +192,7 @@ services:
     environment:
       - WATCHPACK_POLLING=true
       - CHOKIDAR_USEPOLLING=true
+      - NEXT_PUBLIC_AZURE_MAPS_API_KEY
     volumes:
       - ./package.json:/usr/app/package.json
       - ./webapps/commonui/components:/usr/app/webapps/commonui/components
@@ -222,6 +223,7 @@ services:
     environment:
       - WATCHPACK_POLLING=true
       - CHOKIDAR_USEPOLLING=true
+      - NEXT_PUBLIC_AZURE_MAPS_API_KEY
     volumes:
       - ./package.json:/usr/app/package.json
       - ./types/src:/usr/app/types/src
