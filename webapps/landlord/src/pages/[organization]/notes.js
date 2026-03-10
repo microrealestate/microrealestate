@@ -1,14 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import useTranslation from 'next-translate/useTranslation';
-import { useRouter } from 'next/router';
-
-import Page from '../../components/Page';
-import { Card } from '../../components/ui/card';
-import { Input } from '../../components/ui/input';
 import { Button } from '../../components/ui/button';
-import { Separator } from '../../components/ui/separator';
-import { Textarea } from '../../components/ui/textarea';
-
+import { Card } from '../../components/ui/card';
 import {
   createNote,
   getDocumentBlobUrl,
@@ -18,6 +10,12 @@ import {
   updateNote,
   uploadDocument
 } from '../../utils/fetch';
+import { Input } from '../../components/ui/input';
+import { Separator } from '../../components/ui/separator';
+import { Textarea } from '../../components/ui/textarea';
+import { useRouter } from 'next/router';
+import Page from '../../components/Page';
+import useTranslation from 'next-translate/useTranslation';
 
 export default function NotesPage() {
   const { t } = useTranslation('common');

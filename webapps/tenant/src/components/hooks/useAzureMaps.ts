@@ -15,7 +15,7 @@ interface RouteResult {
   distance: number;
   duration: number;
   points: Coordinates[];
-  summary: any;
+  summary: Record<string, unknown>;
 }
 
 /**
@@ -31,7 +31,7 @@ export const useAzureMaps = () => {
    */
   const geocodeAddress = useCallback(
     async (
-      address: string | Record<string, any>
+      address: string | Record<string, string | undefined>
     ): Promise<GeocodeResult | null> => {
       if (!config.apiKey) {
         setError('Azure Maps API key not configured');
@@ -124,11 +124,14 @@ export const useAzureMaps = () => {
           return {
             distance: route.summary.lengthInMeters,
             duration: route.summary.travelTimeInSeconds,
-            points: route.legs.flatMap((leg: any) =>
-              leg.points.map((p: any) => ({
-                lat: p.latitude,
-                lon: p.longitude
-              }))
+            points: route.legs.flatMap(
+              (leg: { points: { latitude: number; longitude: number }[] }) =>
+                leg.points.map(
+                  (p: { latitude: number; longitude: number }) => ({
+                    lat: p.latitude,
+                    lon: p.longitude
+                  })
+                )
             ),
             summary: route.summary
           };

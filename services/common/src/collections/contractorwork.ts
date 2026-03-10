@@ -1,7 +1,7 @@
+import Contractor from './contractor.js';
 import { CollectionTypes } from '@microrealestate/types';
 import mongoose from 'mongoose';
 import Property from './property.js';
-import Contractor from './contractor.js';
 import Realm from './realm.js';
 
 // Contractor work schema for tracking maintenance and project work

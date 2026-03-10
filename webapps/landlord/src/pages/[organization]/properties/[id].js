@@ -5,6 +5,7 @@ import {
   TabsList,
   TabsTrigger
 } from '../../../components/ui/tabs';
+import { apiFetcher } from '../../../utils/fetch';
 import { useCallback, useContext, useEffect, useState } from 'react';
 import { Card } from '../../../components/ui/card';
 import ConfirmDialog from '../../../components/ConfirmDialog';
@@ -21,7 +22,6 @@ import { StoreContext } from '../../../store';
 import { toast } from 'sonner';
 import { toJS } from 'mobx';
 import useFillStore from '../../../hooks/useFillStore';
-import { apiFetcher } from '../../../utils/fetch';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 import { withAuthentication } from '../../../components/Authentication';

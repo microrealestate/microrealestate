@@ -3,14 +3,14 @@ import { Button } from '../../../components/ui/button';
 import { Card } from '../../../components/ui/card';
 import { Input } from '../../../components/ui/input';
 import { LuFilter, LuSearch } from 'react-icons/lu';
-import Page from '../../../components/Page';
+import { observer } from 'mobx-react-lite';
 import { StoreContext } from '../../../store';
+import { withAuthentication } from '../../../components/Authentication';
+import NumberFormat from '../../../components/NumberFormat';
+import Page from '../../../components/Page';
+import useFillStore from '../../../hooks/useFillStore';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
-import { withAuthentication } from '../../../components/Authentication';
-import { observer } from 'mobx-react-lite';
-import useFillStore from '../../../hooks/useFillStore';
-import NumberFormat from '../../../components/NumberFormat';
 
 async function fetchData(store) {
   return await store.project.fetch();

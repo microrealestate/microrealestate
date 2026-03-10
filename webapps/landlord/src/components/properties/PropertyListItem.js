@@ -5,6 +5,7 @@ import {
   CardHeader,
   CardTitle
 } from '../../components/ui/card';
+import { LuChevronDown, LuChevronRight } from 'react-icons/lu';
 import { useCallback, useContext, useState } from 'react';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../ui/button';
@@ -13,7 +14,6 @@ import PropertyAvatar from './PropertyAvatar';
 import { StoreContext } from '../../store';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
-import { LuChevronDown, LuChevronRight } from 'react-icons/lu';
 
 export default function PropertyListItem({
   property,

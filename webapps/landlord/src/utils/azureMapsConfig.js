@@ -4,15 +4,9 @@
  * This module manages Azure Maps API configuration for Microsoft Entra ID authentication.
  */
 
-import { env } from '@microrealestate/commonui/utils';
-
 export const getAzureMapsConfig = () => {
   // Azure Maps Subscription Key (API Key)
-  // env() reads from window.__ENV on the client and process.env on the server
-  const apiKey =
-    (typeof window !== 'undefined'
-      ? env('AZURE_MAPS_API_KEY')
-      : process.env.NEXT_PUBLIC_AZURE_MAPS_API_KEY) || '';
+  const apiKey = process.env.NEXT_PUBLIC_AZURE_MAPS_API_KEY || '';
 
   if (!apiKey) {
     console.warn(

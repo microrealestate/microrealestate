@@ -35,7 +35,7 @@ export const getAzureMapsConfig = () => {
 /**
  * Get Azure Maps URLs for various services
  */
-export const getAzureMapsUrls = (apiKey: string) => {
+export const getAzureMapsUrls = () => {
   const baseUrl = 'https://atlas.microsoft.com';
   return {
     maps: `${baseUrl}/map/staticimage?&api-version=2`,

@@ -13,9 +13,8 @@ import { Input } from './ui/input';
 import { Separator } from './ui/separator';
 import { Textarea } from './ui/textarea';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-
-import useTranslation from 'next-translate/useTranslation';
 import PropTypes from 'prop-types';
+import useTranslation from 'next-translate/useTranslation';
 
 export default function NotesPanel({ entityType, entityId }) {
   const { t } = useTranslation('common');

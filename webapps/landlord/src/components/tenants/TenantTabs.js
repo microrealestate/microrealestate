@@ -4,10 +4,10 @@ import { Card } from '../ui/card';
 import DocumentsForm from './forms/DocumentsForm';
 import LeaseContractForm from './forms/LeaseContractForm';
 import { LuAlertTriangle } from 'react-icons/lu';
+import NotesPanel from '../NotesPanel';
 import { observer } from 'mobx-react-lite';
 import { StoreContext } from '../../store';
 import TenantForm from './forms/TenantForm';
-import NotesPanel from '../NotesPanel';
 import { useContext } from 'react';
 import useTranslation from 'next-translate/useTranslation';
 

@@ -1,5 +1,5 @@
-import { makeAutoObservable } from 'mobx';
 import { apiFetcher } from '../utils/fetch';
+import { makeAutoObservable } from 'mobx';
 
 class Project {
   items = [];

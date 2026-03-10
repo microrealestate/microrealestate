@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
+import { useAzureMaps } from '../hooks/useAzureMaps';
+import { useTheme } from '@material-ui/core';
 import Loading from './Loading';
 import { LocationIllustration } from './Illustrations';
-import { useTheme } from '@material-ui/core';
-import { useAzureMaps } from '../hooks/useAzureMaps';
 
 export default function Map({ address }) {
   const mapContainer = useRef(null);

@@ -1,27 +1,8 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
+import { apiFetcher } from '../../../utils/fetch';
 import { Button } from '../../../components/ui/button';
 import { Card } from '../../../components/ui/card';
-import { Input } from '../../../components/ui/input';
-import { Textarea } from '../../../components/ui/textarea';
-import { LuArrowLeft, LuPencil, LuPlusCircle, LuTrash } from 'react-icons/lu';
-import Page from '../../../components/Page';
-import ShortcutButton from '../../../components/ShortcutButton';
-import { StoreContext } from '../../../store';
-import { toast } from 'sonner';
-import { useRouter } from 'next/router';
-import useTranslation from 'next-translate/useTranslation';
-import { withAuthentication } from '../../../components/Authentication';
-import { observer } from 'mobx-react-lite';
-import useFillStore from '../../../hooks/useFillStore';
-import { apiFetcher } from '../../../utils/fetch';
 import ConfirmDialog from '../../../components/ConfirmDialog';
-import NotesPanel from '../../../components/NotesPanel';
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger
-} from '../../../components/ui/tabs';
 import {
   Dialog,
   DialogContent,
@@ -29,6 +10,11 @@ import {
   DialogHeader,
   DialogTitle
 } from '../../../components/ui/dialog';
+import { Input } from '../../../components/ui/input';
+import { LuArrowLeft, LuPencil, LuPlusCircle, LuTrash } from 'react-icons/lu';
+import NotesPanel from '../../../components/NotesPanel';
+import { observer } from 'mobx-react-lite';
+import Page from '../../../components/Page';
 import {
   Select,
   SelectContent,
@@ -36,6 +22,20 @@ import {
   SelectTrigger,
   SelectValue
 } from '../../../components/ui/select';
+import ShortcutButton from '../../../components/ShortcutButton';
+import { StoreContext } from '../../../store';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger
+} from '../../../components/ui/tabs';
+import { Textarea } from '../../../components/ui/textarea';
+import { toast } from 'sonner';
+import useFillStore from '../../../hooks/useFillStore';
+import { useRouter } from 'next/router';
+import useTranslation from 'next-translate/useTranslation';
+import { withAuthentication } from '../../../components/Authentication';
 
 const WORK_ATTACHMENT_CATEGORY = 'work_record_attachment';
 

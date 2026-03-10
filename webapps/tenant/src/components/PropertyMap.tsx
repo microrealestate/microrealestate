@@ -17,9 +17,38 @@ interface MapProps {
   className?: string;
 }
 
+type AtlasWindow = typeof window & {
+  atlas: {
+    Map: new (
+      container: HTMLElement,
+      options: Record<string, unknown>
+    ) => AtlasMap;
+    source: { DataSource: new () => AtlasDataSource };
+    data: { Point: new (coords: [number, number]) => unknown };
+    layer: {
+      SymbolLayer: new (
+        source: AtlasDataSource,
+        id: null | string,
+        options: Record<string, unknown>
+      ) => unknown;
+    };
+  };
+};
+type AtlasMap = {
+  events: { add: (event: string, handler: () => void) => void };
+  sources: {
+    add: (s: AtlasDataSource) => void;
+    remove: (s: AtlasDataSource) => void;
+    toArray: () => AtlasDataSource[];
+  };
+  layers: { add: (l: unknown) => void };
+  setCamera: (opts: Record<string, unknown>) => void;
+};
+type AtlasDataSource = object;
+
 export function PropertyMap({ address, className = 'w-full h-64' }: MapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
-  const mapInstance = useRef<any>(null);
+  const mapInstance = useRef<AtlasMap | null>(null);
   const [mapReady, setMapReady] = useState(false);
   const [loading, setLoading] = useState(true);
   const [center, setCenter] = useState<{ lat: number; lon: number } | null>(
@@ -36,7 +65,7 @@ export function PropertyMap({ address, className = 'w-full h-64' }: MapProps) {
     if (!azureMapsAvailable || !mapContainer.current) return;
 
     // Check if Azure Maps is already loaded
-    if ((window as any).atlas) {
+    if ((window as AtlasWindow).atlas) {
       setMapReady(true);
       return;
     }
@@ -70,7 +99,11 @@ export function PropertyMap({ address, className = 'w-full h-64' }: MapProps) {
   // Initialize and update map when address changes
   useEffect(() => {
     const initializeMap = async () => {
-      if (!mapReady || !(window as any).atlas || !mapContainer.current) {
+      if (
+        !mapReady ||
+        !(window as AtlasWindow).atlas ||
+        !mapContainer.current
+      ) {
         return;
       }
 
@@ -92,7 +125,7 @@ export function PropertyMap({ address, className = 'w-full h-64' }: MapProps) {
 
         // Initialize map if not already done
         if (!mapInstance.current) {
-          const atlas = (window as any).atlas;
+          const atlas = (window as AtlasWindow).atlas;
           mapInstance.current = new atlas.Map(mapContainer.current, {
             center: coordinates
               ? [coordinates.lon, coordinates.lat]
@@ -106,7 +139,7 @@ export function PropertyMap({ address, className = 'w-full h-64' }: MapProps) {
 
           mapInstance.current.events.add('ready', () => {
             if (coordinates) {
-              const atlas = (window as any).atlas;
+              const atlas = (window as AtlasWindow).atlas;
               // Add marker
               const dataSource = new atlas.source.DataSource();
               mapInstance.current.sources.add(dataSource);
@@ -139,7 +172,7 @@ export function PropertyMap({ address, className = 'w-full h-64' }: MapProps) {
           });
 
           // Clear existing layers and add new marker
-          const atlas = (window as any).atlas;
+          const atlas = (window as AtlasWindow).atlas;
           const sources = mapInstance.current.sources.toArray();
           if (sources.length > 0) {
             mapInstance.current.sources.remove(sources[0]);

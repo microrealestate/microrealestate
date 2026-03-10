@@ -11,8 +11,8 @@ import * as projectManager from './managers/projectmanager.js';
 import * as propertyManager from './managers/propertymanager.js';
 import * as realmManager from './managers/realmmanager.js';
 import * as rentManager from './managers/rentmanager.js';
-import { upload } from './utils/upload.js';
 import { Middlewares, Service } from '@microrealestate/common';
+import { upload } from './utils/upload.js';
 import express from 'express';
 
 export default function routes() {
