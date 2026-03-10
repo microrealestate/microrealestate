@@ -1,3 +1,4 @@
+/* eslint-disable sort-imports */
 import * as Yup from 'yup';
 import {
   AddressField,
@@ -7,13 +8,15 @@ import {
   TextField
 } from '@microrealestate/commonui/components';
 import { Form, Formik } from 'formik';
-import { useContext, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
-import PropertyIcon from './PropertyIcon';
+import { useContext, useMemo } from 'react';
 import { Section } from '../formfields/Section';
 import { StoreContext } from '../../store';
+import { sqftToSqm, sqmToSqft } from '../../utils/surfaceConversion';
+import PropertyIcon from './PropertyIcon';
 import types from './types';
 import useTranslation from 'next-translate/useTranslation';
+/* eslint-enable sort-imports */
 
 /*
   VALIDATION SCHEMA
@@ -64,12 +67,16 @@ const PropertyForm = observer(({ onSubmit }) => {
     - parentPropertyId
     - rentLowSqftYear, rentMedianSqftYear, rentHighSqftYear
   */
-  const initialValues = useMemo(
-    () => ({
+  const initialValues = useMemo(() => {
+    // DATABASE STORES IN SQ M, CONVERT TO SQ FT FOR DISPLAY/EDITING
+    const surfaceSqm = store.property.selected?.surface || 0;
+    const surfaceSqft = surfaceSqm > 0 ? sqmToSqft(surfaceSqm) : '';
+
+    return {
       type: store.property.selected?.type || '',
       name: store.property.selected?.name || '',
       description: store.property.selected?.description || '',
-      surface: store.property.selected?.surface || '',
+      surface: surfaceSqft,
       phone: store.property.selected?.phone || '',
       digicode: store.property.selected?.digicode || '',
       address: store.property.selected?.address || {
@@ -90,9 +97,8 @@ const PropertyForm = observer(({ onSubmit }) => {
       rentLowSqftYear: store.property.selected?.rentLowSqftYear ?? '',
       rentMedianSqftYear: store.property.selected?.rentMedianSqftYear ?? '',
       rentHighSqftYear: store.property.selected?.rentHighSqftYear ?? ''
-    }),
-    [store.property.selected]
-  );
+    };
+  }, [store.property.selected]);
 
   /*
     PROPERTY TYPES DROPDOWN — ORIGINAL LOGIC
@@ -137,15 +143,24 @@ const PropertyForm = observer(({ onSubmit }) => {
     'letterbox'
   ];
 
+  const handleSubmit = (formValues) => {
+    // CONVERT SURFACE FROM SQ FT (FORM INPUT) TO SQ M (DATABASE)
+    const propertyData = {
+      ...formValues,
+      surface: formValues.surface ? sqftToSqm(formValues.surface) : 0
+    };
+    return onSubmit(propertyData);
+  };
+
   return (
     <Formik
       initialValues={initialValues}
       validationSchema={validationSchema}
-      // ORIGINAL BEHAVIOR: onSubmit IS PASSED DOWN FROM PARENT
-      onSubmit={onSubmit}
+      onSubmit={handleSubmit}
     >
       {({ values, isSubmitting }) => {
         const isUnit = unitTypes.includes(values.type);
+        const surfaceSqm = values.surface ? sqftToSqm(values.surface) : 0;
 
         return (
           <Form autoComplete="off">
@@ -190,6 +205,11 @@ const PropertyForm = observer(({ onSubmit }) => {
                 <TextField label={t('Phone')} name="phone" />
                 <TextField label={t('Digicode')} name="digicode" />
               </div>
+              {values.surface && (
+                <div className="text-sm text-muted-foreground mt-1">
+                  ≈ {surfaceSqm.toFixed(2)} sq m
+                </div>
+              )}
             </Section>
 
             <Section label={t('Address')}>

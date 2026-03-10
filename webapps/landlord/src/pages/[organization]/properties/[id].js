@@ -1,30 +1,37 @@
+/* eslint-disable sort-imports */
+import { observer } from 'mobx-react-lite';
+import { toJS } from 'mobx';
+import { useRouter } from 'next/router';
 import { LuArrowLeft, LuHistory, LuKeyRound, LuTrash } from 'react-icons/lu';
+import { useCallback, useContext, useEffect, useState } from 'react';
+import { toast } from 'sonner';
+import { withAuthentication } from '../../../components/Authentication';
+import ConfirmDialog from '../../../components/ConfirmDialog';
+import { DashboardCard } from '../../../components/dashboard/DashboardCard';
+import Map from '../../../components/Map';
+import NotesPanel from '../../../components/NotesPanel';
+import NumberFormat from '../../../components/NumberFormat';
+import Page from '../../../components/Page';
+import PropertyForm from '../../../components/properties/PropertyForm';
+import ShortcutButton from '../../../components/ShortcutButton';
+import { Card } from '../../../components/ui/card';
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger
 } from '../../../components/ui/tabs';
-import { useCallback, useContext, useEffect, useState } from 'react';
-import { apiFetcher } from '../../../utils/fetch';
-import { Card } from '../../../components/ui/card';
-import ConfirmDialog from '../../../components/ConfirmDialog';
-import { DashboardCard } from '../../../components/dashboard/DashboardCard';
-import Map from '../../../components/Map';
-import moment from 'moment';
-import NotesPanel from '../../../components/NotesPanel';
-import NumberFormat from '../../../components/NumberFormat';
-import { observer } from 'mobx-react-lite';
-import Page from '../../../components/Page';
-import PropertyForm from '../../../components/properties/PropertyForm';
-import ShortcutButton from '../../../components/ShortcutButton';
-import { StoreContext } from '../../../store';
-import { toast } from 'sonner';
-import { toJS } from 'mobx';
 import useFillStore from '../../../hooks/useFillStore';
-import { useRouter } from 'next/router';
+import { StoreContext } from '../../../store';
+import { apiFetcher } from '../../../utils/fetch';
+import {
+  getPropertySurfaceSqm,
+  SQFT_PER_SQM,
+  sqmToSqft
+} from '../../../utils/surfaceConversion';
+import moment from 'moment';
 import useTranslation from 'next-translate/useTranslation';
-import { withAuthentication } from '../../../components/Authentication';
+/* eslint-enable sort-imports */
 
 const DEFAULT_CITY_RENT_RANGE_BY_SQFT_YEAR = {
   Atlanta: { low: 22, medium: 29, high: 36 },
@@ -131,29 +138,6 @@ function getParentPropertyIdValue(parentPropertyId) {
   return parentPropertyId;
 }
 
-function getPropertySurfaceSqm(property, allProperties = []) {
-  if (!property) {
-    return 0;
-  }
-
-  const children = (allProperties || []).filter(
-    (item) =>
-      String(getParentPropertyIdValue(item?.parentPropertyId) || '') ===
-      String(property._id || '')
-  );
-
-  const childrenSurface = children.reduce(
-    (sum, child) => sum + (Number(child?.surface) || 0),
-    0
-  );
-
-  if (childrenSurface > 0) {
-    return childrenSurface;
-  }
-
-  return Number(property?.surface) || 0;
-}
-
 function pickRentValue(primaryValue, fallbackValue) {
   if (
     primaryValue !== null &&
@@ -179,7 +163,6 @@ function CityEstimatesCard({
   properties,
   onSave
 }) {
-  const SQFT_PER_SQM = 10.7639;
   const [draft, setDraft] = useState(cityRentEstimates);
 
   useEffect(() => {
@@ -210,8 +193,7 @@ function CityEstimatesCard({
 
   const getPropertySquareFeet = (property) => {
     const squareMeters = getPropertySurfaceSqm(property, properties || []);
-
-    return squareMeters * SQFT_PER_SQM;
+    return sqmToSqft(squareMeters);
   };
 
   const toMonthlyRate = (annualSqftRate, squareFeet) => {
@@ -361,21 +343,20 @@ function PropertyOverviewCard() {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const router = useRouter();
-  const SQFT_PER_SQM = 10.7639;
 
-  // Calculate total square footage from children if this is a parent property
-  const totalSquareFootage =
-    store.property.selected?.childProperties?.reduce((sum, child) => {
-      return sum + (child.surface || 0);
-    }, 0) || 0;
+  // Get surface in sq m (from database), then convert to sq ft for display
+  const surfaceSqm = getPropertySurfaceSqm(
+    store.property.selected,
+    store.property.items || []
+  );
+  const surfaceSqft = sqmToSqft(surfaceSqm);
 
   // Check if this property has children (is a parent)
-  const isParentProperty =
-    (store.property.selected?.childProperties?.length || 0) > 0;
-  const displayedSquareMeters = isParentProperty
-    ? totalSquareFootage
-    : store.property.selected?.surface || 0;
-  const displayedSquareFeet = displayedSquareMeters * SQFT_PER_SQM;
+  const isParentProperty = (store.property.items || []).some(
+    (item) =>
+      String(getParentPropertyIdValue(item?.parentPropertyId) || '') ===
+      String(store.property.selected?._id || '')
+  );
 
   // Get parent property if this is a unit
   const parentPropertyId = getParentPropertyIdValue(
@@ -410,12 +391,14 @@ function PropertyOverviewCard() {
             </span>
             <NumberFormat value={store.property.selected.price} />
           </div>
-          {displayedSquareFeet > 0 && (
+          {surfaceSqft > 0 && (
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">
-                {t('Total Surface Area')}:
+                {isParentProperty ? t('Total Surface Area') : t('Surface')}:
               </span>
-              <span>{displayedSquareFeet.toFixed(2)} sq ft</span>
+              <span>
+                {surfaceSqft.toFixed(2)} sq ft ({surfaceSqm.toFixed(2)} sq m)
+              </span>
             </div>
           )}
           {parentProperty && (
@@ -493,7 +476,6 @@ function OccupancyHistoryCard() {
 function RentCard({ onSubmit, cityRentEstimates }) {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
-  const SQFT_PER_SQM = 10.7639;
   const cityPresetOptions = Object.keys(cityRentEstimates);
   const propertyCity = store.property.selected?.address?.city;
   const selectedCityKey = getPresetCity(propertyCity, cityRentEstimates);
@@ -570,13 +552,14 @@ function RentCard({ onSubmit, cityRentEstimates }) {
       String(getParentPropertyIdValue(item?.parentPropertyId) || '') ===
       String(store.property.selected?._id || '')
   );
-  const displayedSquareFootage = getPropertySurfaceSqm(
+
+  // Get surface in sq m from database, then convert to sq ft for calculations
+  const surfaceSqm = getPropertySurfaceSqm(
     store.property.selected,
     store.property.items || []
   );
-  // Note: Despite the function name, surface is stored in sq ft
-  const displayedSquareFeet = displayedSquareFootage;
-  const formattedSquareFeet = Number(displayedSquareFeet.toFixed(2));
+  const surfaceSqft = sqmToSqft(surfaceSqm);
+  const formattedSquareFeet = Number(surfaceSqft.toFixed(2));
 
   const handleSaveRent = async () => {
     await onSubmit({
@@ -590,8 +573,8 @@ function RentCard({ onSubmit, cityRentEstimates }) {
 
   const toMonthlyRate = (annualSqftRate) => {
     const parsedRate = Number(annualSqftRate);
-    if (!parsedRate || !displayedSquareFootage) return null;
-    return (parsedRate * displayedSquareFootage) / 12;
+    if (!parsedRate || !surfaceSqft) return null;
+    return (parsedRate * surfaceSqft) / 12;
   };
 
   const applyCityEstimate = () => {
@@ -867,7 +850,8 @@ function RentCard({ onSubmit, cityRentEstimates }) {
                   <div className="text-sm">{child.name}</div>
                   {child.surface > 0 && (
                     <div className="text-xs text-muted-foreground">
-                      {Number((child.surface * SQFT_PER_SQM).toFixed(2))} sq ft
+                      {Number(sqmToSqft(child.surface).toFixed(2))} sq ft (
+                      {child.surface.toFixed(2)} sq m)
                     </div>
                   )}
                 </div>
