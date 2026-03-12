@@ -6,8 +6,13 @@ import { ServerStyleSheets } from '@material-ui/core/styles';
 
 export default function MyDocument() {
   return (
-    <Html translate="no" className="overscroll-none">
+    <Html translate="no" className="overscroll-none" suppressHydrationWarning>
       <Head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var k='mre-theme';var t=window.localStorage.getItem(k);var d=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches;var dark=t?t==='dark':d;document.documentElement.classList.toggle('dark',!!dark);}catch(e){}})();`
+          }}
+        />
         <Script
           src={`${process.env.BASE_PATH || ''}/__ENV.js`}
           strategy="beforeInteractive"

@@ -40,8 +40,18 @@ export default async function RootLayout({
   noStore(); // Opt into dynamic rendering
 
   return (
-    <html lang={lang} translate="no" className="overscroll-none">
+    <html
+      lang={lang}
+      translate="no"
+      className="overscroll-none"
+      suppressHydrationWarning
+    >
       <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var k='mre-theme';var t=window.localStorage.getItem(k);var d=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches;var dark=t?t==='dark':d;document.documentElement.classList.toggle('dark',!!dark);}catch(e){}})();`
+          }}
+        />
         <link rel="icon" href={`${process.env.BASE_PATH}/favicon.svg`} />
         <EnvScript
           env={{

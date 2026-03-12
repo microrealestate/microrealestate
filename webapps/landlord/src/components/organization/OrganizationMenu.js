@@ -104,7 +104,11 @@ export default function OrganizationMenu({ className }) {
       event.preventDefault();
       await store.user.signOut();
       window.sessionStorage.clear();
+      const savedTheme = window.localStorage.getItem('mre-theme');
       window.localStorage.clear();
+      if (savedTheme) {
+        window.localStorage.setItem('mre-theme', savedTheme);
+      }
       window.location.assign(config.BASE_PATH); // will be redirected to /signin
     },
     [store.user]

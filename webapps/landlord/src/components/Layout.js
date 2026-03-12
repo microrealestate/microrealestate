@@ -3,6 +3,7 @@ import { cn } from '../utils';
 import EnvironmentBar from './EnvironmentBar';
 import OrganizationMenu from './organization/OrganizationMenu';
 import { StoreContext } from '../store';
+import ThemeToggle from './ThemeToggle';
 import { Toaster } from '../components/ui/sonner';
 import { useContext } from 'react';
 import { useMediaQuery } from 'usehooks-ts';
@@ -29,6 +30,7 @@ export default function Layout({ hideMenu, children }) {
                 {!isXLorGreater ? (
                   <HamburgerMenu className="flex flex-grow items-center" />
                 ) : null}
+                <ThemeToggle />
                 <OrganizationMenu />
               </div>
             ) : null}
