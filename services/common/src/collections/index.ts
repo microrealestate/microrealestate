@@ -13,5 +13,6 @@ export { default as Property } from './property.js';
 export { default as Realm } from './realm.js';
 export { default as Template } from './template.js';
 export { default as Tenant } from './tenant.js';
+export { default as Utility } from './utility.js';
 export const ObjectId = mongoose.Types.ObjectId;
 export const startSession = mongoose.startSession;

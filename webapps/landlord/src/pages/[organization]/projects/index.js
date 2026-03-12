@@ -41,11 +41,11 @@ function Projects() {
   });
 
   const statusColors = {
-    planned: 'bg-gray-100 text-gray-800 border-gray-300',
-    'in-progress': 'bg-blue-100 text-blue-800 border-blue-300',
-    completed: 'bg-green-100 text-green-800 border-green-300',
-    'on-hold': 'bg-yellow-100 text-yellow-800 border-yellow-300',
-    cancelled: 'bg-red-100 text-red-800 border-red-300'
+    planned: 'bg-muted text-foreground border-border',
+    'in-progress': 'bg-blue-500/20 text-blue-200 border-blue-400/40',
+    completed: 'bg-green-500/20 text-green-200 border-green-400/40',
+    'on-hold': 'bg-amber-500/20 text-amber-200 border-amber-400/40',
+    cancelled: 'bg-red-500/20 text-red-200 border-red-400/40'
   };
 
   const handleViewProject = useCallback(

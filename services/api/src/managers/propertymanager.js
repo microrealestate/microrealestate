@@ -23,6 +23,17 @@ function _normalizeRentField(value) {
 }
 
 function _normalizePropertyPayload(inputProperty) {
+  const normalizeNullableString = (value) => {
+    if (value === undefined || value === null) {
+      return null;
+    }
+    if (typeof value !== 'string') {
+      return value;
+    }
+    const trimmed = value.trim();
+    return trimmed.length ? trimmed : null;
+  };
+
   return {
     ...inputProperty,
     parentPropertyId: _normalizeParentPropertyId(
@@ -30,7 +41,17 @@ function _normalizePropertyPayload(inputProperty) {
     ),
     rentLowSqftYear: _normalizeRentField(inputProperty.rentLowSqftYear),
     rentMedianSqftYear: _normalizeRentField(inputProperty.rentMedianSqftYear),
-    rentHighSqftYear: _normalizeRentField(inputProperty.rentHighSqftYear)
+    rentHighSqftYear: _normalizeRentField(inputProperty.rentHighSqftYear),
+    taxId: normalizeNullableString(inputProperty.taxId),
+    countyRecordsReference: normalizeNullableString(
+      inputProperty.countyRecordsReference
+    ),
+    coverPhotoAttachmentId: normalizeNullableString(
+      inputProperty.coverPhotoAttachmentId
+    ),
+    floorPlanAttachmentId: normalizeNullableString(
+      inputProperty.floorPlanAttachmentId
+    )
   };
 }
 

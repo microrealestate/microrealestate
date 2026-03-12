@@ -2,7 +2,12 @@ import { fetchProperties, QueryKeys } from '../../../utils/restcalls';
 import { useCallback, useContext, useState } from 'react';
 import { Button } from '../../../components/ui/button';
 import { List } from '../../../components/ResourceList';
-import { LuPlusCircle } from 'react-icons/lu';
+import {
+  LuBuilding2,
+  LuDollarSign,
+  LuPlusCircle,
+  LuWrench
+} from 'react-icons/lu';
 import NewPropertyDialog from '../../../components/properties/NewPropertyDialog';
 import Page from '../../../components/Page';
 import PropertyList from '../../../components/properties/PropertyList';
@@ -13,6 +18,15 @@ import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 import { withAuthentication } from '../../../components/Authentication';
+
+function CityRentRatesIcon() {
+  return (
+    <span className="relative inline-flex items-center justify-center size-4">
+      <LuBuilding2 className="size-full" />
+      <LuDollarSign className="absolute -bottom-1 -right-1 size-2.5 rounded-full bg-background text-emerald-600" />
+    </span>
+  );
+}
 
 function _filterData(data = [], filters) {
   let filteredItems = data;
@@ -84,14 +98,38 @@ function Properties() {
         actions={[{ id: 'addProperty', label: t('Add a property') }]}
         filterFn={_filterData}
         renderActions={() => (
-          <Button
-            variant="secondary"
-            className="w-full gap-2"
-            onClick={handleAction}
-          >
-            <LuPlusCircle className="size-4" />
-            {t('Add a property')}
-          </Button>
+          <div className="space-y-2">
+            <Button
+              variant="secondary"
+              className="w-full gap-2"
+              onClick={handleAction}
+            >
+              <LuPlusCircle className="size-4" />
+              {t('Add a property')}
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full gap-2"
+              onClick={() =>
+                router.push(`/${store.organization.selected.name}/utilities`)
+              }
+            >
+              <LuWrench className="size-4" />
+              {t('Utilities')}
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full gap-2"
+              onClick={() =>
+                router.push(
+                  `/${store.organization.selected.name}/properties/rent-estimates`
+                )
+              }
+            >
+              <CityRentRatesIcon />
+              {t('City rent estimates')}
+            </Button>
+          </div>
         )}
         renderList={PropertyList}
       />

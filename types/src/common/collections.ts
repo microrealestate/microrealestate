@@ -158,6 +158,12 @@ export namespace CollectionTypes {
     rentMedianSqftYear?: number | null;
     rentHighSqftYear?: number | null;
 
+    // PROPERTY METADATA / DOCUMENT LINKS
+    taxId?: string | null;
+    countyRecordsReference?: string | null;
+    coverPhotoAttachmentId?: string | null;
+    floorPlanAttachmentId?: string | null;
+
     // ORIGINAL LEGACY FIELDS (COMMENT SAYS THEY ARE TO BE REMOVED LATER)
     // KEEPING THEM TO AVOID BREAKING EXISTING CODE
     // TODO TO REMOVE, REPLACED BY address
@@ -290,6 +296,7 @@ export namespace CollectionTypes {
     realmId: string;
     targetType:
       | 'property'
+      | 'utility'
       | 'note'
       | 'project'
       | 'contact'
@@ -303,13 +310,19 @@ export namespace CollectionTypes {
     mimeType: string;
     size: number;
     category:
+      | 'property_cover'
       | 'property_photo'
+      | 'property_floor_plan'
+      | 'property_album_photo'
       | 'property_record'
+      | 'county_record'
       | 'property_map'
+      | 'utility_bill'
       | 'note_attachment'
       | 'project_attachment'
       | 'work_record_attachment'
       | 'other';
+    albumName?: string | null;
     uploadedById: string;
     uploadedByName?: string;
     backupProvider: 'onedrive' | null;
@@ -442,5 +455,37 @@ export namespace CollectionTypes {
     contractorName: string | null;
     createdAt: Date;
     updatedAt: Date;
+  };
+
+  export type UtilitySplit = {
+    subPropertyId: string;
+    splitType: 'percentage' | 'equal';
+    percentage?: number;
+  };
+
+  export type Utility = {
+    _id?: string;
+    realmId: string;
+    propertyId: string;
+    type:
+      | 'internet'
+      | 'insurance'
+      | 'gas'
+      | 'water'
+      | 'sewer'
+      | 'power'
+      | 'other';
+    provider?: string;
+    accountNumber?: string;
+    billingMonth: string; // YYYY-MM
+    amount: number;
+    dueDate?: Date | null;
+    paidDate?: Date | null;
+    notes?: string;
+    attachmentIds?: string[];
+    splitMethod: 'equal' | 'percentage';
+    splitItems: UtilitySplit[];
+    createdAt?: Date;
+    updatedAt?: Date;
   };
 }

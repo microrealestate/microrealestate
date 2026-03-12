@@ -20,6 +20,7 @@ const AttachmentSchema = new mongoose.Schema<CollectionTypes.Attachment>(
       type: String,
       enum: [
         'property',
+        'utility',
         'note',
         'project',
         'contact',
@@ -51,9 +52,14 @@ const AttachmentSchema = new mongoose.Schema<CollectionTypes.Attachment>(
     category: {
       type: String,
       enum: [
+        'property_cover',
         'property_photo',
+        'property_floor_plan',
+        'property_album_photo',
         'property_record',
+        'county_record',
         'property_map',
+        'utility_bill',
         'note_attachment',
         'project_attachment',
         'work_record_attachment',
@@ -62,6 +68,8 @@ const AttachmentSchema = new mongoose.Schema<CollectionTypes.Attachment>(
       default: 'other',
       index: true
     },
+
+    albumName: { type: String, default: null, index: true },
 
     // WHO UPLOADED
     uploadedById: { type: String, required: true },

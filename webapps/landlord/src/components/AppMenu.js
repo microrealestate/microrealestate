@@ -1,5 +1,7 @@
 import {
+  LuBuilding2,
   LuClipboardList,
+  LuDollarSign,
   LuKeyRound,
   LuLayoutDashboard,
   LuMenu,
@@ -29,6 +31,20 @@ import SideMenuButton from './SideMenuButton';
 import { StoreContext } from '../store';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
+
+function CityRentEstimatesIcon({ className }) {
+  return (
+    <span
+      className={cn(
+        'relative inline-flex items-center justify-center',
+        className
+      )}
+    >
+      <LuBuilding2 className="size-full" />
+      <LuDollarSign className="absolute -bottom-1 -right-1 size-3.5 rounded-full bg-background text-emerald-600" />
+    </span>
+  );
+}
 
 const menuItems = [
   {
@@ -80,6 +96,20 @@ const menuItems = [
     pathname: '/properties',
     Icon: LuKeyRound,
     dataCy: 'propertiesNav'
+  },
+  {
+    key: 'utilities',
+    labelId: 'Utilities',
+    pathname: '/utilities',
+    Icon: LuWrench,
+    dataCy: 'utilitiesNav'
+  },
+  {
+    key: 'rentEstimates',
+    labelId: 'City rent estimates',
+    pathname: '/properties/rent-estimates',
+    Icon: CityRentEstimatesIcon,
+    dataCy: 'rentEstimatesNav'
   },
   {
     key: 'accounting',
@@ -148,6 +178,9 @@ export function HamburgerMenu({ className, onChange }) {
   useEffect(() => {
     const selectedMenuItems = menuItems.filter(
       (menuItem) => router.pathname.indexOf(menuItem.pathname) !== -1
+    );
+    selectedMenuItems.sort(
+      (first, second) => second.pathname.length - first.pathname.length
     );
     let selectedMenuItem;
     if (selectedMenuItems.length > 0) {
@@ -232,6 +265,9 @@ export function SideMenu({ className }) {
   useEffect(() => {
     const selectedMenuItems = menuItems.filter(
       (menuItem) => router.pathname.indexOf(menuItem.pathname) !== -1
+    );
+    selectedMenuItems.sort(
+      (first, second) => second.pathname.length - first.pathname.length
     );
     let selectedMenuItem;
     if (selectedMenuItems.length > 0) {

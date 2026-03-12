@@ -41,6 +41,12 @@ async function _validateTargetAccess(targetType, targetId, realmId) {
       // For now, assume valid
       targetExists = true;
       break;
+    case 'utility':
+      targetExists = await Collections.Utility.exists({
+        _id: targetId,
+        realmId
+      });
+      break;
     case 'note':
       targetExists = await Collections.Note.exists({
         _id: targetId,
@@ -71,7 +77,7 @@ export async function upload(req, res) {
     });
   }
 
-  const { targetType, targetId, category } = req.body;
+  const { targetType, targetId, category, albumName } = req.body;
 
   if (!targetType || !targetId) {
     return res.status(400).json({
@@ -125,6 +131,7 @@ export async function upload(req, res) {
     mimeType: req.file.mimetype,
     size: req.file.size,
     category: category || 'other',
+    albumName: albumName || null,
     uploadedById,
     uploadedByName,
     backupStatus: 'pending'

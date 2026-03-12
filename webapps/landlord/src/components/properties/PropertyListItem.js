@@ -81,7 +81,7 @@ export default function PropertyListItem({
               <button
                 data-expand-button
                 onClick={handleExpandClick}
-                className="p-1 hover:bg-gray-100 rounded transition-colors"
+                className="p-1 hover:bg-muted rounded transition-colors"
                 aria-label={isExpanded ? t('Collapse') : t('Expand')}
               >
                 {isExpanded ? (
@@ -95,7 +95,7 @@ export default function PropertyListItem({
             <div className="flex-1">
               <Button
                 variant="link"
-                className="w-fit h-fit p-0 text-xl whitespace-normal"
+                className="w-fit h-fit p-0 text-xl whitespace-normal hover:bg-muted rounded transition-colors"
                 data-cy="openResourceButton"
               >
                 {property.name}

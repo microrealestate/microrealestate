@@ -12,7 +12,11 @@ import Map from '../../../components/Map';
 import NotesPanel from '../../../components/NotesPanel';
 import NumberFormat from '../../../components/NumberFormat';
 import Page from '../../../components/Page';
+import PropertyCoverPhoto from '../../../components/properties/PropertyCoverPhoto';
 import PropertyForm from '../../../components/properties/PropertyForm';
+import PropertyInfoPanel from '../../../components/properties/PropertyInfoPanel';
+import PropertyPhotosPanel from '../../../components/properties/PropertyPhotosPanel';
+import PropertyUtilitiesPanel from '../../../components/properties/PropertyUtilitiesPanel';
 import ShortcutButton from '../../../components/ShortcutButton';
 import { Card } from '../../../components/ui/card';
 import {
@@ -26,7 +30,6 @@ import { StoreContext } from '../../../store';
 import { apiFetcher } from '../../../utils/fetch';
 import {
   getPropertySurfaceSqm,
-  SQFT_PER_SQM,
   sqmToSqft
 } from '../../../utils/surfaceConversion';
 import moment from 'moment';
@@ -106,17 +109,6 @@ function loadCityRentRanges(organizationName) {
   }
 }
 
-function saveCityRentRanges(organizationName, ranges) {
-  if (typeof window === 'undefined') {
-    return;
-  }
-
-  window.localStorage.setItem(
-    getStorageKey(organizationName),
-    JSON.stringify(ranges)
-  );
-}
-
 function getPresetCity(city = '', cityRentRanges = {}) {
   const normalizedInput = city.trim().toLowerCase();
   return (
@@ -155,188 +147,6 @@ function pickRentValue(primaryValue, fallbackValue) {
   }
 
   return '';
-}
-
-function CityEstimatesCard({
-  cityList,
-  cityRentEstimates,
-  properties,
-  onSave
-}) {
-  const [draft, setDraft] = useState(cityRentEstimates);
-
-  useEffect(() => {
-    setDraft(cityRentEstimates);
-  }, [cityRentEstimates]);
-
-  const updateRange = (city, field, value) => {
-    setDraft((prev) => ({
-      ...prev,
-      [city]: {
-        ...(prev[city] || FALLBACK_CITY_RENT_RANGE),
-        [field]: value
-      }
-    }));
-  };
-
-  const handleSave = () => {
-    const nextRanges = cityList.reduce((acc, city) => {
-      acc[city] = normalizeCityRange(
-        draft[city],
-        cityRentEstimates[city] || FALLBACK_CITY_RENT_RANGE
-      );
-      return acc;
-    }, {});
-
-    onSave(nextRanges);
-  };
-
-  const getPropertySquareFeet = (property) => {
-    const squareMeters = getPropertySurfaceSqm(property, properties || []);
-    return sqmToSqft(squareMeters);
-  };
-
-  const toMonthlyRate = (annualSqftRate, squareFeet) => {
-    const parsedRate = Number(annualSqftRate);
-    if (!parsedRate || !squareFeet) return null;
-    return (parsedRate * squareFeet) / 12;
-  };
-
-  return (
-    <Card className="p-6 space-y-4">
-      <h3 className="text-sm font-semibold">City rent estimates</h3>
-      {cityList.length ? (
-        <>
-          <p className="text-sm text-muted-foreground">
-            Set annual ranges in $ / sq ft / year using cities found in your
-            properties.
-          </p>
-          <p className="text-xs text-muted-foreground">
-            Property calculations below are a preview in this tab and update as
-            you edit. They are applied only when you click Save estimates.
-          </p>
-          <div className="space-y-2">
-            {cityList.map((city) => (
-              <div key={city} className="rounded border p-3 space-y-3">
-                <div className="grid grid-cols-1 gap-2 md:grid-cols-4">
-                  <div className="text-sm font-medium self-center">{city}</div>
-                  <input
-                    type="number"
-                    value={draft[city]?.low ?? ''}
-                    onChange={(e) => updateRange(city, 'low', e.target.value)}
-                    className="w-full px-2 py-1 border rounded text-sm"
-                    placeholder="Low"
-                  />
-                  <input
-                    type="number"
-                    value={draft[city]?.medium ?? ''}
-                    onChange={(e) =>
-                      updateRange(city, 'medium', e.target.value)
-                    }
-                    className="w-full px-2 py-1 border rounded text-sm"
-                    placeholder="Medium"
-                  />
-                  <input
-                    type="number"
-                    value={draft[city]?.high ?? ''}
-                    onChange={(e) => updateRange(city, 'high', e.target.value)}
-                    className="w-full px-2 py-1 border rounded text-sm"
-                    placeholder="High"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  {(properties || [])
-                    .filter(
-                      (property) =>
-                        property?.address?.city?.trim()?.toLowerCase() ===
-                        city.toLowerCase()
-                    )
-                    .map((property) => {
-                      const squareFeet = getPropertySquareFeet(property);
-                      const lowMonthly = toMonthlyRate(
-                        draft[city]?.low,
-                        squareFeet
-                      );
-                      const mediumMonthly = toMonthlyRate(
-                        draft[city]?.medium,
-                        squareFeet
-                      );
-                      const highMonthly = toMonthlyRate(
-                        draft[city]?.high,
-                        squareFeet
-                      );
-
-                      return (
-                        <div
-                          key={property._id}
-                          className="rounded border border-dashed p-2"
-                        >
-                          <div className="flex flex-wrap items-center justify-between gap-2">
-                            <div className="text-sm font-medium">
-                              {property.name}
-                            </div>
-                            <div className="text-xs text-muted-foreground">
-                              {Number(squareFeet.toFixed(2))} sq ft
-                            </div>
-                          </div>
-                          <div className="mt-2 grid grid-cols-1 gap-2 md:grid-cols-3">
-                            <div className="text-xs">
-                              <span className="text-muted-foreground">
-                                Low:{' '}
-                              </span>
-                              {lowMonthly ? (
-                                <NumberFormat value={lowMonthly} />
-                              ) : (
-                                '-'
-                              )}{' '}
-                              / month
-                            </div>
-                            <div className="text-xs">
-                              <span className="text-muted-foreground">
-                                Medium:{' '}
-                              </span>
-                              {mediumMonthly ? (
-                                <NumberFormat value={mediumMonthly} />
-                              ) : (
-                                '-'
-                              )}{' '}
-                              / month
-                            </div>
-                            <div className="text-xs">
-                              <span className="text-muted-foreground">
-                                High:{' '}
-                              </span>
-                              {highMonthly ? (
-                                <NumberFormat value={highMonthly} />
-                              ) : (
-                                '-'
-                              )}{' '}
-                              / month
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                </div>
-              </div>
-            ))}
-          </div>
-          <button
-            type="button"
-            onClick={handleSave}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
-          >
-            Save estimates
-          </button>
-        </>
-      ) : (
-        <div className="text-sm text-muted-foreground">
-          No property cities found yet. Add property addresses first.
-        </div>
-      )}
-    </Card>
-  );
 }
 
 function PropertyOverviewCard() {
@@ -433,6 +243,15 @@ function PropertyOverviewCard() {
             </div>
           )}
           <Map address={store.property.selected.address} />
+          <PropertyCoverPhoto
+            propertyId={store.property.selected?._id}
+            onAttachmentSelected={async (attachmentId) => {
+              await store.property.update({
+                ...store.property.selected,
+                coverPhotoAttachmentId: attachmentId
+              });
+            }}
+          />
         </div>
       )}
     />
@@ -476,6 +295,7 @@ function OccupancyHistoryCard() {
 function RentCard({ onSubmit, cityRentEstimates }) {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
+  const router = useRouter();
   const cityPresetOptions = Object.keys(cityRentEstimates);
   const propertyCity = store.property.selected?.address?.city;
   const selectedCityKey = getPresetCity(propertyCity, cityRentEstimates);
@@ -682,10 +502,22 @@ function RentCard({ onSubmit, cityRentEstimates }) {
                 >
                   Apply city range
                 </button>
+                <button
+                  type="button"
+                  className="px-3 py-1.5 border rounded text-sm whitespace-nowrap"
+                  onClick={() =>
+                    router.push(
+                      `/${store.organization.selected.name}/properties/rent-estimates`
+                    )
+                  }
+                >
+                  Edit city ranges
+                </button>
               </div>
               {!cityPresetOptions.length && (
                 <div className="text-xs text-muted-foreground">
-                  No city estimates configured yet. Use the Estimates tab.
+                  No city estimates configured yet. Open the City rent estimates
+                  page.
                 </div>
               )}
             </div>
@@ -873,9 +705,12 @@ function FilesPanel() {
     if (!store.property.selected?._id) return;
     setLoading(true);
     try {
-      const response = await apiFetcher().get(
-        `/properties/${store.property.selected._id}/attachments`
-      );
+      const response = await apiFetcher().get('/attachments', {
+        params: {
+          targetType: 'property',
+          targetId: store.property.selected._id
+        }
+      });
       setFiles(response.data || []);
     } catch (error) {
       toast.error(t('Failed to load files'));
@@ -958,7 +793,7 @@ function FilesPanel() {
           {files.map((file) => (
             <div
               key={file._id}
-              className="flex justify-between items-center py-2 px-3 border rounded hover:bg-gray-50"
+              className="flex justify-between items-center py-2 px-3 border rounded hover:bg-muted/40"
             >
               <div>
                 <div className="text-sm font-medium">{file.filename}</div>
@@ -1128,11 +963,11 @@ function ProjectsPanel() {
   };
 
   const statusColors = {
-    planned: 'bg-gray-200 text-gray-800',
-    'in-progress': 'bg-blue-200 text-blue-800',
-    completed: 'bg-green-200 text-green-800',
-    'on-hold': 'bg-yellow-200 text-yellow-800',
-    cancelled: 'bg-red-200 text-red-800'
+    planned: 'bg-muted text-foreground',
+    'in-progress': 'bg-blue-500/20 text-blue-200',
+    completed: 'bg-green-500/20 text-green-200',
+    'on-hold': 'bg-amber-500/20 text-amber-200',
+    cancelled: 'bg-red-500/20 text-red-200'
   };
 
   return (
@@ -1169,7 +1004,7 @@ function ProjectsPanel() {
           />
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 {t('Start Date')}
               </label>
               <input
@@ -1182,7 +1017,7 @@ function ProjectsPanel() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 {t('End Date')}
               </label>
               <input
@@ -1318,7 +1153,6 @@ function Property() {
   const [cityRentEstimates, setCityRentEstimates] = useState(() =>
     mergeCityRentRanges()
   );
-  const [cityList, setCityList] = useState([]);
   const [fetching] = useFillStore(fetchData, [router]);
 
   useEffect(() => {
@@ -1327,46 +1161,6 @@ function Property() {
       mergeCityRentRanges(storedRanges, Object.keys(previousRanges))
     );
   }, [organizationName]);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    const fetchPropertyCities = async () => {
-      const response = await store.property.fetch();
-      if (!isMounted || response.status !== 200) {
-        return;
-      }
-
-      const cities = [
-        ...new Set(
-          (store.property.items || [])
-            .map((property) => property?.address?.city?.trim())
-            .filter(Boolean)
-        )
-      ].sort((firstCity, secondCity) => firstCity.localeCompare(secondCity));
-
-      setCityList(cities);
-      setCityRentEstimates((previousRanges) =>
-        mergeCityRentRanges(previousRanges, cities)
-      );
-    };
-
-    fetchPropertyCities();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [organizationName, store.property]);
-
-  const onSaveCityRentEstimates = useCallback(
-    (ranges) => {
-      const mergedRanges = mergeCityRentRanges(ranges, cityList);
-      setCityRentEstimates(mergedRanges);
-      saveCityRentRanges(organizationName, mergedRanges);
-      toast.success('City estimates saved');
-    },
-    [cityList, organizationName]
-  );
 
   const handleBack = useCallback(() => {
     router.push(store.appHistory.previousPath);
@@ -1482,19 +1276,20 @@ function Property() {
               <TabsTrigger value="notes" className="w-1/5">
                 {t('Notes')}
               </TabsTrigger>
+              <TabsTrigger value="info" className="w-1/5">
+                {t('Info')}
+              </TabsTrigger>
+              <TabsTrigger value="photos" className="w-1/5">
+                {t('Photos')}
+              </TabsTrigger>
+              <TabsTrigger value="utilities" className="w-1/5">
+                {t('Utilities')}
+              </TabsTrigger>
             </TabsList>
             <TabsContent value="property">
-              <div className="space-y-4">
-                <Card className="p-6">
-                  <PropertyForm onSubmit={onSubmit} />
-                </Card>
-                <CityEstimatesCard
-                  cityList={cityList}
-                  cityRentEstimates={cityRentEstimates}
-                  properties={store.property.items}
-                  onSave={onSaveCityRentEstimates}
-                />
-              </div>
+              <Card className="p-6">
+                <PropertyForm onSubmit={onSubmit} />
+              </Card>
             </TabsContent>
             <TabsContent value="rent">
               <RentCard
@@ -1512,6 +1307,21 @@ function Property() {
               <NotesPanel
                 entityType="property"
                 entityId={store.property.selected?._id}
+              />
+            </TabsContent>
+            <TabsContent value="info">
+              <PropertyInfoPanel
+                property={store.property.selected}
+                onSave={onSubmit}
+              />
+            </TabsContent>
+            <TabsContent value="photos">
+              <PropertyPhotosPanel propertyId={store.property.selected?._id} />
+            </TabsContent>
+            <TabsContent value="utilities">
+              <PropertyUtilitiesPanel
+                property={store.property.selected}
+                childUnits={store.property.selected.childProperties || []}
               />
             </TabsContent>
           </Tabs>

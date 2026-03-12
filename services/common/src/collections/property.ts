@@ -97,6 +97,23 @@ const PropertySchema = new mongoose.Schema<CollectionTypes.Property>({
   rentHighSqftYear: {
     type: Number,
     default: null
+  },
+
+  taxId: {
+    type: String,
+    default: null
+  },
+  countyRecordsReference: {
+    type: String,
+    default: null
+  },
+  coverPhotoAttachmentId: {
+    type: String,
+    default: null
+  },
+  floorPlanAttachmentId: {
+    type: String,
+    default: null
   }
 });
 

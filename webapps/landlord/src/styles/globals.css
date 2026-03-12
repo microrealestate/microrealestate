@@ -83,6 +83,29 @@
       'rlig' 1,
       'calt' 1;
   }
+
+  .dark .MuiInputBase-root,
+  .dark .MuiInputBase-input,
+  .dark .MuiFormLabel-root,
+  .dark .MuiInputLabel-root,
+  .dark .MuiFormHelperText-root,
+  .dark .MuiTypography-root,
+  .dark .MuiFormControlLabel-label {
+    color: hsl(var(--foreground)) !important;
+  }
+
+  .dark .MuiInput-underline:before,
+  .dark .MuiInput-underline:after,
+  .dark .MuiOutlinedInput-notchedOutline,
+  .dark .MuiInputBase-root:before,
+  .dark .MuiInputBase-root:after {
+    border-color: hsl(var(--border)) !important;
+  }
+
+  .dark .MuiSelect-icon,
+  .dark .MuiSvgIcon-root {
+    color: hsl(var(--muted-foreground)) !important;
+  }
 }
 
 @layer utilities {

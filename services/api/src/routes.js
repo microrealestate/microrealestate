@@ -11,6 +11,7 @@ import * as projectManager from './managers/projectmanager.js';
 import * as propertyManager from './managers/propertymanager.js';
 import * as realmManager from './managers/realmmanager.js';
 import * as rentManager from './managers/rentmanager.js';
+import * as utilityManager from './managers/utilitymanager.js';
 import { Middlewares, Service } from '@microrealestate/common';
 import express from 'express';
 import { upload } from './utils/upload.js';
@@ -217,6 +218,20 @@ export default function routes() {
     Middlewares.asyncWrapper(projectManager.remove)
   );
   router.use('/projects', projectsRouter);
+
+  const utilitiesRouter = express.Router();
+  utilitiesRouter.get('/', Middlewares.asyncWrapper(utilityManager.all));
+  utilitiesRouter.get('/:id', Middlewares.asyncWrapper(utilityManager.one));
+  utilitiesRouter.post('/', Middlewares.asyncWrapper(utilityManager.add));
+  utilitiesRouter.patch(
+    '/:id',
+    Middlewares.asyncWrapper(utilityManager.update)
+  );
+  utilitiesRouter.delete(
+    '/:id',
+    Middlewares.asyncWrapper(utilityManager.remove)
+  );
+  router.use('/utilities', utilitiesRouter);
 
   const backupsRouter = express.Router();
   backupsRouter.post(

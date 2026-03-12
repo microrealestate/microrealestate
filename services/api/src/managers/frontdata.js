@@ -402,6 +402,10 @@ export function toProperty(inputProperty, inputOccupant, inputOccupants) {
     rentLowSqftYear: inputProperty.rentLowSqftYear,
     rentMedianSqftYear: inputProperty.rentMedianSqftYear,
     rentHighSqftYear: inputProperty.rentHighSqftYear,
+    taxId: inputProperty.taxId,
+    countyRecordsReference: inputProperty.countyRecordsReference,
+    coverPhotoAttachmentId: inputProperty.coverPhotoAttachmentId,
+    floorPlanAttachmentId: inputProperty.floorPlanAttachmentId,
 
     // ORIGINAL FIELDS — THESE GET FILLED IN LATER IN THIS FUNCTION
     beginDate: '',
