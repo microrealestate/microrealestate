@@ -43,13 +43,20 @@
     "prepare": "husky install"
   },
   "lint-staged": {
-    "*.{js,ts,tsx,jsx}": [
-      "eslint --quiet --fix",
-      "git add"
+    "services/**/*.{js,ts,tsx,jsx}": [
+      "eslint --quiet --fix"
+    ],
+    "cli/**/*.{js,ts,tsx,jsx}": [
+      "eslint --quiet --fix"
+    ],
+    "types/**/*.{js,ts,tsx,jsx}": [
+      "eslint --quiet --fix"
+    ],
+    "e2e/**/*.{js,ts,tsx,jsx}": [
+      "eslint --quiet --fix"
     ],
     "*.{json,md,html,js,jsx,ts,tsx}": [
-      "prettier --write",
-      "git add"
+      "prettier --write"
     ]
   },
   "devDependencies": {
