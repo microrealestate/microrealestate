@@ -107,6 +107,10 @@ export default function routes() {
     '/:id',
     Middlewares.asyncWrapper(contractorManager.update)
   );
+  contractorsRouter.post(
+    '/:id/reviews',
+    Middlewares.asyncWrapper(contractorManager.addReview)
+  );
   contractorsRouter.delete(
     '/:ids',
     Middlewares.asyncWrapper(contractorManager.remove)

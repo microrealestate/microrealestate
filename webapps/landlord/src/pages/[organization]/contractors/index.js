@@ -1,4 +1,4 @@
-import { LuPencil, LuPlusCircle, LuTrash } from 'react-icons/lu';
+import { LuPencil, LuPlusCircle, LuStar, LuTrash } from 'react-icons/lu';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { Button } from '../../../components/ui/button';
 import { Card } from '../../../components/ui/card';
@@ -11,6 +11,20 @@ import useFillStore from '../../../hooks/useFillStore';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 import { withAuthentication } from '../../../components/Authentication';
+
+function StarRating({ value = 0 }) {
+  const safeValue = Math.max(0, Math.min(5, Math.round(Number(value) || 0)));
+  return (
+    <div className="flex items-center gap-1">
+      {[1, 2, 3, 4, 5].map((starValue) => (
+        <LuStar
+          key={starValue}
+          className={`w-4 h-4 ${starValue <= safeValue ? 'fill-yellow-400 text-yellow-500' : 'text-muted-foreground'}`}
+        />
+      ))}
+    </div>
+  );
+}
 
 async function fetchData(store) {
   return await store.contractor.fetch();
@@ -94,6 +108,7 @@ function Contractors() {
                 <tr>
                   <th className="text-left p-2">{t('Name')}</th>
                   <th className="text-left p-2">{t('Type')}</th>
+                  <th className="text-left p-2">{t('Rating')}</th>
                   <th className="text-left p-2">{t('Contact')}</th>
                   <th className="text-right p-2">{t('Actions')}</th>
                 </tr>
@@ -114,6 +129,14 @@ function Contractors() {
                       </button>
                     </td>
                     <td className="p-2">{contractor.businessType || '-'}</td>
+                    <td className="p-2">
+                      <div className="flex items-center gap-2">
+                        <StarRating value={contractor.rating || 0} />
+                        <span className="text-xs text-muted-foreground">
+                          {Number(contractor.rating || 0).toFixed(1)}
+                        </span>
+                      </div>
+                    </td>
                     <td className="p-2">
                       {contractor.contacts?.[0]?.phone ||
                         contractor.contacts?.[0]?.email ||

@@ -5,6 +5,8 @@ import {
   fetchTenants,
   QueryKeys
 } from '../../utils/restcalls';
+import { apiFetcher } from '../../utils/fetch';
+import FeatureUpdates from '../../components/dashboard/FeatureUpdates';
 import GeneralFigures from '../../components/dashboard/GeneralFigures';
 import MonthFigures from '../../components/dashboard/MonthFigures';
 import Page from '../../components/Page';
@@ -42,11 +44,31 @@ function Dashboard() {
     refetchOnMount: 'always',
     retry: 3
   });
+  const utilitiesQuery = useQuery({
+    queryKey: ['dashboard-utilities'],
+    queryFn: async () => {
+      const response = await apiFetcher().get('/utilities');
+      return response.data || [];
+    },
+    refetchOnMount: 'always',
+    retry: 3
+  });
+  const projectsQuery = useQuery({
+    queryKey: ['dashboard-projects'],
+    queryFn: async () => {
+      const response = await apiFetcher().get('/projects');
+      return response.data || [];
+    },
+    refetchOnMount: 'always',
+    retry: 3
+  });
   const isLoading =
     dashboardQuery.isLoading ||
     tenantsQuery.isLoading ||
     propertiesQuery.isLoading ||
-    leasesQuery.isLoading;
+    leasesQuery.isLoading ||
+    utilitiesQuery.isLoading ||
+    projectsQuery.isLoading;
   const isFirstConnection =
     !leasesQuery?.data?.length ||
     !dashboardQuery?.data?.overview?.propertyCount ||
@@ -62,6 +84,11 @@ function Dashboard() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             <Shortcuts className="md:col-span-5" />
+            <FeatureUpdates
+              className="md:col-span-5"
+              utilities={utilitiesQuery.data || []}
+              projects={projectsQuery.data || []}
+            />
             <MonthFigures className="md:col-span-3" />
             <GeneralFigures className="md:col-span-2" />
             <YearFigures className="md:col-span-5" />

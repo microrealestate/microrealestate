@@ -43,6 +43,16 @@ const ContractorSchema = new mongoose.Schema<CollectionTypes.Contractor>({
   notes: String,
   active: { type: Boolean, default: true },
   rating: { type: Number, min: 0, max: 5 },
+  reviews: [
+    {
+      _id: false,
+      rating: { type: Number, min: 1, max: 5, required: true },
+      comment: { type: String, default: '' },
+      authorId: { type: String, default: null },
+      authorName: { type: String, default: null },
+      createdAt: { type: Date, default: Date.now }
+    }
+  ],
 
   // Timestamps
   createdDate: { type: Date, default: Date.now },

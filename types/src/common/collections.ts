@@ -395,6 +395,13 @@ export namespace CollectionTypes {
     notes?: string;
     active?: boolean;
     rating?: number;
+    reviews?: {
+      rating: number;
+      comment?: string;
+      authorId?: string;
+      authorName?: string;
+      createdAt?: Date;
+    }[];
     createdDate?: Date;
     updatedDate?: Date;
   };
@@ -467,14 +474,7 @@ export namespace CollectionTypes {
     _id?: string;
     realmId: string;
     propertyId: string;
-    type:
-      | 'internet'
-      | 'insurance'
-      | 'gas'
-      | 'water'
-      | 'sewer'
-      | 'power'
-      | 'other';
+    type: string;
     provider?: string;
     accountNumber?: string;
     billingMonth: string; // YYYY-MM

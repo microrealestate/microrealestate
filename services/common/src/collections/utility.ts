@@ -22,15 +22,6 @@ const UtilitySchema = new mongoose.Schema<CollectionTypes.Utility>(
     propertyId: { type: String, ref: Property, required: true, index: true },
     type: {
       type: String,
-      enum: [
-        'internet',
-        'insurance',
-        'gas',
-        'water',
-        'sewer',
-        'power',
-        'other'
-      ],
       required: true,
       index: true
     },

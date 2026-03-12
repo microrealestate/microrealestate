@@ -3,6 +3,7 @@ import { LuExternalLink, LuSearch, LuWrench } from 'react-icons/lu';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
+import { toast } from 'sonner';
 
 import { withAuthentication } from '../../../components/Authentication';
 import Page from '../../../components/Page';
@@ -10,6 +11,25 @@ import { Card } from '../../../components/ui/card';
 import { Input } from '../../../components/ui/input';
 import { Button } from '../../../components/ui/button';
 import { apiFetcher } from '../../../utils/fetch';
+
+const DEFAULT_UTILITY_CATEGORIES = [
+  'internet',
+  'insurance',
+  'gas',
+  'water',
+  'sewer',
+  'power',
+  'trash',
+  'hoa',
+  'landscaping',
+  'other'
+];
+
+function getCurrentBillingMonth() {
+  const now = new Date();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  return `${now.getFullYear()}-${month}`;
+}
 
 function toCurrency(value) {
   const amount = Number(value || 0);
@@ -22,6 +42,19 @@ function UtilitiesPage() {
   const [searchText, setSearchText] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [monthFilter, setMonthFilter] = useState('all');
+  const [submitting, setSubmitting] = useState(false);
+  const [billFile, setBillFile] = useState(null);
+  const [draft, setDraft] = useState({
+    propertyId: '',
+    type: 'water',
+    customType: '',
+    provider: '',
+    billingMonth: getCurrentBillingMonth(),
+    amount: '',
+    dueDate: '',
+    paidDate: '',
+    notes: ''
+  });
 
   const { data: properties = [], isLoading: loadingProperties } = useQuery({
     queryKey: ['utilities-properties'],
@@ -31,17 +64,17 @@ function UtilitiesPage() {
     }
   });
 
-  const {
-    data: utilities = [],
-    isLoading: loadingUtilities,
-    isError
-  } = useQuery({
+  const utilitiesQuery = useQuery({
     queryKey: ['utilities-all'],
     queryFn: async () => {
       const response = await apiFetcher().get('/utilities');
       return response.data || [];
     }
   });
+
+  const utilities = utilitiesQuery.data || [];
+  const loadingUtilities = utilitiesQuery.isLoading;
+  const isError = utilitiesQuery.isError;
 
   const propertyById = useMemo(
     () =>
@@ -54,6 +87,7 @@ function UtilitiesPage() {
 
   const utilityTypes = useMemo(() => {
     const typeSet = new Set();
+    DEFAULT_UTILITY_CATEGORIES.forEach((type) => typeSet.add(type));
     utilities.forEach((utility) => {
       if (utility?.type) {
         typeSet.add(utility.type);
@@ -61,6 +95,10 @@ function UtilitiesPage() {
     });
     return Array.from(typeSet).sort();
   }, [utilities]);
+
+  const createCategoryOptions = useMemo(() => {
+    return [...utilityTypes, 'custom'];
+  }, [utilityTypes]);
 
   const billingMonths = useMemo(() => {
     const monthSet = new Set();
@@ -115,6 +153,89 @@ function UtilitiesPage() {
 
   const loading = loadingProperties || loadingUtilities;
 
+  const handleCreateBill = async () => {
+    const selectedType =
+      draft.type === 'custom'
+        ? draft.customType.trim().toLowerCase()
+        : draft.type;
+
+    if (!draft.propertyId) {
+      toast.error(t('Property is required'));
+      return;
+    }
+
+    if (!selectedType) {
+      toast.error(t('Category is required'));
+      return;
+    }
+
+    if (!draft.billingMonth) {
+      toast.error(t('Billing month is required'));
+      return;
+    }
+
+    const amount = Number(draft.amount);
+    if (!Number.isFinite(amount) || amount < 0) {
+      toast.error(t('Amount must be a positive number'));
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      let attachmentId = null;
+      if (billFile) {
+        const formData = new FormData();
+        formData.append('file', billFile);
+        formData.append('targetType', 'property');
+        formData.append('targetId', draft.propertyId);
+        formData.append('category', 'utility_bill');
+
+        const uploadResponse = await apiFetcher().post(
+          '/attachments',
+          formData,
+          {
+            headers: { 'Content-Type': 'multipart/form-data' }
+          }
+        );
+        attachmentId = uploadResponse.data?._id || null;
+      }
+
+      const payload = {
+        propertyId: draft.propertyId,
+        type: selectedType,
+        provider: draft.provider,
+        billingMonth: draft.billingMonth,
+        amount,
+        dueDate: draft.dueDate || null,
+        paidDate: draft.paidDate || null,
+        notes: draft.notes,
+        splitMethod: 'equal',
+        splitItems: [],
+        attachmentIds: attachmentId ? [attachmentId] : []
+      };
+
+      await apiFetcher().post('/utilities', payload);
+      toast.success(t('Utility bill added'));
+      setBillFile(null);
+      setDraft((prev) => ({
+        ...prev,
+        amount: '',
+        provider: '',
+        dueDate: '',
+        paidDate: '',
+        notes: '',
+        customType: ''
+      }));
+      await utilitiesQuery.refetch();
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message || t('Failed to add utility bill')
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <Page loading={loading} dataCy="utilitiesPage">
       <Card className="p-6 space-y-4">
@@ -126,6 +247,167 @@ function UtilitiesPage() {
           <div className="text-sm text-muted-foreground">
             {filteredUtilities.length} {t('entry(ies)')} •{' '}
             {toCurrency(totalAmount)}
+          </div>
+        </div>
+
+        <div className="rounded-lg border p-4 space-y-3">
+          <h2 className="text-base font-semibold">{t('Add utility bill')}</h2>
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+            <div>
+              <label className="text-xs text-muted-foreground">
+                {t('Property')}
+              </label>
+              <select
+                value={draft.propertyId}
+                onChange={(event) =>
+                  setDraft((prev) => ({
+                    ...prev,
+                    propertyId: event.target.value
+                  }))
+                }
+                className="w-full px-3 py-2 border rounded-md text-sm bg-background"
+              >
+                <option value="">{t('Select property')}</option>
+                {properties.map((property) => (
+                  <option key={property._id} value={property._id}>
+                    {property.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground">
+                {t('Category')}
+              </label>
+              <select
+                value={draft.type}
+                onChange={(event) =>
+                  setDraft((prev) => ({ ...prev, type: event.target.value }))
+                }
+                className="w-full px-3 py-2 border rounded-md text-sm bg-background"
+              >
+                {createCategoryOptions.map((type) => (
+                  <option key={type} value={type}>
+                    {type === 'custom' ? t('Custom category') : type}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground">
+                {t('Billing month')}
+              </label>
+              <Input
+                type="month"
+                value={draft.billingMonth}
+                onChange={(event) =>
+                  setDraft((prev) => ({
+                    ...prev,
+                    billingMonth: event.target.value
+                  }))
+                }
+              />
+            </div>
+            {draft.type === 'custom' ? (
+              <div>
+                <label className="text-xs text-muted-foreground">
+                  {t('New category name')}
+                </label>
+                <Input
+                  type="text"
+                  placeholder={t('e.g. pest control')}
+                  value={draft.customType}
+                  onChange={(event) =>
+                    setDraft((prev) => ({
+                      ...prev,
+                      customType: event.target.value
+                    }))
+                  }
+                />
+              </div>
+            ) : null}
+            <div>
+              <label className="text-xs text-muted-foreground">
+                {t('Amount')}
+              </label>
+              <Input
+                type="number"
+                value={draft.amount}
+                onChange={(event) =>
+                  setDraft((prev) => ({ ...prev, amount: event.target.value }))
+                }
+              />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground">
+                {t('Provider')}
+              </label>
+              <Input
+                type="text"
+                value={draft.provider}
+                onChange={(event) =>
+                  setDraft((prev) => ({
+                    ...prev,
+                    provider: event.target.value
+                  }))
+                }
+              />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground">
+                {t('Due date')}
+              </label>
+              <Input
+                type="date"
+                value={draft.dueDate}
+                onChange={(event) =>
+                  setDraft((prev) => ({ ...prev, dueDate: event.target.value }))
+                }
+              />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground">
+                {t('Paid date')}
+              </label>
+              <Input
+                type="date"
+                value={draft.paidDate}
+                onChange={(event) =>
+                  setDraft((prev) => ({
+                    ...prev,
+                    paidDate: event.target.value
+                  }))
+                }
+              />
+            </div>
+            <div className="md:col-span-2">
+              <label className="text-xs text-muted-foreground">
+                {t('Notes')}
+              </label>
+              <Input
+                type="text"
+                value={draft.notes}
+                onChange={(event) =>
+                  setDraft((prev) => ({ ...prev, notes: event.target.value }))
+                }
+              />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground">
+                {t('Bill file')}
+              </label>
+              <Input
+                type="file"
+                onChange={(event) =>
+                  setBillFile(event.target.files?.[0] || null)
+                }
+              />
+            </div>
+          </div>
+          <div className="flex justify-end">
+            <Button onClick={handleCreateBill} disabled={submitting}>
+              {submitting ? t('Saving...') : t('Add bill')}
+            </Button>
           </div>
         </div>
 

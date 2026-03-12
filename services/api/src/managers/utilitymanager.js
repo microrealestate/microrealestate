@@ -8,6 +8,14 @@ function normalizeMonth(value) {
   return /^\d{4}-\d{2}$/.test(trimmed) ? trimmed : null;
 }
 
+function normalizeType(value) {
+  if (typeof value !== 'string') {
+    return '';
+  }
+
+  return value.trim().toLowerCase();
+}
+
 function normalizeSplitItems(splitItems = [], splitMethod = 'equal') {
   if (!Array.isArray(splitItems)) {
     return [];
@@ -33,7 +41,7 @@ function normalizeSplitItems(splitItems = [], splitMethod = 'equal') {
 function normalizePayload(payload) {
   return {
     propertyId: payload.propertyId ? String(payload.propertyId) : null,
-    type: payload.type || 'other',
+    type: normalizeType(payload.type) || 'other',
     provider: payload.provider || '',
     accountNumber: payload.accountNumber || '',
     billingMonth: normalizeMonth(payload.billingMonth),
@@ -65,6 +73,10 @@ async function validatePayload(realmId, payload, utilityId = null) {
 
   if (!payload.billingMonth) {
     return 'billingMonth must use YYYY-MM format';
+  }
+
+  if (!payload.type) {
+    return 'type is required';
   }
 
   if (!Number.isFinite(payload.amount) || payload.amount < 0) {

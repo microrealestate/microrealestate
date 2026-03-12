@@ -5,8 +5,14 @@ import {
   DialogHeader,
   DialogTitle
 } from '../../../components/ui/dialog';
-import { LuArrowLeft, LuPencil, LuPlusCircle, LuTrash } from 'react-icons/lu';
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import { LuArrowLeft, LuPlusCircle, LuStar, LuTrash } from 'react-icons/lu';
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState
+} from 'react';
 import {
   Select,
   SelectContent,
@@ -38,6 +44,32 @@ import useTranslation from 'next-translate/useTranslation';
 import { withAuthentication } from '../../../components/Authentication';
 
 const WORK_ATTACHMENT_CATEGORY = 'work_record_attachment';
+const DEFAULT_CONTRACTOR_TYPES = [
+  'Plumber',
+  'Electrician',
+  'Painter',
+  'Carpenter',
+  'HVAC',
+  'General Contractor',
+  'Landscaper',
+  'Roofer',
+  'Cleaner',
+  'Handyman'
+];
+
+function StarRating({ value = 0, sizeClassName = 'w-4 h-4' }) {
+  const safeValue = Math.max(0, Math.min(5, Number(value) || 0));
+  return (
+    <div className="flex items-center gap-1">
+      {[1, 2, 3, 4, 5].map((starValue) => (
+        <LuStar
+          key={starValue}
+          className={`${sizeClassName} ${starValue <= safeValue ? 'fill-yellow-400 text-yellow-500' : 'text-muted-foreground'}`}
+        />
+      ))}
+    </div>
+  );
+}
 
 async function fetchData(store, router) {
   if (router.query.id && router.query.id !== 'new') {
@@ -52,6 +84,8 @@ function ContractorDetail() {
   const [fetching] = useFillStore(fetchData, [router]);
   const [formData, setFormData] = useState({});
   const [openConfirmDelete, setOpenConfirmDelete] = useState(false);
+  const [submittingReview, setSubmittingReview] = useState(false);
+  const [reviewForm, setReviewForm] = useState({ rating: '5', comment: '' });
   const [workRecords, setWorkRecords] = useState([]);
   const [loadingWork, setLoadingWork] = useState(false);
   const [workAttachmentsByRecord, setWorkAttachmentsByRecord] = useState({});
@@ -73,6 +107,21 @@ function ContractorDetail() {
 
   const isNew = router.query.id === 'new';
   const contractor = store.contractor.selected;
+
+  const contractorTypeSuggestions = useMemo(() => {
+    const suggestions = new Set(DEFAULT_CONTRACTOR_TYPES);
+    (store.contractor.items || []).forEach((item) => {
+      if (item?.businessType) {
+        suggestions.add(item.businessType);
+      }
+    });
+
+    if (formData.businessType) {
+      suggestions.add(formData.businessType);
+    }
+
+    return Array.from(suggestions).sort((a, b) => a.localeCompare(b));
+  }, [formData.businessType, store.contractor.items]);
 
   // Initialize form with contractor data
   useEffect(() => {
@@ -318,6 +367,52 @@ function ContractorDetail() {
     }
   }, [workFormData, contractor, t]);
 
+  const handleAddReview = useCallback(async () => {
+    if (!contractor?._id) {
+      return;
+    }
+
+    const rating = Number(reviewForm.rating);
+
+    if (!Number.isFinite(rating) || rating < 1 || rating > 5) {
+      toast.error(t('Rating must be between 1 and 5'));
+      return;
+    }
+
+    setSubmittingReview(true);
+
+    try {
+      const response = await apiFetcher().post(
+        `/contractors/${contractor._id}/reviews`,
+        {
+          rating,
+          comment: reviewForm.comment
+        }
+      );
+
+      const updatedContractor = response.data;
+      store.contractor.setSelected(updatedContractor);
+      store.contractor.setItems(
+        store.contractor.items.map((item) =>
+          item._id === updatedContractor._id ? updatedContractor : item
+        )
+      );
+
+      setReviewForm({ rating: '5', comment: '' });
+      toast.success(t('Review added'));
+    } catch (err) {
+      toast.error(err?.response?.data?.message || t('Failed to add review'));
+    } finally {
+      setSubmittingReview(false);
+    }
+  }, [
+    contractor?._id,
+    reviewForm.comment,
+    reviewForm.rating,
+    store.contractor,
+    t
+  ]);
+
   return (
     <Page
       loading={fetching}
@@ -341,10 +436,17 @@ function ContractorDetail() {
       dataCy="contractorPage"
     >
       <div className="space-y-4">
+        <datalist id="contractor-type-options">
+          {contractorTypeSuggestions.map((type) => (
+            <option key={type} value={type} />
+          ))}
+        </datalist>
+
         {!isNew && contractor ? (
           <Tabs defaultValue="info" className="w-full">
             <TabsList className="flex justify-start overflow-x-auto overflow-y-hidden">
               <TabsTrigger value="info">{t('Information')}</TabsTrigger>
+              <TabsTrigger value="reviews">{t('Reviews')}</TabsTrigger>
               <TabsTrigger value="work">{t('Work Records')}</TabsTrigger>
               <TabsTrigger value="projects">{t('Projects')}</TabsTrigger>
               <TabsTrigger value="notes">{t('Notes')}</TabsTrigger>
@@ -366,6 +468,7 @@ function ContractorDetail() {
                       {t('Business Type')}
                     </label>
                     <Input
+                      list="contractor-type-options"
                       value={formData.businessType}
                       onChange={(e) =>
                         handleFormChange('businessType', e.target.value)
@@ -448,6 +551,107 @@ function ContractorDetail() {
                   </div>
                 </div>
                 <Button onClick={handleSave}>{t('Save')}</Button>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="reviews">
+              <Card className="p-6 space-y-4">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                  <h3 className="text-lg font-semibold">{t('Reviews')}</h3>
+                  <div className="flex items-center gap-2">
+                    <StarRating value={contractor.rating || 0} />
+                    <span className="text-sm text-muted-foreground">
+                      {Number(contractor.rating || 0).toFixed(1)} (
+                      {(contractor.reviews || []).length})
+                    </span>
+                  </div>
+                </div>
+
+                <div className="rounded border p-4 space-y-3">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div>
+                      <label className="text-sm font-medium">
+                        {t('Rating')}
+                      </label>
+                      <Select
+                        value={reviewForm.rating}
+                        onValueChange={(value) =>
+                          setReviewForm((prev) => ({ ...prev, rating: value }))
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="5">5</SelectItem>
+                          <SelectItem value="4">4</SelectItem>
+                          <SelectItem value="3">3</SelectItem>
+                          <SelectItem value="2">2</SelectItem>
+                          <SelectItem value="1">1</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="text-sm font-medium">
+                        {t('Comment')}
+                      </label>
+                      <Textarea
+                        value={reviewForm.comment}
+                        onChange={(e) =>
+                          setReviewForm((prev) => ({
+                            ...prev,
+                            comment: e.target.value
+                          }))
+                        }
+                        placeholder={t('Share your feedback')}
+                        rows={3}
+                      />
+                    </div>
+                  </div>
+                  <Button onClick={handleAddReview} disabled={submittingReview}>
+                    {submittingReview ? t('Saving...') : t('Add review')}
+                  </Button>
+                </div>
+
+                {(contractor.reviews || []).length === 0 ? (
+                  <p className="text-muted-foreground">{t('No reviews yet')}</p>
+                ) : (
+                  <div className="space-y-3">
+                    {[...(contractor.reviews || [])]
+                      .sort(
+                        (a, b) =>
+                          new Date(b.createdAt || 0).getTime() -
+                          new Date(a.createdAt || 0).getTime()
+                      )
+                      .map((review, index) => (
+                        <div
+                          key={`${review.createdAt || index}-${review.authorId || index}`}
+                          className="rounded border p-3 space-y-1"
+                        >
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <div className="flex items-center gap-2">
+                              <StarRating value={review.rating || 0} />
+                              <span className="text-sm font-medium">
+                                {review.authorName || t('User')}
+                              </span>
+                            </div>
+                            <span className="text-xs text-muted-foreground">
+                              {review.createdAt
+                                ? new Date(
+                                    review.createdAt
+                                  ).toLocaleDateString()
+                                : '-'}
+                            </span>
+                          </div>
+                          {review.comment ? (
+                            <p className="text-sm text-muted-foreground">
+                              {review.comment}
+                            </p>
+                          ) : null}
+                        </div>
+                      ))}
+                  </div>
+                )}
               </Card>
             </TabsContent>
 
@@ -626,6 +830,7 @@ function ContractorDetail() {
                   {t('Business Type')}
                 </label>
                 <Input
+                  list="contractor-type-options"
                   value={formData.businessType || ''}
                   onChange={(e) =>
                     handleFormChange('businessType', e.target.value)

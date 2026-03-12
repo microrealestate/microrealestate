@@ -1,5 +1,26 @@
 import { Collections } from '@microrealestate/common';
 
+function normalizeBusinessType(value) {
+  if (typeof value !== 'string') {
+    return value;
+  }
+
+  const trimmed = value.trim();
+  return trimmed || null;
+}
+
+function toAuthorName(user) {
+  if (!user) {
+    return 'Unknown User';
+  }
+
+  if (user.firstname) {
+    return `${user.firstname} ${user.lastname || ''}`.trim();
+  }
+
+  return user.email || 'Unknown User';
+}
+
 export async function all(req, res) {
   const realm = req.realm;
 
@@ -32,6 +53,7 @@ export async function add(req, res) {
   const realm = req.realm;
   const contractor = new Collections.Contractor({
     ...req.body,
+    businessType: normalizeBusinessType(req.body.businessType),
     realmId: realm._id
   });
 
@@ -50,6 +72,7 @@ export async function update(req, res) {
     },
     {
       ...contractor,
+      businessType: normalizeBusinessType(contractor.businessType),
       updatedDate: new Date()
     },
     { new: true }
@@ -60,6 +83,53 @@ export async function update(req, res) {
   }
 
   return res.json(dbContractor);
+}
+
+export async function addReview(req, res) {
+  const realm = req.realm;
+  const contractorId = req.params.id;
+  const rating = Number(req.body?.rating);
+  const comment =
+    typeof req.body?.comment === 'string' ? req.body.comment.trim() : '';
+
+  if (!Number.isFinite(rating) || rating < 1 || rating > 5) {
+    return res.status(400).json({ message: 'rating must be between 1 and 5' });
+  }
+
+  const contractor = await Collections.Contractor.findOne({
+    _id: contractorId,
+    realmId: realm._id
+  });
+
+  if (!contractor) {
+    return res.status(404).json({ message: 'Contractor not found' });
+  }
+
+  const review = {
+    rating,
+    comment,
+    authorId: String(
+      req.user?._id || req.user?.email || req.user?.clientId || ''
+    ),
+    authorName: toAuthorName(req.user),
+    createdAt: new Date()
+  };
+
+  contractor.reviews = [...(contractor.reviews || []), review];
+
+  const reviewCount = contractor.reviews.length;
+  const averageRating =
+    contractor.reviews.reduce(
+      (sum, currentReview) => sum + Number(currentReview.rating || 0),
+      0
+    ) / reviewCount;
+
+  contractor.rating = Number(averageRating.toFixed(1));
+  contractor.updatedDate = new Date();
+
+  await contractor.save();
+
+  return res.json(contractor.toObject());
 }
 
 export async function remove(req, res) {
