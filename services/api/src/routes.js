@@ -11,6 +11,7 @@ import * as projectManager from './managers/projectmanager.js';
 import * as propertyManager from './managers/propertymanager.js';
 import * as realmManager from './managers/realmmanager.js';
 import * as rentManager from './managers/rentmanager.js';
+import * as utilityAccountManager from './managers/utilityaccountmanager.js';
 import * as utilityManager from './managers/utilitymanager.js';
 import { Middlewares, Service } from '@microrealestate/common';
 import express from 'express';
@@ -236,6 +237,33 @@ export default function routes() {
     Middlewares.asyncWrapper(utilityManager.remove)
   );
   router.use('/utilities', utilitiesRouter);
+
+  const utilityAccountsRouter = express.Router();
+  utilityAccountsRouter.get(
+    '/',
+    Middlewares.asyncWrapper(utilityAccountManager.all)
+  );
+  utilityAccountsRouter.get(
+    '/:id',
+    Middlewares.asyncWrapper(utilityAccountManager.one)
+  );
+  utilityAccountsRouter.post(
+    '/',
+    Middlewares.asyncWrapper(utilityAccountManager.add)
+  );
+  utilityAccountsRouter.post(
+    '/:id/bills',
+    Middlewares.asyncWrapper(utilityAccountManager.addBill)
+  );
+  utilityAccountsRouter.patch(
+    '/:id',
+    Middlewares.asyncWrapper(utilityAccountManager.update)
+  );
+  utilityAccountsRouter.delete(
+    '/:id',
+    Middlewares.asyncWrapper(utilityAccountManager.remove)
+  );
+  router.use('/utility-accounts', utilityAccountsRouter);
 
   const backupsRouter = express.Router();
   backupsRouter.post(

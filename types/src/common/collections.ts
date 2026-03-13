@@ -135,7 +135,7 @@ export namespace CollectionTypes {
     _id: string;
     realmId: string;
 
-    // ORIGINAL FIELD — PROPERTY TYPE (BUILDING, APARTMENT, OFFICE, ETC.)
+    // ORIGINAL FIELD â€” PROPERTY TYPE (BUILDING, APARTMENT, OFFICE, ETC.)
     type: string;
 
     // ORIGINAL CORE FIELDS
@@ -147,13 +147,13 @@ export namespace CollectionTypes {
     address: CollectionTypes.PartAddress;
     price: number;
 
-    // NEW FIELD — BUILDING / UNIT RELATIONSHIP
-    // IF SET → THIS PROPERTY BELONGS TO ANOTHER PROPERTY (LIKELY A BUILDING)
-    // IF NULL / UNDEFINED → THIS IS A BUILDING OR STANDALONE PROPERTY
+    // NEW FIELD â€” BUILDING / UNIT RELATIONSHIP
+    // IF SET â†’ THIS PROPERTY BELONGS TO ANOTHER PROPERTY (LIKELY A BUILDING)
+    // IF NULL / UNDEFINED â†’ THIS IS A BUILDING OR STANDALONE PROPERTY
     parentPropertyId?: string | null;
 
-    // NEW FIELDS — RENT RANGE IN $ / SQ FT / YEAR
-    // OPTIONAL — USED FOR MARKET RANGE / COMPS
+    // NEW FIELDS â€” RENT RANGE IN $ / SQ FT / YEAR
+    // OPTIONAL â€” USED FOR MARKET RANGE / COMPS
     rentLowSqftYear?: number | null;
     rentMedianSqftYear?: number | null;
     rentHighSqftYear?: number | null;
@@ -296,6 +296,7 @@ export namespace CollectionTypes {
     realmId: string;
     targetType:
       | 'property'
+      | 'utility_account'
       | 'utility'
       | 'note'
       | 'project'
@@ -468,6 +469,23 @@ export namespace CollectionTypes {
     subPropertyId: string;
     splitType: 'percentage' | 'equal';
     percentage?: number;
+  };
+
+  export type UtilityAccountAllocation = {
+    propertyId: string;
+    percentage: number;
+  };
+
+  export type UtilityAccount = {
+    _id?: string;
+    realmId: string;
+    type: string;
+    provider?: string;
+    accountNumber: string;
+    notes?: string;
+    allocations: UtilityAccountAllocation[];
+    createdAt?: Date;
+    updatedAt?: Date;
   };
 
   export type Utility = {

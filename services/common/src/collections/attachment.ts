@@ -20,6 +20,7 @@ const AttachmentSchema = new mongoose.Schema<CollectionTypes.Attachment>(
       type: String,
       enum: [
         'property',
+        'utility_account',
         'utility',
         'note',
         'project',

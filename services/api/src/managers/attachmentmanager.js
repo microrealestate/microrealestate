@@ -16,6 +16,12 @@ async function _validateTargetAccess(targetType, targetId, realmId) {
         realmId
       });
       break;
+    case 'utility_account':
+      targetExists = await Collections.UtilityAccount.exists({
+        _id: targetId,
+        realmId
+      });
+      break;
     case 'contact':
     case 'tenant':
       targetExists = await Collections.Tenant.exists({
