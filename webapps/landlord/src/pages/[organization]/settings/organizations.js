@@ -10,10 +10,11 @@ import { Badge } from '../../../components/ui/badge';
 import { Button } from '../../../components/ui/button';
 import { cn } from '../../../utils';
 import config from '../../../config';
+import { Input } from '../../../components/ui/input';
 import Page from '../../../components/Page';
 import { StoreContext } from '../../../store';
 import { toast } from 'sonner';
-import { useContext } from 'react';
+import { useContext, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import useTranslation from 'next-translate/useTranslation';
 import { withAuthentication } from '../../../components/Authentication';
@@ -21,6 +22,7 @@ import { withAuthentication } from '../../../components/Authentication';
 function OrganizationsSettings() {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
+  const [searchText, setSearchText] = useState('');
   const {
     data: organizations,
     isError,
@@ -40,6 +42,19 @@ function OrganizationsSettings() {
     toast.error(t('Error fetching organizations'));
   }
 
+  const filteredOrganizations = useMemo(() => {
+    const search = searchText.trim().toLowerCase();
+    if (!search) {
+      return organizations || [];
+    }
+
+    return (organizations || []).filter((organization) =>
+      String(organization.name || '')
+        .toLowerCase()
+        .includes(search)
+    );
+  }, [organizations, searchText]);
+
   return (
     <Page loading={isLoading} dataCy="organizationsPage">
       <Card>
@@ -48,7 +63,19 @@ function OrganizationsSettings() {
           <CardDescription>{t('Your organizations')}</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
-          {organizations?.map((organization) => (
+          <Input
+            placeholder={t('Search')}
+            value={searchText}
+            onChange={(event) => setSearchText(event.target.value)}
+          />
+
+          {filteredOrganizations.length === 0 ? (
+            <div className="text-sm text-muted-foreground">
+              {t('No organizations found')}
+            </div>
+          ) : null}
+
+          {filteredOrganizations.map((organization) => (
             <Card
               key={organization._id}
               className={cn('flex items-center gap-2 p-4')}

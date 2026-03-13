@@ -14,6 +14,7 @@ import { useCallback, useContext, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from '../../../../components/ui/button';
 import { cn } from '../../../../utils';
+import { Input } from '../../../../components/ui/input';
 import { Label } from '../../../../components/ui/label';
 import { LuPlusCircle } from 'react-icons/lu';
 import NewLeaseDialog from '../../../../components/organization/lease/NewLeaseDialog';
@@ -32,6 +33,8 @@ function LeasesSettings() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [openNewLeaseDialog, setOpenNewLeaseDialog] = useState(false);
+  const [searchText, setSearchText] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
   const leasesQuery = useQuery({
     queryKey: [QueryKeys.LEASES],
     queryFn: () => fetchLeases(store)
@@ -63,6 +66,30 @@ function LeasesSettings() {
     toast.error(t('Error updating lease'));
   }
 
+  const filteredLeases = (leasesQuery.data || []).filter((lease) => {
+    if (statusFilter === 'active' && !lease.active) {
+      return false;
+    }
+
+    if (statusFilter === 'inactive' && lease.active) {
+      return false;
+    }
+
+    const search = searchText.trim().toLowerCase();
+    if (!search) {
+      return true;
+    }
+
+    return (
+      String(lease.name || '')
+        .toLowerCase()
+        .includes(search) ||
+      String(lease.description || '')
+        .toLowerCase()
+        .includes(search)
+    );
+  });
+
   return (
     <Page
       loading={leasesQuery.isLoading}
@@ -86,7 +113,30 @@ function LeasesSettings() {
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
-          {leasesQuery.data?.map((lease) => {
+          <div className="grid gap-2 md:grid-cols-2">
+            <Input
+              placeholder={t('Search')}
+              value={searchText}
+              onChange={(event) => setSearchText(event.target.value)}
+            />
+            <select
+              value={statusFilter}
+              onChange={(event) => setStatusFilter(event.target.value)}
+              className="w-full px-3 py-2 border rounded-md text-sm bg-background"
+            >
+              <option value="all">{t('All')}</option>
+              <option value="active">{t('Active')}</option>
+              <option value="inactive">{t('Inactive')}</option>
+            </select>
+          </div>
+
+          {filteredLeases.length === 0 ? (
+            <div className="text-sm text-muted-foreground py-4">
+              {t('No contracts found')}
+            </div>
+          ) : null}
+
+          {filteredLeases.map((lease) => {
             return (
               <Card
                 key={lease._id}

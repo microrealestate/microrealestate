@@ -9,12 +9,13 @@ import {
   SelectTrigger,
   SelectValue
 } from '../ui/select';
-import { useCallback, useContext, useState } from 'react';
+import { useCallback, useContext, useMemo, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { cn } from '../../utils';
 import ConfirmDialog from '../ConfirmDialog';
+import { Input } from '../ui/input';
 import { LuTrash } from 'react-icons/lu';
 import moment from 'moment';
 import { StoreContext } from '../../store';
@@ -40,6 +41,10 @@ export default function Members({ organization }) {
     useState(false);
   const [selectedAppToRemove, setSelectedAppToRemove] = useState(null);
   const [updating, setUpdating] = useState();
+  const [memberSearchText, setMemberSearchText] = useState('');
+  const [memberRoleFilter, setMemberRoleFilter] = useState('all');
+  const [applicationSearchText, setApplicationSearchText] = useState('');
+  const [applicationRoleFilter, setApplicationRoleFilter] = useState('all');
 
   const handleRemoveMember = useCallback(
     async (member) => {
@@ -98,13 +103,92 @@ export default function Members({ organization }) {
     toast.error(t('Error fetching members'));
   }
 
+  const sortedMembers = useMemo(
+    () =>
+      [...(organization?.members || [])].sort((m1, m2) =>
+        m1.email.localeCompare(m2.email)
+      ),
+    [organization?.members]
+  );
+
+  const filteredMembers = useMemo(() => {
+    const search = memberSearchText.trim().toLowerCase();
+    return sortedMembers.filter((member) => {
+      if (memberRoleFilter !== 'all' && member.role !== memberRoleFilter) {
+        return false;
+      }
+
+      if (!search) {
+        return true;
+      }
+
+      return String(member.email || '')
+        .toLowerCase()
+        .includes(search);
+    });
+  }, [memberRoleFilter, memberSearchText, sortedMembers]);
+
+  const filteredApplications = useMemo(() => {
+    const search = applicationSearchText.trim().toLowerCase();
+    return (organization?.applications || []).filter((application) => {
+      if (
+        applicationRoleFilter !== 'all' &&
+        application.role !== applicationRoleFilter
+      ) {
+        return false;
+      }
+
+      if (!search) {
+        return true;
+      }
+
+      return (
+        String(application.name || '')
+          .toLowerCase()
+          .includes(search) ||
+        String(application.clientId || '')
+          .toLowerCase()
+          .includes(search)
+      );
+    });
+  }, [
+    applicationRoleFilter,
+    applicationSearchText,
+    organization?.applications
+  ]);
+
   return (
     <>
       <div className="text-xl mb-4">{t('Collaborators')}</div>
+      <div className="grid gap-2 md:grid-cols-2 mb-4">
+        <Input
+          placeholder={t('Search')}
+          value={memberSearchText}
+          onChange={(event) => setMemberSearchText(event.target.value)}
+        />
+        <Select value={memberRoleFilter} onValueChange={setMemberRoleFilter}>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectItem value="all">{t('All')}</SelectItem>
+              {ROLES.map((role) => (
+                <SelectItem key={role} value={role}>
+                  {t(role)}
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+      </div>
       <Card className="min-h-72">
-        {organization.members
-          ?.sort((m1, m2) => m1.email.localeCompare(m2.email))
-          .map((member, index) => {
+        {filteredMembers.length === 0 ? (
+          <div className="p-4 text-sm text-muted-foreground">
+            {t('No collaborators found')}
+          </div>
+        ) : (
+          filteredMembers.map((member, index) => {
             const isAdministrator = member.role === ADMIN_ROLE;
             const isRegistered = member.registered;
             const isActionDisabled =
@@ -112,8 +196,8 @@ export default function Members({ organization }) {
               store.user.role !== ADMIN_ROLE ||
               (store.user.email === member.email && isAdministrator);
             const isLastLine =
-              organization.members.length - 1 === index &&
-              organization.members.length >= 4;
+              filteredMembers.length - 1 === index &&
+              filteredMembers.length >= 4;
             return (
               <div
                 key={member.email}
@@ -165,61 +249,93 @@ export default function Members({ organization }) {
                 </div>
               </div>
             );
-          })}
+          })
+        )}
       </Card>
 
       <div className="text-xl mt-8 mb-4">{t('Applications')}</div>
+      <div className="grid gap-2 md:grid-cols-2 mb-4">
+        <Input
+          placeholder={t('Search')}
+          value={applicationSearchText}
+          onChange={(event) => setApplicationSearchText(event.target.value)}
+        />
+        <Select
+          value={applicationRoleFilter}
+          onValueChange={setApplicationRoleFilter}
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectItem value="all">{t('All')}</SelectItem>
+              {ROLES.map((role) => (
+                <SelectItem key={role} value={role}>
+                  {t(role)}
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+      </div>
       <Card className="min-h-72">
-        {organization.applications?.map((app, index) => {
-          const expiryMoment = moment(app.expiryDate);
-          const dateFormat = moment.localeData().longDateFormat('L');
-          const isExpired = moment().isSameOrAfter(expiryMoment);
-          const isLastLine =
-            organization.applications.length - 1 === index &&
-            organization.applications.length >= 4;
-          return (
-            <div
-              key={app.clientId}
-              className={cn(
-                'grid grid-cols-1 p-4 gap-4',
-                'md:grid-cols-3 md:items-center',
-                !isLastLine ? 'border-b' : null
-              )}
-            >
-              <div className="flex flex-col">
-                <div className="text-lg md:text-xl">{app.name}</div>
-                {!isExpired ? (
-                  <div className="text-warning text-xs">
-                    {t('Token is expired')}
-                  </div>
-                ) : null}
-              </div>
-
-              <div>
-                <div className="text-xs text-muted-foreground">
-                  {t('Expiry date')}
+        {filteredApplications.length === 0 ? (
+          <div className="p-4 text-sm text-muted-foreground">
+            {t('No applications found')}
+          </div>
+        ) : (
+          filteredApplications.map((app, index) => {
+            const expiryMoment = moment(app.expiryDate);
+            const dateFormat = moment.localeData().longDateFormat('L');
+            const isExpired = moment().isSameOrAfter(expiryMoment);
+            const isLastLine =
+              filteredApplications.length - 1 === index &&
+              filteredApplications.length >= 4;
+            return (
+              <div
+                key={app.clientId}
+                className={cn(
+                  'grid grid-cols-1 p-4 gap-4',
+                  'md:grid-cols-3 md:items-center',
+                  !isLastLine ? 'border-b' : null
+                )}
+              >
+                <div className="flex flex-col">
+                  <div className="text-lg md:text-xl">{app.name}</div>
+                  {!isExpired ? (
+                    <div className="text-warning text-xs">
+                      {t('Token is expired')}
+                    </div>
+                  ) : null}
                 </div>
-                {expiryMoment.format(dateFormat)}
-              </div>
 
-              <div className="flex gap-2 items-center">
-                <div className="flex-grow">{t(app.role)}</div>
-                <Button
-                  variant="ghost"
-                  onClick={() => {
-                    setSelectedAppToRemove(app);
-                    setOpenAppToRemoveConfirmDialog(true);
-                  }}
-                  disabled={!!updating || store.user.role !== ADMIN_ROLE}
-                  size="icon"
-                  className="w-10"
-                >
-                  <LuTrash className="size-6" />
-                </Button>
+                <div>
+                  <div className="text-xs text-muted-foreground">
+                    {t('Expiry date')}
+                  </div>
+                  {expiryMoment.format(dateFormat)}
+                </div>
+
+                <div className="flex gap-2 items-center">
+                  <div className="flex-grow">{t(app.role)}</div>
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      setSelectedAppToRemove(app);
+                      setOpenAppToRemoveConfirmDialog(true);
+                    }}
+                    disabled={!!updating || store.user.role !== ADMIN_ROLE}
+                    size="icon"
+                    className="w-10"
+                  >
+                    <LuTrash className="size-6" />
+                  </Button>
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })
+        )}
       </Card>
       <ConfirmDialog
         title={t('Are you sure to remove this collaborator?')}

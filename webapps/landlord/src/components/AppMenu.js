@@ -22,6 +22,7 @@ import {
 } from './ui/sheet';
 import { useCallback, useContext, useEffect, useState } from 'react';
 import { BsReceipt } from 'react-icons/bs';
+import { FaFaucetDrip } from 'react-icons/fa6';
 import { Button } from './ui/button';
 import { cn } from '../utils';
 import config from '../config';
@@ -101,7 +102,7 @@ const menuItems = [
     key: 'utilities',
     labelId: 'Utilities',
     pathname: '/utilities',
-    Icon: LuWrench,
+    Icon: FaFaucetDrip,
     dataCy: 'utilitiesNav'
   },
   {
