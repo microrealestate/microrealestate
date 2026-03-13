@@ -847,14 +847,7 @@ function ProjectsPanel() {
   const [projects, setProjects] = useState([]);
   const [projectsByPropertyId, setProjectsByPropertyId] = useState({});
   const [loading, setLoading] = useState(false);
-  const [showCreateForm, setShowCreateForm] = useState(false);
-  const [newProject, setNewProject] = useState({
-    title: '',
-    description: '',
-    status: 'planned',
-    startDate: '',
-    endDate: ''
-  });
+  const organizationSlug = String(router.query.organization || '');
 
   const fetchProjects = useCallback(async () => {
     if (!store.property.selected?._id) return;
@@ -938,50 +931,20 @@ function ProjectsPanel() {
     fetchProjects();
   }, [fetchProjects]);
 
-  const handleCreateProject = async () => {
-    if (!newProject.title) {
-      toast.error(t('Project title is required'));
-      return;
-    }
+  const totals = useMemo(() => {
+    const completed = projects.filter(
+      (project) => project.status === 'completed'
+    ).length;
+    const active = projects.filter((project) =>
+      ['planned', 'in-progress', 'on-hold'].includes(project.status)
+    ).length;
 
-    const payload = {
-      ...newProject,
-      targetType: 'property',
-      targetId: store.property.selected._id
+    return {
+      total: projects.length,
+      completed,
+      active
     };
-
-    if (!payload.startDate) {
-      delete payload.startDate;
-    }
-
-    if (!payload.endDate) {
-      delete payload.endDate;
-    }
-
-    try {
-      await apiFetcher().post('/projects', payload, {
-        baseURL: '/api/v2'
-      });
-      toast.success(t('Project created successfully'));
-      setShowCreateForm(false);
-      setNewProject({
-        title: '',
-        description: '',
-        status: 'planned',
-        startDate: '',
-        endDate: ''
-      });
-      fetchProjects();
-    } catch (error) {
-      const errorMessage = error?.response?.data?.message;
-      const status = error?.response?.status;
-      toast.error(
-        errorMessage || status
-          ? `${t('Failed to create project')}: ${errorMessage || status}`
-          : `${t('Failed to create project')}: ${error?.message || 'unknown error'}`
-      );
-    }
-  };
+  }, [projects]);
 
   const statusColors = {
     planned: 'bg-muted text-foreground',
@@ -993,85 +956,39 @@ function ProjectsPanel() {
 
   return (
     <Card className="p-6 space-y-4">
-      <div className="flex justify-between items-center">
-        <h3 className="text-sm font-semibold">{t('Projects')}</h3>
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h3 className="text-sm font-semibold">{t('Projects report')}</h3>
+          <p className="text-xs text-muted-foreground">
+            {t(
+              'Project entry is managed from the Projects menu so all projects stay in one workflow.'
+            )}
+          </p>
+        </div>
         <button
-          onClick={() => setShowCreateForm(!showCreateForm)}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+          type="button"
+          className="px-3 py-2 border rounded text-sm inline-flex items-center gap-2 hover:bg-muted"
+          onClick={() => router.push(`/${organizationSlug}/projects`)}
+          disabled={!organizationSlug}
         >
-          {showCreateForm ? t('Cancel') : t('New Project')}
+          {t('Open projects')}
         </button>
       </div>
 
-      {showCreateForm && (
-        <div className="border rounded p-4 space-y-3">
-          <input
-            type="text"
-            value={newProject.title}
-            onChange={(e) =>
-              setNewProject({ ...newProject, title: e.target.value })
-            }
-            placeholder={t('Project title')}
-            className="w-full px-3 py-2 border rounded"
-          />
-          <textarea
-            value={newProject.description}
-            onChange={(e) =>
-              setNewProject({ ...newProject, description: e.target.value })
-            }
-            placeholder={t('Description')}
-            className="w-full px-3 py-2 border rounded"
-            rows={3}
-          />
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">
-                {t('Start Date')}
-              </label>
-              <input
-                type="date"
-                value={newProject.startDate}
-                onChange={(e) =>
-                  setNewProject({ ...newProject, startDate: e.target.value })
-                }
-                className="w-full px-3 py-2 border rounded"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">
-                {t('End Date')}
-              </label>
-              <input
-                type="date"
-                value={newProject.endDate}
-                onChange={(e) =>
-                  setNewProject({ ...newProject, endDate: e.target.value })
-                }
-                className="w-full px-3 py-2 border rounded"
-              />
-            </div>
-          </div>
-          <select
-            value={newProject.status}
-            onChange={(e) =>
-              setNewProject({ ...newProject, status: e.target.value })
-            }
-            className="w-full px-3 py-2 border rounded"
-          >
-            <option value="planned">{t('Planned')}</option>
-            <option value="in-progress">{t('In Progress')}</option>
-            <option value="completed">{t('Completed')}</option>
-            <option value="on-hold">{t('On Hold')}</option>
-            <option value="cancelled">{t('Cancelled')}</option>
-          </select>
-          <button
-            onClick={handleCreateProject}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
-          >
-            {t('Create Project')}
-          </button>
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+        <div className="rounded border p-3">
+          <div className="text-xs text-muted-foreground">{t('Total')}</div>
+          <div className="text-lg font-semibold">{totals.total}</div>
         </div>
-      )}
+        <div className="rounded border p-3">
+          <div className="text-xs text-muted-foreground">{t('Active')}</div>
+          <div className="text-lg font-semibold">{totals.active}</div>
+        </div>
+        <div className="rounded border p-3">
+          <div className="text-xs text-muted-foreground">{t('Completed')}</div>
+          <div className="text-lg font-semibold">{totals.completed}</div>
+        </div>
+      </div>
 
       {loading ? (
         <div className="text-sm text-muted-foreground">{t('Loading...')}</div>

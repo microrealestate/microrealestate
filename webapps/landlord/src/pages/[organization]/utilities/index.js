@@ -1,10 +1,5 @@
-import {
-  LuExternalLink,
-  LuPlus,
-  LuSearch,
-  LuTrash2,
-  LuWrench
-} from 'react-icons/lu';
+import { FaDroplet, FaFaucet } from 'react-icons/fa6';
+import { LuExternalLink, LuPlus, LuSearch, LuTrash2 } from 'react-icons/lu';
 import { useEffect, useMemo, useState } from 'react';
 import { apiFetcher } from '../../../utils/fetch';
 import { Button } from '../../../components/ui/button';
@@ -127,6 +122,15 @@ function formatPercentage(value) {
   return `${parsed.toFixed(2)}%`;
 }
 
+function UtilitiesHeaderIcon() {
+  return (
+    <span className="relative inline-flex size-5 items-center justify-center">
+      <FaFaucet className="size-full text-muted-foreground" />
+      <FaDroplet className="absolute right-[-3px] top-[94%] size-2 text-sky-500" />
+    </span>
+  );
+}
+
 function UtilitiesPage() {
   const { t } = useTranslation('common');
   const router = useRouter();
@@ -138,6 +142,7 @@ function UtilitiesPage() {
   const [billFile, setBillFile] = useState(null);
   const [customCategories, setCustomCategories] = useState([]);
   const [hiddenCategories, setHiddenCategories] = useState([]);
+  const [utilitiesTab, setUtilitiesTab] = useState('bills');
   const [accountDraft, setAccountDraft] = useState(getInitialAccountDraft());
   const [billDraft, setBillDraft] = useState(getInitialBillDraft());
 
@@ -699,7 +704,7 @@ function UtilitiesPage() {
       <Card className="p-6 space-y-6">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
-            <LuWrench className="size-5" />
+            <UtilitiesHeaderIcon />
             <h1 className="text-2xl font-bold">{t('Utilities')}</h1>
           </div>
           <div className="text-sm text-muted-foreground">
@@ -709,534 +714,560 @@ function UtilitiesPage() {
           </div>
         </div>
 
-        <div className="rounded-lg border p-4 space-y-4">
-          <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2 className="text-base font-semibold">
-                {t('Utility account setup')}
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                {t(
-                  'Save an account number once, assign percentages to properties or sub properties, and reuse it when you add bills.'
-                )}
-              </p>
-            </div>
-            {accountDraft.id ? (
-              <Button variant="outline" onClick={resetAccountDraft}>
-                {t('Clear')}
-              </Button>
-            ) : null}
-          </div>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant={utilitiesTab === 'accounts' ? 'default' : 'outline'}
+            onClick={() => setUtilitiesTab('accounts')}
+          >
+            {t('Utility account setup')}
+          </Button>
+          <Button
+            variant={utilitiesTab === 'bills' ? 'default' : 'outline'}
+            onClick={() => setUtilitiesTab('bills')}
+          >
+            {t('Add utility bill')}
+          </Button>
+        </div>
 
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-            <div>
-              <label className="text-xs text-muted-foreground">
-                {t('Account number')}
-              </label>
-              <Input
-                type="text"
-                value={accountDraft.accountNumber}
-                list="utility-account-number-options"
-                onChange={(event) =>
-                  setAccountDraft((previous) => ({
-                    ...previous,
-                    accountNumber: event.target.value
-                  }))
-                }
-              />
-              <datalist id="utility-account-number-options">
-                {accountNumberSuggestions.map((accountNumber) => (
-                  <option key={accountNumber} value={accountNumber} />
-                ))}
-              </datalist>
+        {utilitiesTab === 'accounts' ? (
+          <div className="rounded-lg border p-4 space-y-4">
+            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-base font-semibold">
+                  {t('Utility account setup')}
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  {t(
+                    'Save an account number once, assign percentages to properties or sub properties, and reuse it when you add bills.'
+                  )}
+                </p>
+              </div>
+              {accountDraft.id ? (
+                <Button variant="outline" onClick={resetAccountDraft}>
+                  {t('Clear')}
+                </Button>
+              ) : null}
             </div>
-            <div>
-              <label className="text-xs text-muted-foreground">
-                {t('Category')}
-              </label>
-              <select
-                value={accountDraft.type}
-                onChange={(event) =>
-                  setAccountDraft((previous) => ({
-                    ...previous,
-                    type: event.target.value
-                  }))
-                }
-                className="w-full px-3 py-2 border rounded-md text-sm bg-background"
-              >
-                {createCategoryOptions.map((type) => (
-                  <option key={type} value={type}>
-                    {type === 'custom' ? t('Custom category') : type}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="text-xs text-muted-foreground">
-                {t('Provider')}
-              </label>
-              <Input
-                type="text"
-                value={accountDraft.provider}
-                list="utility-provider-options"
-                onChange={(event) =>
-                  setAccountDraft((previous) => ({
-                    ...previous,
-                    provider: event.target.value
-                  }))
-                }
-              />
-            </div>
-            {accountDraft.type === 'custom' ? (
+
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
               <div>
                 <label className="text-xs text-muted-foreground">
-                  {t('New category name')}
+                  {t('Account number')}
                 </label>
                 <Input
                   type="text"
-                  placeholder={t('e.g. common electric')}
-                  value={accountDraft.customType}
+                  value={accountDraft.accountNumber}
+                  list="utility-account-number-options"
                   onChange={(event) =>
                     setAccountDraft((previous) => ({
                       ...previous,
-                      customType: event.target.value
+                      accountNumber: event.target.value
+                    }))
+                  }
+                />
+                <datalist id="utility-account-number-options">
+                  {accountNumberSuggestions.map((accountNumber) => (
+                    <option key={accountNumber} value={accountNumber} />
+                  ))}
+                </datalist>
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground">
+                  {t('Category')}
+                </label>
+                <select
+                  value={accountDraft.type}
+                  onChange={(event) =>
+                    setAccountDraft((previous) => ({
+                      ...previous,
+                      type: event.target.value
+                    }))
+                  }
+                  className="w-full px-3 py-2 border rounded-md text-sm bg-background"
+                >
+                  {createCategoryOptions.map((type) => (
+                    <option key={type} value={type}>
+                      {type === 'custom' ? t('Custom category') : type}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground">
+                  {t('Provider')}
+                </label>
+                <Input
+                  type="text"
+                  value={accountDraft.provider}
+                  list="utility-provider-options"
+                  onChange={(event) =>
+                    setAccountDraft((previous) => ({
+                      ...previous,
+                      provider: event.target.value
                     }))
                   }
                 />
               </div>
-            ) : null}
-            <div className="md:col-span-2">
-              <label className="text-xs text-muted-foreground">
-                {t('Notes')}
-              </label>
-              <Input
-                type="text"
-                value={accountDraft.notes}
-                onChange={(event) =>
-                  setAccountDraft((previous) => ({
-                    ...previous,
-                    notes: event.target.value
-                  }))
-                }
-              />
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-sm font-medium">{t('Allocations')}</div>
-                <div className="text-xs text-muted-foreground">
-                  {t('Percentages must total 100%')}
-                </div>
-              </div>
-              <Button variant="outline" onClick={handleAddAllocationRow}>
-                <LuPlus className="size-4 mr-2" />
-                {t('Add allocation')}
-              </Button>
-            </div>
-
-            <div className="space-y-2">
-              {accountDraft.allocations.map((allocation, index) => (
-                <div
-                  key={`${index}-${allocation.propertyId}`}
-                  className="grid grid-cols-1 gap-2 md:grid-cols-[minmax(0,2fr)_140px_80px]"
-                >
-                  <select
-                    value={allocation.propertyId}
-                    onChange={(event) =>
-                      handleAccountAllocationChange(
-                        index,
-                        'propertyId',
-                        event.target.value
-                      )
-                    }
-                    className="w-full px-3 py-2 border rounded-md text-sm bg-background"
-                  >
-                    <option value="">
-                      {t('Select property or sub property')}
-                    </option>
-                    {propertyOptions.map((property) => (
-                      <option key={property._id} value={property._id}>
-                        {getPropertyLabel(property, propertyById)}
-                      </option>
-                    ))}
-                  </select>
-                  <Input
-                    type="number"
-                    min="0"
-                    max="100"
-                    step="0.01"
-                    placeholder={t('Percentage')}
-                    value={allocation.percentage}
-                    onChange={(event) =>
-                      handleAccountAllocationChange(
-                        index,
-                        'percentage',
-                        event.target.value
-                      )
-                    }
-                  />
-                  <Button
-                    variant="outline"
-                    onClick={() => handleRemoveAllocationRow(index)}
-                  >
-                    <LuTrash2 className="size-4 mr-2" />
-                    {t('Remove')}
-                  </Button>
-                </div>
-              ))}
-            </div>
-
-            <div
-              className={`text-sm ${
-                Math.abs(accountAllocationTotal - 100) <= 0.01
-                  ? 'text-muted-foreground'
-                  : 'text-red-600'
-              }`}
-            >
-              {t('Total allocation')}:{' '}
-              {formatPercentage(accountAllocationTotal)}
-            </div>
-          </div>
-
-          <div className="flex justify-end">
-            <Button onClick={handleSaveUtilityAccount} disabled={savingAccount}>
-              {savingAccount
-                ? t('Saving...')
-                : accountDraft.id
-                  ? t('Update account')
-                  : t('Save account')}
-            </Button>
-          </div>
-
-          <div className="space-y-2 border-t pt-4">
-            <div className="text-sm font-medium">{t('Saved accounts')}</div>
-            {!utilityAccounts.length ? (
-              <div className="text-sm text-muted-foreground">
-                {t('No utility accounts saved yet')}
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {utilityAccounts.map((utilityAccount) => (
-                  <div
-                    key={utilityAccount._id}
-                    className="rounded-lg border p-3 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between"
-                  >
-                    <div className="space-y-1">
-                      <div className="text-sm font-semibold">
-                        {utilityAccount.accountNumber} • {utilityAccount.type}
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        {utilityAccount.provider || t('No provider')}
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {(utilityAccount.allocations || [])
-                          .map((allocation) => {
-                            const property =
-                              propertyById[String(allocation.propertyId)];
-                            return `${getPropertyLabel(property, propertyById)} (${formatPercentage(allocation.percentage)})`;
-                          })
-                          .join(' • ')}
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        onClick={() => handleEditUtilityAccount(utilityAccount)}
-                      >
-                        {t('Edit')}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() =>
-                          handleDeleteUtilityAccount(utilityAccount._id)
-                        }
-                      >
-                        {t('Delete')}
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="rounded-lg border p-4 space-y-4">
-          <div>
-            <h2 className="text-base font-semibold">{t('Add utility bill')}</h2>
-            <p className="text-sm text-muted-foreground">
-              {t(
-                'Choose a saved account number to distribute one bill across its assigned properties, or leave it blank for a manual single-property entry.'
-              )}
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-            <div>
-              <label className="text-xs text-muted-foreground">
-                {t('Saved account number')}
-              </label>
-              <select
-                value={billDraft.utilityAccountId}
-                onChange={(event) => {
-                  const nextUtilityAccountId = event.target.value;
-                  const utilityAccount =
-                    utilityAccounts.find(
-                      (account) => account._id === nextUtilityAccountId
-                    ) || null;
-
-                  if (!utilityAccount) {
-                    setBillDraft((previous) => ({
-                      ...previous,
-                      utilityAccountId: '',
-                      propertyId: '',
-                      type: 'water',
-                      customType: '',
-                      provider: '',
-                      accountNumber: ''
-                    }));
-                    return;
-                  }
-
-                  setBillDraft((previous) => ({
-                    ...previous,
-                    utilityAccountId: utilityAccount._id,
-                    propertyId: '',
-                    type: utilityAccount.type,
-                    customType: '',
-                    provider: utilityAccount.provider || '',
-                    accountNumber: utilityAccount.accountNumber || ''
-                  }));
-                }}
-                className="w-full px-3 py-2 border rounded-md text-sm bg-background"
-              >
-                <option value="">{t('Manual entry')}</option>
-                {utilityAccounts.map((utilityAccount) => (
-                  <option key={utilityAccount._id} value={utilityAccount._id}>
-                    {utilityAccount.accountNumber} • {utilityAccount.type}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="text-xs text-muted-foreground">
-                {t('Billing month')}
-              </label>
-              <Input
-                type="month"
-                value={billDraft.billingMonth}
-                onChange={(event) =>
-                  setBillDraft((previous) => ({
-                    ...previous,
-                    billingMonth: event.target.value
-                  }))
-                }
-              />
-            </div>
-            <div>
-              <label className="text-xs text-muted-foreground">
-                {t('Amount')}
-              </label>
-              <Input
-                type="number"
-                value={billDraft.amount}
-                onChange={(event) =>
-                  setBillDraft((previous) => ({
-                    ...previous,
-                    amount: event.target.value
-                  }))
-                }
-              />
-            </div>
-
-            {billDraft.utilityAccountId ? (
-              <div className="md:col-span-3 rounded-md border bg-muted/20 p-3 space-y-1">
-                <div className="text-sm font-medium">
-                  {billDraft.accountNumber} • {billDraft.type}
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  {billDraft.provider || t('No provider')}
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  {(selectedUtilityAccount?.allocations || [])
-                    .map((allocation) => {
-                      const property =
-                        propertyById[String(allocation.propertyId)];
-                      return `${getPropertyLabel(property, propertyById)} (${formatPercentage(allocation.percentage)})`;
-                    })
-                    .join(' • ')}
-                </div>
-              </div>
-            ) : (
-              <>
+              {accountDraft.type === 'custom' ? (
                 <div>
                   <label className="text-xs text-muted-foreground">
-                    {t('Property')}
-                  </label>
-                  <select
-                    value={billDraft.propertyId}
-                    onChange={(event) =>
-                      setBillDraft((previous) => ({
-                        ...previous,
-                        propertyId: event.target.value
-                      }))
-                    }
-                    className="w-full px-3 py-2 border rounded-md text-sm bg-background"
-                  >
-                    <option value="">{t('Select property')}</option>
-                    {propertyOptions.map((property) => (
-                      <option key={property._id} value={property._id}>
-                        {getPropertyLabel(property, propertyById)}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="text-xs text-muted-foreground">
-                    {t('Category')}
-                  </label>
-                  <select
-                    value={billDraft.type}
-                    onChange={(event) =>
-                      setBillDraft((previous) => ({
-                        ...previous,
-                        type: event.target.value
-                      }))
-                    }
-                    className="w-full px-3 py-2 border rounded-md text-sm bg-background"
-                  >
-                    {createCategoryOptions.map((type) => (
-                      <option key={type} value={type}>
-                        {type === 'custom' ? t('Custom category') : type}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="text-xs text-muted-foreground">
-                    {t('Provider')}
+                    {t('New category name')}
                   </label>
                   <Input
                     type="text"
-                    value={billDraft.provider}
-                    list="utility-provider-options"
+                    placeholder={t('e.g. common electric')}
+                    value={accountDraft.customType}
                     onChange={(event) =>
-                      setBillDraft((previous) => ({
+                      setAccountDraft((previous) => ({
                         ...previous,
-                        provider: event.target.value
+                        customType: event.target.value
                       }))
                     }
                   />
                 </div>
-                {billDraft.type === 'custom' ? (
+              ) : null}
+              <div className="md:col-span-2">
+                <label className="text-xs text-muted-foreground">
+                  {t('Notes')}
+                </label>
+                <Input
+                  type="text"
+                  value={accountDraft.notes}
+                  onChange={(event) =>
+                    setAccountDraft((previous) => ({
+                      ...previous,
+                      notes: event.target.value
+                    }))
+                  }
+                />
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-sm font-medium">{t('Allocations')}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {t('Percentages must total 100%')}
+                  </div>
+                </div>
+                <Button variant="outline" onClick={handleAddAllocationRow}>
+                  <LuPlus className="size-4 mr-2" />
+                  {t('Add allocation')}
+                </Button>
+              </div>
+
+              <div className="space-y-2">
+                {accountDraft.allocations.map((allocation, index) => (
+                  <div
+                    key={`${index}-${allocation.propertyId}`}
+                    className="grid grid-cols-1 gap-2 md:grid-cols-[minmax(0,2fr)_140px_80px]"
+                  >
+                    <select
+                      value={allocation.propertyId}
+                      onChange={(event) =>
+                        handleAccountAllocationChange(
+                          index,
+                          'propertyId',
+                          event.target.value
+                        )
+                      }
+                      className="w-full px-3 py-2 border rounded-md text-sm bg-background"
+                    >
+                      <option value="">
+                        {t('Select property or sub property')}
+                      </option>
+                      {propertyOptions.map((property) => (
+                        <option key={property._id} value={property._id}>
+                          {getPropertyLabel(property, propertyById)}
+                        </option>
+                      ))}
+                    </select>
+                    <Input
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="0.01"
+                      placeholder={t('Percentage')}
+                      value={allocation.percentage}
+                      onChange={(event) =>
+                        handleAccountAllocationChange(
+                          index,
+                          'percentage',
+                          event.target.value
+                        )
+                      }
+                    />
+                    <Button
+                      variant="outline"
+                      onClick={() => handleRemoveAllocationRow(index)}
+                    >
+                      <LuTrash2 className="size-4 mr-2" />
+                      {t('Remove')}
+                    </Button>
+                  </div>
+                ))}
+              </div>
+
+              <div
+                className={`text-sm ${
+                  Math.abs(accountAllocationTotal - 100) <= 0.01
+                    ? 'text-muted-foreground'
+                    : 'text-red-600'
+                }`}
+              >
+                {t('Total allocation')}:{' '}
+                {formatPercentage(accountAllocationTotal)}
+              </div>
+            </div>
+
+            <div className="flex justify-end">
+              <Button
+                onClick={handleSaveUtilityAccount}
+                disabled={savingAccount}
+              >
+                {savingAccount
+                  ? t('Saving...')
+                  : accountDraft.id
+                    ? t('Update account')
+                    : t('Save account')}
+              </Button>
+            </div>
+
+            <div className="space-y-2 border-t pt-4">
+              <div className="text-sm font-medium">{t('Saved accounts')}</div>
+              {!utilityAccounts.length ? (
+                <div className="text-sm text-muted-foreground">
+                  {t('No utility accounts saved yet')}
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {utilityAccounts.map((utilityAccount) => (
+                    <div
+                      key={utilityAccount._id}
+                      className="rounded-lg border p-3 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between"
+                    >
+                      <div className="space-y-1">
+                        <div className="text-sm font-semibold">
+                          {utilityAccount.accountNumber} • {utilityAccount.type}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          {utilityAccount.provider || t('No provider')}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {(utilityAccount.allocations || [])
+                            .map((allocation) => {
+                              const property =
+                                propertyById[String(allocation.propertyId)];
+                              return `${getPropertyLabel(property, propertyById)} (${formatPercentage(allocation.percentage)})`;
+                            })
+                            .join(' • ')}
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          onClick={() =>
+                            handleEditUtilityAccount(utilityAccount)
+                          }
+                        >
+                          {t('Edit')}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() =>
+                            handleDeleteUtilityAccount(utilityAccount._id)
+                          }
+                        >
+                          {t('Delete')}
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        ) : null}
+
+        {utilitiesTab === 'bills' ? (
+          <div className="rounded-lg border p-4 space-y-4">
+            <div>
+              <h2 className="text-base font-semibold">
+                {t('Add utility bill')}
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                {t(
+                  'Choose a saved account number to distribute one bill across its assigned properties, or leave it blank for a manual single-property entry.'
+                )}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+              <div>
+                <label className="text-xs text-muted-foreground">
+                  {t('Saved account number')}
+                </label>
+                <select
+                  value={billDraft.utilityAccountId}
+                  onChange={(event) => {
+                    const nextUtilityAccountId = event.target.value;
+                    const utilityAccount =
+                      utilityAccounts.find(
+                        (account) => account._id === nextUtilityAccountId
+                      ) || null;
+
+                    if (!utilityAccount) {
+                      setBillDraft((previous) => ({
+                        ...previous,
+                        utilityAccountId: '',
+                        propertyId: '',
+                        type: 'water',
+                        customType: '',
+                        provider: '',
+                        accountNumber: ''
+                      }));
+                      return;
+                    }
+
+                    setBillDraft((previous) => ({
+                      ...previous,
+                      utilityAccountId: utilityAccount._id,
+                      propertyId: '',
+                      type: utilityAccount.type,
+                      customType: '',
+                      provider: utilityAccount.provider || '',
+                      accountNumber: utilityAccount.accountNumber || ''
+                    }));
+                  }}
+                  className="w-full px-3 py-2 border rounded-md text-sm bg-background"
+                >
+                  <option value="">{t('Manual entry')}</option>
+                  {utilityAccounts.map((utilityAccount) => (
+                    <option key={utilityAccount._id} value={utilityAccount._id}>
+                      {utilityAccount.accountNumber} • {utilityAccount.type}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground">
+                  {t('Billing month')}
+                </label>
+                <Input
+                  type="month"
+                  value={billDraft.billingMonth}
+                  onChange={(event) =>
+                    setBillDraft((previous) => ({
+                      ...previous,
+                      billingMonth: event.target.value
+                    }))
+                  }
+                />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground">
+                  {t('Amount')}
+                </label>
+                <Input
+                  type="number"
+                  value={billDraft.amount}
+                  onChange={(event) =>
+                    setBillDraft((previous) => ({
+                      ...previous,
+                      amount: event.target.value
+                    }))
+                  }
+                />
+              </div>
+
+              {billDraft.utilityAccountId ? (
+                <div className="md:col-span-3 rounded-md border bg-muted/20 p-3 space-y-1">
+                  <div className="text-sm font-medium">
+                    {billDraft.accountNumber} • {billDraft.type}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    {billDraft.provider || t('No provider')}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {(selectedUtilityAccount?.allocations || [])
+                      .map((allocation) => {
+                        const property =
+                          propertyById[String(allocation.propertyId)];
+                        return `${getPropertyLabel(property, propertyById)} (${formatPercentage(allocation.percentage)})`;
+                      })
+                      .join(' • ')}
+                  </div>
+                </div>
+              ) : (
+                <>
                   <div>
                     <label className="text-xs text-muted-foreground">
-                      {t('New category name')}
+                      {t('Property')}
                     </label>
-                    <Input
-                      type="text"
-                      placeholder={t('e.g. pest control')}
-                      value={billDraft.customType}
+                    <select
+                      value={billDraft.propertyId}
                       onChange={(event) =>
                         setBillDraft((previous) => ({
                           ...previous,
-                          customType: event.target.value
+                          propertyId: event.target.value
+                        }))
+                      }
+                      className="w-full px-3 py-2 border rounded-md text-sm bg-background"
+                    >
+                      <option value="">{t('Select property')}</option>
+                      {propertyOptions.map((property) => (
+                        <option key={property._id} value={property._id}>
+                          {getPropertyLabel(property, propertyById)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground">
+                      {t('Category')}
+                    </label>
+                    <select
+                      value={billDraft.type}
+                      onChange={(event) =>
+                        setBillDraft((previous) => ({
+                          ...previous,
+                          type: event.target.value
+                        }))
+                      }
+                      className="w-full px-3 py-2 border rounded-md text-sm bg-background"
+                    >
+                      {createCategoryOptions.map((type) => (
+                        <option key={type} value={type}>
+                          {type === 'custom' ? t('Custom category') : type}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground">
+                      {t('Provider')}
+                    </label>
+                    <Input
+                      type="text"
+                      value={billDraft.provider}
+                      list="utility-provider-options"
+                      onChange={(event) =>
+                        setBillDraft((previous) => ({
+                          ...previous,
+                          provider: event.target.value
                         }))
                       }
                     />
                   </div>
-                ) : null}
-                <div>
-                  <label className="text-xs text-muted-foreground">
-                    {t('Account number')}
-                  </label>
-                  <Input
-                    type="text"
-                    value={billDraft.accountNumber}
-                    list="utility-account-number-options"
-                    onChange={(event) =>
-                      setBillDraft((previous) => ({
-                        ...previous,
-                        accountNumber: event.target.value
-                      }))
-                    }
-                  />
-                </div>
-              </>
-            )}
+                  {billDraft.type === 'custom' ? (
+                    <div>
+                      <label className="text-xs text-muted-foreground">
+                        {t('New category name')}
+                      </label>
+                      <Input
+                        type="text"
+                        placeholder={t('e.g. pest control')}
+                        value={billDraft.customType}
+                        onChange={(event) =>
+                          setBillDraft((previous) => ({
+                            ...previous,
+                            customType: event.target.value
+                          }))
+                        }
+                      />
+                    </div>
+                  ) : null}
+                  <div>
+                    <label className="text-xs text-muted-foreground">
+                      {t('Account number')}
+                    </label>
+                    <Input
+                      type="text"
+                      value={billDraft.accountNumber}
+                      list="utility-account-number-options"
+                      onChange={(event) =>
+                        setBillDraft((previous) => ({
+                          ...previous,
+                          accountNumber: event.target.value
+                        }))
+                      }
+                    />
+                  </div>
+                </>
+              )}
 
-            <div>
-              <label className="text-xs text-muted-foreground">
-                {t('Due date')}
-              </label>
-              <Input
-                type="date"
-                value={billDraft.dueDate}
-                onChange={(event) =>
-                  setBillDraft((previous) => ({
-                    ...previous,
-                    dueDate: event.target.value
-                  }))
-                }
-              />
+              <div>
+                <label className="text-xs text-muted-foreground">
+                  {t('Due date')}
+                </label>
+                <Input
+                  type="date"
+                  value={billDraft.dueDate}
+                  onChange={(event) =>
+                    setBillDraft((previous) => ({
+                      ...previous,
+                      dueDate: event.target.value
+                    }))
+                  }
+                />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground">
+                  {t('Paid date')}
+                </label>
+                <Input
+                  type="date"
+                  value={billDraft.paidDate}
+                  onChange={(event) =>
+                    setBillDraft((previous) => ({
+                      ...previous,
+                      paidDate: event.target.value
+                    }))
+                  }
+                />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground">
+                  {t('Bill file')}
+                </label>
+                <Input
+                  type="file"
+                  onChange={(event) =>
+                    setBillFile(event.target.files?.[0] || null)
+                  }
+                />
+              </div>
+              <div className="md:col-span-3">
+                <label className="text-xs text-muted-foreground">
+                  {t('Notes')}
+                </label>
+                <Input
+                  type="text"
+                  value={billDraft.notes}
+                  onChange={(event) =>
+                    setBillDraft((previous) => ({
+                      ...previous,
+                      notes: event.target.value
+                    }))
+                  }
+                />
+              </div>
             </div>
-            <div>
-              <label className="text-xs text-muted-foreground">
-                {t('Paid date')}
-              </label>
-              <Input
-                type="date"
-                value={billDraft.paidDate}
-                onChange={(event) =>
-                  setBillDraft((previous) => ({
-                    ...previous,
-                    paidDate: event.target.value
-                  }))
-                }
-              />
-            </div>
-            <div>
-              <label className="text-xs text-muted-foreground">
-                {t('Bill file')}
-              </label>
-              <Input
-                type="file"
-                onChange={(event) =>
-                  setBillFile(event.target.files?.[0] || null)
-                }
-              />
-            </div>
-            <div className="md:col-span-3">
-              <label className="text-xs text-muted-foreground">
-                {t('Notes')}
-              </label>
-              <Input
-                type="text"
-                value={billDraft.notes}
-                onChange={(event) =>
-                  setBillDraft((previous) => ({
-                    ...previous,
-                    notes: event.target.value
-                  }))
-                }
-              />
+
+            <datalist id="utility-provider-options">
+              {providerSuggestions.map((provider) => (
+                <option key={provider} value={provider} />
+              ))}
+            </datalist>
+
+            <div className="flex justify-end">
+              <Button onClick={handleCreateBill} disabled={submitting}>
+                {submitting ? t('Saving...') : t('Add bill')}
+              </Button>
             </div>
           </div>
-
-          <datalist id="utility-provider-options">
-            {providerSuggestions.map((provider) => (
-              <option key={provider} value={provider} />
-            ))}
-          </datalist>
-
-          <div className="flex justify-end">
-            <Button onClick={handleCreateBill} disabled={submitting}>
-              {submitting ? t('Saving...') : t('Add bill')}
-            </Button>
-          </div>
-        </div>
+        ) : null}
 
         <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
           <div className="md:col-span-2 relative">

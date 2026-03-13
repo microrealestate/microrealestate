@@ -1,3 +1,24 @@
+import config from '../config';
+import { StoreContext } from '../store';
+import { cn } from '../utils';
+import SideMenuButton from './SideMenuButton';
+import { Button } from './ui/button';
+import { Separator } from './ui/separator';
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger
+} from './ui/sheet';
+import moment from 'moment';
+import { useRouter } from 'next/router';
+import useTranslation from 'next-translate/useTranslation';
+import { useCallback, useContext, useEffect, useState } from 'react';
+import { BsReceipt } from 'react-icons/bs';
+import { FaDroplet, FaFaucet } from 'react-icons/fa6';
 import {
   LuBuilding2,
   LuClipboardList,
@@ -11,27 +32,6 @@ import {
   LuWallet,
   LuWrench
 } from 'react-icons/lu';
-import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger
-} from './ui/sheet';
-import { useCallback, useContext, useEffect, useState } from 'react';
-import { BsReceipt } from 'react-icons/bs';
-import { FaFaucetDrip } from 'react-icons/fa6';
-import { Button } from './ui/button';
-import { cn } from '../utils';
-import config from '../config';
-import moment from 'moment';
-import { Separator } from './ui/separator';
-import SideMenuButton from './SideMenuButton';
-import { StoreContext } from '../store';
-import { useRouter } from 'next/router';
-import useTranslation from 'next-translate/useTranslation';
 
 function CityRentEstimatesIcon({ className }) {
   return (
@@ -43,6 +43,20 @@ function CityRentEstimatesIcon({ className }) {
     >
       <LuBuilding2 className="size-full" />
       <LuDollarSign className="absolute -bottom-1 -right-1 size-3.5 rounded-full bg-background text-emerald-600" />
+    </span>
+  );
+}
+
+function UtilitiesIcon({ className }) {
+  return (
+    <span
+      className={cn(
+        'relative inline-flex items-center justify-center',
+        className
+      )}
+    >
+      <FaFaucet className="size-full text-muted-foreground" />
+      <FaDroplet className="absolute right-[-3px] top-[92%] size-2.5 text-sky-500" />
     </span>
   );
 }
@@ -102,7 +116,7 @@ const menuItems = [
     key: 'utilities',
     labelId: 'Utilities',
     pathname: '/utilities',
-    Icon: FaFaucetDrip,
+    Icon: UtilitiesIcon,
     dataCy: 'utilitiesNav'
   },
   {
