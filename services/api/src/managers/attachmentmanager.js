@@ -22,6 +22,12 @@ async function _validateTargetAccess(targetType, targetId, realmId) {
         realmId
       });
       break;
+    case 'property_tax_statement':
+      targetExists = await Collections.PropertyTaxStatement.exists({
+        _id: targetId,
+        realmId
+      });
+      break;
     case 'contact':
     case 'tenant':
       targetExists = await Collections.Tenant.exists({

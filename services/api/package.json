@@ -18,6 +18,7 @@
     "watch:common": "tsc --build ../common/tsconfig.json --watch --preserveWatchOutput",
     "watch:service": "nodemon -w src --inspect=0.0.0.0:9226 --no-colours ./src/index.js",
     "dev": "npm-run-all build --parallel watch:types watch:common watch:service",
+    "backfill:property-tax": "node ./scripts/backfillPropertyTaxStatements.js",
     "eslint": "eslint .",
     "lint": "npm-run-all transpile eslint",
     "format": "prettier --write '**/*.{js,jsx,ts,tsx,json,css}'"
@@ -36,7 +37,8 @@
     "moment": "2.29.4",
     "mongobackup": "0.3.5",
     "multer": "1.4.5-lts.1",
-    "nanoid": "5.1.0"
+    "nanoid": "5.1.0",
+    "pdf-parse": "1.1.1"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "7.15.0",

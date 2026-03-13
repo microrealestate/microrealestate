@@ -297,6 +297,7 @@ export namespace CollectionTypes {
     targetType:
       | 'property'
       | 'utility_account'
+      | 'property_tax_statement'
       | 'utility'
       | 'note'
       | 'project'
@@ -319,6 +320,7 @@ export namespace CollectionTypes {
       | 'county_record'
       | 'property_map'
       | 'utility_bill'
+      | 'tax_payment_confirmation'
       | 'note_attachment'
       | 'project_attachment'
       | 'work_record_attachment'
@@ -350,7 +352,8 @@ export namespace CollectionTypes {
     | 'contact'
     | 'contract'
     | 'project'
-    | 'contractor';
+    | 'contractor'
+    | 'property_tax_statement';
 
   export type Note = {
     _id?: string;
@@ -503,6 +506,60 @@ export namespace CollectionTypes {
     attachmentIds?: string[];
     splitMethod: 'equal' | 'percentage';
     splitItems: UtilitySplit[];
+    createdAt?: Date;
+    updatedAt?: Date;
+  };
+
+  export type PropertyTaxUnitSplit = {
+    subPropertyId: string;
+    percentage: number;
+  };
+
+  export type PropertyTaxPaymentConfirmation = {
+    paidOn: Date;
+    paidAmount: number;
+    feeAmount?: number;
+    paymentMethod?: string;
+    confirmationNumber?: string;
+    notes?: string;
+    attachmentIds?: string[];
+    createdAt?: Date;
+    createdBy?: string;
+  };
+
+  export type PropertyTaxStatement = {
+    _id?: string;
+    realmId: string;
+    propertyId: string;
+    taxYearLabel: string;
+    periodStart?: Date | null;
+    periodEnd?: Date | null;
+    accountNumber?: string;
+    mapNumber?: string;
+    rmvLandLastYear?: number;
+    rmvLandThisYear?: number;
+    rmvBuildingLastYear?: number;
+    rmvBuildingThisYear?: number;
+    rmvTotalLastYear?: number;
+    rmvTotalThisYear?: number;
+    assessedValueLastYear?: number;
+    assessedValueThisYear?: number;
+    propertyTaxesLastYear?: number;
+    propertyTaxesThisYear?: number;
+    taxBeforeDiscount?: number;
+    delinquentTaxes?: number;
+    totalAfterDiscount?: number;
+    landLeasedPercentage?: number;
+    buildingUnitSplits?: PropertyTaxUnitSplit[];
+    landUnitSplits?: PropertyTaxUnitSplit[];
+    estimatedIncreasePercentage?: number;
+    estimatedNextYearTotal?: number;
+    estimatedMonthlyCost?: number;
+    priorYearEstimatedTotal?: number | null;
+    priorYearVariance?: number | null;
+    notes?: string;
+    attachmentIds?: string[];
+    paymentConfirmations?: PropertyTaxPaymentConfirmation[];
     createdAt?: Date;
     updatedAt?: Date;
   };

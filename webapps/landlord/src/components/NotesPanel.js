@@ -659,7 +659,13 @@ export default function NotesPanel({ entityType, entityId }) {
 }
 
 NotesPanel.propTypes = {
-  entityType: PropTypes.oneOf(['property', 'contact', 'contract', 'project'])
-    .isRequired,
+  entityType: PropTypes.oneOf([
+    'property',
+    'contact',
+    'contract',
+    'project',
+    'contractor',
+    'property_tax_statement'
+  ]).isRequired,
   entityId: PropTypes.string.isRequired
 };

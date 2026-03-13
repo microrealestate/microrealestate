@@ -4,7 +4,14 @@ import { nanoid } from 'nanoid';
 import path from 'path';
 
 function ensureEntityType(entityType) {
-  const allowed = ['property', 'contact', 'contract', 'project', 'contractor'];
+  const allowed = [
+    'property',
+    'contact',
+    'contract',
+    'project',
+    'contractor',
+    'property_tax_statement'
+  ];
   if (!allowed.includes(entityType)) {
     const err = new Error(`Invalid entityType: ${entityType}`);
     err.status = 400;
@@ -49,6 +56,9 @@ async function validateEntityAccess(entityType, entityId, realmId) {
       // Contractor
       entity = await Collections.Contractor.findOne(query).lean();
       break;
+    case 'property_tax_statement':
+      entity = await Collections.PropertyTaxStatement.findOne(query).lean();
+      break;
     default:
       return false;
   }
@@ -65,7 +75,8 @@ async function enrichNotesWithLabels(notes, realmId) {
     contact: {},
     contract: {},
     project: {},
-    contractor: {}
+    contractor: {},
+    property_tax_statement: {}
   };
 
   // First pass: collect all entity IDs we need to look up
@@ -137,6 +148,19 @@ async function enrichNotesWithLabels(notes, realmId) {
         .lean();
       contractors.forEach((c) => {
         labelsByType.contractor[String(c._id)] = c.name;
+      });
+    }
+
+    if (Object.keys(labelsByType.property_tax_statement).length > 0) {
+      const statements = await Collections.PropertyTaxStatement.find({
+        _id: { $in: Object.keys(labelsByType.property_tax_statement) },
+        realmId: normalizedRealmId
+      })
+        .select('_id taxYearLabel')
+        .lean();
+      statements.forEach((statement) => {
+        labelsByType.property_tax_statement[String(statement._id)] =
+          statement.taxYearLabel || 'Tax statement';
       });
     }
   } catch (err) {

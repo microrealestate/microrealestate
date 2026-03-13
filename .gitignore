@@ -8,6 +8,8 @@ base.env*
 .vscode/ipch
 deploy-*.sh
 dist
+.examples
+
 
 # Logs
 logs

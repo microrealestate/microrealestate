@@ -20,7 +20,14 @@ const NoteSchema = new mongoose.Schema(
 
     entityType: {
       type: String,
-      enum: ['property', 'contact', 'contract', 'project'],
+      enum: [
+        'property',
+        'contact',
+        'contract',
+        'project',
+        'contractor',
+        'property_tax_statement'
+      ],
       index: true
     },
 

@@ -9,6 +9,7 @@ import * as notesManager from './managers/notesmanager.js';
 import * as occupantManager from './managers/occupantmanager.js';
 import * as projectManager from './managers/projectmanager.js';
 import * as propertyManager from './managers/propertymanager.js';
+import * as propertyTaxStatementManager from './managers/propertytaxstatementmanager.js';
 import * as realmManager from './managers/realmmanager.js';
 import * as rentManager from './managers/rentmanager.js';
 import * as utilityAccountManager from './managers/utilityaccountmanager.js';
@@ -264,6 +265,48 @@ export default function routes() {
     Middlewares.asyncWrapper(utilityAccountManager.remove)
   );
   router.use('/utility-accounts', utilityAccountsRouter);
+
+  const propertyTaxStatementsRouter = express.Router();
+  propertyTaxStatementsRouter.get(
+    '/',
+    Middlewares.asyncWrapper(propertyTaxStatementManager.all)
+  );
+  propertyTaxStatementsRouter.get(
+    '/report.csv',
+    Middlewares.asyncWrapper(propertyTaxStatementManager.reportCsv)
+  );
+  propertyTaxStatementsRouter.get(
+    '/:id',
+    Middlewares.asyncWrapper(propertyTaxStatementManager.one)
+  );
+  propertyTaxStatementsRouter.get(
+    '/:id/attachments/:attachmentId/parse',
+    Middlewares.asyncWrapper(
+      propertyTaxStatementManager.parseStatementAttachment
+    )
+  );
+  propertyTaxStatementsRouter.post(
+    '/parse-upload',
+    upload.single('file'),
+    Middlewares.asyncWrapper(propertyTaxStatementManager.parseUpload)
+  );
+  propertyTaxStatementsRouter.post(
+    '/',
+    Middlewares.asyncWrapper(propertyTaxStatementManager.add)
+  );
+  propertyTaxStatementsRouter.post(
+    '/:id/payment-confirmations',
+    Middlewares.asyncWrapper(propertyTaxStatementManager.addPaymentConfirmation)
+  );
+  propertyTaxStatementsRouter.patch(
+    '/:id',
+    Middlewares.asyncWrapper(propertyTaxStatementManager.update)
+  );
+  propertyTaxStatementsRouter.delete(
+    '/:id',
+    Middlewares.asyncWrapper(propertyTaxStatementManager.remove)
+  );
+  router.use('/property-tax-statements', propertyTaxStatementsRouter);
 
   const backupsRouter = express.Router();
   backupsRouter.post(

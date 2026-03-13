@@ -8,6 +8,7 @@ export { default as Document } from './document.js';
 export { default as Email } from './email.js';
 export { default as Lease } from './lease.js';
 export { default as Note } from './notes.js';
+export { default as PropertyTaxStatement } from './propertytaxstatement.js';
 export { default as Project } from './project.js';
 export { default as Property } from './property.js';
 export { default as Realm } from './realm.js';

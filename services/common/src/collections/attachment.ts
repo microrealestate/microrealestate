@@ -21,6 +21,7 @@ const AttachmentSchema = new mongoose.Schema<CollectionTypes.Attachment>(
       enum: [
         'property',
         'utility_account',
+        'property_tax_statement',
         'utility',
         'note',
         'project',
@@ -61,6 +62,7 @@ const AttachmentSchema = new mongoose.Schema<CollectionTypes.Attachment>(
         'county_record',
         'property_map',
         'utility_bill',
+        'tax_payment_confirmation',
         'note_attachment',
         'project_attachment',
         'work_record_attachment',

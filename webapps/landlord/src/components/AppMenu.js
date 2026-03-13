@@ -1,9 +1,18 @@
-import config from '../config';
-import { StoreContext } from '../store';
-import { cn } from '../utils';
-import SideMenuButton from './SideMenuButton';
-import { Button } from './ui/button';
-import { Separator } from './ui/separator';
+import { FaDroplet, FaFaucet } from 'react-icons/fa6';
+import {
+  LuBuilding2,
+  LuClipboardList,
+  LuDollarSign,
+  LuKeyRound,
+  LuLandmark,
+  LuLayoutDashboard,
+  LuMenu,
+  LuSettings,
+  LuStickyNote,
+  LuUserCircle,
+  LuWallet,
+  LuWrench
+} from 'react-icons/lu';
 import {
   Sheet,
   SheetClose,
@@ -13,25 +22,17 @@ import {
   SheetTitle,
   SheetTrigger
 } from './ui/sheet';
-import moment from 'moment';
-import { useRouter } from 'next/router';
-import useTranslation from 'next-translate/useTranslation';
 import { useCallback, useContext, useEffect, useState } from 'react';
 import { BsReceipt } from 'react-icons/bs';
-import { FaDroplet, FaFaucet } from 'react-icons/fa6';
-import {
-  LuBuilding2,
-  LuClipboardList,
-  LuDollarSign,
-  LuKeyRound,
-  LuLayoutDashboard,
-  LuMenu,
-  LuSettings,
-  LuStickyNote,
-  LuUserCircle,
-  LuWallet,
-  LuWrench
-} from 'react-icons/lu';
+import { Button } from './ui/button';
+import { cn } from '../utils';
+import config from '../config';
+import moment from 'moment';
+import { Separator } from './ui/separator';
+import SideMenuButton from './SideMenuButton';
+import { StoreContext } from '../store';
+import { useRouter } from 'next/router';
+import useTranslation from 'next-translate/useTranslation';
 
 function CityRentEstimatesIcon({ className }) {
   return (
@@ -118,6 +119,13 @@ const menuItems = [
     pathname: '/utilities',
     Icon: UtilitiesIcon,
     dataCy: 'utilitiesNav'
+  },
+  {
+    key: 'propertyTaxes',
+    labelId: 'Property taxes',
+    pathname: '/property-taxes',
+    Icon: LuLandmark,
+    dataCy: 'propertyTaxesNav'
   },
   {
     key: 'rentEstimates',

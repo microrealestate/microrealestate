@@ -1,10 +1,20 @@
 import { FaDroplet, FaFaucet } from 'react-icons/fa6';
-import { LuExternalLink, LuPlus, LuSearch, LuTrash2 } from 'react-icons/lu';
+import {
+  LuDownload,
+  LuExternalLink,
+  LuFileSearch,
+  LuFileSpreadsheet,
+  LuLandmark,
+  LuPlus,
+  LuSearch,
+  LuTrash2
+} from 'react-icons/lu';
 import { useEffect, useMemo, useState } from 'react';
 import { apiFetcher } from '../../../utils/fetch';
 import { Button } from '../../../components/ui/button';
 import { Card } from '../../../components/ui/card';
 import { Input } from '../../../components/ui/input';
+import NotesPanel from '../../../components/NotesPanel';
 import Page from '../../../components/Page';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
@@ -42,6 +52,22 @@ function getCurrentBillingMonth() {
 function toCurrency(value) {
   const amount = Number(value || 0);
   return `$${amount.toFixed(2)}`;
+}
+
+function getFilenameFromDisposition(contentDisposition, fallback) {
+  const value = String(contentDisposition || '');
+
+  const utf8Match = value.match(/filename\*=UTF-8''([^;]+)/i);
+  if (utf8Match?.[1]) {
+    return decodeURIComponent(utf8Match[1]);
+  }
+
+  const asciiMatch = value.match(/filename="?([^";]+)"?/i);
+  if (asciiMatch?.[1]) {
+    return asciiMatch[1];
+  }
+
+  return fallback;
 }
 
 function getPropertyLabel(property, propertyById) {
@@ -88,6 +114,48 @@ function getInitialBillDraft() {
   };
 }
 
+function getInitialTaxDraft() {
+  return {
+    id: '',
+    propertyId: '',
+    taxYearLabel: '',
+    periodStart: '',
+    periodEnd: '',
+    accountNumber: '',
+    mapNumber: '',
+    rmvLandLastYear: '',
+    rmvLandThisYear: '',
+    rmvBuildingLastYear: '',
+    rmvBuildingThisYear: '',
+    rmvTotalLastYear: '',
+    rmvTotalThisYear: '',
+    assessedValueLastYear: '',
+    assessedValueThisYear: '',
+    propertyTaxesLastYear: '',
+    propertyTaxesThisYear: '',
+    taxBeforeDiscount: '',
+    delinquentTaxes: '',
+    totalAfterDiscount: '',
+    landLeasedPercentage: '100',
+    buildingUnitSplits: [{ subPropertyId: '', percentage: '' }],
+    landUnitSplits: [{ subPropertyId: '', percentage: '' }],
+    estimatedIncreasePercentage: '3.5',
+    priorYearEstimatedTotal: '',
+    notes: ''
+  };
+}
+
+function getInitialTaxPaymentDraft() {
+  return {
+    paidOn: '',
+    paidAmount: '',
+    feeAmount: '',
+    paymentMethod: '',
+    confirmationNumber: '',
+    notes: ''
+  };
+}
+
 function getSelectedTypeValue(type, customType) {
   return type === 'custom'
     ? normalizeCategory(customType)
@@ -122,6 +190,35 @@ function formatPercentage(value) {
   return `${parsed.toFixed(2)}%`;
 }
 
+function sumSplitPercentages(items) {
+  return items.reduce((sum, item) => sum + (Number(item.percentage) || 0), 0);
+}
+
+function getTaxStatusMeta(status) {
+  switch (status) {
+    case 'overpaid':
+      return {
+        label: 'Overpaid',
+        className: 'bg-cyan-100 text-cyan-700'
+      };
+    case 'paid':
+      return {
+        label: 'Paid',
+        className: 'bg-green-100 text-green-700'
+      };
+    case 'partial':
+      return {
+        label: 'Partial',
+        className: 'bg-amber-100 text-amber-700'
+      };
+    default:
+      return {
+        label: 'Unpaid',
+        className: 'bg-red-100 text-red-700'
+      };
+  }
+}
+
 function UtilitiesHeaderIcon() {
   return (
     <span className="relative inline-flex size-5 items-center justify-center">
@@ -131,9 +228,11 @@ function UtilitiesHeaderIcon() {
   );
 }
 
-function UtilitiesPage() {
+export function UtilitiesPage({ view = 'all' }) {
   const { t } = useTranslation('common');
   const router = useRouter();
+  const isTaxOnly = view === 'tax';
+  const isUtilitiesOnly = view === 'utilities';
   const [searchText, setSearchText] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [monthFilter, setMonthFilter] = useState('all');
@@ -142,9 +241,35 @@ function UtilitiesPage() {
   const [billFile, setBillFile] = useState(null);
   const [customCategories, setCustomCategories] = useState([]);
   const [hiddenCategories, setHiddenCategories] = useState([]);
-  const [utilitiesTab, setUtilitiesTab] = useState('bills');
+  const [utilitiesTab, setUtilitiesTab] = useState(
+    isTaxOnly ? 'taxes' : 'bills'
+  );
+  const [savingTaxStatement, setSavingTaxStatement] = useState(false);
+  const [parsingTaxUpload, setParsingTaxUpload] = useState(false);
+  const [parsingTaxStatementId, setParsingTaxStatementId] = useState('');
+  const [taxFile, setTaxFile] = useState(null);
+  const [taxSearchText, setTaxSearchText] = useState('');
+  const [taxPropertyFilter, setTaxPropertyFilter] = useState('all');
+  const [taxYearFilter, setTaxYearFilter] = useState('all');
+  const [taxReportPropertyFilter, setTaxReportPropertyFilter] = useState('all');
+  const [taxReportYearFilter, setTaxReportYearFilter] = useState('all');
+  const [taxReportStatusFilter, setTaxReportStatusFilter] = useState('all');
+  const [exportingTaxReportCsv, setExportingTaxReportCsv] = useState(false);
+  const [downloadingTaxAttachmentId, setDownloadingTaxAttachmentId] =
+    useState('');
+  const [activeTaxPaymentStatementId, setActiveTaxPaymentStatementId] =
+    useState('');
+  const [activeTaxNotesStatementId, setActiveTaxNotesStatementId] =
+    useState('');
+  const [savingTaxPaymentConfirmation, setSavingTaxPaymentConfirmation] =
+    useState(false);
+  const [taxPaymentFile, setTaxPaymentFile] = useState(null);
+  const [taxPaymentDraft, setTaxPaymentDraft] = useState(
+    getInitialTaxPaymentDraft()
+  );
   const [accountDraft, setAccountDraft] = useState(getInitialAccountDraft());
   const [billDraft, setBillDraft] = useState(getInitialBillDraft());
+  const [taxDraft, setTaxDraft] = useState(getInitialTaxDraft());
 
   const { data: properties = [], isLoading: loadingProperties } = useQuery({
     queryKey: ['utilities-properties'],
@@ -170,6 +295,14 @@ function UtilitiesPage() {
     }
   });
 
+  const propertyTaxStatementsQuery = useQuery({
+    queryKey: ['property-tax-statements'],
+    queryFn: async () => {
+      const response = await apiFetcher().get('/property-tax-statements');
+      return response.data || [];
+    }
+  });
+
   const utilities = useMemo(
     () => utilitiesQuery.data || [],
     [utilitiesQuery.data]
@@ -178,9 +311,17 @@ function UtilitiesPage() {
     () => utilityAccountsQuery.data || [],
     [utilityAccountsQuery.data]
   );
+  const propertyTaxStatements = useMemo(
+    () => propertyTaxStatementsQuery.data || [],
+    [propertyTaxStatementsQuery.data]
+  );
   const loadingUtilities = utilitiesQuery.isLoading;
   const loadingUtilityAccounts = utilityAccountsQuery.isLoading;
-  const isError = utilitiesQuery.isError || utilityAccountsQuery.isError;
+  const loadingPropertyTaxStatements = propertyTaxStatementsQuery.isLoading;
+  const isError =
+    utilitiesQuery.isError ||
+    utilityAccountsQuery.isError ||
+    propertyTaxStatementsQuery.isError;
 
   const organizationSlug = String(router.query.organization || 'default');
 
@@ -237,6 +378,17 @@ function UtilitiesPage() {
       )
     );
   }, [properties, propertyById]);
+
+  const topLevelPropertyOptions = useMemo(() => {
+    return propertyOptions.filter((property) => !property.parentPropertyId);
+  }, [propertyOptions]);
+
+  const unitOptionsForTaxDraft = useMemo(() => {
+    return propertyOptions.filter(
+      (property) =>
+        String(property.parentPropertyId || '') === taxDraft.propertyId
+    );
+  }, [propertyOptions, taxDraft.propertyId]);
 
   const availableCategories = useMemo(() => {
     const typeSet = new Set();
@@ -394,12 +546,186 @@ function UtilitiesPage() {
     [filteredUtilities]
   );
 
+  const taxYearOptions = useMemo(() => {
+    const years = new Set();
+
+    propertyTaxStatements.forEach((statement) => {
+      const taxYearLabel = String(statement?.taxYearLabel || '').trim();
+      if (taxYearLabel) {
+        years.add(taxYearLabel);
+      }
+    });
+
+    return Array.from(years).sort((a, b) => b.localeCompare(a));
+  }, [propertyTaxStatements]);
+
+  const filteredTaxStatements = useMemo(() => {
+    const normalizedSearchText = taxSearchText.trim().toLowerCase();
+
+    return propertyTaxStatements.filter((statement) => {
+      if (
+        taxPropertyFilter !== 'all' &&
+        String(statement.propertyId) !== String(taxPropertyFilter)
+      ) {
+        return false;
+      }
+
+      if (
+        taxYearFilter !== 'all' &&
+        String(statement.taxYearLabel || '') !== String(taxYearFilter)
+      ) {
+        return false;
+      }
+
+      if (!normalizedSearchText) {
+        return true;
+      }
+
+      const property = propertyById[String(statement.propertyId)];
+      const propertyName = String(property?.name || '').toLowerCase();
+      const taxYearLabel = String(statement.taxYearLabel || '').toLowerCase();
+      const accountNumber = String(statement.accountNumber || '').toLowerCase();
+      const mapNumber = String(statement.mapNumber || '').toLowerCase();
+      const notes = String(statement.notes || '').toLowerCase();
+
+      return (
+        propertyName.includes(normalizedSearchText) ||
+        taxYearLabel.includes(normalizedSearchText) ||
+        accountNumber.includes(normalizedSearchText) ||
+        mapNumber.includes(normalizedSearchText) ||
+        notes.includes(normalizedSearchText)
+      );
+    });
+  }, [
+    propertyById,
+    propertyTaxStatements,
+    taxPropertyFilter,
+    taxSearchText,
+    taxYearFilter
+  ]);
+
+  const taxReportRows = useMemo(() => {
+    return propertyTaxStatements
+      .map((statement) => {
+        const confirmations = Array.isArray(statement.paymentConfirmations)
+          ? statement.paymentConfirmations
+          : [];
+        const totalDue = Number(statement.totalAfterDiscount || 0);
+        const totalPaid = confirmations.reduce(
+          (sum, confirmation) => sum + Number(confirmation.paidAmount || 0),
+          0
+        );
+        const totalFees = confirmations.reduce(
+          (sum, confirmation) => sum + Number(confirmation.feeAmount || 0),
+          0
+        );
+        const signedBalance = Number((totalDue - totalPaid).toFixed(2));
+        const balance = Math.max(0, signedBalance);
+        const overpaidAmount = Math.max(0, -signedBalance);
+
+        let status = 'unpaid';
+        if (totalDue > 0 && signedBalance < -0.01) {
+          status = 'overpaid';
+        } else if (totalDue > 0 && Math.abs(signedBalance) <= 0.01) {
+          status = 'paid';
+        } else if (totalPaid > 0) {
+          status = 'partial';
+        }
+
+        const lastPaymentDate = confirmations
+          .map((confirmation) => String(confirmation.paidOn || ''))
+          .filter(Boolean)
+          .sort((left, right) => right.localeCompare(left))[0];
+
+        return {
+          statementId: String(statement._id),
+          propertyId: String(statement.propertyId),
+          propertyName:
+            propertyById[String(statement.propertyId)]?.name ||
+            t('Unknown property'),
+          taxYearLabel: String(statement.taxYearLabel || ''),
+          totalDue,
+          totalPaid,
+          totalFees,
+          signedBalance,
+          balance,
+          overpaidAmount,
+          status,
+          confirmationsCount: confirmations.length,
+          lastPaymentDate: lastPaymentDate ? lastPaymentDate.slice(0, 10) : ''
+        };
+      })
+      .sort((left, right) => {
+        const byProperty = left.propertyName.localeCompare(right.propertyName);
+        if (byProperty !== 0) {
+          return byProperty;
+        }
+
+        return right.taxYearLabel.localeCompare(left.taxYearLabel);
+      });
+  }, [propertyById, propertyTaxStatements, t]);
+
+  const filteredTaxReportRows = useMemo(() => {
+    return taxReportRows.filter((row) => {
+      if (
+        taxReportPropertyFilter !== 'all' &&
+        row.propertyId !== String(taxReportPropertyFilter)
+      ) {
+        return false;
+      }
+
+      if (
+        taxReportYearFilter !== 'all' &&
+        row.taxYearLabel !== String(taxReportYearFilter)
+      ) {
+        return false;
+      }
+
+      if (
+        taxReportStatusFilter !== 'all' &&
+        row.status !== taxReportStatusFilter
+      ) {
+        return false;
+      }
+
+      return true;
+    });
+  }, [
+    taxReportPropertyFilter,
+    taxReportRows,
+    taxReportStatusFilter,
+    taxReportYearFilter
+  ]);
+
+  const taxReportStatusSummary = useMemo(() => {
+    return filteredTaxReportRows.reduce(
+      (summary, row) => {
+        summary[row.status] += 1;
+        return summary;
+      },
+      { overpaid: 0, paid: 0, partial: 0, unpaid: 0 }
+    );
+  }, [filteredTaxReportRows]);
+
   const loading =
-    loadingProperties || loadingUtilities || loadingUtilityAccounts;
+    loadingProperties ||
+    loadingUtilities ||
+    loadingUtilityAccounts ||
+    loadingPropertyTaxStatements;
 
   const accountAllocationTotal = useMemo(() => {
     return sumAllocationPercentages(accountDraft.allocations);
   }, [accountDraft.allocations]);
+
+  const buildingSplitTotal = useMemo(
+    () => sumSplitPercentages(taxDraft.buildingUnitSplits),
+    [taxDraft.buildingUnitSplits]
+  );
+
+  const landSplitTotal = useMemo(
+    () => sumSplitPercentages(taxDraft.landUnitSplits),
+    [taxDraft.landUnitSplits]
+  );
 
   const handleAccountAllocationChange = (index, field, value) => {
     setAccountDraft((previous) => ({
@@ -699,37 +1025,697 @@ function UtilitiesPage() {
     }
   };
 
+  const handleTaxSplitChange = (splitField, index, key, value) => {
+    setTaxDraft((previous) => ({
+      ...previous,
+      [splitField]: previous[splitField].map((item, itemIndex) => {
+        if (itemIndex !== index) {
+          return item;
+        }
+
+        return {
+          ...item,
+          [key]: value
+        };
+      })
+    }));
+  };
+
+  const handleAddTaxSplitRow = (splitField) => {
+    setTaxDraft((previous) => ({
+      ...previous,
+      [splitField]: [
+        ...previous[splitField],
+        { subPropertyId: '', percentage: '' }
+      ]
+    }));
+  };
+
+  const handleRemoveTaxSplitRow = (splitField, index) => {
+    setTaxDraft((previous) => ({
+      ...previous,
+      [splitField]:
+        previous[splitField].length === 1
+          ? [{ subPropertyId: '', percentage: '' }]
+          : previous[splitField].filter((_, itemIndex) => itemIndex !== index)
+    }));
+  };
+
+  const resetTaxDraft = () => {
+    setTaxDraft(getInitialTaxDraft());
+    setTaxFile(null);
+  };
+
+  const handleEditTaxStatement = (statement) => {
+    setTaxDraft({
+      id: statement._id,
+      propertyId: String(statement.propertyId || ''),
+      taxYearLabel: statement.taxYearLabel || '',
+      periodStart: statement.periodStart
+        ? String(statement.periodStart).slice(0, 10)
+        : '',
+      periodEnd: statement.periodEnd
+        ? String(statement.periodEnd).slice(0, 10)
+        : '',
+      accountNumber: statement.accountNumber || '',
+      mapNumber: statement.mapNumber || '',
+      rmvLandLastYear: String(statement.rmvLandLastYear ?? ''),
+      rmvLandThisYear: String(statement.rmvLandThisYear ?? ''),
+      rmvBuildingLastYear: String(statement.rmvBuildingLastYear ?? ''),
+      rmvBuildingThisYear: String(statement.rmvBuildingThisYear ?? ''),
+      rmvTotalLastYear: String(statement.rmvTotalLastYear ?? ''),
+      rmvTotalThisYear: String(statement.rmvTotalThisYear ?? ''),
+      assessedValueLastYear: String(statement.assessedValueLastYear ?? ''),
+      assessedValueThisYear: String(statement.assessedValueThisYear ?? ''),
+      propertyTaxesLastYear: String(statement.propertyTaxesLastYear ?? ''),
+      propertyTaxesThisYear: String(statement.propertyTaxesThisYear ?? ''),
+      taxBeforeDiscount: String(statement.taxBeforeDiscount ?? ''),
+      delinquentTaxes: String(statement.delinquentTaxes ?? ''),
+      totalAfterDiscount: String(statement.totalAfterDiscount ?? ''),
+      landLeasedPercentage: String(statement.landLeasedPercentage ?? '100'),
+      buildingUnitSplits: (statement.buildingUnitSplits || []).length
+        ? statement.buildingUnitSplits.map((item) => ({
+            subPropertyId: String(item.subPropertyId),
+            percentage: String(item.percentage)
+          }))
+        : [{ subPropertyId: '', percentage: '' }],
+      landUnitSplits: (statement.landUnitSplits || []).length
+        ? statement.landUnitSplits.map((item) => ({
+            subPropertyId: String(item.subPropertyId),
+            percentage: String(item.percentage)
+          }))
+        : [{ subPropertyId: '', percentage: '' }],
+      estimatedIncreasePercentage: String(
+        statement.estimatedIncreasePercentage ?? '3.5'
+      ),
+      priorYearEstimatedTotal: String(statement.priorYearEstimatedTotal ?? ''),
+      notes: statement.notes || ''
+    });
+    setTaxFile(null);
+    setUtilitiesTab('taxes');
+  };
+
+  const normalizeTaxSplit = (items, label) => {
+    const draftedItems = items.filter(
+      (item) => item.subPropertyId || String(item.percentage).trim() !== ''
+    );
+
+    if (!draftedItems.length) {
+      return { value: [], error: null };
+    }
+
+    const missingUnit = draftedItems.some((item) => !item.subPropertyId);
+    if (missingUnit) {
+      return {
+        value: null,
+        error: `${label} ${t('split rows must include a sub property')}`
+      };
+    }
+
+    return {
+      value: draftedItems.map((item) => ({
+        subPropertyId: String(item.subPropertyId || ''),
+        percentage: Number(item.percentage)
+      })),
+      error: null
+    };
+  };
+
+  const validateTaxSplit = (items, label) => {
+    if (!items.length) {
+      return null;
+    }
+
+    if (
+      new Set(items.map((item) => item.subPropertyId)).size !== items.length
+    ) {
+      return `${label} ${t('split cannot contain duplicate units')}`;
+    }
+
+    if (
+      items.some(
+        (item) =>
+          !Number.isFinite(item.percentage) || Number(item.percentage) < 0
+      )
+    ) {
+      return `${label} ${t('split percentages must be valid numbers')}`;
+    }
+
+    if (Math.abs(sumSplitPercentages(items) - 100) > 0.01) {
+      return `${label} ${t('split percentages must add up to 100')}`;
+    }
+
+    return null;
+  };
+
+  const mergeExtractedTaxFields = (payload, extracted = {}) => {
+    const merged = { ...payload };
+    const numberFields = [
+      'taxBeforeDiscount',
+      'delinquentTaxes',
+      'totalAfterDiscount'
+    ];
+
+    if (extracted.taxYearLabel && !merged.taxYearLabel) {
+      merged.taxYearLabel = String(extracted.taxYearLabel);
+    }
+
+    if (extracted.accountNumber && !merged.accountNumber) {
+      merged.accountNumber = String(extracted.accountNumber);
+    }
+
+    if (extracted.mapNumber && !merged.mapNumber) {
+      merged.mapNumber = String(extracted.mapNumber);
+    }
+
+    numberFields.forEach((field) => {
+      const extractedValue = Number(extracted[field]);
+      if (Number.isFinite(extractedValue) && Number(merged[field] || 0) === 0) {
+        merged[field] = extractedValue;
+      }
+    });
+
+    return merged;
+  };
+
+  const mergeExtractedTaxDraft = (draft, extracted = {}) => {
+    const merged = { ...draft };
+    const numberFields = [
+      'taxBeforeDiscount',
+      'delinquentTaxes',
+      'totalAfterDiscount'
+    ];
+
+    if (extracted.taxYearLabel && !merged.taxYearLabel) {
+      merged.taxYearLabel = String(extracted.taxYearLabel);
+    }
+
+    if (extracted.accountNumber && !merged.accountNumber) {
+      merged.accountNumber = String(extracted.accountNumber);
+    }
+
+    if (extracted.mapNumber && !merged.mapNumber) {
+      merged.mapNumber = String(extracted.mapNumber);
+    }
+
+    numberFields.forEach((field) => {
+      const extractedValue = Number(extracted[field]);
+      if (Number.isFinite(extractedValue) && Number(merged[field] || 0) === 0) {
+        merged[field] = String(extractedValue);
+      }
+    });
+
+    return merged;
+  };
+
+  const handleAutoFillFromTaxFile = async () => {
+    if (!taxFile) {
+      toast.error(t('Choose a statement file first'));
+      return;
+    }
+
+    setParsingTaxUpload(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', taxFile);
+
+      const response = await apiFetcher().post(
+        '/property-tax-statements/parse-upload',
+        formData,
+        {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        }
+      );
+
+      const extracted = response.data?.extracted || {};
+      setTaxDraft((previous) => mergeExtractedTaxDraft(previous, extracted));
+
+      const warnings = response.data?.warnings || [];
+      if (warnings.length) {
+        toast.warning(warnings.join(' '));
+      } else {
+        toast.success(t('Statement file parsed and fields auto-filled'));
+      }
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message ||
+          t('Failed to parse statement file for auto-fill')
+      );
+    } finally {
+      setParsingTaxUpload(false);
+    }
+  };
+
+  const handleSaveTaxStatement = async () => {
+    if (!taxDraft.propertyId) {
+      toast.error(t('Property is required'));
+      return;
+    }
+
+    if (!taxDraft.taxYearLabel.trim()) {
+      toast.error(t('Tax year label is required'));
+      return;
+    }
+
+    const normalizedBuildingSplit = normalizeTaxSplit(
+      taxDraft.buildingUnitSplits,
+      t('Building')
+    );
+    if (normalizedBuildingSplit.error) {
+      toast.error(normalizedBuildingSplit.error);
+      return;
+    }
+
+    const normalizedLandSplit = normalizeTaxSplit(
+      taxDraft.landUnitSplits,
+      t('Land')
+    );
+    if (normalizedLandSplit.error) {
+      toast.error(normalizedLandSplit.error);
+      return;
+    }
+
+    const buildingUnitSplits = normalizedBuildingSplit.value;
+    const landUnitSplits = normalizedLandSplit.value;
+
+    const buildingValidationError = validateTaxSplit(
+      buildingUnitSplits,
+      t('Building')
+    );
+    if (buildingValidationError) {
+      toast.error(buildingValidationError);
+      return;
+    }
+
+    const landValidationError = validateTaxSplit(landUnitSplits, t('Land'));
+    if (landValidationError) {
+      toast.error(landValidationError);
+      return;
+    }
+
+    setSavingTaxStatement(true);
+    try {
+      const payload = {
+        propertyId: taxDraft.propertyId,
+        taxYearLabel: taxDraft.taxYearLabel.trim(),
+        periodStart: taxDraft.periodStart || null,
+        periodEnd: taxDraft.periodEnd || null,
+        accountNumber: taxDraft.accountNumber,
+        mapNumber: taxDraft.mapNumber,
+        rmvLandLastYear: Number(taxDraft.rmvLandLastYear || 0),
+        rmvLandThisYear: Number(taxDraft.rmvLandThisYear || 0),
+        rmvBuildingLastYear: Number(taxDraft.rmvBuildingLastYear || 0),
+        rmvBuildingThisYear: Number(taxDraft.rmvBuildingThisYear || 0),
+        rmvTotalLastYear: Number(taxDraft.rmvTotalLastYear || 0),
+        rmvTotalThisYear: Number(taxDraft.rmvTotalThisYear || 0),
+        assessedValueLastYear: Number(taxDraft.assessedValueLastYear || 0),
+        assessedValueThisYear: Number(taxDraft.assessedValueThisYear || 0),
+        propertyTaxesLastYear: Number(taxDraft.propertyTaxesLastYear || 0),
+        propertyTaxesThisYear: Number(taxDraft.propertyTaxesThisYear || 0),
+        taxBeforeDiscount: Number(taxDraft.taxBeforeDiscount || 0),
+        delinquentTaxes: Number(taxDraft.delinquentTaxes || 0),
+        totalAfterDiscount: Number(taxDraft.totalAfterDiscount || 0),
+        landLeasedPercentage: Number(taxDraft.landLeasedPercentage || 0),
+        buildingUnitSplits,
+        landUnitSplits,
+        estimatedIncreasePercentage: Number(
+          taxDraft.estimatedIncreasePercentage || 0
+        ),
+        priorYearEstimatedTotal:
+          taxDraft.priorYearEstimatedTotal === ''
+            ? null
+            : Number(taxDraft.priorYearEstimatedTotal),
+        notes: taxDraft.notes,
+        attachmentIds: []
+      };
+
+      let statement = null;
+      if (taxDraft.id) {
+        const updateResponse = await apiFetcher().patch(
+          `/property-tax-statements/${taxDraft.id}`,
+          payload
+        );
+        statement = updateResponse.data;
+      } else {
+        const createResponse = await apiFetcher().post(
+          '/property-tax-statements',
+          payload
+        );
+        statement = createResponse.data;
+      }
+
+      if (taxFile && statement?._id) {
+        const formData = new FormData();
+        formData.append('file', taxFile);
+        formData.append('targetType', 'property_tax_statement');
+        formData.append('targetId', statement._id);
+        formData.append('category', 'other');
+
+        const uploadResponse = await apiFetcher().post(
+          '/attachments',
+          formData,
+          {
+            headers: { 'Content-Type': 'multipart/form-data' }
+          }
+        );
+
+        const uploadedAttachmentId = uploadResponse.data?._id;
+        if (uploadedAttachmentId) {
+          const attachmentIds = Array.from(
+            new Set([...(statement.attachmentIds || []), uploadedAttachmentId])
+          );
+
+          let payloadWithExtraction = {
+            ...payload,
+            attachmentIds
+          };
+
+          try {
+            const parseResponse = await apiFetcher().get(
+              `/property-tax-statements/${statement._id}/attachments/${uploadedAttachmentId}/parse`
+            );
+            payloadWithExtraction = mergeExtractedTaxFields(
+              payloadWithExtraction,
+              parseResponse.data?.extracted
+            );
+
+            const warnings = parseResponse.data?.warnings || [];
+            if (warnings.length) {
+              toast.warning(warnings.join(' '));
+            } else {
+              toast.success(t('Statement fields auto-read from uploaded file'));
+            }
+          } catch (error) {
+            toast.warning(
+              error?.response?.data?.message ||
+                t('Statement file uploaded but auto-read could not complete')
+            );
+          }
+
+          await apiFetcher().patch(
+            `/property-tax-statements/${statement._id}`,
+            payloadWithExtraction
+          );
+        }
+      }
+
+      toast.success(
+        taxDraft.id
+          ? t('Property tax statement updated')
+          : t('Property tax statement added')
+      );
+      resetTaxDraft();
+      await propertyTaxStatementsQuery.refetch();
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message ||
+          t('Failed to save property tax statement')
+      );
+    } finally {
+      setSavingTaxStatement(false);
+    }
+  };
+
+  const handleDeleteTaxStatement = async (statementId) => {
+    try {
+      await apiFetcher().delete(`/property-tax-statements/${statementId}`);
+      toast.success(t('Property tax statement removed'));
+      if (taxDraft.id === statementId) {
+        resetTaxDraft();
+      }
+      if (activeTaxNotesStatementId === statementId) {
+        setActiveTaxNotesStatementId('');
+      }
+      await propertyTaxStatementsQuery.refetch();
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message ||
+          t('Failed to remove property tax statement')
+      );
+    }
+  };
+
+  const handleDownloadTaxAttachment = async (
+    statement,
+    attachmentId,
+    index
+  ) => {
+    setDownloadingTaxAttachmentId(attachmentId);
+    try {
+      const response = await apiFetcher().get(
+        `/attachments/${attachmentId}/download`,
+        {
+          responseType: 'blob'
+        }
+      );
+
+      const fallbackName = `property-tax-${statement.taxYearLabel || 'statement'}-${index + 1}.pdf`;
+      const fileName = getFilenameFromDisposition(
+        response.headers?.['content-disposition'],
+        fallbackName
+      );
+
+      const blobUrl = window.URL.createObjectURL(response.data);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message || t('Failed to download statement file')
+      );
+    } finally {
+      setDownloadingTaxAttachmentId('');
+    }
+  };
+
+  const handleAutoReadTaxAttachment = async (statement, attachmentId) => {
+    setParsingTaxStatementId(String(statement._id));
+    try {
+      const response = await apiFetcher().get(
+        `/property-tax-statements/${statement._id}/attachments/${attachmentId}/parse`
+      );
+      const extracted = response.data?.extracted || {};
+
+      const mergedStatement = {
+        ...statement,
+        taxYearLabel: statement.taxYearLabel || extracted.taxYearLabel || '',
+        accountNumber: statement.accountNumber || extracted.accountNumber || '',
+        mapNumber: statement.mapNumber || extracted.mapNumber || '',
+        taxBeforeDiscount:
+          Number(statement.taxBeforeDiscount || 0) > 0
+            ? statement.taxBeforeDiscount
+            : extracted.taxBeforeDiscount,
+        delinquentTaxes:
+          Number(statement.delinquentTaxes || 0) > 0
+            ? statement.delinquentTaxes
+            : extracted.delinquentTaxes,
+        totalAfterDiscount:
+          Number(statement.totalAfterDiscount || 0) > 0
+            ? statement.totalAfterDiscount
+            : extracted.totalAfterDiscount
+      };
+      handleEditTaxStatement(mergedStatement);
+
+      const warnings = response.data?.warnings || [];
+      if (warnings.length) {
+        toast.warning(warnings.join(' '));
+      } else {
+        toast.success(t('Statement fields auto-read successfully'));
+      }
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message ||
+          t('Failed to auto-read statement attachment')
+      );
+    } finally {
+      setParsingTaxStatementId('');
+    }
+  };
+
+  const handleExportTaxReportCsv = async () => {
+    setExportingTaxReportCsv(true);
+    try {
+      const query = new URLSearchParams();
+      if (taxReportPropertyFilter !== 'all') {
+        query.set('propertyId', taxReportPropertyFilter);
+      }
+      if (taxReportYearFilter !== 'all') {
+        query.set('taxYearLabel', taxReportYearFilter);
+      }
+      if (taxReportStatusFilter !== 'all') {
+        query.set('status', taxReportStatusFilter);
+      }
+
+      const response = await apiFetcher().get(
+        `/property-tax-statements/report.csv${query.toString() ? `?${query.toString()}` : ''}`,
+        {
+          responseType: 'blob'
+        }
+      );
+
+      const fallbackName = `property-tax-report-${new Date().toISOString().slice(0, 10)}.csv`;
+      const fileName = getFilenameFromDisposition(
+        response.headers?.['content-disposition'],
+        fallbackName
+      );
+
+      const blobUrl = window.URL.createObjectURL(response.data);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message || t('Failed to export tax report')
+      );
+    } finally {
+      setExportingTaxReportCsv(false);
+    }
+  };
+
+  const handleStartTaxPaymentLog = (statementId) => {
+    setActiveTaxPaymentStatementId(statementId);
+    setTaxPaymentDraft(getInitialTaxPaymentDraft());
+    setTaxPaymentFile(null);
+  };
+
+  const handleCancelTaxPaymentLog = () => {
+    setActiveTaxPaymentStatementId('');
+    setTaxPaymentDraft(getInitialTaxPaymentDraft());
+    setTaxPaymentFile(null);
+  };
+
+  const handleSaveTaxPaymentConfirmation = async (statement) => {
+    const paidAmount = Number(taxPaymentDraft.paidAmount);
+    const feeAmount = Number(taxPaymentDraft.feeAmount || 0);
+
+    if (!taxPaymentDraft.paidOn) {
+      toast.error(t('Paid date is required'));
+      return;
+    }
+
+    if (!Number.isFinite(paidAmount) || paidAmount <= 0) {
+      toast.error(t('Paid amount must be a positive number'));
+      return;
+    }
+
+    if (!Number.isFinite(feeAmount) || feeAmount < 0) {
+      toast.error(t('Fee amount must be a non-negative number'));
+      return;
+    }
+
+    setSavingTaxPaymentConfirmation(true);
+    try {
+      let attachmentIds = [];
+
+      if (taxPaymentFile) {
+        const formData = new FormData();
+        formData.append('file', taxPaymentFile);
+        formData.append('targetType', 'property_tax_statement');
+        formData.append('targetId', statement._id);
+        formData.append('category', 'tax_payment_confirmation');
+
+        const uploadResponse = await apiFetcher().post(
+          '/attachments',
+          formData,
+          {
+            headers: { 'Content-Type': 'multipart/form-data' }
+          }
+        );
+
+        if (uploadResponse.data?._id) {
+          attachmentIds = [uploadResponse.data._id];
+        }
+      }
+
+      await apiFetcher().post(
+        `/property-tax-statements/${statement._id}/payment-confirmations`,
+        {
+          paidOn: taxPaymentDraft.paidOn,
+          paidAmount,
+          feeAmount,
+          paymentMethod: taxPaymentDraft.paymentMethod,
+          confirmationNumber: taxPaymentDraft.confirmationNumber,
+          notes: taxPaymentDraft.notes,
+          attachmentIds
+        }
+      );
+
+      toast.success(t('Payment confirmation logged'));
+      handleCancelTaxPaymentLog();
+      await propertyTaxStatementsQuery.refetch();
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message ||
+          t('Failed to log payment confirmation')
+      );
+    } finally {
+      setSavingTaxPaymentConfirmation(false);
+    }
+  };
+
   return (
     <Page loading={loading} dataCy="utilitiesPage">
       <Card className="p-6 space-y-6">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
             <UtilitiesHeaderIcon />
-            <h1 className="text-2xl font-bold">{t('Utilities')}</h1>
+            <h1 className="text-2xl font-bold">
+              {isTaxOnly ? t('Property taxes') : t('Utilities')}
+            </h1>
           </div>
           <div className="text-sm text-muted-foreground">
-            {filteredUtilities.length} {t('entry(ies)')} •{' '}
-            {utilityAccounts.length} {t('saved account(s)')} •{' '}
-            {toCurrency(totalAmount)}
+            {isTaxOnly
+              ? `${propertyTaxStatements.length} ${t('tax statement(s)')}`
+              : `${filteredUtilities.length} ${t('entry(ies)')} • ${utilityAccounts.length} ${t('saved account(s)')}${isUtilitiesOnly ? '' : ` • ${propertyTaxStatements.length} ${t('tax statement(s)')}`} • ${toCurrency(totalAmount)}`}
           </div>
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <Button
-            variant={utilitiesTab === 'accounts' ? 'default' : 'outline'}
-            onClick={() => setUtilitiesTab('accounts')}
-          >
-            {t('Utility account setup')}
-          </Button>
-          <Button
-            variant={utilitiesTab === 'bills' ? 'default' : 'outline'}
-            onClick={() => setUtilitiesTab('bills')}
-          >
-            {t('Add utility bill')}
-          </Button>
+          {!isTaxOnly ? (
+            <>
+              <Button
+                variant={utilitiesTab === 'accounts' ? 'default' : 'outline'}
+                onClick={() => setUtilitiesTab('accounts')}
+              >
+                {t('Utility account setup')}
+              </Button>
+              <Button
+                variant={utilitiesTab === 'bills' ? 'default' : 'outline'}
+                onClick={() => setUtilitiesTab('bills')}
+              >
+                {t('Add utility bill')}
+              </Button>
+            </>
+          ) : null}
+          {!isUtilitiesOnly ? (
+            <>
+              <Button
+                variant={utilitiesTab === 'taxes' ? 'default' : 'outline'}
+                onClick={() => setUtilitiesTab('taxes')}
+              >
+                <LuLandmark className="size-4 mr-2" />
+                {t('Property taxes')}
+              </Button>
+              <Button
+                variant={utilitiesTab === 'tax-report' ? 'default' : 'outline'}
+                onClick={() => setUtilitiesTab('tax-report')}
+              >
+                <LuFileSpreadsheet className="size-4 mr-2" />
+                {t('Tax payment report')}
+              </Button>
+            </>
+          ) : null}
         </div>
 
-        {utilitiesTab === 'accounts' ? (
+        {!isTaxOnly && utilitiesTab === 'accounts' ? (
           <div className="rounded-lg border p-4 space-y-4">
             <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
               <div>
@@ -990,7 +1976,7 @@ function UtilitiesPage() {
           </div>
         ) : null}
 
-        {utilitiesTab === 'bills' ? (
+        {!isTaxOnly && utilitiesTab === 'bills' ? (
           <div className="rounded-lg border p-4 space-y-4">
             <div>
               <h2 className="text-base font-semibold">
@@ -1269,110 +2255,1305 @@ function UtilitiesPage() {
           </div>
         ) : null}
 
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
-          <div className="md:col-span-2 relative">
-            <LuSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder={t(
-                'Search by property, type, provider, account number, month...'
-              )}
-              value={searchText}
-              onChange={(event) => setSearchText(event.target.value)}
-              className="pl-10"
-            />
-          </div>
-          <div>
-            <select
-              value={typeFilter}
-              onChange={(event) => setTypeFilter(event.target.value)}
-              className="w-full px-3 py-2 border rounded-md text-sm bg-background"
-            >
-              <option value="all">{t('All types')}</option>
-              {availableCategories.map((type) => (
-                <option key={type} value={type}>
-                  {type}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <select
-              value={monthFilter}
-              onChange={(event) => setMonthFilter(event.target.value)}
-              className="w-full px-3 py-2 border rounded-md text-sm bg-background"
-            >
-              <option value="all">{t('All months')}</option>
-              {billingMonths.map((month) => (
-                <option key={month} value={month}>
-                  {month}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
+        {!isUtilitiesOnly && utilitiesTab === 'taxes' ? (
+          <div className="rounded-lg border p-4 space-y-4">
+            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-base font-semibold">
+                  {t('Property taxes')}
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  {t(
+                    'Capture annual tax statements, upload statement files, split building and land by unit percentages, and track next-year estimates versus actual totals.'
+                  )}
+                </p>
+              </div>
+              {taxDraft.id ? (
+                <Button variant="outline" onClick={resetTaxDraft}>
+                  {t('Clear')}
+                </Button>
+              ) : null}
+            </div>
 
-        {isError ? (
-          <div className="text-sm text-red-600">
-            {t('Failed to load utilities')}
-          </div>
-        ) : filteredUtilities.length === 0 ? (
-          <div className="text-sm text-muted-foreground py-8 text-center">
-            {t('No utilities found for current filters')}
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {filteredUtilities.map((utility) => {
-              const property = propertyById[String(utility.propertyId)];
-              const propertyName = property?.name || t('Unknown property');
-
-              return (
-                <div
-                  key={utility._id}
-                  className="rounded-lg border p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+            <div className="rounded-md border bg-muted/20 p-3 space-y-2">
+              <div className="text-sm font-medium">
+                {t('Upload statement PDF')}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {t(
+                  'Upload a tax statement PDF and we will try to auto-fill matching fields. Always review the values before saving.'
+                )}
+              </p>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                <Input
+                  type="file"
+                  accept="application/pdf"
+                  onChange={(event) =>
+                    setTaxFile(event.target.files?.[0] || null)
+                  }
+                />
+                <Button
+                  variant="outline"
+                  onClick={handleAutoFillFromTaxFile}
+                  disabled={parsingTaxUpload || !taxFile}
                 >
-                  <div className="space-y-1">
-                    <div className="text-sm font-semibold">
-                      {utility.type} • {utility.billingMonth}
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      {propertyName}
-                      {utility.provider ? ` • ${utility.provider}` : ''}
-                      {utility.accountNumber
-                        ? ` • ${utility.accountNumber}`
-                        : ''}
+                  <LuFileSearch className="size-4 mr-2" />
+                  {parsingTaxUpload
+                    ? t('Reading PDF...')
+                    : t('Upload PDF and auto-fill')}
+                </Button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+              <div>
+                <label className="text-xs text-muted-foreground">
+                  {t('Property')}
+                </label>
+                <select
+                  value={taxDraft.propertyId}
+                  onChange={(event) =>
+                    setTaxDraft((previous) => ({
+                      ...previous,
+                      propertyId: event.target.value,
+                      buildingUnitSplits: [
+                        { subPropertyId: '', percentage: '' }
+                      ],
+                      landUnitSplits: [{ subPropertyId: '', percentage: '' }]
+                    }))
+                  }
+                  className="w-full px-3 py-2 border rounded-md text-sm bg-background"
+                >
+                  <option value="">{t('Select property')}</option>
+                  {topLevelPropertyOptions.map((property) => (
+                    <option key={property._id} value={property._id}>
+                      {property.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground">
+                  {t('Tax year')}
+                </label>
+                <Input
+                  type="text"
+                  placeholder={t('e.g. 2024-2025')}
+                  value={taxDraft.taxYearLabel}
+                  onChange={(event) =>
+                    setTaxDraft((previous) => ({
+                      ...previous,
+                      taxYearLabel: event.target.value
+                    }))
+                  }
+                />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground">
+                  {t('Map number')}
+                </label>
+                <Input
+                  type="text"
+                  value={taxDraft.mapNumber}
+                  onChange={(event) =>
+                    setTaxDraft((previous) => ({
+                      ...previous,
+                      mapNumber: event.target.value
+                    }))
+                  }
+                />
+              </div>
+
+              <div>
+                <label className="text-xs text-muted-foreground">
+                  {t('Account number')}
+                </label>
+                <Input
+                  type="text"
+                  value={taxDraft.accountNumber}
+                  onChange={(event) =>
+                    setTaxDraft((previous) => ({
+                      ...previous,
+                      accountNumber: event.target.value
+                    }))
+                  }
+                />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground">
+                  {t('Period start')}
+                </label>
+                <Input
+                  type="date"
+                  value={taxDraft.periodStart}
+                  onChange={(event) =>
+                    setTaxDraft((previous) => ({
+                      ...previous,
+                      periodStart: event.target.value
+                    }))
+                  }
+                />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground">
+                  {t('Period end')}
+                </label>
+                <Input
+                  type="date"
+                  value={taxDraft.periodEnd}
+                  onChange={(event) =>
+                    setTaxDraft((previous) => ({
+                      ...previous,
+                      periodEnd: event.target.value
+                    }))
+                  }
+                />
+              </div>
+
+              <div>
+                <label className="text-xs text-muted-foreground">
+                  {t('Tax before discount')}
+                </label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={taxDraft.taxBeforeDiscount}
+                  onChange={(event) =>
+                    setTaxDraft((previous) => ({
+                      ...previous,
+                      taxBeforeDiscount: event.target.value
+                    }))
+                  }
+                />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground">
+                  {t('Delinquent taxes')}
+                </label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={taxDraft.delinquentTaxes}
+                  onChange={(event) =>
+                    setTaxDraft((previous) => ({
+                      ...previous,
+                      delinquentTaxes: event.target.value
+                    }))
+                  }
+                />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground">
+                  {t('Total after discount')}
+                </label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={taxDraft.totalAfterDiscount}
+                  onChange={(event) =>
+                    setTaxDraft((previous) => ({
+                      ...previous,
+                      totalAfterDiscount: event.target.value
+                    }))
+                  }
+                />
+              </div>
+
+              <div>
+                <label className="text-xs text-muted-foreground">
+                  {t('RMV land (last year)')}
+                </label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={taxDraft.rmvLandLastYear}
+                  onChange={(event) =>
+                    setTaxDraft((previous) => ({
+                      ...previous,
+                      rmvLandLastYear: event.target.value
+                    }))
+                  }
+                />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground">
+                  {t('RMV land (this year)')}
+                </label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={taxDraft.rmvLandThisYear}
+                  onChange={(event) =>
+                    setTaxDraft((previous) => ({
+                      ...previous,
+                      rmvLandThisYear: event.target.value
+                    }))
+                  }
+                />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground">
+                  {t('RMV building (last year)')}
+                </label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={taxDraft.rmvBuildingLastYear}
+                  onChange={(event) =>
+                    setTaxDraft((previous) => ({
+                      ...previous,
+                      rmvBuildingLastYear: event.target.value
+                    }))
+                  }
+                />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground">
+                  {t('RMV building (this year)')}
+                </label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={taxDraft.rmvBuildingThisYear}
+                  onChange={(event) =>
+                    setTaxDraft((previous) => ({
+                      ...previous,
+                      rmvBuildingThisYear: event.target.value
+                    }))
+                  }
+                />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground">
+                  {t('RMV total (last year)')}
+                </label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={taxDraft.rmvTotalLastYear}
+                  onChange={(event) =>
+                    setTaxDraft((previous) => ({
+                      ...previous,
+                      rmvTotalLastYear: event.target.value
+                    }))
+                  }
+                />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground">
+                  {t('RMV total (this year)')}
+                </label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={taxDraft.rmvTotalThisYear}
+                  onChange={(event) =>
+                    setTaxDraft((previous) => ({
+                      ...previous,
+                      rmvTotalThisYear: event.target.value
+                    }))
+                  }
+                />
+              </div>
+
+              <div>
+                <label className="text-xs text-muted-foreground">
+                  {t('Assessed value (last year)')}
+                </label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={taxDraft.assessedValueLastYear}
+                  onChange={(event) =>
+                    setTaxDraft((previous) => ({
+                      ...previous,
+                      assessedValueLastYear: event.target.value
+                    }))
+                  }
+                />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground">
+                  {t('Assessed value (this year)')}
+                </label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={taxDraft.assessedValueThisYear}
+                  onChange={(event) =>
+                    setTaxDraft((previous) => ({
+                      ...previous,
+                      assessedValueThisYear: event.target.value
+                    }))
+                  }
+                />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground">
+                  {t('Property taxes (last year)')}
+                </label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={taxDraft.propertyTaxesLastYear}
+                  onChange={(event) =>
+                    setTaxDraft((previous) => ({
+                      ...previous,
+                      propertyTaxesLastYear: event.target.value
+                    }))
+                  }
+                />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground">
+                  {t('Property taxes (this year)')}
+                </label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={taxDraft.propertyTaxesThisYear}
+                  onChange={(event) =>
+                    setTaxDraft((previous) => ({
+                      ...previous,
+                      propertyTaxesThisYear: event.target.value
+                    }))
+                  }
+                />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground">
+                  {t('Land leased %')}
+                </label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="100"
+                  value={taxDraft.landLeasedPercentage}
+                  onChange={(event) =>
+                    setTaxDraft((previous) => ({
+                      ...previous,
+                      landLeasedPercentage: event.target.value
+                    }))
+                  }
+                />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground">
+                  {t('Estimated increase %')}
+                </label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={taxDraft.estimatedIncreasePercentage}
+                  onChange={(event) =>
+                    setTaxDraft((previous) => ({
+                      ...previous,
+                      estimatedIncreasePercentage: event.target.value
+                    }))
+                  }
+                />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground">
+                  {t('Prior estimated total')}
+                </label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={taxDraft.priorYearEstimatedTotal}
+                  onChange={(event) =>
+                    setTaxDraft((previous) => ({
+                      ...previous,
+                      priorYearEstimatedTotal: event.target.value
+                    }))
+                  }
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="text-xs text-muted-foreground">
+                  {t('Notes')}
+                </label>
+                <Input
+                  type="text"
+                  value={taxDraft.notes}
+                  onChange={(event) =>
+                    setTaxDraft((previous) => ({
+                      ...previous,
+                      notes: event.target.value
+                    }))
+                  }
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+              <div className="space-y-2 rounded-lg border p-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-sm font-medium">
+                      {t('Building split by unit')}
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      {utility.paidDate
-                        ? `${t('Paid')} ${String(utility.paidDate).slice(0, 10)}`
-                        : t('Not paid yet')}
+                      {t(
+                        'Use when splitting building taxes across sub properties'
+                      )}
                     </div>
                   </div>
-
-                  <div className="flex items-center gap-3">
-                    <div className="text-sm font-semibold">
-                      {toCurrency(utility.amount)}
-                    </div>
-                    <Button
-                      variant="outline"
-                      className="gap-2"
-                      onClick={() =>
-                        router.push(
-                          `/${router.query.organization}/properties/${utility.propertyId}`
+                  <Button
+                    variant="outline"
+                    onClick={() => handleAddTaxSplitRow('buildingUnitSplits')}
+                  >
+                    <LuPlus className="size-4 mr-2" />
+                    {t('Add row')}
+                  </Button>
+                </div>
+                {taxDraft.buildingUnitSplits.map((item, index) => (
+                  <div
+                    key={`building-${index}-${item.subPropertyId}`}
+                    className="grid grid-cols-1 gap-2 md:grid-cols-[minmax(0,2fr)_140px_80px]"
+                  >
+                    <select
+                      value={item.subPropertyId}
+                      onChange={(event) =>
+                        handleTaxSplitChange(
+                          'buildingUnitSplits',
+                          index,
+                          'subPropertyId',
+                          event.target.value
                         )
                       }
+                      className="w-full px-3 py-2 border rounded-md text-sm bg-background"
                     >
-                      <LuExternalLink className="size-4" />
-                      {t('Open property')}
+                      <option value="">{t('Select sub property')}</option>
+                      {unitOptionsForTaxDraft.map((property) => (
+                        <option key={property._id} value={property._id}>
+                          {property.name}
+                        </option>
+                      ))}
+                    </select>
+                    <Input
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="0.01"
+                      value={item.percentage}
+                      onChange={(event) =>
+                        handleTaxSplitChange(
+                          'buildingUnitSplits',
+                          index,
+                          'percentage',
+                          event.target.value
+                        )
+                      }
+                    />
+                    <Button
+                      variant="outline"
+                      onClick={() =>
+                        handleRemoveTaxSplitRow('buildingUnitSplits', index)
+                      }
+                    >
+                      <LuTrash2 className="size-4 mr-2" />
+                      {t('Remove')}
                     </Button>
                   </div>
+                ))}
+                <div
+                  className={`text-xs ${
+                    Math.abs(buildingSplitTotal - 100) <= 0.01
+                      ? 'text-muted-foreground'
+                      : 'text-red-600'
+                  }`}
+                >
+                  {t('Building split total')}:{' '}
+                  {formatPercentage(buildingSplitTotal)}
                 </div>
-              );
-            })}
+              </div>
+
+              <div className="space-y-2 rounded-lg border p-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-sm font-medium">
+                      {t('Land split by unit')}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {t('Use when splitting land taxes across sub properties')}
+                    </div>
+                  </div>
+                  <Button
+                    variant="outline"
+                    onClick={() => handleAddTaxSplitRow('landUnitSplits')}
+                  >
+                    <LuPlus className="size-4 mr-2" />
+                    {t('Add row')}
+                  </Button>
+                </div>
+                {taxDraft.landUnitSplits.map((item, index) => (
+                  <div
+                    key={`land-${index}-${item.subPropertyId}`}
+                    className="grid grid-cols-1 gap-2 md:grid-cols-[minmax(0,2fr)_140px_80px]"
+                  >
+                    <select
+                      value={item.subPropertyId}
+                      onChange={(event) =>
+                        handleTaxSplitChange(
+                          'landUnitSplits',
+                          index,
+                          'subPropertyId',
+                          event.target.value
+                        )
+                      }
+                      className="w-full px-3 py-2 border rounded-md text-sm bg-background"
+                    >
+                      <option value="">{t('Select sub property')}</option>
+                      {unitOptionsForTaxDraft.map((property) => (
+                        <option key={property._id} value={property._id}>
+                          {property.name}
+                        </option>
+                      ))}
+                    </select>
+                    <Input
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="0.01"
+                      value={item.percentage}
+                      onChange={(event) =>
+                        handleTaxSplitChange(
+                          'landUnitSplits',
+                          index,
+                          'percentage',
+                          event.target.value
+                        )
+                      }
+                    />
+                    <Button
+                      variant="outline"
+                      onClick={() =>
+                        handleRemoveTaxSplitRow('landUnitSplits', index)
+                      }
+                    >
+                      <LuTrash2 className="size-4 mr-2" />
+                      {t('Remove')}
+                    </Button>
+                  </div>
+                ))}
+                <div
+                  className={`text-xs ${
+                    Math.abs(landSplitTotal - 100) <= 0.01
+                      ? 'text-muted-foreground'
+                      : 'text-red-600'
+                  }`}
+                >
+                  {t('Land split total')}: {formatPercentage(landSplitTotal)}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end">
+              <Button
+                onClick={handleSaveTaxStatement}
+                disabled={savingTaxStatement}
+              >
+                {savingTaxStatement
+                  ? t('Saving...')
+                  : taxDraft.id
+                    ? t('Update statement')
+                    : t('Save statement')}
+              </Button>
+            </div>
+
+            <div className="space-y-2 border-t pt-4">
+              <div className="text-sm font-medium">
+                {t('Saved property tax statements')}
+              </div>
+
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+                <div className="relative md:col-span-1">
+                  <LuSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    placeholder={t(
+                      'Search by property, year, map, account, notes...'
+                    )}
+                    value={taxSearchText}
+                    onChange={(event) => setTaxSearchText(event.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+                <div>
+                  <select
+                    value={taxPropertyFilter}
+                    onChange={(event) =>
+                      setTaxPropertyFilter(event.target.value)
+                    }
+                    className="w-full px-3 py-2 border rounded-md text-sm bg-background"
+                  >
+                    <option value="all">{t('All properties')}</option>
+                    {topLevelPropertyOptions.map((property) => (
+                      <option key={property._id} value={property._id}>
+                        {property.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <select
+                    value={taxYearFilter}
+                    onChange={(event) => setTaxYearFilter(event.target.value)}
+                    className="w-full px-3 py-2 border rounded-md text-sm bg-background"
+                  >
+                    <option value="all">{t('All tax years')}</option>
+                    {taxYearOptions.map((taxYearLabel) => (
+                      <option key={taxYearLabel} value={taxYearLabel}>
+                        {taxYearLabel}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {!propertyTaxStatements.length ? (
+                <div className="text-sm text-muted-foreground">
+                  {t('No property tax statements saved yet')}
+                </div>
+              ) : !filteredTaxStatements.length ? (
+                <div className="text-sm text-muted-foreground">
+                  {t('No tax statements found for current filters')}
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {filteredTaxStatements.map((statement) => {
+                    const property = propertyById[String(statement.propertyId)];
+                    const paymentConfirmations = Array.isArray(
+                      statement.paymentConfirmations
+                    )
+                      ? statement.paymentConfirmations
+                      : [];
+                    const totalPaid = paymentConfirmations.reduce(
+                      (sum, confirmation) =>
+                        sum + Number(confirmation.paidAmount || 0),
+                      0
+                    );
+                    const totalFees = paymentConfirmations.reduce(
+                      (sum, confirmation) =>
+                        sum + Number(confirmation.feeAmount || 0),
+                      0
+                    );
+                    const signedBalance = Number(
+                      (
+                        Number(statement.totalAfterDiscount || 0) - totalPaid
+                      ).toFixed(2)
+                    );
+                    const balance = Math.max(0, signedBalance);
+                    const overpaidAmount = Math.max(0, -signedBalance);
+                    return (
+                      <div
+                        key={statement._id}
+                        className="rounded-lg border p-3 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between"
+                      >
+                        <div className="space-y-1">
+                          <div className="text-sm font-semibold">
+                            {statement.taxYearLabel} •{' '}
+                            {property?.name || t('Unknown property')}
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            {toCurrency(statement.totalAfterDiscount)}{' '}
+                            {t('actual total')} •{' '}
+                            {toCurrency(statement.estimatedNextYearTotal)}{' '}
+                            {t('next year estimate')} •{' '}
+                            {toCurrency(statement.estimatedMonthlyCost)}{' '}
+                            {t('monthly estimate')}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {statement.periodStart
+                              ? `${t('Period')}: ${String(statement.periodStart).slice(0, 10)} - ${String(statement.periodEnd || '').slice(0, 10)}`
+                              : t('Period not set')}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {t('Variance vs prior estimate')}:{' '}
+                            {toCurrency(statement.priorYearVariance || 0)}
+                            {statement.accountNumber
+                              ? ` • ${t('Account')}: ${statement.accountNumber}`
+                              : ''}
+                            {statement.mapNumber
+                              ? ` • ${t('Map')}: ${statement.mapNumber}`
+                              : ''}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {t('Paid toward taxes')}: {toCurrency(totalPaid)} •{' '}
+                            {t('Payment fees')}: {toCurrency(totalFees)} •{' '}
+                            {t('Remaining balance')}: {toCurrency(balance)}
+                            {overpaidAmount > 0
+                              ? ` • ${t('Overpaid')}: ${toCurrency(overpaidAmount)}`
+                              : ''}
+                          </div>
+                          {(statement.attachmentIds || []).length ? (
+                            <div className="flex flex-wrap gap-2 pt-1">
+                              {(statement.attachmentIds || []).map(
+                                (attachmentId, index) => (
+                                  <Button
+                                    key={attachmentId}
+                                    variant="outline"
+                                    className="h-8 px-2"
+                                    onClick={() =>
+                                      handleDownloadTaxAttachment(
+                                        statement,
+                                        attachmentId,
+                                        index
+                                      )
+                                    }
+                                    disabled={
+                                      downloadingTaxAttachmentId ===
+                                      attachmentId
+                                    }
+                                  >
+                                    <LuDownload className="size-4 mr-2" />
+                                    {downloadingTaxAttachmentId === attachmentId
+                                      ? t('Downloading...')
+                                      : `${t('Statement file')} ${index + 1}`}
+                                  </Button>
+                                )
+                              )}
+                              <Button
+                                variant="outline"
+                                className="h-8 px-2"
+                                onClick={() =>
+                                  handleAutoReadTaxAttachment(
+                                    statement,
+                                    String(
+                                      (statement.attachmentIds || []).slice(
+                                        -1
+                                      )[0]
+                                    )
+                                  )
+                                }
+                                disabled={
+                                  parsingTaxStatementId ===
+                                  String(statement._id)
+                                }
+                              >
+                                <LuFileSearch className="size-4 mr-2" />
+                                {parsingTaxStatementId === String(statement._id)
+                                  ? t('Auto-reading...')
+                                  : t('Auto-read latest file')}
+                              </Button>
+                            </div>
+                          ) : (
+                            <div className="text-xs text-muted-foreground">
+                              {t('No statement file uploaded')}
+                            </div>
+                          )}
+
+                          <div className="pt-1 space-y-2">
+                            <div className="text-xs font-medium text-muted-foreground">
+                              {t('Payment confirmations')}
+                            </div>
+                            {!paymentConfirmations.length ? (
+                              <div className="text-xs text-muted-foreground">
+                                {t('No payment confirmations logged yet')}
+                              </div>
+                            ) : (
+                              <div className="space-y-2">
+                                {paymentConfirmations.map(
+                                  (confirmation, confirmationIndex) => (
+                                    <div
+                                      key={`${statement._id}-confirmation-${confirmationIndex}`}
+                                      className="rounded border p-2 text-xs space-y-1"
+                                    >
+                                      <div className="font-medium">
+                                        {String(
+                                          confirmation.paidOn || ''
+                                        ).slice(0, 10)}{' '}
+                                        • {toCurrency(confirmation.paidAmount)}
+                                        {Number(confirmation.feeAmount || 0) > 0
+                                          ? ` • ${t('Fee')}: ${toCurrency(confirmation.feeAmount)}`
+                                          : ''}
+                                      </div>
+                                      <div className="text-muted-foreground">
+                                        {confirmation.paymentMethod
+                                          ? `${t('Method')}: ${confirmation.paymentMethod}`
+                                          : t('Method not set')}
+                                        {confirmation.confirmationNumber
+                                          ? ` • ${t('Confirmation')}: ${confirmation.confirmationNumber}`
+                                          : ''}
+                                        {confirmation.createdBy
+                                          ? ` • ${t('Logged by')}: ${confirmation.createdBy}`
+                                          : ''}
+                                      </div>
+                                      {confirmation.notes ? (
+                                        <div className="text-muted-foreground">
+                                          {confirmation.notes}
+                                        </div>
+                                      ) : null}
+                                      {(confirmation.attachmentIds || [])
+                                        .length ? (
+                                        <div className="flex flex-wrap gap-2 pt-1">
+                                          {(
+                                            confirmation.attachmentIds || []
+                                          ).map(
+                                            (attachmentId, attachmentIndex) => (
+                                              <Button
+                                                key={attachmentId}
+                                                variant="outline"
+                                                className="h-7 px-2"
+                                                onClick={() =>
+                                                  handleDownloadTaxAttachment(
+                                                    statement,
+                                                    attachmentId,
+                                                    attachmentIndex
+                                                  )
+                                                }
+                                                disabled={
+                                                  downloadingTaxAttachmentId ===
+                                                  attachmentId
+                                                }
+                                              >
+                                                <LuDownload className="size-3 mr-1" />
+                                                {downloadingTaxAttachmentId ===
+                                                attachmentId
+                                                  ? t('Downloading...')
+                                                  : t('Receipt')}
+                                              </Button>
+                                            )
+                                          )}
+                                        </div>
+                                      ) : null}
+                                    </div>
+                                  )
+                                )}
+                              </div>
+                            )}
+
+                            {activeTaxPaymentStatementId === statement._id ? (
+                              <div className="rounded border p-3 space-y-2">
+                                <div className="text-xs font-medium">
+                                  {t('Log payment confirmation')}
+                                </div>
+                                <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
+                                  <div>
+                                    <label className="text-xs text-muted-foreground">
+                                      {t('Paid date')}
+                                    </label>
+                                    <Input
+                                      type="date"
+                                      value={taxPaymentDraft.paidOn}
+                                      onChange={(event) =>
+                                        setTaxPaymentDraft((previous) => ({
+                                          ...previous,
+                                          paidOn: event.target.value
+                                        }))
+                                      }
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="text-xs text-muted-foreground">
+                                      {t('Paid amount')}
+                                    </label>
+                                    <Input
+                                      type="number"
+                                      step="0.01"
+                                      value={taxPaymentDraft.paidAmount}
+                                      onChange={(event) =>
+                                        setTaxPaymentDraft((previous) => ({
+                                          ...previous,
+                                          paidAmount: event.target.value
+                                        }))
+                                      }
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="text-xs text-muted-foreground">
+                                      {t('Fee amount')}
+                                    </label>
+                                    <Input
+                                      type="number"
+                                      step="0.01"
+                                      value={taxPaymentDraft.feeAmount}
+                                      onChange={(event) =>
+                                        setTaxPaymentDraft((previous) => ({
+                                          ...previous,
+                                          feeAmount: event.target.value
+                                        }))
+                                      }
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="text-xs text-muted-foreground">
+                                      {t('Payment method')}
+                                    </label>
+                                    <Input
+                                      type="text"
+                                      value={taxPaymentDraft.paymentMethod}
+                                      onChange={(event) =>
+                                        setTaxPaymentDraft((previous) => ({
+                                          ...previous,
+                                          paymentMethod: event.target.value
+                                        }))
+                                      }
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="text-xs text-muted-foreground">
+                                      {t('Confirmation number')}
+                                    </label>
+                                    <Input
+                                      type="text"
+                                      value={taxPaymentDraft.confirmationNumber}
+                                      onChange={(event) =>
+                                        setTaxPaymentDraft((previous) => ({
+                                          ...previous,
+                                          confirmationNumber: event.target.value
+                                        }))
+                                      }
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="text-xs text-muted-foreground">
+                                      {t('Confirmation file')}
+                                    </label>
+                                    <Input
+                                      type="file"
+                                      onChange={(event) =>
+                                        setTaxPaymentFile(
+                                          event.target.files?.[0] || null
+                                        )
+                                      }
+                                    />
+                                  </div>
+                                  <div className="md:col-span-3">
+                                    <label className="text-xs text-muted-foreground">
+                                      {t('Notes')}
+                                    </label>
+                                    <Input
+                                      type="text"
+                                      value={taxPaymentDraft.notes}
+                                      onChange={(event) =>
+                                        setTaxPaymentDraft((previous) => ({
+                                          ...previous,
+                                          notes: event.target.value
+                                        }))
+                                      }
+                                    />
+                                  </div>
+                                </div>
+                                <div className="flex gap-2 justify-end">
+                                  <Button
+                                    variant="outline"
+                                    onClick={handleCancelTaxPaymentLog}
+                                  >
+                                    {t('Cancel')}
+                                  </Button>
+                                  <Button
+                                    onClick={() =>
+                                      handleSaveTaxPaymentConfirmation(
+                                        statement
+                                      )
+                                    }
+                                    disabled={savingTaxPaymentConfirmation}
+                                  >
+                                    {savingTaxPaymentConfirmation
+                                      ? t('Saving...')
+                                      : t('Save confirmation')}
+                                  </Button>
+                                </div>
+                              </div>
+                            ) : (
+                              <Button
+                                variant="outline"
+                                onClick={() =>
+                                  handleStartTaxPaymentLog(statement._id)
+                                }
+                              >
+                                {t('Log payment confirmation')}
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            onClick={() =>
+                              setActiveTaxNotesStatementId((previous) =>
+                                previous === statement._id ? '' : statement._id
+                              )
+                            }
+                          >
+                            {activeTaxNotesStatementId === statement._id
+                              ? t('Hide notes')
+                              : t('Notes')}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            onClick={() => handleEditTaxStatement(statement)}
+                          >
+                            {t('Edit')}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            onClick={() =>
+                              handleDeleteTaxStatement(statement._id)
+                            }
+                          >
+                            {t('Delete')}
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {activeTaxNotesStatementId ? (
+                <div className="pt-2">
+                  <NotesPanel
+                    entityType="property_tax_statement"
+                    entityId={String(activeTaxNotesStatementId)}
+                  />
+                </div>
+              ) : null}
+            </div>
           </div>
-        )}
+        ) : null}
+
+        {!isUtilitiesOnly && utilitiesTab === 'tax-report' ? (
+          <div className="rounded-lg border p-4 space-y-4">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-base font-semibold">
+                  {t('Tax payment report')}
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  {t(
+                    'Track paid, partial, unpaid, and overpaid tax statements by property and year, including fees and remaining balances.'
+                  )}
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                onClick={handleExportTaxReportCsv}
+                disabled={exportingTaxReportCsv}
+              >
+                <LuFileSpreadsheet className="size-4 mr-2" />
+                {exportingTaxReportCsv ? t('Exporting...') : t('Export CSV')}
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+              <div>
+                <select
+                  value={taxReportPropertyFilter}
+                  onChange={(event) =>
+                    setTaxReportPropertyFilter(event.target.value)
+                  }
+                  className="w-full px-3 py-2 border rounded-md text-sm bg-background"
+                >
+                  <option value="all">{t('All properties')}</option>
+                  {topLevelPropertyOptions.map((property) => (
+                    <option key={property._id} value={property._id}>
+                      {property.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <select
+                  value={taxReportYearFilter}
+                  onChange={(event) =>
+                    setTaxReportYearFilter(event.target.value)
+                  }
+                  className="w-full px-3 py-2 border rounded-md text-sm bg-background"
+                >
+                  <option value="all">{t('All tax years')}</option>
+                  {taxYearOptions.map((taxYearLabel) => (
+                    <option key={taxYearLabel} value={taxYearLabel}>
+                      {taxYearLabel}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <select
+                  value={taxReportStatusFilter}
+                  onChange={(event) =>
+                    setTaxReportStatusFilter(event.target.value)
+                  }
+                  className="w-full px-3 py-2 border rounded-md text-sm bg-background"
+                >
+                  <option value="all">{t('All statuses')}</option>
+                  <option value="overpaid">{t('Overpaid')}</option>
+                  <option value="paid">{t('Paid')}</option>
+                  <option value="partial">{t('Partial')}</option>
+                  <option value="unpaid">{t('Unpaid')}</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="text-sm text-muted-foreground">
+              {t('Overpaid')}: {taxReportStatusSummary.overpaid} • {t('Paid')}:{' '}
+              {taxReportStatusSummary.paid} • {t('Partial')}:{' '}
+              {taxReportStatusSummary.partial} • {t('Unpaid')}:{' '}
+              {taxReportStatusSummary.unpaid}
+            </div>
+
+            {!filteredTaxReportRows.length ? (
+              <div className="text-sm text-muted-foreground">
+                {t('No tax report rows found for current filters')}
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {filteredTaxReportRows.map((row) => {
+                  const statusMeta = getTaxStatusMeta(row.status);
+                  return (
+                    <div
+                      key={`${row.statementId}-report`}
+                      className="rounded-lg border p-3 flex flex-col gap-2"
+                    >
+                      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="text-sm font-semibold">
+                          {row.propertyName} • {row.taxYearLabel}
+                        </div>
+                        <div
+                          className={`text-xs font-medium px-2 py-1 rounded w-fit ${statusMeta.className}`}
+                        >
+                          {t(statusMeta.label)}
+                        </div>
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {t('Total due')}: {toCurrency(row.totalDue)} •{' '}
+                        {t('Paid')}: {toCurrency(row.totalPaid)} • {t('Fees')}:{' '}
+                        {toCurrency(row.totalFees)} • {t('Balance')}:{' '}
+                        {toCurrency(row.balance)}
+                        {row.overpaidAmount > 0
+                          ? ` • ${t('Overpaid')}: ${toCurrency(row.overpaidAmount)}`
+                          : ''}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {t('Confirmations')}: {row.confirmationsCount}
+                        {row.lastPaymentDate
+                          ? ` • ${t('Last payment')}: ${row.lastPaymentDate}`
+                          : ''}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        ) : null}
+
+        {utilitiesTab !== 'taxes' && utilitiesTab !== 'tax-report' ? (
+          <>
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
+              <div className="md:col-span-2 relative">
+                <LuSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder={t(
+                    'Search by property, type, provider, account number, month...'
+                  )}
+                  value={searchText}
+                  onChange={(event) => setSearchText(event.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <div>
+                <select
+                  value={typeFilter}
+                  onChange={(event) => setTypeFilter(event.target.value)}
+                  className="w-full px-3 py-2 border rounded-md text-sm bg-background"
+                >
+                  <option value="all">{t('All types')}</option>
+                  {availableCategories.map((type) => (
+                    <option key={type} value={type}>
+                      {type}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <select
+                  value={monthFilter}
+                  onChange={(event) => setMonthFilter(event.target.value)}
+                  className="w-full px-3 py-2 border rounded-md text-sm bg-background"
+                >
+                  <option value="all">{t('All months')}</option>
+                  {billingMonths.map((month) => (
+                    <option key={month} value={month}>
+                      {month}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {isError ? (
+              <div className="text-sm text-red-600">
+                {t('Failed to load utilities')}
+              </div>
+            ) : filteredUtilities.length === 0 ? (
+              <div className="text-sm text-muted-foreground py-8 text-center">
+                {t('No utilities found for current filters')}
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {filteredUtilities.map((utility) => {
+                  const property = propertyById[String(utility.propertyId)];
+                  const propertyName = property?.name || t('Unknown property');
+
+                  return (
+                    <div
+                      key={utility._id}
+                      className="rounded-lg border p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+                    >
+                      <div className="space-y-1">
+                        <div className="text-sm font-semibold">
+                          {utility.type} • {utility.billingMonth}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          {propertyName}
+                          {utility.provider ? ` • ${utility.provider}` : ''}
+                          {utility.accountNumber
+                            ? ` • ${utility.accountNumber}`
+                            : ''}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {utility.paidDate
+                            ? `${t('Paid')} ${String(utility.paidDate).slice(0, 10)}`
+                            : t('Not paid yet')}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <div className="text-sm font-semibold">
+                          {toCurrency(utility.amount)}
+                        </div>
+                        <Button
+                          variant="outline"
+                          className="gap-2"
+                          onClick={() =>
+                            router.push(
+                              `/${router.query.organization}/properties/${utility.propertyId}`
+                            )
+                          }
+                        >
+                          <LuExternalLink className="size-4" />
+                          {t('Open property')}
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </>
+        ) : null}
       </Card>
     </Page>
   );
 }
 
-export default withAuthentication(UtilitiesPage);
+function UtilitiesRoutePage() {
+  return <UtilitiesPage view="utilities" />;
+}
+
+export default withAuthentication(UtilitiesRoutePage);
