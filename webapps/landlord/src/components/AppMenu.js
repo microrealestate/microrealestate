@@ -167,6 +167,12 @@ const menuItems = [
     key: 'thirdparties',
     labelId: 'Settings',
     pathname: '/settings/thirdparties'
+  },
+  {
+    hidden: true,
+    key: 'utilitiesSettings',
+    labelId: 'Settings',
+    pathname: '/settings/utilities'
   }
 ];
 

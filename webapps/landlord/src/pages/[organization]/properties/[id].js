@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { toJS } from 'mobx';
 import { useRouter } from 'next/router';
 import { LuArrowLeft, LuHistory, LuKeyRound, LuTrash } from 'react-icons/lu';
-import { useCallback, useContext, useEffect, useState } from 'react';
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { withAuthentication } from '../../../components/Authentication';
 import ConfirmDialog from '../../../components/ConfirmDialog';
@@ -296,7 +296,10 @@ function RentCard({ onSubmit, cityRentEstimates }) {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const router = useRouter();
-  const cityPresetOptions = Object.keys(cityRentEstimates);
+  const cityPresetOptions = useMemo(
+    () => Object.keys(cityRentEstimates || {}),
+    [cityRentEstimates]
+  );
   const propertyCity = store.property.selected?.address?.city;
   const selectedCityKey = getPresetCity(propertyCity, cityRentEstimates);
   const cityEstimateForProperty = selectedCityKey
@@ -331,6 +334,14 @@ function RentCard({ onSubmit, cityRentEstimates }) {
   );
 
   useEffect(() => {
+    const propertyCityPreset =
+      getPresetCity(
+        store.property.selected?.address?.city,
+        cityRentEstimates
+      ) ||
+      cityPresetOptions[0] ||
+      '';
+
     setRentValue(store.property.selected?.price || '');
     setRentLow(
       pickRentValue(
@@ -350,21 +361,17 @@ function RentCard({ onSubmit, cityRentEstimates }) {
         cityEstimateForProperty?.high
       )
     );
-    setCityForEstimate(
-      getPresetCity(
-        store.property.selected?.address?.city,
-        cityRentEstimates
-      ) ||
-        cityPresetOptions[0] ||
-        ''
-    );
+    setCityForEstimate(propertyCityPreset);
   }, [
+    cityPresetOptions,
     cityEstimateForProperty?.high,
     cityEstimateForProperty?.low,
     cityEstimateForProperty?.medium,
-    cityRentEstimates,
-    cityPresetOptions,
-    store.property.selected
+    store.property.selected?.address?.city,
+    store.property.selected?.price,
+    store.property.selected?.rentHighSqftYear,
+    store.property.selected?.rentLowSqftYear,
+    store.property.selected?.rentMedianSqftYear
   ]);
 
   const isParentProperty = (store.property.items || []).some(
@@ -380,6 +387,13 @@ function RentCard({ onSubmit, cityRentEstimates }) {
   );
   const surfaceSqft = sqmToSqft(surfaceSqm);
   const formattedSquareFeet = Number(surfaceSqft.toFixed(2));
+  const monthlyRentValue = Number(store.property.selected?.price || 0);
+  const rentPerSqftMonthly =
+    surfaceSqft > 0 && monthlyRentValue > 0
+      ? monthlyRentValue / surfaceSqft
+      : null;
+  const rentPerSqftYearly =
+    rentPerSqftMonthly !== null ? rentPerSqftMonthly * 12 : null;
 
   const handleSaveRent = async () => {
     await onSubmit({
@@ -624,16 +638,23 @@ function RentCard({ onSubmit, cityRentEstimates }) {
                 </span>
               </div>
             )}
-            {formattedSquareFeet > 0 && store.property.selected?.price > 0 && (
+            {rentPerSqftMonthly !== null && (
               <div className="flex justify-between items-center py-2 border-b">
                 <span className="text-sm text-muted-foreground">
-                  Rent per sq ft
+                  Rent per sq ft / month
                 </span>
                 <span className="text-lg font-semibold">
-                  <NumberFormat
-                    value={store.property.selected.price / formattedSquareFeet}
-                  />{' '}
-                  / sq ft
+                  <NumberFormat value={rentPerSqftMonthly} /> / sq ft
+                </span>
+              </div>
+            )}
+            {rentPerSqftYearly !== null && (
+              <div className="flex justify-between items-center py-2 border-b">
+                <span className="text-sm text-muted-foreground">
+                  Rent per sq ft / year
+                </span>
+                <span className="text-lg font-semibold">
+                  <NumberFormat value={rentPerSqftYearly} /> / sq ft / year
                 </span>
               </div>
             )}

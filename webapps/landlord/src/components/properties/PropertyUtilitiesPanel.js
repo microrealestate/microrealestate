@@ -44,6 +44,53 @@ export default function PropertyUtilitiesPanel({ property, childUnits = [] }) {
 
   const units = useMemo(() => childUnits || [], [childUnits]);
 
+  const providerSuggestions = useMemo(() => {
+    const providerByNormalized = new Map();
+
+    utilities.forEach((utility) => {
+      const provider = String(utility?.provider || '').trim();
+      if (!provider) {
+        return;
+      }
+
+      const normalizedProvider = provider.toLowerCase();
+      if (!providerByNormalized.has(normalizedProvider)) {
+        providerByNormalized.set(normalizedProvider, provider);
+      }
+    });
+
+    return Array.from(providerByNormalized.values()).sort((a, b) =>
+      a.localeCompare(b)
+    );
+  }, [utilities]);
+
+  const accountNumberSuggestions = useMemo(() => {
+    const accountByNormalized = new Map();
+
+    utilities.forEach((utility) => {
+      const accountNumber = String(utility?.accountNumber || '').trim();
+      if (!accountNumber) {
+        return;
+      }
+
+      const normalizedAccountNumber = accountNumber.toLowerCase();
+      if (!accountByNormalized.has(normalizedAccountNumber)) {
+        accountByNormalized.set(normalizedAccountNumber, accountNumber);
+      }
+    });
+
+    return Array.from(accountByNormalized.values()).sort((a, b) =>
+      a.localeCompare(b)
+    );
+  }, [utilities]);
+
+  const providerDatalistId = `property-utility-provider-options-${
+    propertyId || 'default'
+  }`;
+  const accountNumberDatalistId = `property-utility-account-options-${
+    propertyId || 'default'
+  }`;
+
   useEffect(() => {
     setDraft((previous) => ({
       ...previous,
@@ -253,11 +300,17 @@ export default function PropertyUtilitiesPanel({ property, childUnits = [] }) {
           <input
             type="text"
             value={draft.provider}
+            list={providerDatalistId}
             onChange={(e) =>
               setDraft((prev) => ({ ...prev, provider: e.target.value }))
             }
             className="w-full px-3 py-2 border rounded bg-background text-foreground"
           />
+          <datalist id={providerDatalistId}>
+            {providerSuggestions.map((provider) => (
+              <option key={provider} value={provider} />
+            ))}
+          </datalist>
         </div>
         <div>
           <label className="text-xs text-muted-foreground">
@@ -266,11 +319,17 @@ export default function PropertyUtilitiesPanel({ property, childUnits = [] }) {
           <input
             type="text"
             value={draft.accountNumber}
+            list={accountNumberDatalistId}
             onChange={(e) =>
               setDraft((prev) => ({ ...prev, accountNumber: e.target.value }))
             }
             className="w-full px-3 py-2 border rounded bg-background text-foreground"
           />
+          <datalist id={accountNumberDatalistId}>
+            {accountNumberSuggestions.map((accountNumber) => (
+              <option key={accountNumber} value={accountNumber} />
+            ))}
+          </datalist>
         </div>
         <div>
           <label className="text-xs text-muted-foreground">Amount</label>

@@ -84,6 +84,11 @@ function Settings() {
                   'Connect third-parties to extend the functionality of your organization'
                 )}
               />
+              <SettingLink
+                href="/settings/utilities"
+                title={t('Utility categories')}
+                description={t('Manage utility categories shown in Utilities')}
+              />
             </>
           ) : null}
         </CardContent>

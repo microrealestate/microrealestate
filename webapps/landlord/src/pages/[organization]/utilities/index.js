@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { LuExternalLink, LuSearch, LuWrench } from 'react-icons/lu';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/router';
@@ -25,6 +25,14 @@ const DEFAULT_UTILITY_CATEGORIES = [
   'other'
 ];
 
+const CATEGORY_STORAGE_KEY_PREFIX = 'utilities-category-settings:';
+
+function normalizeCategory(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase();
+}
+
 function getCurrentBillingMonth() {
   const now = new Date();
   const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -44,6 +52,8 @@ function UtilitiesPage() {
   const [monthFilter, setMonthFilter] = useState('all');
   const [submitting, setSubmitting] = useState(false);
   const [billFile, setBillFile] = useState(null);
+  const [customCategories, setCustomCategories] = useState([]);
+  const [hiddenCategories, setHiddenCategories] = useState([]);
   const [draft, setDraft] = useState({
     propertyId: '',
     type: 'water',
@@ -76,6 +86,45 @@ function UtilitiesPage() {
   const loadingUtilities = utilitiesQuery.isLoading;
   const isError = utilitiesQuery.isError;
 
+  const organizationSlug = String(router.query.organization || 'default');
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const storageKey = `${CATEGORY_STORAGE_KEY_PREFIX}${organizationSlug}`;
+
+    try {
+      const storedValue = window.localStorage.getItem(storageKey);
+      if (!storedValue) {
+        setCustomCategories([]);
+        setHiddenCategories([]);
+        return;
+      }
+
+      const parsedValue = JSON.parse(storedValue);
+
+      setCustomCategories(
+        Array.isArray(parsedValue?.custom)
+          ? parsedValue.custom
+              .map((category) => normalizeCategory(category))
+              .filter(Boolean)
+          : []
+      );
+      setHiddenCategories(
+        Array.isArray(parsedValue?.hidden)
+          ? parsedValue.hidden
+              .map((category) => normalizeCategory(category))
+              .filter(Boolean)
+          : []
+      );
+    } catch (error) {
+      setCustomCategories([]);
+      setHiddenCategories([]);
+    }
+  }, [organizationSlug]);
+
   const propertyById = useMemo(
     () =>
       (properties || []).reduce((acc, property) => {
@@ -85,20 +134,32 @@ function UtilitiesPage() {
     [properties]
   );
 
-  const utilityTypes = useMemo(() => {
+  const availableCategories = useMemo(() => {
     const typeSet = new Set();
     DEFAULT_UTILITY_CATEGORIES.forEach((type) => typeSet.add(type));
     utilities.forEach((utility) => {
-      if (utility?.type) {
-        typeSet.add(utility.type);
+      const normalizedType = normalizeCategory(utility?.type);
+      if (normalizedType) {
+        typeSet.add(normalizedType);
       }
     });
-    return Array.from(typeSet).sort();
-  }, [utilities]);
+    customCategories.forEach((type) => {
+      const normalizedType = normalizeCategory(type);
+      if (normalizedType) {
+        typeSet.add(normalizedType);
+      }
+    });
+
+    hiddenCategories.forEach((type) => {
+      typeSet.delete(normalizeCategory(type));
+    });
+
+    return Array.from(typeSet).sort((a, b) => a.localeCompare(b));
+  }, [customCategories, hiddenCategories, utilities]);
 
   const createCategoryOptions = useMemo(() => {
-    return [...utilityTypes, 'custom'];
-  }, [utilityTypes]);
+    return [...availableCategories, 'custom'];
+  }, [availableCategories]);
 
   const billingMonths = useMemo(() => {
     const monthSet = new Set();
@@ -110,10 +171,33 @@ function UtilitiesPage() {
     return Array.from(monthSet).sort((a, b) => b.localeCompare(a));
   }, [utilities]);
 
+  const providerSuggestions = useMemo(() => {
+    const providerByNormalized = new Map();
+
+    utilities.forEach((utility) => {
+      const provider = String(utility?.provider || '').trim();
+      if (!provider) {
+        return;
+      }
+
+      const normalizedProvider = provider.toLowerCase();
+      if (!providerByNormalized.has(normalizedProvider)) {
+        providerByNormalized.set(normalizedProvider, provider);
+      }
+    });
+
+    return Array.from(providerByNormalized.values()).sort((a, b) =>
+      a.localeCompare(b)
+    );
+  }, [utilities]);
+
   const filteredUtilities = useMemo(() => {
     const cleanedSearchText = searchText.trim().toLowerCase();
     return utilities.filter((utility) => {
-      if (typeFilter !== 'all' && utility.type !== typeFilter) {
+      if (
+        typeFilter !== 'all' &&
+        normalizeCategory(utility.type) !== normalizeCategory(typeFilter)
+      ) {
         return false;
       }
 
@@ -345,6 +429,7 @@ function UtilitiesPage() {
               <Input
                 type="text"
                 value={draft.provider}
+                list="utility-provider-options"
                 onChange={(event) =>
                   setDraft((prev) => ({
                     ...prev,
@@ -352,6 +437,11 @@ function UtilitiesPage() {
                   }))
                 }
               />
+              <datalist id="utility-provider-options">
+                {providerSuggestions.map((provider) => (
+                  <option key={provider} value={provider} />
+                ))}
+              </datalist>
             </div>
             <div>
               <label className="text-xs text-muted-foreground">
@@ -428,7 +518,7 @@ function UtilitiesPage() {
               className="w-full px-3 py-2 border rounded-md text-sm bg-background"
             >
               <option value="all">{t('All types')}</option>
-              {utilityTypes.map((type) => (
+              {availableCategories.map((type) => (
                 <option key={type} value={type}>
                   {type}
                 </option>
