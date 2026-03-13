@@ -89,6 +89,11 @@ function Settings() {
                 title={t('Utility categories')}
                 description={t('Manage utility categories shown in Utilities')}
               />
+              <SettingLink
+                href="/settings/spaces"
+                title={t('Space types')}
+                description={t('Manage property types shown in Property forms')}
+              />
             </>
           ) : null}
         </CardContent>

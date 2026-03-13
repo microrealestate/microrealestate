@@ -9,7 +9,7 @@ import {
 } from '@microrealestate/commonui/components';
 import { Form, Formik } from 'formik';
 import { observer } from 'mobx-react-lite';
-import { useContext, useMemo } from 'react';
+import { useContext, useEffect, useMemo, useState } from 'react';
 import { Section } from '../formfields/Section';
 import { StoreContext } from '../../store';
 import { sqftToSqm, sqmToSqft } from '../../utils/surfaceConversion';
@@ -17,6 +17,27 @@ import PropertyIcon from './PropertyIcon';
 import types from './types';
 import useTranslation from 'next-translate/useTranslation';
 /* eslint-enable sort-imports */
+
+const PROPERTY_TYPE_STORAGE_KEY_PREFIX = 'property-type-settings:';
+
+function normalizeType(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase();
+}
+
+function toTypeLabel(typeId, t) {
+  const defaultType = types.find((type) => type.id === typeId);
+  if (defaultType) {
+    return t(defaultType.labelId);
+  }
+
+  return String(typeId)
+    .split(/[-_\s]+/)
+    .filter(Boolean)
+    .map((chunk) => chunk.charAt(0).toUpperCase() + chunk.slice(1))
+    .join(' ');
+}
 
 /*
   VALIDATION SCHEMA
@@ -56,6 +77,47 @@ const validationSchema = Yup.object().shape({
 const PropertyForm = observer(({ onSubmit }) => {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
+  const [customPropertyTypes, setCustomPropertyTypes] = useState([]);
+  const [hiddenPropertyTypes, setHiddenPropertyTypes] = useState([]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const organizationSlug = String(
+      store.organization.selected?.name || 'default'
+    );
+    const storageKey = `${PROPERTY_TYPE_STORAGE_KEY_PREFIX}${organizationSlug}`;
+
+    try {
+      const storedValue = window.localStorage.getItem(storageKey);
+      if (!storedValue) {
+        setCustomPropertyTypes([]);
+        setHiddenPropertyTypes([]);
+        return;
+      }
+
+      const parsedValue = JSON.parse(storedValue);
+      setCustomPropertyTypes(
+        Array.isArray(parsedValue?.custom)
+          ? parsedValue.custom
+              .map((type) => normalizeType(type))
+              .filter(Boolean)
+          : []
+      );
+      setHiddenPropertyTypes(
+        Array.isArray(parsedValue?.hidden)
+          ? parsedValue.hidden
+              .map((type) => normalizeType(type))
+              .filter(Boolean)
+          : []
+      );
+    } catch (error) {
+      setCustomPropertyTypes([]);
+      setHiddenPropertyTypes([]);
+    }
+  }, [store.organization.selected?.name]);
 
   /*
     INITIAL VALUES
@@ -103,16 +165,39 @@ const PropertyForm = observer(({ onSubmit }) => {
   /*
     PROPERTY TYPES DROPDOWN — ORIGINAL LOGIC
   */
-  const propertyTypes = useMemo(
-    () =>
-      types.map((type) => ({
-        id: type.id,
-        value: type.id,
-        label: t(type.labelId),
-        renderIcon: () => <PropertyIcon type={type.id} />
-      })),
-    [t]
-  );
+  const propertyTypes = useMemo(() => {
+    const typeSet = new Set(types.map((type) => normalizeType(type.id)));
+
+    customPropertyTypes.forEach((type) => {
+      const normalizedType = normalizeType(type);
+      if (normalizedType) {
+        typeSet.add(normalizedType);
+      }
+    });
+
+    hiddenPropertyTypes.forEach((type) => {
+      typeSet.delete(normalizeType(type));
+    });
+
+    const selectedType = normalizeType(store.property.selected?.type);
+    if (selectedType) {
+      typeSet.add(selectedType);
+    }
+
+    return Array.from(typeSet)
+      .sort((a, b) => a.localeCompare(b))
+      .map((typeId) => ({
+        id: typeId,
+        value: typeId,
+        label: toTypeLabel(typeId, t),
+        renderIcon: () => <PropertyIcon type={typeId} />
+      }));
+  }, [
+    customPropertyTypes,
+    hiddenPropertyTypes,
+    store.property.selected?.type,
+    t
+  ]);
 
   /*
     NEW — BUILDING OPTIONS
@@ -133,15 +218,13 @@ const PropertyForm = observer(({ onSubmit }) => {
   );
 
   // WHICH TYPES SHOULD HAVE A "BUILDING" DROPDOWN?
-  const unitTypes = [
-    'apartment',
-    'room',
-    'office',
-    'store',
-    'garage',
-    'parking',
-    'letterbox'
-  ];
+  const unitTypes = useMemo(
+    () =>
+      propertyTypes
+        .map((type) => type.value)
+        .filter((type) => type !== 'building'),
+    [propertyTypes]
+  );
 
   const handleSubmit = (formValues) => {
     // CONVERT SURFACE FROM SQ FT (FORM INPUT) TO SQ M (DATABASE)
