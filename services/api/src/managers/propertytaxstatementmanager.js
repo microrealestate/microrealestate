@@ -96,6 +96,76 @@ function parseStringFromText(text, patterns = []) {
   return '';
 }
 
+function parseDateRangeFromText(text) {
+  const match = text.match(
+    /(\d{1,2}\/\d{1,2}\/\d{4})\s*(?:to|-)\s*(\d{1,2}\/\d{1,2}\/\d{4})/i
+  );
+
+  if (!match) {
+    return { periodStart: null, periodEnd: null };
+  }
+
+  return {
+    periodStart: match[1],
+    periodEnd: match[2]
+  };
+}
+
+function parseSingleNumber(value) {
+  const parsed = Number(String(value || '').replace(/[$,\s]/g, ''));
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function parseConcatenatedPair(value) {
+  const compact = String(value || '').replace(/\s/g, '');
+  if (!compact) {
+    return [null, null];
+  }
+
+  const decimalPair = compact.match(
+    /^(\d{1,3}(?:,\d{3})+\.\d{2})(\d{1,3}(?:,\d{3})+\.\d{2})$/
+  );
+  if (decimalPair) {
+    return [
+      parseSingleNumber(decimalPair[1]),
+      parseSingleNumber(decimalPair[2])
+    ];
+  }
+
+  const integerPair = compact.match(
+    /^(\d{1,3}(?:,\d{3})+)(\d{1,3}(?:,\d{3})+)$/
+  );
+  if (integerPair) {
+    return [
+      parseSingleNumber(integerPair[1]),
+      parseSingleNumber(integerPair[2])
+    ];
+  }
+
+  const candidates = String(value || '').match(/\d{1,3}(?:,\d{3})*(?:\.\d+)?/g);
+  if (candidates?.length >= 2) {
+    return [parseSingleNumber(candidates[0]), parseSingleNumber(candidates[1])];
+  }
+
+  return [null, null];
+}
+
+function parsePairedNumbersByLabel(text, labelPatterns = []) {
+  for (const pattern of labelPatterns) {
+    const match = text.match(pattern);
+    if (!match) {
+      continue;
+    }
+
+    const [left, right] = parseConcatenatedPair(match[1] || '');
+    if (left !== null || right !== null) {
+      return [left, right];
+    }
+  }
+
+  return [null, null];
+}
+
 async function extractTextFromBuffer(buffer, mimeType = '', filename = '') {
   const normalizedMimeType = String(mimeType || '').toLowerCase();
   const normalizedFilename = String(filename || '').toLowerCase();
@@ -200,18 +270,52 @@ async function loadAttachmentForParsing(realmId, statementId, attachmentId) {
 function parseTaxStatementFields(text, filename = '') {
   const mergedText = `${String(filename)}\n${String(text || '')}`;
 
+  const { periodStart, periodEnd } = parseDateRangeFromText(mergedText);
+  const [rmvLandLastYear, rmvLandThisYear] = parsePairedNumbersByLabel(
+    mergedText,
+    [/rmv\s*land\s*:?[\s]*([^\n]+)/i]
+  );
+  const [rmvBuildingLastYear, rmvBuildingThisYear] = parsePairedNumbersByLabel(
+    mergedText,
+    [/rmv\s*(?:building|bldg)\s*:?[\s]*([^\n]+)/i]
+  );
+  const [rmvTotalLastYear, rmvTotalThisYear] = parsePairedNumbersByLabel(
+    mergedText,
+    [/rmv\s*total\s*:?[\s]*([^\n]+)/i]
+  );
+  const [assessedValueLastYear, assessedValueThisYear] =
+    parsePairedNumbersByLabel(mergedText, [
+      /assessed\s*value(?:s)?\s*:?[\s]*([^\n]+)/i
+    ]);
+  const [propertyTaxesLastYear, propertyTaxesThisYear] =
+    parsePairedNumbersByLabel(mergedText, [
+      /property\s*tax(?:es)?\s*:?[\s]*([^\n]+)/i
+    ]);
+
   const taxYearLabel =
     parseStringFromText(mergedText, [/\b(20\d{2}\s*-\s*20\d{2})\b/i]) ||
     parseStringFromText(mergedText, [/\b(20\d{2})\b/]);
 
   return {
     taxYearLabel,
+    periodStart,
+    periodEnd,
     accountNumber: parseStringFromText(mergedText, [
       /account\s*(?:number|no\.?|#)?\s*[:-]?\s*([a-z0-9-]+)/i
     ]),
     mapNumber: parseStringFromText(mergedText, [
       /map\s*(?:number|no\.?|#)?\s*[:-]?\s*([a-z0-9-]+)/i
     ]),
+    rmvLandLastYear,
+    rmvLandThisYear,
+    rmvBuildingLastYear,
+    rmvBuildingThisYear,
+    rmvTotalLastYear,
+    rmvTotalThisYear,
+    assessedValueLastYear,
+    assessedValueThisYear,
+    propertyTaxesLastYear,
+    propertyTaxesThisYear,
     taxBeforeDiscount: parseNumberFromText(mergedText, [
       /tax\s*before\s*discount\s*[:$]?\s*([\d,.]+)/i,
       /total\s*tax(?:es)?\s*[:$]?\s*([\d,.]+)/i
@@ -221,6 +325,7 @@ function parseTaxStatementFields(text, filename = '') {
     ]),
     totalAfterDiscount: parseNumberFromText(mergedText, [
       /total\s*after\s*discount\s*[:$]?\s*([\d,.]+)/i,
+      /total\s*\(\s*after\s*discount\s*\)\s*[:$]?\s*([\d,.]+)/i,
       /amount\s*due\s*[:$]?\s*([\d,.]+)/i
     ])
   };

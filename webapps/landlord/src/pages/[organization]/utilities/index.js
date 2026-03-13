@@ -9,7 +9,7 @@ import {
   LuSearch,
   LuTrash2
 } from 'react-icons/lu';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { apiFetcher } from '../../../utils/fetch';
 import { Button } from '../../../components/ui/button';
 import { Card } from '../../../components/ui/card';
@@ -194,6 +194,171 @@ function sumSplitPercentages(items) {
   return items.reduce((sum, item) => sum + (Number(item.percentage) || 0), 0);
 }
 
+function isHistoricalTaxYearLabel(taxYearLabel) {
+  const label = String(taxYearLabel || '').trim();
+  if (!label) {
+    return false;
+  }
+
+  const rangeMatch = label.match(/^(\d{4})\s*[-–]\s*(\d{4})$/);
+  const singleMatch = label.match(/^(\d{4})$/);
+  const startYear = rangeMatch
+    ? Number(rangeMatch[1])
+    : singleMatch
+      ? Number(singleMatch[1])
+      : null;
+
+  if (!Number.isFinite(startYear)) {
+    return false;
+  }
+
+  return startYear < new Date().getFullYear() - 1;
+}
+
+function isHistoricalDefaultEstimateActive(taxPayload) {
+  if (!isHistoricalTaxYearLabel(taxPayload?.taxYearLabel)) {
+    return false;
+  }
+
+  const totalAfterDiscount = Number(taxPayload?.totalAfterDiscount || 0);
+  if (!Number.isFinite(totalAfterDiscount) || totalAfterDiscount <= 0) {
+    return false;
+  }
+
+  const estimatedIncreasePercentage = Number(
+    taxPayload?.estimatedIncreasePercentage || 0
+  );
+  if (estimatedIncreasePercentage !== 0) {
+    return false;
+  }
+
+  const priorEstimatedRaw = String(
+    taxPayload?.priorYearEstimatedTotal ?? ''
+  ).trim();
+  if (!priorEstimatedRaw) {
+    return true;
+  }
+
+  const priorEstimatedTotal = Number(priorEstimatedRaw);
+  return (
+    Number.isFinite(priorEstimatedTotal) &&
+    Math.abs(priorEstimatedTotal - totalAfterDiscount) <= 0.01
+  );
+}
+
+function normalizeAccountKey(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '');
+}
+
+function hasSavedTaxSplits(statement) {
+  const buildingHasSplits = Array.isArray(statement?.buildingUnitSplits)
+    ? statement.buildingUnitSplits.some((item) => item?.subPropertyId)
+    : false;
+  const landHasSplits = Array.isArray(statement?.landUnitSplits)
+    ? statement.landUnitSplits.some((item) => item?.subPropertyId)
+    : false;
+  return buildingHasSplits || landHasSplits;
+}
+
+function buildTaxAllocationPreview(taxPayload, propertyById) {
+  const totalTax = Number(taxPayload?.totalAfterDiscount || 0);
+  const estimatedIncreasePercentage = Number(
+    taxPayload?.estimatedIncreasePercentage || 0
+  );
+  const nextYearTotal = totalTax * (1 + estimatedIncreasePercentage / 100);
+  const currentYearMonthlyTotal = totalTax / 12;
+  const nextYearMonthlyTotal = nextYearTotal / 12;
+  const landLeasedPercentage = Math.min(
+    100,
+    Math.max(0, Number(taxPayload?.landLeasedPercentage || 0))
+  );
+  const buildingLeasedPercentage = 100 - landLeasedPercentage;
+  const landAmount = (totalTax * landLeasedPercentage) / 100;
+  const buildingAmount = (totalTax * buildingLeasedPercentage) / 100;
+
+  const toRows = (items, totalAmount, bucket) => {
+    return (Array.isArray(items) ? items : [])
+      .filter((item) => item?.subPropertyId)
+      .map((item) => {
+        const percentage = Number(item.percentage || 0);
+        const unitId = String(item.subPropertyId);
+        return {
+          unitId,
+          unitName: propertyById?.[unitId]?.name || unitId,
+          percentage,
+          amount: (totalAmount * percentage) / 100,
+          bucket
+        };
+      })
+      .filter(
+        (item) => Number.isFinite(item.percentage) && item.percentage > 0
+      );
+  };
+
+  const buildingRows = toRows(
+    taxPayload?.buildingUnitSplits,
+    buildingAmount,
+    'building'
+  );
+  const landRows = toRows(taxPayload?.landUnitSplits, landAmount, 'land');
+
+  const combinedByUnit = {};
+  [...buildingRows, ...landRows].forEach((row) => {
+    if (!combinedByUnit[row.unitId]) {
+      combinedByUnit[row.unitId] = {
+        unitId: row.unitId,
+        unitName: row.unitName,
+        buildingAmount: 0,
+        landAmount: 0,
+        totalAmount: 0,
+        buildingPercentage: 0,
+        landPercentage: 0
+      };
+    }
+
+    if (row.bucket === 'building') {
+      combinedByUnit[row.unitId].buildingAmount += row.amount;
+      combinedByUnit[row.unitId].buildingPercentage = row.percentage;
+    }
+    if (row.bucket === 'land') {
+      combinedByUnit[row.unitId].landAmount += row.amount;
+      combinedByUnit[row.unitId].landPercentage = row.percentage;
+    }
+    combinedByUnit[row.unitId].totalAmount += row.amount;
+  });
+
+  const factor = 1 + estimatedIncreasePercentage / 100;
+  Object.values(combinedByUnit).forEach((row) => {
+    row.totalSharePercentage =
+      totalTax > 0 ? (row.totalAmount / totalTax) * 100 : 0;
+    row.currentYearMonthlyAmount = row.totalAmount / 12;
+    row.nextYearBuildingAmount = row.buildingAmount * factor;
+    row.nextYearLandAmount = row.landAmount * factor;
+    row.nextYearAnnualAmount = row.totalAmount * factor;
+    row.nextYearMonthlyAmount = row.nextYearAnnualAmount / 12;
+  });
+
+  return {
+    totalTax,
+    estimatedIncreasePercentage,
+    nextYearTotal,
+    currentYearMonthlyTotal,
+    nextYearMonthlyTotal,
+    landLeasedPercentage,
+    buildingLeasedPercentage,
+    landAmount,
+    buildingAmount,
+    buildingRows,
+    landRows,
+    combinedRows: Object.values(combinedByUnit).sort((a, b) =>
+      a.unitName.localeCompare(b.unitName)
+    )
+  };
+}
+
 function getTaxStatusMeta(status) {
   switch (status) {
     case 'overpaid':
@@ -242,7 +407,7 @@ export function UtilitiesPage({ view = 'all' }) {
   const [customCategories, setCustomCategories] = useState([]);
   const [hiddenCategories, setHiddenCategories] = useState([]);
   const [utilitiesTab, setUtilitiesTab] = useState(
-    isTaxOnly ? 'taxes' : 'bills'
+    isTaxOnly ? 'tax-new' : 'bills'
   );
   const [savingTaxStatement, setSavingTaxStatement] = useState(false);
   const [parsingTaxUpload, setParsingTaxUpload] = useState(false);
@@ -270,6 +435,13 @@ export function UtilitiesPage({ view = 'all' }) {
   const [accountDraft, setAccountDraft] = useState(getInitialAccountDraft());
   const [billDraft, setBillDraft] = useState(getInitialBillDraft());
   const [taxDraft, setTaxDraft] = useState(getInitialTaxDraft());
+  const taxDraftRef = useRef(taxDraft);
+  const [taxAllocationCarriedOver, setTaxAllocationCarriedOver] =
+    useState(false);
+
+  useEffect(() => {
+    taxDraftRef.current = taxDraft;
+  }, [taxDraft]);
 
   const { data: properties = [], isLoading: loadingProperties } = useQuery({
     queryKey: ['utilities-properties'],
@@ -727,6 +899,35 @@ export function UtilitiesPage({ view = 'all' }) {
     [taxDraft.landUnitSplits]
   );
 
+  // Map: normalised account number → most recently saved statement (by taxYearLabel desc)
+  const allocationByAccountNumber = useMemo(() => {
+    const map = new Map();
+    const sorted = [...propertyTaxStatements].sort((a, b) =>
+      String(b.taxYearLabel || '').localeCompare(String(a.taxYearLabel || ''))
+    );
+    for (const stmt of sorted) {
+      const key = normalizeAccountKey(stmt.accountNumber);
+      if (!key) {
+        continue;
+      }
+
+      if (!map.has(key)) {
+        map.set(key, stmt);
+        continue;
+      }
+
+      const existing = map.get(key);
+      if (!hasSavedTaxSplits(existing) && hasSavedTaxSplits(stmt)) {
+        map.set(key, stmt);
+      }
+    }
+    return map;
+  }, [propertyTaxStatements]);
+
+  const draftTaxAllocationPreview = useMemo(() => {
+    return buildTaxAllocationPreview(taxDraft, propertyById);
+  }, [propertyById, taxDraft]);
+
   const handleAccountAllocationChange = (index, field, value) => {
     setAccountDraft((previous) => ({
       ...previous,
@@ -1064,9 +1265,74 @@ export function UtilitiesPage({ view = 'all' }) {
   const resetTaxDraft = () => {
     setTaxDraft(getInitialTaxDraft());
     setTaxFile(null);
+    setTaxAllocationCarriedOver(false);
+  };
+
+  const applyTaxAllocationCarryOver = (value) => {
+    const key = normalizeAccountKey(value);
+    if (!key) {
+      return;
+    }
+    const match = allocationByAccountNumber.get(key);
+    if (!match) {
+      return;
+    }
+    // Read latest draft from a ref so fast input events don't miss carry-over.
+    const currentDraft = taxDraftRef.current;
+    const alreadyHasSplits =
+      currentDraft.buildingUnitSplits.some((r) => r.subPropertyId) ||
+      currentDraft.landUnitSplits.some((r) => r.subPropertyId);
+    if (alreadyHasSplits) {
+      return;
+    }
+    setTaxAllocationCarriedOver(true);
+    setTaxDraft((previous) => {
+      const preserveHistoricalEstimate = isHistoricalTaxYearLabel(
+        previous.taxYearLabel
+      );
+
+      return {
+        ...previous,
+        propertyId: previous.propertyId || String(match.propertyId || ''),
+        landLeasedPercentage: String(
+          match.landLeasedPercentage ?? previous.landLeasedPercentage
+        ),
+        estimatedIncreasePercentage: String(
+          preserveHistoricalEstimate
+            ? previous.estimatedIncreasePercentage
+            : (match.estimatedIncreasePercentage ??
+                previous.estimatedIncreasePercentage)
+        ),
+        buildingUnitSplits: (match.buildingUnitSplits || []).length
+          ? match.buildingUnitSplits.map((item) => ({
+              subPropertyId: String(item.subPropertyId),
+              percentage: String(item.percentage)
+            }))
+          : previous.buildingUnitSplits,
+        landUnitSplits: (match.landUnitSplits || []).length
+          ? match.landUnitSplits.map((item) => ({
+              subPropertyId: String(item.subPropertyId),
+              percentage: String(item.percentage)
+            }))
+          : previous.landUnitSplits
+      };
+    });
+  };
+
+  const handleTaxAccountNumberChange = (value) => {
+    setTaxAllocationCarriedOver(false);
+    setTaxDraft((previous) => ({ ...previous, accountNumber: value }));
+    // When using a datalist, onChange fires on selection; apply carry-over here
+    // so it works regardless of whether onBlur fires.
+    applyTaxAllocationCarryOver(value);
+  };
+
+  const handleTaxAccountNumberBlur = (value) => {
+    applyTaxAllocationCarryOver(value);
   };
 
   const handleEditTaxStatement = (statement) => {
+    setTaxAllocationCarriedOver(false);
     setTaxDraft({
       id: statement._id,
       propertyId: String(statement.propertyId || ''),
@@ -1112,7 +1378,7 @@ export function UtilitiesPage({ view = 'all' }) {
       notes: statement.notes || ''
     });
     setTaxFile(null);
-    setUtilitiesTab('taxes');
+    setUtilitiesTab('tax-edit');
   };
 
   const normalizeTaxSplit = (items, label) => {
@@ -1171,6 +1437,16 @@ export function UtilitiesPage({ view = 'all' }) {
   const mergeExtractedTaxFields = (payload, extracted = {}) => {
     const merged = { ...payload };
     const numberFields = [
+      'rmvLandLastYear',
+      'rmvLandThisYear',
+      'rmvBuildingLastYear',
+      'rmvBuildingThisYear',
+      'rmvTotalLastYear',
+      'rmvTotalThisYear',
+      'assessedValueLastYear',
+      'assessedValueThisYear',
+      'propertyTaxesLastYear',
+      'propertyTaxesThisYear',
       'taxBeforeDiscount',
       'delinquentTaxes',
       'totalAfterDiscount'
@@ -1186,6 +1462,14 @@ export function UtilitiesPage({ view = 'all' }) {
 
     if (extracted.mapNumber && !merged.mapNumber) {
       merged.mapNumber = String(extracted.mapNumber);
+    }
+
+    if (extracted.periodStart && !merged.periodStart) {
+      merged.periodStart = extracted.periodStart;
+    }
+
+    if (extracted.periodEnd && !merged.periodEnd) {
+      merged.periodEnd = extracted.periodEnd;
     }
 
     numberFields.forEach((field) => {
@@ -1195,16 +1479,53 @@ export function UtilitiesPage({ view = 'all' }) {
       }
     });
 
+    if (isHistoricalTaxYearLabel(merged.taxYearLabel)) {
+      if (Number(merged.estimatedIncreasePercentage || 0) === 3.5) {
+        // Historical uploads should not project growth by default.
+        merged.estimatedIncreasePercentage = 0;
+      }
+
+      if (
+        merged.priorYearEstimatedTotal === null ||
+        merged.priorYearEstimatedTotal === undefined ||
+        merged.priorYearEstimatedTotal === ''
+      ) {
+        const recordedTotal = Number(merged.totalAfterDiscount || 0);
+        if (Number.isFinite(recordedTotal) && recordedTotal > 0) {
+          merged.priorYearEstimatedTotal = recordedTotal;
+        }
+      }
+    }
+
     return merged;
   };
 
   const mergeExtractedTaxDraft = (draft, extracted = {}) => {
     const merged = { ...draft };
     const numberFields = [
+      'rmvLandLastYear',
+      'rmvLandThisYear',
+      'rmvBuildingLastYear',
+      'rmvBuildingThisYear',
+      'rmvTotalLastYear',
+      'rmvTotalThisYear',
+      'assessedValueLastYear',
+      'assessedValueThisYear',
+      'propertyTaxesLastYear',
+      'propertyTaxesThisYear',
       'taxBeforeDiscount',
       'delinquentTaxes',
       'totalAfterDiscount'
     ];
+
+    const toDateInputValue = (value) => {
+      const parsed = new Date(value);
+      if (Number.isNaN(parsed.getTime())) {
+        return '';
+      }
+
+      return parsed.toISOString().slice(0, 10);
+    };
 
     if (extracted.taxYearLabel && !merged.taxYearLabel) {
       merged.taxYearLabel = String(extracted.taxYearLabel);
@@ -1218,12 +1539,49 @@ export function UtilitiesPage({ view = 'all' }) {
       merged.mapNumber = String(extracted.mapNumber);
     }
 
+    if (extracted.periodStart && !merged.periodStart) {
+      const formatted = toDateInputValue(extracted.periodStart);
+      if (formatted) {
+        merged.periodStart = formatted;
+      }
+    }
+
+    if (extracted.periodEnd && !merged.periodEnd) {
+      const formatted = toDateInputValue(extracted.periodEnd);
+      if (formatted) {
+        merged.periodEnd = formatted;
+      }
+    }
+
     numberFields.forEach((field) => {
       const extractedValue = Number(extracted[field]);
       if (Number.isFinite(extractedValue) && Number(merged[field] || 0) === 0) {
         merged[field] = String(extractedValue);
       }
     });
+
+    if (isHistoricalTaxYearLabel(merged.taxYearLabel)) {
+      const draftEstimated = String(
+        draft.estimatedIncreasePercentage || ''
+      ).trim();
+      const mergedEstimated = String(
+        merged.estimatedIncreasePercentage || ''
+      ).trim();
+      if (
+        draftEstimated === '3.5' &&
+        (!mergedEstimated || mergedEstimated === '3.5')
+      ) {
+        // Historical uploads should default estimate to recorded values.
+        merged.estimatedIncreasePercentage = '0';
+      }
+
+      if (!String(merged.priorYearEstimatedTotal || '').trim()) {
+        const recordedTotal = Number(merged.totalAfterDiscount || 0);
+        if (Number.isFinite(recordedTotal) && recordedTotal > 0) {
+          merged.priorYearEstimatedTotal = String(recordedTotal);
+        }
+      }
+    }
 
     return merged;
   };
@@ -1249,6 +1607,12 @@ export function UtilitiesPage({ view = 'all' }) {
 
       const extracted = response.data?.extracted || {};
       setTaxDraft((previous) => mergeExtractedTaxDraft(previous, extracted));
+      const extractedAccountNumber = String(
+        extracted.accountNumber || ''
+      ).trim();
+      if (extractedAccountNumber) {
+        applyTaxAllocationCarryOver(extractedAccountNumber);
+      }
 
       const warnings = response.data?.warnings || [];
       if (warnings.length) {
@@ -1500,24 +1864,7 @@ export function UtilitiesPage({ view = 'all' }) {
       );
       const extracted = response.data?.extracted || {};
 
-      const mergedStatement = {
-        ...statement,
-        taxYearLabel: statement.taxYearLabel || extracted.taxYearLabel || '',
-        accountNumber: statement.accountNumber || extracted.accountNumber || '',
-        mapNumber: statement.mapNumber || extracted.mapNumber || '',
-        taxBeforeDiscount:
-          Number(statement.taxBeforeDiscount || 0) > 0
-            ? statement.taxBeforeDiscount
-            : extracted.taxBeforeDiscount,
-        delinquentTaxes:
-          Number(statement.delinquentTaxes || 0) > 0
-            ? statement.delinquentTaxes
-            : extracted.delinquentTaxes,
-        totalAfterDiscount:
-          Number(statement.totalAfterDiscount || 0) > 0
-            ? statement.totalAfterDiscount
-            : extracted.totalAfterDiscount
-      };
+      const mergedStatement = mergeExtractedTaxFields(statement, extracted);
       handleEditTaxStatement(mergedStatement);
 
       const warnings = response.data?.warnings || [];
@@ -1698,11 +2045,49 @@ export function UtilitiesPage({ view = 'all' }) {
           {!isUtilitiesOnly ? (
             <>
               <Button
-                variant={utilitiesTab === 'taxes' ? 'default' : 'outline'}
-                onClick={() => setUtilitiesTab('taxes')}
+                variant={utilitiesTab === 'tax-new' ? 'default' : 'outline'}
+                onClick={() => {
+                  resetTaxDraft();
+                  setUtilitiesTab('tax-new');
+                }}
               >
                 <LuLandmark className="size-4 mr-2" />
-                {t('Property taxes')}
+                {t('New tax entry')}
+              </Button>
+              <Button
+                variant={utilitiesTab === 'tax-edit' ? 'default' : 'outline'}
+                onClick={() => setUtilitiesTab('tax-edit')}
+                disabled={!taxDraft.id}
+                title={
+                  !taxDraft.id
+                    ? t('Open an entry from Saved statements to edit')
+                    : undefined
+                }
+              >
+                <LuLandmark className="size-4 mr-2" />
+                {t('Edit entry')}
+              </Button>
+              <Button
+                variant={utilitiesTab === 'tax-view' ? 'default' : 'outline'}
+                onClick={() => setUtilitiesTab('tax-view')}
+                disabled={!taxDraft.id}
+                title={
+                  !taxDraft.id
+                    ? t(
+                        'Open an entry from Saved statements to view its cost split'
+                      )
+                    : undefined
+                }
+              >
+                <LuFileSearch className="size-4 mr-2" />
+                {t('Cost split')}
+              </Button>
+              <Button
+                variant={utilitiesTab === 'tax-saved' ? 'default' : 'outline'}
+                onClick={() => setUtilitiesTab('tax-saved')}
+              >
+                <LuFileSearch className="size-4 mr-2" />
+                {t('Saved statements')}
               </Button>
               <Button
                 variant={utilitiesTab === 'tax-report' ? 'default' : 'outline'}
@@ -2255,1064 +2640,1545 @@ export function UtilitiesPage({ view = 'all' }) {
           </div>
         ) : null}
 
-        {!isUtilitiesOnly && utilitiesTab === 'taxes' ? (
+        {!isUtilitiesOnly &&
+        (utilitiesTab === 'tax-new' ||
+          utilitiesTab === 'tax-edit' ||
+          utilitiesTab === 'tax-view' ||
+          utilitiesTab === 'tax-saved') ? (
           <div className="rounded-lg border p-4 space-y-4">
             <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h2 className="text-base font-semibold">
-                  {t('Property taxes')}
+                  {utilitiesTab === 'tax-saved'
+                    ? t('Saved property tax statements')
+                    : utilitiesTab === 'tax-edit'
+                      ? t('Edit tax entry')
+                      : utilitiesTab === 'tax-view'
+                        ? t('Cost split analysis')
+                        : t('New tax entry')}
                 </h2>
                 <p className="text-sm text-muted-foreground">
-                  {t(
-                    'Capture annual tax statements, upload statement files, split building and land by unit percentages, and track next-year estimates versus actual totals.'
-                  )}
+                  {utilitiesTab === 'tax-saved'
+                    ? t(
+                        'Review saved tax statements, attachments, payment confirmations, and notes.'
+                      )
+                    : utilitiesTab === 'tax-edit'
+                      ? t(
+                          'Update an existing tax statement. Changes are saved when you click Update statement.'
+                        )
+                      : utilitiesTab === 'tax-view'
+                        ? t(
+                            'Read-only view of how taxes are distributed across units. Click Edit entry to make changes.'
+                          )
+                        : t(
+                            'Capture a new annual tax statement. Upload a PDF to auto-fill fields, split building and land by unit, and track next-year estimates.'
+                          )}
                 </p>
               </div>
-              {taxDraft.id ? (
+              {utilitiesTab === 'tax-new' && taxDraft.id ? (
                 <Button variant="outline" onClick={resetTaxDraft}>
                   {t('Clear')}
                 </Button>
               ) : null}
-            </div>
-
-            <div className="rounded-md border bg-muted/20 p-3 space-y-2">
-              <div className="text-sm font-medium">
-                {t('Upload statement PDF')}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {t(
-                  'Upload a tax statement PDF and we will try to auto-fill matching fields. Always review the values before saving.'
-                )}
-              </p>
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                <Input
-                  type="file"
-                  accept="application/pdf"
-                  onChange={(event) =>
-                    setTaxFile(event.target.files?.[0] || null)
-                  }
-                />
+              {(utilitiesTab === 'tax-edit' || utilitiesTab === 'tax-view') &&
+              taxDraft.id ? (
                 <Button
                   variant="outline"
-                  onClick={handleAutoFillFromTaxFile}
-                  disabled={parsingTaxUpload || !taxFile}
+                  onClick={() =>
+                    setActiveTaxNotesStatementId((previous) =>
+                      previous === taxDraft.id ? '' : taxDraft.id
+                    )
+                  }
                 >
-                  <LuFileSearch className="size-4 mr-2" />
-                  {parsingTaxUpload
-                    ? t('Reading PDF...')
-                    : t('Upload PDF and auto-fill')}
+                  {activeTaxNotesStatementId === taxDraft.id
+                    ? t('Hide notes')
+                    : t('Notes')}
                 </Button>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-              <div>
-                <label className="text-xs text-muted-foreground">
-                  {t('Property')}
-                </label>
-                <select
-                  value={taxDraft.propertyId}
-                  onChange={(event) =>
-                    setTaxDraft((previous) => ({
-                      ...previous,
-                      propertyId: event.target.value,
-                      buildingUnitSplits: [
-                        { subPropertyId: '', percentage: '' }
-                      ],
-                      landUnitSplits: [{ subPropertyId: '', percentage: '' }]
-                    }))
-                  }
-                  className="w-full px-3 py-2 border rounded-md text-sm bg-background"
+              ) : null}
+              {utilitiesTab === 'tax-edit' && taxDraft.id ? (
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    resetTaxDraft();
+                    setUtilitiesTab('tax-saved');
+                  }}
                 >
-                  <option value="">{t('Select property')}</option>
-                  {topLevelPropertyOptions.map((property) => (
-                    <option key={property._id} value={property._id}>
-                      {property.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="text-xs text-muted-foreground">
-                  {t('Tax year')}
-                </label>
-                <Input
-                  type="text"
-                  placeholder={t('e.g. 2024-2025')}
-                  value={taxDraft.taxYearLabel}
-                  onChange={(event) =>
-                    setTaxDraft((previous) => ({
-                      ...previous,
-                      taxYearLabel: event.target.value
-                    }))
-                  }
-                />
-              </div>
-              <div>
-                <label className="text-xs text-muted-foreground">
-                  {t('Map number')}
-                </label>
-                <Input
-                  type="text"
-                  value={taxDraft.mapNumber}
-                  onChange={(event) =>
-                    setTaxDraft((previous) => ({
-                      ...previous,
-                      mapNumber: event.target.value
-                    }))
-                  }
-                />
-              </div>
-
-              <div>
-                <label className="text-xs text-muted-foreground">
-                  {t('Account number')}
-                </label>
-                <Input
-                  type="text"
-                  value={taxDraft.accountNumber}
-                  onChange={(event) =>
-                    setTaxDraft((previous) => ({
-                      ...previous,
-                      accountNumber: event.target.value
-                    }))
-                  }
-                />
-              </div>
-              <div>
-                <label className="text-xs text-muted-foreground">
-                  {t('Period start')}
-                </label>
-                <Input
-                  type="date"
-                  value={taxDraft.periodStart}
-                  onChange={(event) =>
-                    setTaxDraft((previous) => ({
-                      ...previous,
-                      periodStart: event.target.value
-                    }))
-                  }
-                />
-              </div>
-              <div>
-                <label className="text-xs text-muted-foreground">
-                  {t('Period end')}
-                </label>
-                <Input
-                  type="date"
-                  value={taxDraft.periodEnd}
-                  onChange={(event) =>
-                    setTaxDraft((previous) => ({
-                      ...previous,
-                      periodEnd: event.target.value
-                    }))
-                  }
-                />
-              </div>
-
-              <div>
-                <label className="text-xs text-muted-foreground">
-                  {t('Tax before discount')}
-                </label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={taxDraft.taxBeforeDiscount}
-                  onChange={(event) =>
-                    setTaxDraft((previous) => ({
-                      ...previous,
-                      taxBeforeDiscount: event.target.value
-                    }))
-                  }
-                />
-              </div>
-              <div>
-                <label className="text-xs text-muted-foreground">
-                  {t('Delinquent taxes')}
-                </label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={taxDraft.delinquentTaxes}
-                  onChange={(event) =>
-                    setTaxDraft((previous) => ({
-                      ...previous,
-                      delinquentTaxes: event.target.value
-                    }))
-                  }
-                />
-              </div>
-              <div>
-                <label className="text-xs text-muted-foreground">
-                  {t('Total after discount')}
-                </label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={taxDraft.totalAfterDiscount}
-                  onChange={(event) =>
-                    setTaxDraft((previous) => ({
-                      ...previous,
-                      totalAfterDiscount: event.target.value
-                    }))
-                  }
-                />
-              </div>
-
-              <div>
-                <label className="text-xs text-muted-foreground">
-                  {t('RMV land (last year)')}
-                </label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={taxDraft.rmvLandLastYear}
-                  onChange={(event) =>
-                    setTaxDraft((previous) => ({
-                      ...previous,
-                      rmvLandLastYear: event.target.value
-                    }))
-                  }
-                />
-              </div>
-              <div>
-                <label className="text-xs text-muted-foreground">
-                  {t('RMV land (this year)')}
-                </label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={taxDraft.rmvLandThisYear}
-                  onChange={(event) =>
-                    setTaxDraft((previous) => ({
-                      ...previous,
-                      rmvLandThisYear: event.target.value
-                    }))
-                  }
-                />
-              </div>
-              <div>
-                <label className="text-xs text-muted-foreground">
-                  {t('RMV building (last year)')}
-                </label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={taxDraft.rmvBuildingLastYear}
-                  onChange={(event) =>
-                    setTaxDraft((previous) => ({
-                      ...previous,
-                      rmvBuildingLastYear: event.target.value
-                    }))
-                  }
-                />
-              </div>
-              <div>
-                <label className="text-xs text-muted-foreground">
-                  {t('RMV building (this year)')}
-                </label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={taxDraft.rmvBuildingThisYear}
-                  onChange={(event) =>
-                    setTaxDraft((previous) => ({
-                      ...previous,
-                      rmvBuildingThisYear: event.target.value
-                    }))
-                  }
-                />
-              </div>
-              <div>
-                <label className="text-xs text-muted-foreground">
-                  {t('RMV total (last year)')}
-                </label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={taxDraft.rmvTotalLastYear}
-                  onChange={(event) =>
-                    setTaxDraft((previous) => ({
-                      ...previous,
-                      rmvTotalLastYear: event.target.value
-                    }))
-                  }
-                />
-              </div>
-              <div>
-                <label className="text-xs text-muted-foreground">
-                  {t('RMV total (this year)')}
-                </label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={taxDraft.rmvTotalThisYear}
-                  onChange={(event) =>
-                    setTaxDraft((previous) => ({
-                      ...previous,
-                      rmvTotalThisYear: event.target.value
-                    }))
-                  }
-                />
-              </div>
-
-              <div>
-                <label className="text-xs text-muted-foreground">
-                  {t('Assessed value (last year)')}
-                </label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={taxDraft.assessedValueLastYear}
-                  onChange={(event) =>
-                    setTaxDraft((previous) => ({
-                      ...previous,
-                      assessedValueLastYear: event.target.value
-                    }))
-                  }
-                />
-              </div>
-              <div>
-                <label className="text-xs text-muted-foreground">
-                  {t('Assessed value (this year)')}
-                </label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={taxDraft.assessedValueThisYear}
-                  onChange={(event) =>
-                    setTaxDraft((previous) => ({
-                      ...previous,
-                      assessedValueThisYear: event.target.value
-                    }))
-                  }
-                />
-              </div>
-              <div>
-                <label className="text-xs text-muted-foreground">
-                  {t('Property taxes (last year)')}
-                </label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={taxDraft.propertyTaxesLastYear}
-                  onChange={(event) =>
-                    setTaxDraft((previous) => ({
-                      ...previous,
-                      propertyTaxesLastYear: event.target.value
-                    }))
-                  }
-                />
-              </div>
-              <div>
-                <label className="text-xs text-muted-foreground">
-                  {t('Property taxes (this year)')}
-                </label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={taxDraft.propertyTaxesThisYear}
-                  onChange={(event) =>
-                    setTaxDraft((previous) => ({
-                      ...previous,
-                      propertyTaxesThisYear: event.target.value
-                    }))
-                  }
-                />
-              </div>
-              <div>
-                <label className="text-xs text-muted-foreground">
-                  {t('Land leased %')}
-                </label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  max="100"
-                  value={taxDraft.landLeasedPercentage}
-                  onChange={(event) =>
-                    setTaxDraft((previous) => ({
-                      ...previous,
-                      landLeasedPercentage: event.target.value
-                    }))
-                  }
-                />
-              </div>
-              <div>
-                <label className="text-xs text-muted-foreground">
-                  {t('Estimated increase %')}
-                </label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={taxDraft.estimatedIncreasePercentage}
-                  onChange={(event) =>
-                    setTaxDraft((previous) => ({
-                      ...previous,
-                      estimatedIncreasePercentage: event.target.value
-                    }))
-                  }
-                />
-              </div>
-              <div>
-                <label className="text-xs text-muted-foreground">
-                  {t('Prior estimated total')}
-                </label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={taxDraft.priorYearEstimatedTotal}
-                  onChange={(event) =>
-                    setTaxDraft((previous) => ({
-                      ...previous,
-                      priorYearEstimatedTotal: event.target.value
-                    }))
-                  }
-                />
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="text-xs text-muted-foreground">
-                  {t('Notes')}
-                </label>
-                <Input
-                  type="text"
-                  value={taxDraft.notes}
-                  onChange={(event) =>
-                    setTaxDraft((previous) => ({
-                      ...previous,
-                      notes: event.target.value
-                    }))
-                  }
-                />
-              </div>
+                  {t('Stop editing')}
+                </Button>
+              ) : null}
+              {utilitiesTab === 'tax-view' && taxDraft.id ? (
+                <Button onClick={() => setUtilitiesTab('tax-edit')}>
+                  {t('Edit entry')}
+                </Button>
+              ) : null}
             </div>
 
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-              <div className="space-y-2 rounded-lg border p-3">
-                <div className="flex items-center justify-between">
+            {utilitiesTab === 'tax-new' || utilitiesTab === 'tax-edit' ? (
+              <>
+                <div className="rounded-md border bg-muted/20 p-3 space-y-2">
+                  <div className="text-sm font-medium">
+                    {t('Upload statement PDF')}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {t(
+                      'Upload a tax statement PDF and we will try to auto-fill matching fields. Always review the values before saving.'
+                    )}
+                  </p>
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                    <Input
+                      type="file"
+                      accept="application/pdf"
+                      onChange={(event) =>
+                        setTaxFile(event.target.files?.[0] || null)
+                      }
+                    />
+                    <Button
+                      variant="outline"
+                      onClick={handleAutoFillFromTaxFile}
+                      disabled={parsingTaxUpload || !taxFile}
+                    >
+                      <LuFileSearch className="size-4 mr-2" />
+                      {parsingTaxUpload
+                        ? t('Reading PDF...')
+                        : t('Upload PDF and auto-fill')}
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
                   <div>
-                    <div className="text-sm font-medium">
-                      {t('Building split by unit')}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
+                    <label className="text-xs text-muted-foreground">
+                      {t('Property')}
+                    </label>
+                    <select
+                      value={taxDraft.propertyId}
+                      onChange={(event) =>
+                        setTaxDraft((previous) => ({
+                          ...previous,
+                          propertyId: event.target.value,
+                          buildingUnitSplits: [
+                            { subPropertyId: '', percentage: '' }
+                          ],
+                          landUnitSplits: [
+                            { subPropertyId: '', percentage: '' }
+                          ]
+                        }))
+                      }
+                      className="w-full px-3 py-2 border rounded-md text-sm bg-background"
+                    >
+                      <option value="">{t('Select property')}</option>
+                      {topLevelPropertyOptions.map((property) => (
+                        <option key={property._id} value={property._id}>
+                          {property.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground">
+                      {t('Tax year')}
+                    </label>
+                    <Input
+                      type="text"
+                      placeholder={t('e.g. 2024-2025')}
+                      value={taxDraft.taxYearLabel}
+                      onChange={(event) =>
+                        setTaxDraft((previous) => ({
+                          ...previous,
+                          taxYearLabel: event.target.value
+                        }))
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground">
+                      {t('Map number')}
+                    </label>
+                    <Input
+                      type="text"
+                      value={taxDraft.mapNumber}
+                      onChange={(event) =>
+                        setTaxDraft((previous) => ({
+                          ...previous,
+                          mapNumber: event.target.value
+                        }))
+                      }
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs text-muted-foreground">
+                      {t('Account number')}
+                    </label>
+                    <Input
+                      type="text"
+                      list="tax-account-number-suggestions"
+                      value={taxDraft.accountNumber}
+                      onChange={(event) =>
+                        handleTaxAccountNumberChange(event.target.value)
+                      }
+                      onBlur={(event) =>
+                        handleTaxAccountNumberBlur(event.target.value)
+                      }
+                    />
+                    <datalist id="tax-account-number-suggestions">
+                      {Array.from(allocationByAccountNumber.keys()).map(
+                        (key) => (
+                          <option
+                            key={key}
+                            value={
+                              allocationByAccountNumber.get(key)
+                                ?.accountNumber || key
+                            }
+                          />
+                        )
+                      )}
+                    </datalist>
+                    {taxAllocationCarriedOver ? (
+                      <p className="text-xs text-blue-600 mt-1">
+                        {t(
+                          'Allocation splits carried over from previous entry with the same account number. Review and adjust as needed.'
+                        )}
+                      </p>
+                    ) : null}
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground">
+                      {t('Delinquent taxes')}
+                    </label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={taxDraft.delinquentTaxes}
+                      onChange={(event) =>
+                        setTaxDraft((previous) => ({
+                          ...previous,
+                          delinquentTaxes: event.target.value
+                        }))
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground">
+                      {t('Total after discount')}
+                    </label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={taxDraft.totalAfterDiscount}
+                      onChange={(event) =>
+                        setTaxDraft((previous) => ({
+                          ...previous,
+                          totalAfterDiscount: event.target.value
+                        }))
+                      }
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs text-muted-foreground">
+                      {t('RMV land (last year)')}
+                    </label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={taxDraft.rmvLandLastYear}
+                      onChange={(event) =>
+                        setTaxDraft((previous) => ({
+                          ...previous,
+                          rmvLandLastYear: event.target.value
+                        }))
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground">
+                      {t('RMV land (this year)')}
+                    </label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={taxDraft.rmvLandThisYear}
+                      onChange={(event) =>
+                        setTaxDraft((previous) => ({
+                          ...previous,
+                          rmvLandThisYear: event.target.value
+                        }))
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground">
+                      {t('RMV building (last year)')}
+                    </label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={taxDraft.rmvBuildingLastYear}
+                      onChange={(event) =>
+                        setTaxDraft((previous) => ({
+                          ...previous,
+                          rmvBuildingLastYear: event.target.value
+                        }))
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground">
+                      {t('RMV building (this year)')}
+                    </label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={taxDraft.rmvBuildingThisYear}
+                      onChange={(event) =>
+                        setTaxDraft((previous) => ({
+                          ...previous,
+                          rmvBuildingThisYear: event.target.value
+                        }))
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground">
+                      {t('RMV total (last year)')}
+                    </label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={taxDraft.rmvTotalLastYear}
+                      onChange={(event) =>
+                        setTaxDraft((previous) => ({
+                          ...previous,
+                          rmvTotalLastYear: event.target.value
+                        }))
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground">
+                      {t('RMV total (this year)')}
+                    </label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={taxDraft.rmvTotalThisYear}
+                      onChange={(event) =>
+                        setTaxDraft((previous) => ({
+                          ...previous,
+                          rmvTotalThisYear: event.target.value
+                        }))
+                      }
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs text-muted-foreground">
+                      {t('Assessed value (last year)')}
+                    </label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={taxDraft.assessedValueLastYear}
+                      onChange={(event) =>
+                        setTaxDraft((previous) => ({
+                          ...previous,
+                          assessedValueLastYear: event.target.value
+                        }))
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground">
+                      {t('Assessed value (this year)')}
+                    </label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={taxDraft.assessedValueThisYear}
+                      onChange={(event) =>
+                        setTaxDraft((previous) => ({
+                          ...previous,
+                          assessedValueThisYear: event.target.value
+                        }))
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground">
+                      {t('Property taxes (last year)')}
+                    </label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={taxDraft.propertyTaxesLastYear}
+                      onChange={(event) =>
+                        setTaxDraft((previous) => ({
+                          ...previous,
+                          propertyTaxesLastYear: event.target.value
+                        }))
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground">
+                      {t('Property taxes (this year)')}
+                    </label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={taxDraft.propertyTaxesThisYear}
+                      onChange={(event) =>
+                        setTaxDraft((previous) => ({
+                          ...previous,
+                          propertyTaxesThisYear: event.target.value
+                        }))
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground">
+                      {t('Land leased %')}
+                    </label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      max="100"
+                      value={taxDraft.landLeasedPercentage}
+                      onChange={(event) =>
+                        setTaxDraft((previous) => ({
+                          ...previous,
+                          landLeasedPercentage: event.target.value
+                        }))
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground">
+                      {t('Estimated increase %')}
+                    </label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={taxDraft.estimatedIncreasePercentage}
+                      onChange={(event) =>
+                        setTaxDraft((previous) => ({
+                          ...previous,
+                          estimatedIncreasePercentage: event.target.value
+                        }))
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground">
+                      {t('Prior estimated total')}
+                    </label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={taxDraft.priorYearEstimatedTotal}
+                      onChange={(event) =>
+                        setTaxDraft((previous) => ({
+                          ...previous,
+                          priorYearEstimatedTotal: event.target.value
+                        }))
+                      }
+                    />
+                  </div>
+
+                  {isHistoricalDefaultEstimateActive(taxDraft) ? (
+                    <div className="md:col-span-2 rounded-md border border-amber-200 bg-amber-50/70 px-3 py-2 text-xs text-amber-800 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300">
                       {t(
-                        'Use when splitting building taxes across sub properties'
+                        'Historical tax year detected. Estimate defaults use recorded values (0% increase and prior estimate equal to total after discount). You can adjust either field anytime.'
                       )}
                     </div>
-                  </div>
-                  <Button
-                    variant="outline"
-                    onClick={() => handleAddTaxSplitRow('buildingUnitSplits')}
-                  >
-                    <LuPlus className="size-4 mr-2" />
-                    {t('Add row')}
-                  </Button>
-                </div>
-                {taxDraft.buildingUnitSplits.map((item, index) => (
-                  <div
-                    key={`building-${index}-${item.subPropertyId}`}
-                    className="grid grid-cols-1 gap-2 md:grid-cols-[minmax(0,2fr)_140px_80px]"
-                  >
-                    <select
-                      value={item.subPropertyId}
-                      onChange={(event) =>
-                        handleTaxSplitChange(
-                          'buildingUnitSplits',
-                          index,
-                          'subPropertyId',
-                          event.target.value
-                        )
-                      }
-                      className="w-full px-3 py-2 border rounded-md text-sm bg-background"
-                    >
-                      <option value="">{t('Select sub property')}</option>
-                      {unitOptionsForTaxDraft.map((property) => (
-                        <option key={property._id} value={property._id}>
-                          {property.name}
-                        </option>
-                      ))}
-                    </select>
+                  ) : null}
+
+                  <div className="md:col-span-2">
+                    <label className="text-xs text-muted-foreground">
+                      {t('Notes')}
+                    </label>
                     <Input
-                      type="number"
-                      min="0"
-                      max="100"
-                      step="0.01"
-                      value={item.percentage}
+                      type="text"
+                      value={taxDraft.notes}
                       onChange={(event) =>
-                        handleTaxSplitChange(
-                          'buildingUnitSplits',
-                          index,
-                          'percentage',
-                          event.target.value
-                        )
+                        setTaxDraft((previous) => ({
+                          ...previous,
+                          notes: event.target.value
+                        }))
                       }
                     />
-                    <Button
-                      variant="outline"
-                      onClick={() =>
-                        handleRemoveTaxSplitRow('buildingUnitSplits', index)
-                      }
-                    >
-                      <LuTrash2 className="size-4 mr-2" />
-                      {t('Remove')}
-                    </Button>
                   </div>
-                ))}
-                <div
-                  className={`text-xs ${
-                    Math.abs(buildingSplitTotal - 100) <= 0.01
-                      ? 'text-muted-foreground'
-                      : 'text-red-600'
-                  }`}
-                >
-                  {t('Building split total')}:{' '}
-                  {formatPercentage(buildingSplitTotal)}
                 </div>
-              </div>
+              </>
+            ) : null}
 
-              <div className="space-y-2 rounded-lg border p-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-sm font-medium">
-                      {t('Land split by unit')}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      {t('Use when splitting land taxes across sub properties')}
-                    </div>
-                  </div>
-                  <Button
-                    variant="outline"
-                    onClick={() => handleAddTaxSplitRow('landUnitSplits')}
-                  >
-                    <LuPlus className="size-4 mr-2" />
-                    {t('Add row')}
-                  </Button>
-                </div>
-                {taxDraft.landUnitSplits.map((item, index) => (
-                  <div
-                    key={`land-${index}-${item.subPropertyId}`}
-                    className="grid grid-cols-1 gap-2 md:grid-cols-[minmax(0,2fr)_140px_80px]"
-                  >
-                    <select
-                      value={item.subPropertyId}
-                      onChange={(event) =>
-                        handleTaxSplitChange(
-                          'landUnitSplits',
-                          index,
-                          'subPropertyId',
-                          event.target.value
-                        )
-                      }
-                      className="w-full px-3 py-2 border rounded-md text-sm bg-background"
-                    >
-                      <option value="">{t('Select sub property')}</option>
-                      {unitOptionsForTaxDraft.map((property) => (
-                        <option key={property._id} value={property._id}>
-                          {property.name}
-                        </option>
-                      ))}
-                    </select>
-                    <Input
-                      type="number"
-                      min="0"
-                      max="100"
-                      step="0.01"
-                      value={item.percentage}
-                      onChange={(event) =>
-                        handleTaxSplitChange(
-                          'landUnitSplits',
-                          index,
-                          'percentage',
-                          event.target.value
-                        )
-                      }
-                    />
-                    <Button
-                      variant="outline"
-                      onClick={() =>
-                        handleRemoveTaxSplitRow('landUnitSplits', index)
-                      }
-                    >
-                      <LuTrash2 className="size-4 mr-2" />
-                      {t('Remove')}
-                    </Button>
-                  </div>
-                ))}
-                <div
-                  className={`text-xs ${
-                    Math.abs(landSplitTotal - 100) <= 0.01
-                      ? 'text-muted-foreground'
-                      : 'text-red-600'
-                  }`}
-                >
-                  {t('Land split total')}: {formatPercentage(landSplitTotal)}
-                </div>
-              </div>
-            </div>
-
-            <div className="flex justify-end">
-              <Button
-                onClick={handleSaveTaxStatement}
-                disabled={savingTaxStatement}
-              >
-                {savingTaxStatement
-                  ? t('Saving...')
-                  : taxDraft.id
-                    ? t('Update statement')
-                    : t('Save statement')}
-              </Button>
-            </div>
-
-            <div className="space-y-2 border-t pt-4">
-              <div className="text-sm font-medium">
-                {t('Saved property tax statements')}
-              </div>
-
-              <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-                <div className="relative md:col-span-1">
-                  <LuSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    placeholder={t(
-                      'Search by property, year, map, account, notes...'
+            {utilitiesTab === 'tax-new' ||
+            utilitiesTab === 'tax-edit' ||
+            utilitiesTab === 'tax-view' ? (
+              <>
+                {utilitiesTab !== 'tax-view' ? (
+                  <div className="text-sm text-muted-foreground">
+                    {t(
+                      'Use land leased % and split percentages to preview how taxes are distributed. Building share uses (100 - land leased %).'
                     )}
-                    value={taxSearchText}
-                    onChange={(event) => setTaxSearchText(event.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-                <div>
-                  <select
-                    value={taxPropertyFilter}
-                    onChange={(event) =>
-                      setTaxPropertyFilter(event.target.value)
-                    }
-                    className="w-full px-3 py-2 border rounded-md text-sm bg-background"
-                  >
-                    <option value="all">{t('All properties')}</option>
-                    {topLevelPropertyOptions.map((property) => (
-                      <option key={property._id} value={property._id}>
-                        {property.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <select
-                    value={taxYearFilter}
-                    onChange={(event) => setTaxYearFilter(event.target.value)}
-                    className="w-full px-3 py-2 border rounded-md text-sm bg-background"
-                  >
-                    <option value="all">{t('All tax years')}</option>
-                    {taxYearOptions.map((taxYearLabel) => (
-                      <option key={taxYearLabel} value={taxYearLabel}>
-                        {taxYearLabel}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
+                  </div>
+                ) : null}
 
-              {!propertyTaxStatements.length ? (
-                <div className="text-sm text-muted-foreground">
-                  {t('No property tax statements saved yet')}
-                </div>
-              ) : !filteredTaxStatements.length ? (
-                <div className="text-sm text-muted-foreground">
-                  {t('No tax statements found for current filters')}
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {filteredTaxStatements.map((statement) => {
-                    const property = propertyById[String(statement.propertyId)];
-                    const paymentConfirmations = Array.isArray(
-                      statement.paymentConfirmations
-                    )
-                      ? statement.paymentConfirmations
-                      : [];
-                    const totalPaid = paymentConfirmations.reduce(
-                      (sum, confirmation) =>
-                        sum + Number(confirmation.paidAmount || 0),
-                      0
-                    );
-                    const totalFees = paymentConfirmations.reduce(
-                      (sum, confirmation) =>
-                        sum + Number(confirmation.feeAmount || 0),
-                      0
-                    );
-                    const signedBalance = Number(
-                      (
-                        Number(statement.totalAfterDiscount || 0) - totalPaid
-                      ).toFixed(2)
-                    );
-                    const balance = Math.max(0, signedBalance);
-                    const overpaidAmount = Math.max(0, -signedBalance);
-                    return (
-                      <div
-                        key={statement._id}
-                        className="rounded-lg border p-3 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between"
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                  <div className="space-y-2 rounded-lg border p-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-sm font-medium">
+                          {t('Building split by unit')}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {t(
+                            'Use when splitting building taxes across sub properties'
+                          )}
+                        </div>
+                      </div>
+                      <Button
+                        variant="outline"
+                        onClick={() =>
+                          handleAddTaxSplitRow('buildingUnitSplits')
+                        }
                       >
-                        <div className="space-y-1">
-                          <div className="text-sm font-semibold">
-                            {statement.taxYearLabel} •{' '}
-                            {property?.name || t('Unknown property')}
+                        <LuPlus className="size-4 mr-2" />
+                        {t('Add row')}
+                      </Button>
+                    </div>
+                    {taxDraft.buildingUnitSplits.map((item, index) => (
+                      <div
+                        key={`building-${index}-${item.subPropertyId}`}
+                        className="grid grid-cols-1 gap-2 md:grid-cols-[minmax(0,2fr)_140px_80px]"
+                      >
+                        <select
+                          value={item.subPropertyId}
+                          onChange={(event) =>
+                            handleTaxSplitChange(
+                              'buildingUnitSplits',
+                              index,
+                              'subPropertyId',
+                              event.target.value
+                            )
+                          }
+                          className="w-full px-3 py-2 border rounded-md text-sm bg-background"
+                        >
+                          <option value="">{t('Select sub property')}</option>
+                          {unitOptionsForTaxDraft.map((property) => (
+                            <option key={property._id} value={property._id}>
+                              {property.name}
+                            </option>
+                          ))}
+                        </select>
+                        <Input
+                          type="number"
+                          min="0"
+                          max="100"
+                          step="0.01"
+                          value={item.percentage}
+                          onChange={(event) =>
+                            handleTaxSplitChange(
+                              'buildingUnitSplits',
+                              index,
+                              'percentage',
+                              event.target.value
+                            )
+                          }
+                        />
+                        <Button
+                          variant="outline"
+                          onClick={() =>
+                            handleRemoveTaxSplitRow('buildingUnitSplits', index)
+                          }
+                        >
+                          <LuTrash2 className="size-4 mr-2" />
+                          {t('Remove')}
+                        </Button>
+                      </div>
+                    ))}
+                    <div
+                      className={`text-xs ${
+                        Math.abs(buildingSplitTotal - 100) <= 0.01
+                          ? 'text-muted-foreground'
+                          : 'text-red-600'
+                      }`}
+                    >
+                      {t('Building split total')}:{' '}
+                      {formatPercentage(buildingSplitTotal)}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2 rounded-lg border p-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-sm font-medium">
+                          {t('Land split by unit')}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {t(
+                            'Use when splitting land taxes across sub properties'
+                          )}
+                        </div>
+                      </div>
+                      <Button
+                        variant="outline"
+                        onClick={() => handleAddTaxSplitRow('landUnitSplits')}
+                      >
+                        <LuPlus className="size-4 mr-2" />
+                        {t('Add row')}
+                      </Button>
+                    </div>
+                    {taxDraft.landUnitSplits.map((item, index) => (
+                      <div
+                        key={`land-${index}-${item.subPropertyId}`}
+                        className="grid grid-cols-1 gap-2 md:grid-cols-[minmax(0,2fr)_140px_80px]"
+                      >
+                        <select
+                          value={item.subPropertyId}
+                          onChange={(event) =>
+                            handleTaxSplitChange(
+                              'landUnitSplits',
+                              index,
+                              'subPropertyId',
+                              event.target.value
+                            )
+                          }
+                          className="w-full px-3 py-2 border rounded-md text-sm bg-background"
+                        >
+                          <option value="">{t('Select sub property')}</option>
+                          {unitOptionsForTaxDraft.map((property) => (
+                            <option key={property._id} value={property._id}>
+                              {property.name}
+                            </option>
+                          ))}
+                        </select>
+                        <Input
+                          type="number"
+                          min="0"
+                          max="100"
+                          step="0.01"
+                          value={item.percentage}
+                          onChange={(event) =>
+                            handleTaxSplitChange(
+                              'landUnitSplits',
+                              index,
+                              'percentage',
+                              event.target.value
+                            )
+                          }
+                        />
+                        <Button
+                          variant="outline"
+                          onClick={() =>
+                            handleRemoveTaxSplitRow('landUnitSplits', index)
+                          }
+                        >
+                          <LuTrash2 className="size-4 mr-2" />
+                          {t('Remove')}
+                        </Button>
+                      </div>
+                    ))}
+                    <div
+                      className={`text-xs ${
+                        Math.abs(landSplitTotal - 100) <= 0.01
+                          ? 'text-muted-foreground'
+                          : 'text-red-600'
+                      }`}
+                    >
+                      {t('Land split total')}:{' '}
+                      {formatPercentage(landSplitTotal)}
+                    </div>
+                  </div>
+                </div>
+
+                {(() => {
+                  // Derive a "next year" label from taxYearLabel if it looks like YYYY-YYYY
+                  const rawLabel = taxDraft.taxYearLabel || '';
+                  const yearMatch = rawLabel.match(
+                    /^(\d{4})\s*[-–]\s*(\d{4})$/
+                  );
+                  const currentYearLabel = rawLabel || t('Current year');
+                  const nextYearLabel = yearMatch
+                    ? `${Number(yearMatch[1]) + 1}-${Number(yearMatch[2]) + 1}`
+                    : t('Next year estimate');
+
+                  return (
+                    <div className="rounded-lg border p-4 space-y-4">
+                      {/* ── Prominent period header ── */}
+                      <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                          <div className="text-sm font-semibold text-foreground">
+                            {t('Per-unit tax allocation preview')}
                           </div>
-                          <div className="text-sm text-muted-foreground">
-                            {toCurrency(statement.totalAfterDiscount)}{' '}
-                            {t('actual total')} •{' '}
-                            {toCurrency(statement.estimatedNextYearTotal)}{' '}
-                            {t('next year estimate')} •{' '}
-                            {toCurrency(statement.estimatedMonthlyCost)}{' '}
-                            {t('monthly estimate')}
+                          <div className="mt-1 flex flex-wrap items-center gap-2">
+                            {rawLabel ? (
+                              <span className="text-xl font-bold tracking-tight">
+                                {rawLabel}
+                              </span>
+                            ) : null}
+                            {taxDraft.periodStart || taxDraft.periodEnd ? (
+                              <span className="rounded bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                                {taxDraft.periodStart || '?'}
+                                {taxDraft.periodEnd
+                                  ? ` → ${taxDraft.periodEnd}`
+                                  : ''}
+                              </span>
+                            ) : null}
                           </div>
-                          <div className="text-xs text-muted-foreground">
-                            {statement.periodStart
-                              ? `${t('Period')}: ${String(statement.periodStart).slice(0, 10)} - ${String(statement.periodEnd || '').slice(0, 10)}`
-                              : t('Period not set')}
+                        </div>
+                        {draftTaxAllocationPreview.estimatedIncreasePercentage ? (
+                          <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-1.5 text-sm dark:border-amber-800 dark:bg-amber-950">
+                            <span className="text-muted-foreground">
+                              {t('Est. increase')}
+                            </span>{' '}
+                            <span className="font-bold text-amber-700 dark:text-amber-400">
+                              {formatPercentage(
+                                draftTaxAllocationPreview.estimatedIncreasePercentage
+                              )}
+                            </span>
+                            <span className="ml-1 text-xs text-muted-foreground">
+                              → {nextYearLabel}
+                            </span>
                           </div>
-                          <div className="text-xs text-muted-foreground">
-                            {t('Variance vs prior estimate')}:{' '}
-                            {toCurrency(statement.priorYearVariance || 0)}
-                            {statement.accountNumber
-                              ? ` • ${t('Account')}: ${statement.accountNumber}`
-                              : ''}
-                            {statement.mapNumber
-                              ? ` • ${t('Map')}: ${statement.mapNumber}`
-                              : ''}
+                        ) : null}
+                      </div>
+
+                      {/* ── Table ── */}
+                      {!draftTaxAllocationPreview.combinedRows.length ? (
+                        <div className="text-sm text-muted-foreground">
+                          {t(
+                            'Select a property and add split rows to see per-unit cost distribution.'
+                          )}
+                        </div>
+                      ) : (
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-xs border-collapse">
+                            <thead>
+                              {/* Column group labels */}
+                              <tr>
+                                <th className="pb-0 pr-3" />
+                                <th className="pb-0 px-2" />
+                                <th
+                                  colSpan={2}
+                                  className="pb-1 px-2 text-center text-xs font-semibold text-foreground border-b-2 border-foreground/20 whitespace-nowrap"
+                                >
+                                  {currentYearLabel}
+                                </th>
+                                <th
+                                  colSpan={2}
+                                  className="pb-1 px-2 text-center text-xs font-bold text-amber-700 dark:text-amber-400 border-b-2 border-amber-400 whitespace-nowrap bg-amber-50/60 dark:bg-amber-950/40 rounded-t"
+                                >
+                                  ★ {t('Est.')} {nextYearLabel}
+                                </th>
+                              </tr>
+                              {/* Column headers */}
+                              <tr className="border-b">
+                                <th className="text-left py-1.5 pr-3 font-semibold text-foreground">
+                                  {t('Unit')}
+                                </th>
+                                <th className="text-right py-1.5 px-2 font-semibold text-foreground whitespace-nowrap">
+                                  %
+                                </th>
+                                <th className="text-right py-1.5 px-2 font-semibold text-foreground whitespace-nowrap">
+                                  {t('Annual')}
+                                </th>
+                                <th className="text-right py-1.5 px-2 font-semibold text-foreground whitespace-nowrap">
+                                  / {t('Month')}
+                                </th>
+                                <th className="text-right py-1.5 px-2 font-semibold text-amber-700 dark:text-amber-400 whitespace-nowrap bg-amber-50/60 dark:bg-amber-950/40">
+                                  {t('Annual')}
+                                </th>
+                                <th className="text-right py-1.5 pl-2 font-semibold text-amber-700 dark:text-amber-400 whitespace-nowrap bg-amber-50/60 dark:bg-amber-950/40">
+                                  / {t('Month')}
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {draftTaxAllocationPreview.combinedRows.map(
+                                (row) => (
+                                  <>
+                                    {/* Unit name header row — spans all columns */}
+                                    <tr
+                                      key={`unit-header-${row.unitId}`}
+                                      className="bg-muted/50"
+                                    >
+                                      <td
+                                        colSpan={6}
+                                        className="py-1.5 px-2 font-semibold text-foreground text-xs uppercase tracking-wide"
+                                      >
+                                        {row.unitName}
+                                      </td>
+                                    </tr>
+                                    {/* Building sub-row */}
+                                    {row.buildingAmount > 0 ? (
+                                      <tr
+                                        key={`unit-building-${row.unitId}`}
+                                        className="text-muted-foreground border-b border-muted/30"
+                                      >
+                                        <td className="py-1 pr-3 pl-4">
+                                          {t('Building')}
+                                        </td>
+                                        <td className="text-right py-1 px-2 tabular-nums">
+                                          {formatPercentage(
+                                            row.buildingPercentage
+                                          )}
+                                        </td>
+                                        <td className="text-right py-1 px-2 tabular-nums">
+                                          {toCurrency(row.buildingAmount)}
+                                        </td>
+                                        <td className="text-right py-1 px-2 tabular-nums">
+                                          {toCurrency(row.buildingAmount / 12)}
+                                        </td>
+                                        <td className="text-right py-1 px-2 tabular-nums bg-amber-50/60 dark:bg-amber-950/40">
+                                          {toCurrency(
+                                            row.nextYearBuildingAmount
+                                          )}
+                                        </td>
+                                        <td className="text-right py-1 pl-2 tabular-nums bg-amber-50/60 dark:bg-amber-950/40">
+                                          {toCurrency(
+                                            row.nextYearBuildingAmount / 12
+                                          )}
+                                        </td>
+                                      </tr>
+                                    ) : null}
+                                    {/* Land sub-row */}
+                                    {row.landAmount > 0 ? (
+                                      <tr
+                                        key={`unit-land-${row.unitId}`}
+                                        className="text-muted-foreground border-b border-muted/30"
+                                      >
+                                        <td className="py-1 pr-3 pl-4">
+                                          {t('Land')}
+                                        </td>
+                                        <td className="text-right py-1 px-2 tabular-nums">
+                                          {formatPercentage(row.landPercentage)}
+                                        </td>
+                                        <td className="text-right py-1 px-2 tabular-nums">
+                                          {toCurrency(row.landAmount)}
+                                        </td>
+                                        <td className="text-right py-1 px-2 tabular-nums">
+                                          {toCurrency(row.landAmount / 12)}
+                                        </td>
+                                        <td className="text-right py-1 px-2 tabular-nums bg-amber-50/60 dark:bg-amber-950/40">
+                                          {toCurrency(row.nextYearLandAmount)}
+                                        </td>
+                                        <td className="text-right py-1 pl-2 tabular-nums bg-amber-50/60 dark:bg-amber-950/40">
+                                          {toCurrency(
+                                            row.nextYearLandAmount / 12
+                                          )}
+                                        </td>
+                                      </tr>
+                                    ) : null}
+                                    {/* Unit total row */}
+                                    <tr
+                                      key={`unit-${row.unitId}`}
+                                      className="border-b-2 border-muted/60"
+                                    >
+                                      <td className="py-1.5 pr-3 pl-4 font-semibold">
+                                        {t('Unit total')}
+                                      </td>
+                                      <td className="text-right py-1.5 px-2 tabular-nums font-semibold text-muted-foreground">
+                                        {formatPercentage(
+                                          row.totalSharePercentage
+                                        )}
+                                      </td>
+                                      <td className="text-right py-1.5 px-2 tabular-nums font-semibold">
+                                        {toCurrency(row.totalAmount)}
+                                      </td>
+                                      <td className="text-right py-1.5 px-2 tabular-nums font-semibold">
+                                        {toCurrency(
+                                          row.currentYearMonthlyAmount
+                                        )}
+                                      </td>
+                                      <td className="text-right py-1.5 px-2 tabular-nums font-semibold text-amber-700 dark:text-amber-400 bg-amber-50/60 dark:bg-amber-950/40">
+                                        {toCurrency(row.nextYearAnnualAmount)}
+                                      </td>
+                                      <td className="text-right py-1.5 pl-2 tabular-nums font-semibold text-amber-700 dark:text-amber-400 bg-amber-50/60 dark:bg-amber-950/40">
+                                        {toCurrency(row.nextYearMonthlyAmount)}
+                                      </td>
+                                    </tr>
+                                  </>
+                                )
+                              )}
+                              {/* Totals row */}
+                              <tr className="border-t-2 font-bold">
+                                <td className="py-2 pr-3">{t('Total')}</td>
+                                <td className="text-right py-2 px-2 tabular-nums text-muted-foreground">
+                                  100%
+                                </td>
+                                <td className="text-right py-2 px-2 tabular-nums">
+                                  {toCurrency(
+                                    draftTaxAllocationPreview.totalTax
+                                  )}
+                                </td>
+                                <td className="text-right py-2 px-2 tabular-nums">
+                                  {toCurrency(
+                                    draftTaxAllocationPreview.currentYearMonthlyTotal
+                                  )}
+                                </td>
+                                <td className="text-right py-2 px-2 tabular-nums text-amber-700 dark:text-amber-400 bg-amber-50/60 dark:bg-amber-950/40">
+                                  {toCurrency(
+                                    draftTaxAllocationPreview.nextYearTotal
+                                  )}
+                                </td>
+                                <td className="text-right py-2 pl-2 tabular-nums text-amber-700 dark:text-amber-400 bg-amber-50/60 dark:bg-amber-950/40">
+                                  {toCurrency(
+                                    draftTaxAllocationPreview.nextYearMonthlyTotal
+                                  )}
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+              </>
+            ) : null}
+
+            {utilitiesTab === 'tax-new' || utilitiesTab === 'tax-edit' ? (
+              <div className="flex justify-end">
+                <Button
+                  onClick={handleSaveTaxStatement}
+                  disabled={savingTaxStatement}
+                >
+                  {savingTaxStatement
+                    ? t('Saving...')
+                    : taxDraft.id
+                      ? t('Update statement')
+                      : t('Save statement')}
+                </Button>
+              </div>
+            ) : null}
+
+            {(utilitiesTab === 'tax-edit' || utilitiesTab === 'tax-view') &&
+            taxDraft.id &&
+            activeTaxNotesStatementId === taxDraft.id ? (
+              <div className="border-t pt-3">
+                <NotesPanel
+                  entityType="property_tax_statement"
+                  entityId={String(taxDraft.id)}
+                />
+              </div>
+            ) : null}
+
+            {utilitiesTab === 'tax-saved' ? (
+              <div className="space-y-2 border-t pt-4">
+                <div className="text-sm font-medium">
+                  {t('Saved property tax statements')}
+                </div>
+
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+                  <div className="relative md:col-span-1">
+                    <LuSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      placeholder={t(
+                        'Search by property, year, map, account, notes...'
+                      )}
+                      value={taxSearchText}
+                      onChange={(event) => setTaxSearchText(event.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                  <div>
+                    <select
+                      value={taxPropertyFilter}
+                      onChange={(event) =>
+                        setTaxPropertyFilter(event.target.value)
+                      }
+                      className="w-full px-3 py-2 border rounded-md text-sm bg-background"
+                    >
+                      <option value="all">{t('All properties')}</option>
+                      {topLevelPropertyOptions.map((property) => (
+                        <option key={property._id} value={property._id}>
+                          {property.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <select
+                      value={taxYearFilter}
+                      onChange={(event) => setTaxYearFilter(event.target.value)}
+                      className="w-full px-3 py-2 border rounded-md text-sm bg-background"
+                    >
+                      <option value="all">{t('All tax years')}</option>
+                      {taxYearOptions.map((taxYearLabel) => (
+                        <option key={taxYearLabel} value={taxYearLabel}>
+                          {taxYearLabel}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {!propertyTaxStatements.length ? (
+                  <div className="text-sm text-muted-foreground">
+                    {t('No property tax statements saved yet')}
+                  </div>
+                ) : !filteredTaxStatements.length ? (
+                  <div className="text-sm text-muted-foreground">
+                    {t('No tax statements found for current filters')}
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {filteredTaxStatements.map((statement) => {
+                      const property =
+                        propertyById[String(statement.propertyId)];
+                      const paymentConfirmations = Array.isArray(
+                        statement.paymentConfirmations
+                      )
+                        ? statement.paymentConfirmations
+                        : [];
+                      const totalPaid = paymentConfirmations.reduce(
+                        (sum, c) => sum + Number(c.paidAmount || 0),
+                        0
+                      );
+                      const totalFees = paymentConfirmations.reduce(
+                        (sum, c) => sum + Number(c.feeAmount || 0),
+                        0
+                      );
+                      const total = Number(statement.totalAfterDiscount || 0);
+                      const signedBalance = Number(
+                        (total - totalPaid).toFixed(2)
+                      );
+                      const balance = Math.max(0, signedBalance);
+                      const overpaidAmount = Math.max(0, -signedBalance);
+                      const isPaid = balance === 0 && total > 0;
+                      const isOverpaid = overpaidAmount > 0;
+                      const paidPct =
+                        total > 0
+                          ? Math.min(100, (totalPaid / total) * 100)
+                          : 0;
+                      const notesOpen =
+                        activeTaxNotesStatementId === statement._id;
+
+                      return (
+                        <div
+                          key={statement._id}
+                          className="rounded-lg border overflow-hidden"
+                        >
+                          {/* ── Header bar ── */}
+                          <div className="flex flex-wrap items-start justify-between gap-2 px-4 py-3 bg-muted/30 border-b">
+                            <div className="space-y-0.5">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <span className="text-base font-bold">
+                                  {statement.taxYearLabel || t('Unknown year')}
+                                </span>
+                                <span className="text-base text-muted-foreground">
+                                  • {property?.name || t('Unknown property')}
+                                </span>
+                                {isOverpaid ? (
+                                  <span className="rounded-full bg-cyan-100 text-cyan-700 text-xs font-semibold px-2 py-0.5">
+                                    {t('Overpaid')}
+                                  </span>
+                                ) : isPaid ? (
+                                  <span className="rounded-full bg-green-100 text-green-700 text-xs font-semibold px-2 py-0.5">
+                                    {t('Paid')}
+                                  </span>
+                                ) : totalPaid > 0 ? (
+                                  <span className="rounded-full bg-yellow-100 text-yellow-700 text-xs font-semibold px-2 py-0.5">
+                                    {t('Partial')}
+                                  </span>
+                                ) : (
+                                  <span className="rounded-full bg-muted text-muted-foreground text-xs font-semibold px-2 py-0.5">
+                                    {t('Unpaid')}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                {statement.periodStart
+                                  ? `${String(statement.periodStart).slice(0, 10)} → ${String(statement.periodEnd || '').slice(0, 10)}`
+                                  : t('Period not set')}
+                                {statement.accountNumber
+                                  ? ` • ${t('Account')}: ${statement.accountNumber}`
+                                  : ''}
+                                {statement.mapNumber
+                                  ? ` • ${t('Map')}: ${statement.mapNumber}`
+                                  : ''}
+                              </div>
+                            </div>
+                            {/* Action buttons */}
+                            <div className="flex flex-wrap gap-1.5">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() =>
+                                  setActiveTaxNotesStatementId((prev) =>
+                                    prev === statement._id ? '' : statement._id
+                                  )
+                                }
+                              >
+                                {notesOpen ? t('Hide notes') : t('Notes')}
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() =>
+                                  handleEditTaxStatement(statement)
+                                }
+                              >
+                                {t('Edit')}
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  handleEditTaxStatement(statement);
+                                  setUtilitiesTab('tax-view');
+                                }}
+                              >
+                                {t('View cost split')}
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="text-destructive hover:text-destructive"
+                                onClick={() =>
+                                  handleDeleteTaxStatement(statement._id)
+                                }
+                              >
+                                {t('Delete')}
+                              </Button>
+                            </div>
                           </div>
-                          <div className="text-xs text-muted-foreground">
-                            {t('Paid toward taxes')}: {toCurrency(totalPaid)} •{' '}
-                            {t('Payment fees')}: {toCurrency(totalFees)} •{' '}
-                            {t('Remaining balance')}: {toCurrency(balance)}
-                            {overpaidAmount > 0
-                              ? ` • ${t('Overpaid')}: ${toCurrency(overpaidAmount)}`
-                              : ''}
+
+                          {/* ── Key metrics ── */}
+                          <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-y sm:divide-y-0 border-b">
+                            <div className="px-4 py-3">
+                              <div className="text-xs text-muted-foreground mb-0.5">
+                                {statement.taxYearLabel || t('This year')}{' '}
+                                {t('total')}
+                              </div>
+                              <div className="text-lg font-bold tabular-nums">
+                                {toCurrency(statement.totalAfterDiscount)}
+                              </div>
+                              <div className="text-xs text-muted-foreground tabular-nums">
+                                {toCurrency(
+                                  Number(statement.totalAfterDiscount || 0) / 12
+                                )}{' '}
+                                / {t('mo')}
+                              </div>
+                            </div>
+                            <div className="px-4 py-3 bg-amber-50/60 dark:bg-amber-950/30">
+                              <div className="text-xs font-medium text-amber-700 dark:text-amber-400 mb-0.5">
+                                ★{' '}
+                                {(() => {
+                                  const m = String(
+                                    statement.taxYearLabel || ''
+                                  ).match(/^(\d{4})\s*[-–]\s*(\d{4})$/);
+                                  return m
+                                    ? `${t('Est.')} ${Number(m[1]) + 1}-${Number(m[2]) + 1}`
+                                    : t('Next year est.');
+                                })()}
+                              </div>
+                              <div className="text-lg font-bold tabular-nums text-amber-700 dark:text-amber-400">
+                                {toCurrency(statement.estimatedNextYearTotal)}
+                              </div>
+                              <div className="text-xs text-amber-600 dark:text-amber-500 tabular-nums">
+                                {toCurrency(statement.estimatedMonthlyCost)} /{' '}
+                                {t('mo')}
+                              </div>
+                            </div>
+                            <div className="px-4 py-3">
+                              <div className="text-xs text-muted-foreground mb-0.5">
+                                {t('Paid')}
+                              </div>
+                              <div className="text-lg font-bold tabular-nums">
+                                {toCurrency(totalPaid)}
+                              </div>
+                              <div className="text-xs text-muted-foreground tabular-nums">
+                                {totalFees > 0
+                                  ? `${t('Fees')}: ${toCurrency(totalFees)}`
+                                  : t('No fees')}
+                              </div>
+                            </div>
+                            <div className="px-4 py-3">
+                              <div className="text-xs text-muted-foreground mb-0.5">
+                                {isOverpaid ? t('Overpaid') : t('Remaining')}
+                              </div>
+                              <div
+                                className={`text-lg font-bold tabular-nums ${isOverpaid ? 'text-cyan-600' : balance > 0 ? 'text-destructive' : 'text-green-600'}`}
+                              >
+                                {toCurrency(
+                                  isOverpaid ? overpaidAmount : balance
+                                )}
+                              </div>
+                              {total > 0 ? (
+                                <div className="mt-1 h-1.5 w-full rounded-full bg-muted overflow-hidden">
+                                  <div
+                                    className={`h-full rounded-full transition-all ${isOverpaid ? 'bg-cyan-500' : isPaid ? 'bg-green-500' : 'bg-amber-500'}`}
+                                    style={{ width: `${paidPct}%` }}
+                                  />
+                                </div>
+                              ) : null}
+                            </div>
                           </div>
-                          {(statement.attachmentIds || []).length ? (
-                            <div className="flex flex-wrap gap-2 pt-1">
-                              {(statement.attachmentIds || []).map(
-                                (attachmentId, index) => (
+
+                          {/* ── Body ── */}
+                          <div className="px-4 py-3 space-y-4">
+                            {/* Variance */}
+                            {statement.priorYearVariance !== undefined &&
+                            statement.priorYearVariance !== null ? (
+                              <div className="text-xs text-muted-foreground">
+                                {t('Variance vs prior estimate')}:{' '}
+                                <span
+                                  className={
+                                    Number(statement.priorYearVariance) > 0
+                                      ? 'text-destructive font-medium'
+                                      : Number(statement.priorYearVariance) < 0
+                                        ? 'text-green-600 font-medium'
+                                        : ''
+                                  }
+                                >
+                                  {toCurrency(statement.priorYearVariance)}
+                                </span>
+                              </div>
+                            ) : null}
+
+                            {/* ── Statement files ── */}
+                            <div className="space-y-1.5">
+                              <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                                {t('Source documents')}
+                              </div>
+                              {(statement.attachmentIds || []).length ? (
+                                <div className="flex flex-wrap gap-2">
+                                  {(statement.attachmentIds || []).map(
+                                    (attachmentId, index) => (
+                                      <Button
+                                        key={attachmentId}
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() =>
+                                          handleDownloadTaxAttachment(
+                                            statement,
+                                            attachmentId,
+                                            index
+                                          )
+                                        }
+                                        disabled={
+                                          downloadingTaxAttachmentId ===
+                                          attachmentId
+                                        }
+                                      >
+                                        <LuDownload className="size-3.5 mr-1.5" />
+                                        {downloadingTaxAttachmentId ===
+                                        attachmentId
+                                          ? t('Downloading...')
+                                          : (statement.attachmentIds || [])
+                                                .length === 1
+                                            ? t('Original statement PDF')
+                                            : `${t('Statement PDF')} ${index + 1}`}
+                                      </Button>
+                                    )
+                                  )}
                                   <Button
-                                    key={attachmentId}
-                                    variant="outline"
-                                    className="h-8 px-2"
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-muted-foreground"
                                     onClick={() =>
-                                      handleDownloadTaxAttachment(
+                                      handleAutoReadTaxAttachment(
                                         statement,
-                                        attachmentId,
-                                        index
+                                        String(
+                                          (statement.attachmentIds || []).slice(
+                                            -1
+                                          )[0]
+                                        )
                                       )
                                     }
                                     disabled={
-                                      downloadingTaxAttachmentId ===
-                                      attachmentId
+                                      parsingTaxStatementId ===
+                                      String(statement._id)
                                     }
                                   >
-                                    <LuDownload className="size-4 mr-2" />
-                                    {downloadingTaxAttachmentId === attachmentId
-                                      ? t('Downloading...')
-                                      : `${t('Statement file')} ${index + 1}`}
+                                    <LuFileSearch className="size-3.5 mr-1.5" />
+                                    {parsingTaxStatementId ===
+                                    String(statement._id)
+                                      ? t('Re-reading PDF...')
+                                      : t('Re-read & auto-fill from PDF')}
                                   </Button>
-                                )
-                              )}
-                              <Button
-                                variant="outline"
-                                className="h-8 px-2"
-                                onClick={() =>
-                                  handleAutoReadTaxAttachment(
-                                    statement,
-                                    String(
-                                      (statement.attachmentIds || []).slice(
-                                        -1
-                                      )[0]
-                                    )
-                                  )
-                                }
-                                disabled={
-                                  parsingTaxStatementId ===
-                                  String(statement._id)
-                                }
-                              >
-                                <LuFileSearch className="size-4 mr-2" />
-                                {parsingTaxStatementId === String(statement._id)
-                                  ? t('Auto-reading...')
-                                  : t('Auto-read latest file')}
-                              </Button>
-                            </div>
-                          ) : (
-                            <div className="text-xs text-muted-foreground">
-                              {t('No statement file uploaded')}
-                            </div>
-                          )}
-
-                          <div className="pt-1 space-y-2">
-                            <div className="text-xs font-medium text-muted-foreground">
-                              {t('Payment confirmations')}
-                            </div>
-                            {!paymentConfirmations.length ? (
-                              <div className="text-xs text-muted-foreground">
-                                {t('No payment confirmations logged yet')}
-                              </div>
-                            ) : (
-                              <div className="space-y-2">
-                                {paymentConfirmations.map(
-                                  (confirmation, confirmationIndex) => (
-                                    <div
-                                      key={`${statement._id}-confirmation-${confirmationIndex}`}
-                                      className="rounded border p-2 text-xs space-y-1"
-                                    >
-                                      <div className="font-medium">
-                                        {String(
-                                          confirmation.paidOn || ''
-                                        ).slice(0, 10)}{' '}
-                                        • {toCurrency(confirmation.paidAmount)}
-                                        {Number(confirmation.feeAmount || 0) > 0
-                                          ? ` • ${t('Fee')}: ${toCurrency(confirmation.feeAmount)}`
-                                          : ''}
-                                      </div>
-                                      <div className="text-muted-foreground">
-                                        {confirmation.paymentMethod
-                                          ? `${t('Method')}: ${confirmation.paymentMethod}`
-                                          : t('Method not set')}
-                                        {confirmation.confirmationNumber
-                                          ? ` • ${t('Confirmation')}: ${confirmation.confirmationNumber}`
-                                          : ''}
-                                        {confirmation.createdBy
-                                          ? ` • ${t('Logged by')}: ${confirmation.createdBy}`
-                                          : ''}
-                                      </div>
-                                      {confirmation.notes ? (
-                                        <div className="text-muted-foreground">
-                                          {confirmation.notes}
-                                        </div>
-                                      ) : null}
-                                      {(confirmation.attachmentIds || [])
-                                        .length ? (
-                                        <div className="flex flex-wrap gap-2 pt-1">
-                                          {(
-                                            confirmation.attachmentIds || []
-                                          ).map(
-                                            (attachmentId, attachmentIndex) => (
-                                              <Button
-                                                key={attachmentId}
-                                                variant="outline"
-                                                className="h-7 px-2"
-                                                onClick={() =>
-                                                  handleDownloadTaxAttachment(
-                                                    statement,
-                                                    attachmentId,
-                                                    attachmentIndex
-                                                  )
-                                                }
-                                                disabled={
-                                                  downloadingTaxAttachmentId ===
-                                                  attachmentId
-                                                }
-                                              >
-                                                <LuDownload className="size-3 mr-1" />
-                                                {downloadingTaxAttachmentId ===
-                                                attachmentId
-                                                  ? t('Downloading...')
-                                                  : t('Receipt')}
-                                              </Button>
-                                            )
-                                          )}
-                                        </div>
-                                      ) : null}
-                                    </div>
-                                  )
-                                )}
-                              </div>
-                            )}
-
-                            {activeTaxPaymentStatementId === statement._id ? (
-                              <div className="rounded border p-3 space-y-2">
-                                <div className="text-xs font-medium">
-                                  {t('Log payment confirmation')}
                                 </div>
-                                <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
-                                  <div>
-                                    <label className="text-xs text-muted-foreground">
-                                      {t('Paid date')}
-                                    </label>
-                                    <Input
-                                      type="date"
-                                      value={taxPaymentDraft.paidOn}
-                                      onChange={(event) =>
-                                        setTaxPaymentDraft((previous) => ({
-                                          ...previous,
-                                          paidOn: event.target.value
-                                        }))
-                                      }
-                                    />
+                              ) : (
+                                <div className="text-xs text-muted-foreground">
+                                  {t('No statement PDF uploaded')}
+                                  {' — '}
+                                  {t(
+                                    'use Edit to upload one for record keeping and auto-fill'
+                                  )}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* ── Payment confirmations ── */}
+                            <div className="space-y-2">
+                              <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                                {t('Payment confirmations')}
+                              </div>
+                              {!paymentConfirmations.length ? (
+                                <div className="text-xs text-muted-foreground">
+                                  {t('No payment confirmations logged yet')}
+                                </div>
+                              ) : (
+                                <div className="space-y-2">
+                                  {paymentConfirmations.map(
+                                    (confirmation, confirmationIndex) => (
+                                      <div
+                                        key={`${statement._id}-confirmation-${confirmationIndex}`}
+                                        className="rounded-md border bg-muted/20 p-2.5 text-xs space-y-1"
+                                      >
+                                        <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
+                                          <span className="font-semibold">
+                                            {String(
+                                              confirmation.paidOn || ''
+                                            ).slice(0, 10)}
+                                          </span>
+                                          <span className="font-semibold tabular-nums">
+                                            {toCurrency(
+                                              confirmation.paidAmount
+                                            )}
+                                          </span>
+                                          {Number(confirmation.feeAmount || 0) >
+                                          0 ? (
+                                            <span className="text-muted-foreground">
+                                              {t('Fee')}:{' '}
+                                              {toCurrency(
+                                                confirmation.feeAmount
+                                              )}
+                                            </span>
+                                          ) : null}
+                                          {confirmation.paymentMethod ? (
+                                            <span className="text-muted-foreground">
+                                              {confirmation.paymentMethod}
+                                            </span>
+                                          ) : null}
+                                          {confirmation.confirmationNumber ? (
+                                            <span className="text-muted-foreground">
+                                              #{confirmation.confirmationNumber}
+                                            </span>
+                                          ) : null}
+                                          {confirmation.createdBy ? (
+                                            <span className="text-muted-foreground">
+                                              {t('by')} {confirmation.createdBy}
+                                            </span>
+                                          ) : null}
+                                        </div>
+                                        {confirmation.notes ? (
+                                          <div className="text-muted-foreground italic">
+                                            {confirmation.notes}
+                                          </div>
+                                        ) : null}
+                                        {(confirmation.attachmentIds || [])
+                                          .length ? (
+                                          <div className="flex flex-wrap gap-2 pt-1">
+                                            {(
+                                              confirmation.attachmentIds || []
+                                            ).map(
+                                              (
+                                                attachmentId,
+                                                attachmentIndex
+                                              ) => (
+                                                <Button
+                                                  key={attachmentId}
+                                                  variant="outline"
+                                                  size="sm"
+                                                  className="h-7 px-2"
+                                                  onClick={() =>
+                                                    handleDownloadTaxAttachment(
+                                                      statement,
+                                                      attachmentId,
+                                                      attachmentIndex
+                                                    )
+                                                  }
+                                                  disabled={
+                                                    downloadingTaxAttachmentId ===
+                                                    attachmentId
+                                                  }
+                                                >
+                                                  <LuDownload className="size-3 mr-1" />
+                                                  {downloadingTaxAttachmentId ===
+                                                  attachmentId
+                                                    ? t('Downloading...')
+                                                    : t('Receipt')}
+                                                </Button>
+                                              )
+                                            )}
+                                          </div>
+                                        ) : null}
+                                      </div>
+                                    )
+                                  )}
+                                </div>
+                              )}
+                              {activeTaxPaymentStatementId === statement._id ? (
+                                <div className="rounded-md border p-3 space-y-2">
+                                  <div className="text-xs font-semibold">
+                                    {t('Log payment confirmation')}
                                   </div>
-                                  <div>
-                                    <label className="text-xs text-muted-foreground">
-                                      {t('Paid amount')}
-                                    </label>
-                                    <Input
-                                      type="number"
-                                      step="0.01"
-                                      value={taxPaymentDraft.paidAmount}
-                                      onChange={(event) =>
-                                        setTaxPaymentDraft((previous) => ({
-                                          ...previous,
-                                          paidAmount: event.target.value
-                                        }))
-                                      }
-                                    />
+                                  <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
+                                    <div>
+                                      <label className="text-xs text-muted-foreground">
+                                        {t('Paid date')}
+                                      </label>
+                                      <Input
+                                        type="date"
+                                        value={taxPaymentDraft.paidOn}
+                                        onChange={(event) =>
+                                          setTaxPaymentDraft((previous) => ({
+                                            ...previous,
+                                            paidOn: event.target.value
+                                          }))
+                                        }
+                                      />
+                                    </div>
+                                    <div>
+                                      <label className="text-xs text-muted-foreground">
+                                        {t('Paid amount')}
+                                      </label>
+                                      <Input
+                                        type="number"
+                                        step="0.01"
+                                        value={taxPaymentDraft.paidAmount}
+                                        onChange={(event) =>
+                                          setTaxPaymentDraft((previous) => ({
+                                            ...previous,
+                                            paidAmount: event.target.value
+                                          }))
+                                        }
+                                      />
+                                    </div>
+                                    <div>
+                                      <label className="text-xs text-muted-foreground">
+                                        {t('Fee amount')}
+                                      </label>
+                                      <Input
+                                        type="number"
+                                        step="0.01"
+                                        value={taxPaymentDraft.feeAmount}
+                                        onChange={(event) =>
+                                          setTaxPaymentDraft((previous) => ({
+                                            ...previous,
+                                            feeAmount: event.target.value
+                                          }))
+                                        }
+                                      />
+                                    </div>
+                                    <div>
+                                      <label className="text-xs text-muted-foreground">
+                                        {t('Payment method')}
+                                      </label>
+                                      <Input
+                                        type="text"
+                                        value={taxPaymentDraft.paymentMethod}
+                                        onChange={(event) =>
+                                          setTaxPaymentDraft((previous) => ({
+                                            ...previous,
+                                            paymentMethod: event.target.value
+                                          }))
+                                        }
+                                      />
+                                    </div>
+                                    <div>
+                                      <label className="text-xs text-muted-foreground">
+                                        {t('Confirmation number')}
+                                      </label>
+                                      <Input
+                                        type="text"
+                                        value={
+                                          taxPaymentDraft.confirmationNumber
+                                        }
+                                        onChange={(event) =>
+                                          setTaxPaymentDraft((previous) => ({
+                                            ...previous,
+                                            confirmationNumber:
+                                              event.target.value
+                                          }))
+                                        }
+                                      />
+                                    </div>
+                                    <div>
+                                      <label className="text-xs text-muted-foreground">
+                                        {t('Confirmation file')}
+                                      </label>
+                                      <Input
+                                        type="file"
+                                        onChange={(event) =>
+                                          setTaxPaymentFile(
+                                            event.target.files?.[0] || null
+                                          )
+                                        }
+                                      />
+                                    </div>
+                                    <div className="md:col-span-3">
+                                      <label className="text-xs text-muted-foreground">
+                                        {t('Notes')}
+                                      </label>
+                                      <Input
+                                        type="text"
+                                        value={taxPaymentDraft.notes}
+                                        onChange={(event) =>
+                                          setTaxPaymentDraft((previous) => ({
+                                            ...previous,
+                                            notes: event.target.value
+                                          }))
+                                        }
+                                      />
+                                    </div>
                                   </div>
-                                  <div>
-                                    <label className="text-xs text-muted-foreground">
-                                      {t('Fee amount')}
-                                    </label>
-                                    <Input
-                                      type="number"
-                                      step="0.01"
-                                      value={taxPaymentDraft.feeAmount}
-                                      onChange={(event) =>
-                                        setTaxPaymentDraft((previous) => ({
-                                          ...previous,
-                                          feeAmount: event.target.value
-                                        }))
-                                      }
-                                    />
-                                  </div>
-                                  <div>
-                                    <label className="text-xs text-muted-foreground">
-                                      {t('Payment method')}
-                                    </label>
-                                    <Input
-                                      type="text"
-                                      value={taxPaymentDraft.paymentMethod}
-                                      onChange={(event) =>
-                                        setTaxPaymentDraft((previous) => ({
-                                          ...previous,
-                                          paymentMethod: event.target.value
-                                        }))
-                                      }
-                                    />
-                                  </div>
-                                  <div>
-                                    <label className="text-xs text-muted-foreground">
-                                      {t('Confirmation number')}
-                                    </label>
-                                    <Input
-                                      type="text"
-                                      value={taxPaymentDraft.confirmationNumber}
-                                      onChange={(event) =>
-                                        setTaxPaymentDraft((previous) => ({
-                                          ...previous,
-                                          confirmationNumber: event.target.value
-                                        }))
-                                      }
-                                    />
-                                  </div>
-                                  <div>
-                                    <label className="text-xs text-muted-foreground">
-                                      {t('Confirmation file')}
-                                    </label>
-                                    <Input
-                                      type="file"
-                                      onChange={(event) =>
-                                        setTaxPaymentFile(
-                                          event.target.files?.[0] || null
+                                  <div className="flex gap-2 justify-end">
+                                    <Button
+                                      variant="outline"
+                                      onClick={handleCancelTaxPaymentLog}
+                                    >
+                                      {t('Cancel')}
+                                    </Button>
+                                    <Button
+                                      onClick={() =>
+                                        handleSaveTaxPaymentConfirmation(
+                                          statement
                                         )
                                       }
-                                    />
-                                  </div>
-                                  <div className="md:col-span-3">
-                                    <label className="text-xs text-muted-foreground">
-                                      {t('Notes')}
-                                    </label>
-                                    <Input
-                                      type="text"
-                                      value={taxPaymentDraft.notes}
-                                      onChange={(event) =>
-                                        setTaxPaymentDraft((previous) => ({
-                                          ...previous,
-                                          notes: event.target.value
-                                        }))
-                                      }
-                                    />
+                                      disabled={savingTaxPaymentConfirmation}
+                                    >
+                                      {savingTaxPaymentConfirmation
+                                        ? t('Saving...')
+                                        : t('Save confirmation')}
+                                    </Button>
                                   </div>
                                 </div>
-                                <div className="flex gap-2 justify-end">
-                                  <Button
-                                    variant="outline"
-                                    onClick={handleCancelTaxPaymentLog}
-                                  >
-                                    {t('Cancel')}
-                                  </Button>
-                                  <Button
-                                    onClick={() =>
-                                      handleSaveTaxPaymentConfirmation(
-                                        statement
-                                      )
-                                    }
-                                    disabled={savingTaxPaymentConfirmation}
-                                  >
-                                    {savingTaxPaymentConfirmation
-                                      ? t('Saving...')
-                                      : t('Save confirmation')}
-                                  </Button>
-                                </div>
+                              ) : (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() =>
+                                    handleStartTaxPaymentLog(statement._id)
+                                  }
+                                >
+                                  {t('Log payment confirmation')}
+                                </Button>
+                              )}
+                            </div>
+
+                            {/* ── Inline notes panel ── */}
+                            {notesOpen ? (
+                              <div className="border-t pt-3">
+                                <NotesPanel
+                                  entityType="property_tax_statement"
+                                  entityId={String(statement._id)}
+                                />
                               </div>
-                            ) : (
-                              <Button
-                                variant="outline"
-                                onClick={() =>
-                                  handleStartTaxPaymentLog(statement._id)
-                                }
-                              >
-                                {t('Log payment confirmation')}
-                              </Button>
-                            )}
+                            ) : null}
                           </div>
                         </div>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            onClick={() =>
-                              setActiveTaxNotesStatementId((previous) =>
-                                previous === statement._id ? '' : statement._id
-                              )
-                            }
-                          >
-                            {activeTaxNotesStatementId === statement._id
-                              ? t('Hide notes')
-                              : t('Notes')}
-                          </Button>
-                          <Button
-                            variant="outline"
-                            onClick={() => handleEditTaxStatement(statement)}
-                          >
-                            {t('Edit')}
-                          </Button>
-                          <Button
-                            variant="outline"
-                            onClick={() =>
-                              handleDeleteTaxStatement(statement._id)
-                            }
-                          >
-                            {t('Delete')}
-                          </Button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              {activeTaxNotesStatementId ? (
-                <div className="pt-2">
-                  <NotesPanel
-                    entityType="property_tax_statement"
-                    entityId={String(activeTaxNotesStatementId)}
-                  />
-                </div>
-              ) : null}
-            </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            ) : null}
           </div>
         ) : null}
 
@@ -3442,7 +4308,11 @@ export function UtilitiesPage({ view = 'all' }) {
           </div>
         ) : null}
 
-        {utilitiesTab !== 'taxes' && utilitiesTab !== 'tax-report' ? (
+        {utilitiesTab !== 'tax-new' &&
+        utilitiesTab !== 'tax-edit' &&
+        utilitiesTab !== 'tax-view' &&
+        utilitiesTab !== 'tax-saved' &&
+        utilitiesTab !== 'tax-report' ? (
           <>
             <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
               <div className="md:col-span-2 relative">
