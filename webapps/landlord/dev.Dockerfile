@@ -17,5 +17,6 @@ ARG BASE_PATH
 ENV NEXT_TELEMETRY_DISABLED=1
 WORKDIR /usr/app
 COPY --from=deps /usr/app ./
+COPY webapps/commonui/scripts webapps/commonui/scripts
 CMD node webapps/commonui/scripts/generateruntimeenvfile.js -- --path ./webapps/landlord && \
     yarn workspace @microrealestate/landlord run dev -p $PORT

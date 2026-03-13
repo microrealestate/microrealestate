@@ -21,13 +21,22 @@ export async function getServerSideProps(context) {
 
   const { status } = await store.user.refreshTokens(context);
   if (status !== 200) {
-    return { props: {} };
+    return { props: { organization: null } };
   }
 
-  await setupOrganizationsInStore();
+  try {
+    await setupOrganizationsInStore();
+  } catch {
+    return { props: { organization: null } };
+  }
+
   if (!store.user.signedIn) {
-    return { props: {} };
+    return { props: { organization: null } };
   }
 
-  return { props: { organization: toJS(store.organization.selected) } };
+  return {
+    props: {
+      organization: toJS(store.organization.selected || null)
+    }
+  };
 }

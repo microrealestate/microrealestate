@@ -190,6 +190,7 @@ services:
       args:
         - BASE_PATH=$LANDLORD_BASE_PATH
     environment:
+      - NODE_ENV=development
       - WATCHPACK_POLLING=true
       - CHOKIDAR_USEPOLLING=true
       - NEXT_PUBLIC_AZURE_MAPS_API_KEY
@@ -221,6 +222,7 @@ services:
       args:
         - BASE_PATH=$TENANT_BASE_PATH
     environment:
+      - NODE_ENV=development
       - WATCHPACK_POLLING=true
       - CHOKIDAR_USEPOLLING=true
       - NEXT_PUBLIC_AZURE_MAPS_API_KEY

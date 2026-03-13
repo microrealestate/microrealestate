@@ -2,7 +2,7 @@ import { Collections } from '@microrealestate/common';
 import fs from 'fs-extra';
 import { Parser } from 'json2csv';
 import path from 'path';
-import pdfParse from 'pdf-parse';
+import pdfParse from 'pdf-parse/lib/pdf-parse.js';
 
 function normalizeText(value) {
   if (typeof value !== 'string') {
