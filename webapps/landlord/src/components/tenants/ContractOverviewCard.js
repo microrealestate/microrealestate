@@ -7,9 +7,18 @@ import { StoreContext } from '../../store';
 import { useContext } from 'react';
 import useTranslation from 'next-translate/useTranslation';
 
+const CONTRACT_PDF_DESCRIPTION = 'uploaded_contract_pdf';
+
 export default function ContractOverviewCard() {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
+  const hasUploadedContractPdf = (store.document.items || []).some(
+    ({ tenantId, type, description }) =>
+      String(tenantId) === String(store.tenant.selected?._id) &&
+      type === 'file' &&
+      description === CONTRACT_PDF_DESCRIPTION
+  );
+
   return (
     <DashboardCard
       Icon={RiContractLine}
@@ -26,6 +35,14 @@ export default function ContractOverviewCard() {
               {store.tenant.selected.terminated
                 ? t('Terminated')
                 : t('In progress')}
+            </span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">
+              {t('Contract source')}
+            </span>
+            <span>
+              {hasUploadedContractPdf ? t('Uploaded PDF') : t('Generated')}
             </span>
           </div>
           {store.tenant.selected.beginDate && (
