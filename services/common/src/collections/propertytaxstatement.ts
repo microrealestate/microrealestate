@@ -36,6 +36,7 @@ const PropertyTaxStatementSchema =
       taxYearLabel: { type: String, required: true, index: true },
       periodStart: { type: Date, default: null },
       periodEnd: { type: Date, default: null },
+      county: { type: String, default: '' },
       accountNumber: { type: String, default: '' },
       mapNumber: { type: String, default: '' },
       rmvLandLastYear: { type: Number, default: 0 },

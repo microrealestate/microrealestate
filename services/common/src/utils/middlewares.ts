@@ -66,9 +66,19 @@ export function needAccessToken(
     next: Express.NextFunction
   ) => {
     const req = request as ServiceRequest;
+
+    const unauthorized = () => {
+      // Drain request body (if any) so reverse proxies do not hit EPIPE when
+      // upstream closes early on large uploads.
+      if (!request.complete && request.readable) {
+        request.resume();
+      }
+      return res.sendStatus(401);
+    };
+
     if (!accessTokenSecret) {
       logger.error('accessTokenSecret not set');
-      return res.sendStatus(401);
+      return unauthorized();
     }
 
     let accessToken;
@@ -84,7 +94,7 @@ export function needAccessToken(
 
     if (!accessToken) {
       logger.warn('accessToken not passed in the request');
-      return res.sendStatus(401);
+      return unauthorized();
     }
 
     try {
@@ -115,11 +125,11 @@ export function needAccessToken(
         req.user = user;
       } else {
         logger.warn('accessToken is invalid');
-        return res.sendStatus(401);
+        return unauthorized();
       }
     } catch (error) {
       logger.warn(String(error));
-      return res.sendStatus(401);
+      return unauthorized();
     }
 
     next();

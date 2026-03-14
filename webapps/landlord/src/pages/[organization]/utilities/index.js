@@ -121,6 +121,7 @@ function getInitialTaxDraft() {
     taxYearLabel: '',
     periodStart: '',
     periodEnd: '',
+    county: '',
     accountNumber: '',
     mapNumber: '',
     rmvLandLastYear: '',
@@ -1343,6 +1344,7 @@ export function UtilitiesPage({ view = 'all' }) {
       periodEnd: statement.periodEnd
         ? String(statement.periodEnd).slice(0, 10)
         : '',
+      county: statement.county || '',
       accountNumber: statement.accountNumber || '',
       mapNumber: statement.mapNumber || '',
       rmvLandLastYear: String(statement.rmvLandLastYear ?? ''),
@@ -1464,6 +1466,10 @@ export function UtilitiesPage({ view = 'all' }) {
       merged.mapNumber = String(extracted.mapNumber);
     }
 
+    if (extracted.county && !merged.county) {
+      merged.county = String(extracted.county);
+    }
+
     if (extracted.periodStart && !merged.periodStart) {
       merged.periodStart = extracted.periodStart;
     }
@@ -1537,6 +1543,10 @@ export function UtilitiesPage({ view = 'all' }) {
 
     if (extracted.mapNumber && !merged.mapNumber) {
       merged.mapNumber = String(extracted.mapNumber);
+    }
+
+    if (extracted.county && !merged.county) {
+      merged.county = String(extracted.county);
     }
 
     if (extracted.periodStart && !merged.periodStart) {
@@ -1684,6 +1694,7 @@ export function UtilitiesPage({ view = 'all' }) {
         taxYearLabel: taxDraft.taxYearLabel.trim(),
         periodStart: taxDraft.periodStart || null,
         periodEnd: taxDraft.periodEnd || null,
+        county: taxDraft.county,
         accountNumber: taxDraft.accountNumber,
         mapNumber: taxDraft.mapNumber,
         rmvLandLastYear: Number(taxDraft.rmvLandLastYear || 0),
@@ -2792,6 +2803,36 @@ export function UtilitiesPage({ view = 'all' }) {
                   </div>
                   <div>
                     <label className="text-xs text-muted-foreground">
+                      {t('Period start')}
+                    </label>
+                    <Input
+                      type="date"
+                      value={taxDraft.periodStart}
+                      onChange={(event) =>
+                        setTaxDraft((previous) => ({
+                          ...previous,
+                          periodStart: event.target.value
+                        }))
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground">
+                      {t('Period end')}
+                    </label>
+                    <Input
+                      type="date"
+                      value={taxDraft.periodEnd}
+                      onChange={(event) =>
+                        setTaxDraft((previous) => ({
+                          ...previous,
+                          periodEnd: event.target.value
+                        }))
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground">
                       {t('Map number')}
                     </label>
                     <Input
@@ -2801,6 +2842,22 @@ export function UtilitiesPage({ view = 'all' }) {
                         setTaxDraft((previous) => ({
                           ...previous,
                           mapNumber: event.target.value
+                        }))
+                      }
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs text-muted-foreground">
+                      {t('County')}
+                    </label>
+                    <Input
+                      type="text"
+                      value={taxDraft.county}
+                      onChange={(event) =>
+                        setTaxDraft((previous) => ({
+                          ...previous,
+                          county: event.target.value
                         }))
                       }
                     />
@@ -2841,6 +2898,22 @@ export function UtilitiesPage({ view = 'all' }) {
                         )}
                       </p>
                     ) : null}
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground">
+                      {t('Tax before discount')}
+                    </label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={taxDraft.taxBeforeDiscount}
+                      onChange={(event) =>
+                        setTaxDraft((previous) => ({
+                          ...previous,
+                          taxBeforeDiscount: event.target.value
+                        }))
+                      }
+                    />
                   </div>
                   <div>
                     <label className="text-xs text-muted-foreground">
@@ -3696,6 +3769,9 @@ export function UtilitiesPage({ view = 'all' }) {
                                   : t('Period not set')}
                                 {statement.accountNumber
                                   ? ` • ${t('Account')}: ${statement.accountNumber}`
+                                  : ''}
+                                {statement.county
+                                  ? ` • ${t('County')}: ${statement.county}`
                                   : ''}
                                 {statement.mapNumber
                                   ? ` • ${t('Map')}: ${statement.mapNumber}`

@@ -534,6 +534,7 @@ export namespace CollectionTypes {
     taxYearLabel: string;
     periodStart?: Date | null;
     periodEnd?: Date | null;
+    county?: string;
     accountNumber?: string;
     mapNumber?: string;
     rmvLandLastYear?: number;

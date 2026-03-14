@@ -96,18 +96,342 @@ function parseStringFromText(text, patterns = []) {
   return '';
 }
 
+function getNonEmptyLines(text) {
+  return String(text || '')
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+}
+
+function cleanInlineValue(value) {
+  return String(value || '')
+    .replace(/^[\s:.-]+/, '')
+    .replace(/[|]+$/g, '')
+    .trim();
+}
+
+function normalizeToken(value) {
+  return String(value || '')
+    .trim()
+    .replace(/\s+/g, ' ');
+}
+
+function toIsoDateString(value) {
+  if (!value) {
+    return '';
+  }
+
+  const raw = String(value)
+    .trim()
+    .replace(/[.,;:]$/, '');
+
+  const isoMatch = raw.match(/^(\d{4})[/-](\d{1,2})[/-](\d{1,2})$/);
+  if (isoMatch) {
+    const year = Number(isoMatch[1]);
+    const month = Number(isoMatch[2]);
+    const day = Number(isoMatch[3]);
+    if (
+      Number.isFinite(year) &&
+      Number.isFinite(month) &&
+      Number.isFinite(day) &&
+      month >= 1 &&
+      month <= 12 &&
+      day >= 1 &&
+      day <= 31
+    ) {
+      return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    }
+  }
+
+  const usMatch = raw.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})$/);
+  if (usMatch) {
+    const month = Number(usMatch[1]);
+    const day = Number(usMatch[2]);
+    const yearPart = Number(usMatch[3]);
+    const year = usMatch[3].length === 2 ? 2000 + yearPart : yearPart;
+
+    if (
+      Number.isFinite(year) &&
+      Number.isFinite(month) &&
+      Number.isFinite(day) &&
+      month >= 1 &&
+      month <= 12 &&
+      day >= 1 &&
+      day <= 31
+    ) {
+      return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    }
+  }
+
+  const parsed = new Date(raw);
+  if (!Number.isNaN(parsed.getTime()) && /[a-z]/i.test(raw) && /\d/.test(raw)) {
+    return parsed.toISOString().slice(0, 10);
+  }
+
+  return '';
+}
+
+function parseLabeledValue(text, patterns = []) {
+  for (const pattern of patterns) {
+    const match = text.match(pattern);
+    if (!match?.[1]) {
+      continue;
+    }
+
+    const value = String(match[1]).trim().replace(/[|]+$/g, '').trim();
+    if (value) {
+      return value;
+    }
+  }
+
+  return '';
+}
+
+function isLikelyMonthYearValue(value) {
+  const normalized = String(value || '').trim();
+  return (
+    /^(0?[1-9]|1[0-2])[/-](19|20)\d{2}$/.test(normalized) ||
+    /^(19|20)\d{2}[/-](0?[1-9]|1[0-2])$/.test(normalized)
+  );
+}
+
+function isLikelyFullDateValue(value) {
+  const normalized = String(value || '').trim();
+  if (!normalized) {
+    return false;
+  }
+
+  if (
+    /^(\d{1,2}[/-]\d{1,2}[/-]\d{2,4}|\d{4}[/-]\d{1,2}[/-]\d{1,2})$/.test(
+      normalized
+    )
+  ) {
+    return true;
+  }
+
+  return /^(jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\s+\d{1,2},?\s+\d{2,4}$/i.test(
+    normalized
+  );
+}
+
+function isValidAccountNumber(value) {
+  const normalized = normalizeToken(value).replace(/\s/g, '');
+  if (!/^[a-z0-9]{4,12}$/i.test(normalized)) {
+    return false;
+  }
+
+  if (!/^(?:r\d{4,11}|\d{4,12})$/i.test(normalized)) {
+    return false;
+  }
+
+  return true;
+}
+
+function isValidMapNumber(value) {
+  const normalized = normalizeToken(value).replace(/\s/g, '');
+  if (!/^[a-z0-9-]{3,30}$/i.test(normalized)) {
+    return false;
+  }
+
+  if (!/\d/.test(normalized)) {
+    return false;
+  }
+
+  const hasLetters = /[a-z]/i.test(normalized);
+  const hasHyphen = normalized.includes('-');
+  if (!hasLetters && !hasHyphen) {
+    return false;
+  }
+
+  if (/^(?:r?\d{4,12})$/i.test(normalized)) {
+    return false;
+  }
+
+  if (isLikelyMonthYearValue(normalized) || isLikelyFullDateValue(normalized)) {
+    return false;
+  }
+
+  if (/(account|acres|situs|code|total|tax)/i.test(normalized)) {
+    return false;
+  }
+
+  return true;
+}
+
+function parseAccountNumberFromText(text) {
+  const previousLinePattern = text.match(
+    /(?:^|\n)\s*([a-z0-9-]{3,24})\s*\n\s*(?:tax\s*)?account\s*(?:number|no\.?|#)?\s*:?/im
+  );
+  if (
+    previousLinePattern?.[1] &&
+    isValidAccountNumber(previousLinePattern[1])
+  ) {
+    return normalizeToken(previousLinePattern[1]).replace(/\s/g, '');
+  }
+
+  const inline = parseLabeledValue(text, [
+    /(?:^|\n)\s*account\s*(?:number|no\.?|#)?\s*[:-]?\s*([a-z0-9]{4,12})\s*(?=$|\n)/im,
+    /(?:^|\n)\s*tax\s*account\s*(?:number|no\.?|#)?\s*[:-]?\s*([a-z0-9]{4,12})\s*(?=$|\n)/im,
+    /(?:^|\n)\s*([a-z0-9]{4,12})\s*account\s*(?:number|no\.?|#)?\s*:?/im
+  ]);
+  if (isValidAccountNumber(inline)) {
+    return normalizeToken(inline).replace(/\s/g, '');
+  }
+
+  const lines = getNonEmptyLines(text);
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index];
+    if (!/account\s*(?:number|no\.?|#)/i.test(line)) {
+      continue;
+    }
+
+    const previousLine = lines[index - 1] || '';
+    const previousToken = previousLine.split(/\s+/)[0] || '';
+    if (isValidAccountNumber(previousToken)) {
+      return normalizeToken(previousToken).replace(/\s/g, '');
+    }
+
+    const inlineMatch = line.match(
+      /account\s*(?:number|no\.?|#)?\s*[:-]?\s*([a-z0-9]{4,12})/i
+    );
+    if (inlineMatch?.[1] && isValidAccountNumber(inlineMatch[1])) {
+      return normalizeToken(inlineMatch[1]).replace(/\s/g, '');
+    }
+
+    const nextLine = lines[index + 1] || '';
+    const nextToken = nextLine.split(/\s+/)[0] || '';
+    if (isValidAccountNumber(nextToken)) {
+      return normalizeToken(nextToken).replace(/\s/g, '');
+    }
+  }
+
+  return '';
+}
+
+function parseMapNumberFromText(text) {
+  const inline = parseLabeledValue(text, [
+    /(?:^|\n)\s*map\s*(?:number|no\.?|#)?\s*[:-]?\s*([a-z0-9-]{3,30})\s*(?=$|\n)/im,
+    /(?:^|\n)\s*(?:tax\s*map|map\s*id)\s*[:-]?\s*([a-z0-9-]{3,30})\s*(?=$|\n)/im
+  ]);
+  if (isValidMapNumber(inline)) {
+    return normalizeToken(inline).replace(/\s/g, '');
+  }
+
+  const lines = getNonEmptyLines(text);
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index];
+    if (!/^map\s*(?:number|no\.?|#)?\s*:?$/i.test(line)) {
+      continue;
+    }
+
+    for (let offset = 1; offset <= 20; offset += 1) {
+      const candidateLine = cleanInlineValue(lines[index + offset] || '');
+      if (!candidateLine) {
+        continue;
+      }
+
+      if (/\b(acres|situs)\b/i.test(candidateLine)) {
+        continue;
+      }
+
+      const token =
+        candidateLine.match(
+          /\b(?=[a-z0-9-]{5,30}\b)(?=[a-z0-9-]*[a-z])(?=[a-z0-9-]*\d)[a-z0-9-]+\b/i
+        )?.[0] ||
+        candidateLine.match(/[a-z0-9-]{3,30}/i)?.[0] ||
+        candidateLine.split(/\s+/)[0] ||
+        '';
+      if (isValidMapNumber(token)) {
+        return normalizeToken(token).replace(/\s/g, '');
+      }
+
+      // Stop scanning when another strong section starts; prevents drifting
+      // too far from the MAP block in noisy OCR output.
+      if (
+        /^(code|tear here|please include|make check payable|payment options)/i.test(
+          candidateLine
+        )
+      ) {
+        break;
+      }
+    }
+  }
+
+  return '';
+}
+
 function parseDateRangeFromText(text) {
-  const match = text.match(
-    /(\d{1,2}\/\d{1,2}\/\d{4})\s*(?:to|-)\s*(\d{1,2}\/\d{1,2}\/\d{4})/i
+  const monthName =
+    '(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:t|tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)';
+
+  const rangePatterns = [
+    /(?:tax\s*)?period[^\n]*?(\d{1,2}[/-]\d{1,2}[/-]\d{2,4}|\d{4}[/-]\d{1,2}[/-]\d{1,2})\s*(?:to|through|-)\s*(\d{1,2}[/-]\d{1,2}[/-]\d{2,4}|\d{4}[/-]\d{1,2}[/-]\d{1,2})/i,
+    /(\d{1,2}[/-]\d{1,2}[/-]\d{2,4}|\d{4}[/-]\d{1,2}[/-]\d{1,2})\s*(?:to|through|-)\s*(\d{1,2}[/-]\d{1,2}[/-]\d{2,4}|\d{4}[/-]\d{1,2}[/-]\d{1,2})/i,
+    new RegExp(
+      `(${monthName}\\s+\\d{1,2},?\\s+\\d{2,4})\\s*(?:to|through|-)\\s*(${monthName}\\s+\\d{1,2},?\\s+\\d{2,4})`,
+      'i'
+    )
+  ];
+
+  for (const pattern of rangePatterns) {
+    const match = text.match(pattern);
+    if (!match) {
+      continue;
+    }
+
+    const periodStart = toIsoDateString(match[1]);
+    const periodEnd = toIsoDateString(match[2]);
+    if (periodStart || periodEnd) {
+      return {
+        periodStart: periodStart || null,
+        periodEnd: periodEnd || null
+      };
+    }
+  }
+
+  let periodStart = toIsoDateString(
+    parseLabeledValue(text, [
+      /(?:period\s*)?start\s*date\s*[:-]?\s*([^\n]+)/i,
+      /period\s*from\s*[:-]?\s*([^\n]+)/i
+    ])
+  );
+  let periodEnd = toIsoDateString(
+    parseLabeledValue(text, [
+      /(?:period\s*)?end\s*date\s*[:-]?\s*([^\n]+)/i,
+      /period\s*(?:to|through)\s*[:-]?\s*([^\n]+)/i
+    ])
   );
 
-  if (!match) {
-    return { periodStart: null, periodEnd: null };
+  if (!periodStart || !periodEnd) {
+    const lines = getNonEmptyLines(text);
+    for (const line of lines) {
+      const match = line.match(
+        new RegExp(
+          `(${monthName}\\s+\\d{1,2},?\\s+\\d{2,4}|\\d{1,2}[/-]\\d{1,2}[/-]\\d{2,4}|\\d{4}[/-]\\d{1,2}[/-]\\d{1,2})\\s*(?:to|through|-)\\s*(${monthName}\\s+\\d{1,2},?\\s+\\d{2,4}|\\d{1,2}[/-]\\d{1,2}[/-]\\d{2,4}|\\d{4}[/-]\\d{1,2}[/-]\\d{1,2})`,
+          'i'
+        )
+      );
+      if (!match) {
+        continue;
+      }
+
+      const startCandidate = toIsoDateString(match[1]);
+      const endCandidate = toIsoDateString(match[2]);
+      if (startCandidate && !periodStart) {
+        periodStart = startCandidate;
+      }
+      if (endCandidate && !periodEnd) {
+        periodEnd = endCandidate;
+      }
+      if (periodStart && periodEnd) {
+        break;
+      }
+    }
   }
 
   return {
-    periodStart: match[1],
-    periodEnd: match[2]
+    periodStart: periodStart || null,
+    periodEnd: periodEnd || null
   };
 }
 
@@ -164,6 +488,85 @@ function parsePairedNumbersByLabel(text, labelPatterns = []) {
   }
 
   return [null, null];
+}
+
+function parseRmvAndTaxTableFallback(text) {
+  const lines = getNonEmptyLines(text);
+  const tableStartIndex = lines.findIndex((line) =>
+    /last\s*year\s*this\s*year|last\s*yearthis\s*year/i.test(line)
+  );
+
+  if (tableStartIndex === -1) {
+    return null;
+  }
+
+  const numericValues = [];
+  for (let index = tableStartIndex + 1; index < lines.length; index += 1) {
+    const line = lines[index];
+
+    if (
+      /please make payment to|property description|payment options|tax payment options/i.test(
+        line
+      )
+    ) {
+      break;
+    }
+
+    if (
+      numericValues.length >= 12 &&
+      /po box|total due|property tax statement|questions about/i.test(line)
+    ) {
+      break;
+    }
+
+    const lineValues = line.match(/\d{1,3}(?:,\d{3})*(?:\.\d+)?/g) || [];
+    lineValues.forEach((value) => {
+      const parsed = parseSingleNumber(value);
+      if (parsed !== null) {
+        numericValues.push(parsed);
+      }
+    });
+  }
+
+  if (numericValues.length < 10) {
+    return null;
+  }
+
+  const primaryValues = numericValues.slice(0, 14);
+
+  const decimalIndexes = primaryValues
+    .map((value, idx) => ({ value, idx }))
+    .filter(({ value }) => value % 1 !== 0);
+
+  if (decimalIndexes.length < 2) {
+    return null;
+  }
+
+  const firstTaxIndex = decimalIndexes[decimalIndexes.length - 2].idx;
+  const lastTaxIndex = decimalIndexes[decimalIndexes.length - 1].idx;
+
+  const findNearestIntegerBefore = (fromIndex) => {
+    for (let idx = fromIndex - 1; idx >= 0; idx -= 1) {
+      const value = primaryValues[idx];
+      if (Number.isFinite(value) && value % 1 === 0) {
+        return value;
+      }
+    }
+    return null;
+  };
+
+  return {
+    rmvLandLastYear: primaryValues[0] ?? null,
+    rmvBuildingLastYear: primaryValues[1] ?? null,
+    rmvTotalLastYear: primaryValues[2] ?? null,
+    rmvLandThisYear: primaryValues[3] ?? null,
+    rmvBuildingThisYear: primaryValues[4] ?? null,
+    rmvTotalThisYear: primaryValues[5] ?? null,
+    assessedValueLastYear: findNearestIntegerBefore(firstTaxIndex),
+    assessedValueThisYear: findNearestIntegerBefore(lastTaxIndex),
+    propertyTaxesLastYear: primaryValues[firstTaxIndex] ?? null,
+    propertyTaxesThisYear: primaryValues[lastTaxIndex] ?? null
+  };
 }
 
 async function extractTextFromBuffer(buffer, mimeType = '', filename = '') {
@@ -267,8 +670,9 @@ async function loadAttachmentForParsing(realmId, statementId, attachmentId) {
   return { attachment, text };
 }
 
-function parseTaxStatementFields(text, filename = '') {
+export function parseTaxStatementFields(text, filename = '') {
   const mergedText = `${String(filename)}\n${String(text || '')}`;
+  const tableFallback = parseRmvAndTaxTableFallback(mergedText);
 
   const { periodStart, periodEnd } = parseDateRangeFromText(mergedText);
   const [rmvLandLastYear, rmvLandThisYear] = parsePairedNumbersByLabel(
@@ -292,42 +696,97 @@ function parseTaxStatementFields(text, filename = '') {
       /property\s*tax(?:es)?\s*:?[\s]*([^\n]+)/i
     ]);
 
-  const taxYearLabel =
+  let taxYearLabel =
     parseStringFromText(mergedText, [/\b(20\d{2}\s*-\s*20\d{2})\b/i]) ||
     parseStringFromText(mergedText, [/\b(20\d{2})\b/]);
+
+  if (periodStart && periodEnd) {
+    const startYear = new Date(periodStart).getUTCFullYear();
+    const endYear = new Date(periodEnd).getUTCFullYear();
+    const hasSingleYear = /^20\d{2}$/.test(String(taxYearLabel || '').trim());
+
+    if (!taxYearLabel || hasSingleYear) {
+      if (
+        Number.isFinite(startYear) &&
+        Number.isFinite(endYear) &&
+        endYear >= startYear
+      ) {
+        taxYearLabel = `${startYear}-${endYear}`;
+      }
+    }
+  }
+
+  const accountNumber = parseAccountNumberFromText(mergedText);
+  const mapNumber = parseMapNumberFromText(mergedText);
+
+  const countyFromLabel = parseStringFromText(mergedText, [
+    /county\s*(?:name)?\s*[:-]?\s*([a-z][a-z .'-]{2,})/i,
+    /county\s+of\s+([a-z][a-z .'-]{2,})/i
+  ]);
+  const countyFromSuffix = parseStringFromText(mergedText, [
+    /\b([a-z][a-z .'-]{2,}\s+county)\b/i
+  ]);
+  const county = normalizeText(countyFromSuffix || countyFromLabel);
+
+  const resolvedPropertyTaxesLastYear =
+    propertyTaxesLastYear !== null &&
+    propertyTaxesThisYear !== null &&
+    propertyTaxesThisYear > 100
+      ? propertyTaxesLastYear
+      : (tableFallback?.propertyTaxesLastYear ?? propertyTaxesLastYear ?? null);
+
+  const resolvedPropertyTaxesThisYear =
+    propertyTaxesLastYear !== null &&
+    propertyTaxesThisYear !== null &&
+    propertyTaxesThisYear > 100
+      ? propertyTaxesThisYear
+      : (tableFallback?.propertyTaxesThisYear ?? propertyTaxesThisYear ?? null);
+
+  const taxBeforeDiscount =
+    parseNumberFromText(mergedText, [
+      /tax\s*before\s*discount\s*[:$]?\s*([\d,.]+)/i,
+      /total\s*tax(?:es)?\s*[:$]?\s*([\d,.]+)/i,
+      /((?:\d{1,3}(?:,\d{3})+|\d+)\.\d{2})\s*(?:20\d{2}\s*[-]?\s*20\d{2}\s*)?tax\s*\(\s*before\s*discount\s*\)/i
+    ]) ||
+    resolvedPropertyTaxesThisYear ||
+    null;
+
+  const totalAfterDiscount =
+    parseNumberFromText(mergedText, [
+      /total\s*after\s*discount\s*[:$]?\s*([\d,.]+)/i,
+      /total\s*\(\s*after\s*discount\s*\)\s*[:$]?\s*([\d,.]+)/i,
+      /amount\s*due\s*[:$]?\s*([\d,.]+)/i,
+      /([\d,.]+)\s*total\s*due\s*\(\s*after\s*discount\s*\)/i
+    ]) || null;
 
   return {
     taxYearLabel,
     periodStart,
     periodEnd,
-    accountNumber: parseStringFromText(mergedText, [
-      /account\s*(?:number|no\.?|#)?\s*[:-]?\s*([a-z0-9-]+)/i
-    ]),
-    mapNumber: parseStringFromText(mergedText, [
-      /map\s*(?:number|no\.?|#)?\s*[:-]?\s*([a-z0-9-]+)/i
-    ]),
-    rmvLandLastYear,
-    rmvLandThisYear,
-    rmvBuildingLastYear,
-    rmvBuildingThisYear,
-    rmvTotalLastYear,
-    rmvTotalThisYear,
-    assessedValueLastYear,
-    assessedValueThisYear,
-    propertyTaxesLastYear,
-    propertyTaxesThisYear,
-    taxBeforeDiscount: parseNumberFromText(mergedText, [
-      /tax\s*before\s*discount\s*[:$]?\s*([\d,.]+)/i,
-      /total\s*tax(?:es)?\s*[:$]?\s*([\d,.]+)/i
-    ]),
+    county,
+    accountNumber,
+    mapNumber,
+    rmvLandLastYear: rmvLandLastYear ?? tableFallback?.rmvLandLastYear ?? null,
+    rmvLandThisYear: rmvLandThisYear ?? tableFallback?.rmvLandThisYear ?? null,
+    rmvBuildingLastYear:
+      rmvBuildingLastYear ?? tableFallback?.rmvBuildingLastYear ?? null,
+    rmvBuildingThisYear:
+      rmvBuildingThisYear ?? tableFallback?.rmvBuildingThisYear ?? null,
+    rmvTotalLastYear:
+      rmvTotalLastYear ?? tableFallback?.rmvTotalLastYear ?? null,
+    rmvTotalThisYear:
+      rmvTotalThisYear ?? tableFallback?.rmvTotalThisYear ?? null,
+    assessedValueLastYear:
+      assessedValueLastYear ?? tableFallback?.assessedValueLastYear ?? null,
+    assessedValueThisYear:
+      assessedValueThisYear ?? tableFallback?.assessedValueThisYear ?? null,
+    propertyTaxesLastYear: resolvedPropertyTaxesLastYear,
+    propertyTaxesThisYear: resolvedPropertyTaxesThisYear,
+    taxBeforeDiscount,
     delinquentTaxes: parseNumberFromText(mergedText, [
       /delinquent\s*tax(?:es)?\s*[:$]?\s*([\d,.]+)/i
     ]),
-    totalAfterDiscount: parseNumberFromText(mergedText, [
-      /total\s*after\s*discount\s*[:$]?\s*([\d,.]+)/i,
-      /total\s*\(\s*after\s*discount\s*\)\s*[:$]?\s*([\d,.]+)/i,
-      /amount\s*due\s*[:$]?\s*([\d,.]+)/i
-    ])
+    totalAfterDiscount
   };
 }
 
@@ -365,6 +824,7 @@ function normalizePayload(payload) {
     taxYearLabel: normalizeText(payload.taxYearLabel),
     periodStart: normalizeDate(payload.periodStart),
     periodEnd: normalizeDate(payload.periodEnd),
+    county: normalizeText(payload.county),
     accountNumber: normalizeText(payload.accountNumber),
     mapNumber: normalizeText(payload.mapNumber),
     rmvLandLastYear: normalizeNumber(payload.rmvLandLastYear),
@@ -445,7 +905,7 @@ async function validateSplitItems(realmId, propertyId, splitItems, label) {
   return null;
 }
 
-async function validatePayload(realmId, payload) {
+async function validatePayload(realmId, payload, existingStatementId = null) {
   if (!payload.propertyId) {
     return 'propertyId is required';
   }
@@ -463,6 +923,42 @@ async function validatePayload(realmId, payload) {
 
   if (!payload.taxYearLabel) {
     return 'taxYearLabel is required';
+  }
+
+  const duplicateQuery = {
+    realmId,
+    propertyId: payload.propertyId,
+    taxYearLabel: payload.taxYearLabel
+  };
+
+  if (existingStatementId) {
+    duplicateQuery._id = { $ne: existingStatementId };
+  }
+
+  const existingStatements = await Collections.PropertyTaxStatement.find(
+    duplicateQuery
+  )
+    .select('_id accountNumber')
+    .lean();
+
+  const normalizedIncomingAccount = normalizeText(
+    payload.accountNumber || ''
+  ).toLowerCase();
+
+  const duplicateStatement = existingStatements.find((statement) => {
+    const normalizedExistingAccount = normalizeText(
+      statement.accountNumber || ''
+    ).toLowerCase();
+
+    return normalizedExistingAccount === normalizedIncomingAccount;
+  });
+
+  if (duplicateStatement) {
+    if (!normalizedIncomingAccount) {
+      return 'A tax statement for this property and tax year already exists. Add an account number to save multiple statements for the same year.';
+    }
+
+    return 'A tax statement for this property, tax year, and account number already exists';
   }
 
   if (payload.landLeasedPercentage < 0 || payload.landLeasedPercentage > 100) {
@@ -625,7 +1121,11 @@ export async function add(req, res) {
 
 export async function update(req, res) {
   const payload = normalizePayload(req.body || {});
-  const validationError = await validatePayload(req.realm._id, payload);
+  const validationError = await validatePayload(
+    req.realm._id,
+    payload,
+    String(req.params.id)
+  );
 
   if (validationError) {
     return res.status(400).json({ message: validationError });
