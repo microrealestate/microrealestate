@@ -41,6 +41,39 @@ function normalizeAccountNumber(value) {
     .replace(/[^a-z0-9]/g, '');
 }
 
+function accountNumbersLikelyMatch(left, right) {
+  const a = normalizeAccountNumber(left);
+  const b = normalizeAccountNumber(right);
+
+  if (!a || !b) {
+    return false;
+  }
+
+  if (a === b) {
+    return true;
+  }
+
+  const aNoLeadingZeros = a.replace(/^0+/, '');
+  const bNoLeadingZeros = b.replace(/^0+/, '');
+  if (
+    aNoLeadingZeros &&
+    bNoLeadingZeros &&
+    aNoLeadingZeros === bNoLeadingZeros
+  ) {
+    return true;
+  }
+
+  const shorter = a.length <= b.length ? a : b;
+  const longer = shorter === a ? b : a;
+
+  // Some providers print both a short account number and a longer full token.
+  if (shorter.length >= 8 && longer.startsWith(shorter)) {
+    return true;
+  }
+
+  return false;
+}
+
 function parseCurrencyValue(value) {
   const normalized = String(value || '').replace(/[$,\s]/g, '');
   const parsed = Number(normalized);
@@ -53,7 +86,9 @@ function parseIsoDate(value) {
     return null;
   }
 
-  const isoMatch = raw.match(/^(\d{4})[/-](\d{1,2})[/-](\d{1,2})$/);
+  const collapsed = raw.replace(/\s+/g, ' ').trim();
+
+  const isoMatch = collapsed.match(/^(\d{4})[/.-](\d{1,2})[/.-](\d{1,2})$/);
   if (isoMatch) {
     const year = Number(isoMatch[1]);
     const month = Number(isoMatch[2]);
@@ -71,7 +106,7 @@ function parseIsoDate(value) {
     }
   }
 
-  const usMatch = raw.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})$/);
+  const usMatch = collapsed.match(/^(\d{1,2})[/.-](\d{1,2})[/.-](\d{2,4})$/);
   if (usMatch) {
     const month = Number(usMatch[1]);
     const day = Number(usMatch[2]);
@@ -91,7 +126,7 @@ function parseIsoDate(value) {
     }
   }
 
-  const monthNameMatch = raw.match(
+  const monthNameMatch = collapsed.match(
     /^(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:t|tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\s+(\d{1,2}),?\s+(\d{2,4})$/i
   );
   if (monthNameMatch) {
@@ -107,9 +142,47 @@ function parseIsoDate(value) {
     }
   }
 
-  const parsed = new Date(raw);
+  const parsed = new Date(collapsed);
   if (!Number.isNaN(parsed.getTime())) {
     return parsed.toISOString().slice(0, 10);
+  }
+
+  return null;
+}
+
+function parseBillingMonthValue(value) {
+  const raw = String(value || '').trim();
+  if (!raw) {
+    return null;
+  }
+
+  const normalized = raw.replace(/\s+/g, ' ').trim();
+
+  const yearMonthMatch = normalized.match(/^(\d{4})[/.-](\d{1,2})$/);
+  if (yearMonthMatch) {
+    const year = Number(yearMonthMatch[1]);
+    const month = Number(yearMonthMatch[2]);
+    if (
+      Number.isFinite(year) &&
+      Number.isFinite(month) &&
+      month >= 1 &&
+      month <= 12
+    ) {
+      return `${year}-${String(month).padStart(2, '0')}`;
+    }
+  }
+
+  const monthYearMatch = normalized.match(
+    /^(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:t|tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)[,\s-]+(\d{4})$/i
+  );
+  if (monthYearMatch) {
+    const monthToken = monthYearMatch[1].toLowerCase();
+    const month =
+      MONTH_NAMES[monthToken] || MONTH_NAMES[monthToken.slice(0, 3)] || null;
+    const year = Number(monthYearMatch[2]);
+    if (month && Number.isFinite(year)) {
+      return `${year}-${month}`;
+    }
   }
 
   return null;
@@ -131,6 +204,94 @@ function extractByPatterns(text, patterns) {
   }
 
   return '';
+}
+
+function sanitizeAccountToken(raw) {
+  const cleaned = String(raw || '')
+    .trim()
+    .replace(/[^a-z0-9./-]/gi, '')
+    .replace(/[./]+$/g, '');
+
+  if (!cleaned) {
+    return '';
+  }
+
+  const digitCount = (cleaned.match(/\d/g) || []).length;
+  if (digitCount < 5) {
+    return '';
+  }
+
+  return cleaned;
+}
+
+function pickAccountFromLine(line) {
+  const tokens = String(line || '').match(/[a-z0-9][a-z0-9./-]{3,40}/gi) || [];
+
+  const filtered = tokens
+    .map(sanitizeAccountToken)
+    .filter(Boolean)
+    .filter((token) => !/^\d{1,2}[/.-]\d{1,2}[/.-]\d{2,4}$/.test(token));
+
+  if (!filtered.length) {
+    return '';
+  }
+
+  const withHyphen = filtered.find((token) => /-/.test(token));
+  return withHyphen || filtered[0];
+}
+
+function extractAccountNumber(text, filename = '') {
+  const lines = String(text || '')
+    .split(/\r?\n/)
+    .map((line) => line.replace(/\s+/g, ' ').trim());
+
+  for (let i = 0; i < lines.length; i += 1) {
+    const line = lines[i];
+    if (!line) {
+      continue;
+    }
+
+    const labelMatch = line.match(
+      /^(?:account\s*(?:number|no\.?|#)|customer\s*(?:account|id)|acct\s*(?:number|no\.?|#)?)\s*[:#-]?\s*(.*)$/i
+    );
+    if (!labelMatch) {
+      continue;
+    }
+
+    const inlineCandidate = pickAccountFromLine(labelMatch[1] || '');
+    if (inlineCandidate) {
+      return inlineCandidate;
+    }
+
+    for (let offset = 1; offset <= 4; offset += 1) {
+      const nextLine = lines[i + offset] || '';
+      if (!nextLine) {
+        continue;
+      }
+
+      if (
+        /^(service\s+address|service\s+period|amount\s+due|due\s+date)\b/i.test(
+          nextLine
+        )
+      ) {
+        break;
+      }
+
+      const candidate = pickAccountFromLine(nextLine);
+      if (candidate) {
+        return candidate;
+      }
+    }
+  }
+
+  const mergedText = `${String(filename || '')}\n${String(text || '')}`;
+  const fallbackRaw = extractByPatterns(mergedText, [
+    /account\s*(?:number|no\.?|#)\s*[:#-]?\s*([a-z0-9\-./ ]{4,60})/i,
+    /customer\s*(?:account|id)\s*[:#-]?\s*([a-z0-9\-./ ]{4,60})/i
+  ]);
+
+  const fallback = pickAccountFromLine(fallbackRaw);
+  return fallback || '';
 }
 
 function inferUtilityType(text, filename = '') {
@@ -185,6 +346,7 @@ function inferProvider(text, filename = '') {
   const filenamePrefix = fromFilename
     .split(/\s{2,}|\d{4,}/)[0]
     .replace(/\b(view|bill|statement|copy)\b/gi, '')
+    .replace(/[_\s-]+\d{1,2}[_\s-]+\d{1,2}\s*$/g, '')
     .trim();
 
   if (filenamePrefix.length >= 3) {
@@ -215,19 +377,14 @@ function inferProvider(text, filename = '') {
 function parseUtilityBillFields(text, filename = '') {
   const mergedText = `${String(filename || '')}\n${String(text || '')}`;
 
-  const accountNumberRaw =
-    extractByPatterns(mergedText, [
-      /account\s*(?:number|no\.?|#)?\s*[:#-]?\s*([a-z0-9\- ]{4,30})/i,
-      /customer\s*(?:account|id)\s*[:#-]?\s*([a-z0-9\- ]{4,30})/i
-    ]) || '';
-
-  const accountNumber = accountNumberRaw
+  const accountNumber = extractAccountNumber(text, filename)
     .replace(/\s+/g, '')
     .replace(/[^a-z0-9-]/gi, '')
     .slice(0, 40);
 
   const amountCandidate = extractByPatterns(mergedText, [
-    /total\s*(?:amount\s*)?due\s*[:$]?\s*([\d,]+(?:\.\d{2})?)/i,
+    /total\s*(?:amount\s*)?due(?:\s*(?:by|on)\s*\d{1,2}[/.-]\d{1,2}[/.-]\d{2,4})?\s*[:$]?\s*\$?\s*([\d,]+(?:\.\d{2})?)/i,
+    /pay\s*(?:this\s*)?amount\s*[:$-]?\s*\$?\s*([\d,]+(?:\.\d{2})?)/i,
     /amount\s*due\s*[:$]?\s*([\d,]+(?:\.\d{2})?)/i,
     /current\s*charges?\s*[:$]?\s*([\d,]+(?:\.\d{2})?)/i,
     /new\s*charges?\s*[:$]?\s*([\d,]+(?:\.\d{2})?)/i,
@@ -238,6 +395,7 @@ function parseUtilityBillFields(text, filename = '') {
   const dueDate = parseIsoDate(
     extractByPatterns(mergedText, [
       /(?:payment\s*)?due\s*date\s*[:#-]?\s*([^\n]+)/i,
+      /pay\s*by\s*[:#-]?\s*([^\n]+)/i,
       /due\s*[:#-]?\s*([^\n]+)/i
     ])
   );
@@ -265,7 +423,7 @@ function parseUtilityBillFields(text, filename = '') {
   );
 
   const serviceRangeMatch = mergedText.match(
-    /(\d{1,2}[/-]\d{1,2}[/-]\d{2,4}|\d{4}[/-]\d{1,2}[/-]\d{1,2}|(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\s+\d{1,2},?\s+\d{2,4})\s*(?:to|through|-)\s*(\d{1,2}[/-]\d{1,2}[/-]\d{2,4}|\d{4}[/-]\d{1,2}[/-]\d{1,2}|(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\s+\d{1,2},?\s+\d{2,4})/i
+    /(\d{1,2}[/.-]\d{1,2}[/.-]\d{2,4}|\d{4}[/.-]\d{1,2}[/.-]\d{1,2}|(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\s+\d{1,2},?\s+\d{2,4})\s*(?:to|through|-)\s*(\d{1,2}[/.-]\d{1,2}[/.-]\d{2,4}|\d{4}[/.-]\d{1,2}[/.-]\d{1,2}|(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\s+\d{1,2},?\s+\d{2,4})/i
   );
 
   const rangeStart = serviceRangeMatch
@@ -275,7 +433,15 @@ function parseUtilityBillFields(text, filename = '') {
     ? parseIsoDate(serviceRangeMatch[2])
     : null;
 
+  const explicitBillingMonth = parseBillingMonthValue(
+    extractByPatterns(mergedText, [
+      /billing\s*(?:month|period)\s*[:#-]?\s*([^\n]+)/i,
+      /service\s*(?:month|period)\s*[:#-]?\s*([^\n]+)/i
+    ])
+  );
+
   const billingMonth =
+    explicitBillingMonth ||
     toBillingMonthFromDate(servicePeriodEnd) ||
     toBillingMonthFromDate(rangeEnd) ||
     toBillingMonthFromDate(billingDate) ||
@@ -612,10 +778,11 @@ export async function parseUpload(req, res) {
   );
 
   const matchedAccount = normalizedExtractedAccountNumber
-    ? utilityAccounts.find(
-        (utilityAccount) =>
-          normalizeAccountNumber(utilityAccount.accountNumber) ===
+    ? utilityAccounts.find((utilityAccount) =>
+        accountNumbersLikelyMatch(
+          utilityAccount.accountNumber,
           normalizedExtractedAccountNumber
+        )
       )
     : null;
 
