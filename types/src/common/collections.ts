@@ -479,6 +479,13 @@ export namespace CollectionTypes {
     percentage: number;
   };
 
+  export type UtilityAccountAllocationHistory = {
+    changedAt: Date;
+    changedBy?: string;
+    previousAllocations: UtilityAccountAllocation[];
+    nextAllocations: UtilityAccountAllocation[];
+  };
+
   export type UtilityAccount = {
     _id?: string;
     realmId: string;
@@ -487,6 +494,7 @@ export namespace CollectionTypes {
     accountNumber: string;
     notes?: string;
     allocations: UtilityAccountAllocation[];
+    allocationHistory?: UtilityAccountAllocationHistory[];
     createdAt?: Date;
     updatedAt?: Date;
   };

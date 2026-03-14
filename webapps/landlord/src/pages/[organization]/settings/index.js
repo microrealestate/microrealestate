@@ -94,6 +94,18 @@ function Settings() {
                 title={t('Space types')}
                 description={t('Manage property types shown in Property forms')}
               />
+              <SettingLink
+                href="/settings/userlogs"
+                title={t('User Activity Logs')}
+                description={t(
+                  'View a history of who created, updated, or deleted properties, contracts, utilities, and taxes'
+                )}
+              />
+              <SettingLink
+                href="/settings/dbbackup"
+                title={t('Database Backup & Restore')}
+                description={t('Create and restore MongoDB database snapshots')}
+              />
             </>
           ) : null}
         </CardContent>

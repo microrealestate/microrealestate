@@ -42,6 +42,41 @@ function normalizeAllocations(items = []) {
     }));
 }
 
+function normalizeAllocationsForComparison(items = []) {
+  return normalizeAllocations(items)
+    .map((item) => ({
+      propertyId: String(item.propertyId),
+      percentage: Number(Number(item.percentage || 0).toFixed(6))
+    }))
+    .sort((left, right) => left.propertyId.localeCompare(right.propertyId));
+}
+
+function areAllocationsEqual(left = [], right = []) {
+  if (left.length !== right.length) {
+    return false;
+  }
+
+  for (let index = 0; index < left.length; index += 1) {
+    if (
+      String(left[index].propertyId) !== String(right[index].propertyId) ||
+      Number(left[index].percentage) !== Number(right[index].percentage)
+    ) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function buildChangedBy(user = {}) {
+  return normalizeText(
+    user?.email ||
+      [user?.firstname, user?.lastname].filter(Boolean).join(' ') ||
+      user?._id ||
+      ''
+  );
+}
+
 function normalizeAccountPayload(payload) {
   return {
     type: normalizeType(payload.type) || 'other',
@@ -263,18 +298,48 @@ export async function update(req, res) {
     return res.status(400).json({ message: validationError });
   }
 
+  const existingAccount = await Collections.UtilityAccount.findOne({
+    _id: req.params.id,
+    realmId: req.realm._id
+  }).lean();
+
+  if (!existingAccount) {
+    return res.status(404).json({ message: 'Utility account not found' });
+  }
+
+  const previousAllocations = normalizeAllocationsForComparison(
+    existingAccount.allocations
+  );
+  const nextAllocations = normalizeAllocationsForComparison(
+    payload.allocations
+  );
+
+  let allocationHistory = Array.isArray(existingAccount.allocationHistory)
+    ? existingAccount.allocationHistory
+    : [];
+
+  if (!areAllocationsEqual(previousAllocations, nextAllocations)) {
+    const historyEntry = {
+      changedAt: new Date(),
+      changedBy: buildChangedBy(req.user),
+      previousAllocations,
+      nextAllocations
+    };
+
+    allocationHistory = [historyEntry, ...allocationHistory].slice(0, 50);
+  }
+
   const utilityAccount = await Collections.UtilityAccount.findOneAndUpdate(
     {
       _id: req.params.id,
       realmId: req.realm._id
     },
-    payload,
+    {
+      ...payload,
+      allocationHistory
+    },
     { new: true }
   ).lean();
-
-  if (!utilityAccount) {
-    return res.status(404).json({ message: 'Utility account not found' });
-  }
 
   return res.json(utilityAccount);
 }

@@ -12,6 +12,23 @@ const UtilityAccountAllocationSchema =
     { _id: false }
   );
 
+const UtilityAccountAllocationHistorySchema =
+  new mongoose.Schema<CollectionTypes.UtilityAccountAllocationHistory>(
+    {
+      changedAt: { type: Date, required: true, default: Date.now },
+      changedBy: { type: String, default: '' },
+      previousAllocations: {
+        type: [UtilityAccountAllocationSchema],
+        default: []
+      },
+      nextAllocations: {
+        type: [UtilityAccountAllocationSchema],
+        default: []
+      }
+    },
+    { _id: false }
+  );
+
 const UtilityAccountSchema =
   new mongoose.Schema<CollectionTypes.UtilityAccount>(
     {
@@ -29,7 +46,11 @@ const UtilityAccountSchema =
         trim: true
       },
       notes: { type: String, default: '' },
-      allocations: { type: [UtilityAccountAllocationSchema], default: [] }
+      allocations: { type: [UtilityAccountAllocationSchema], default: [] },
+      allocationHistory: {
+        type: [UtilityAccountAllocationHistorySchema],
+        default: []
+      }
     },
     {
       timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' }

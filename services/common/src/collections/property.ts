@@ -114,6 +114,11 @@ const PropertySchema = new mongoose.Schema<CollectionTypes.Property>({
   floorPlanAttachmentId: {
     type: String,
     default: null
+  },
+
+  lastUpdatedBy: {
+    type: String,
+    default: ''
   }
 });
 

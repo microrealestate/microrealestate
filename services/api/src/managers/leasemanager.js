@@ -1,4 +1,10 @@
 import { Collections, logger, ServiceError } from '@microrealestate/common';
+import { createLog, diffObjects } from './auditlogmanager.js';
+
+function _getUserFullName(req) {
+  const u = req.user || {};
+  return [u.firstname, u.lastname].filter(Boolean).join(' ') || u.email || '';
+}
 
 /**
  * @returns a Set of leaseId (_id)
@@ -25,12 +31,15 @@ export async function add(req, res) {
   }
 
   const realm = req.realm;
+  const lastUpdatedBy = _getUserFullName(req);
   const dbLease = new Collections.Lease({
     ...lease,
     active: !!lease.active && !!lease.numberOfTerms && !!lease.timeRange,
-    realmId: realm._id
+    realmId: realm._id,
+    lastUpdatedBy
   });
   const savedLease = await dbLease.save();
+  await createLog(req, 'create', 'lease', savedLease._id, lease.name || '');
   const setOfUsedLeases = await _leaseUsedByTenant(realm);
   savedLease.usedByTenants = setOfUsedLeases.has(savedLease._id);
   res.json(savedLease);
@@ -49,28 +58,46 @@ export async function update(req, res) {
     lease.active = lease.numberOfTerms > 0 && !!lease.timeRange;
   }
 
+  const lastUpdatedBy = _getUserFullName(req);
   const setOfUsedLeases = await _leaseUsedByTenant(realm);
+
+  const oldLease = await Collections.Lease.findOne({
+    realmId: realm._id,
+    _id: lease._id
+  }).lean();
+
+  const updatePayload = setOfUsedLeases.has(lease._id)
+    ? {
+        name: lease.name || oldLease?.name,
+        description: lease.description ?? oldLease?.description,
+        active: lease.active ?? oldLease?.active,
+        stepperMode: lease.stepperMode ?? oldLease?.stepperMode,
+        lastUpdatedBy
+      }
+    : { ...lease, lastUpdatedBy };
 
   const dbLease = await Collections.Lease.findOneAndUpdate(
     {
       realmId: realm._id,
       _id: lease._id
     },
-    // if lease already used by tenants, only allow to update name, description, active fields
-    setOfUsedLeases.has(lease._id)
-      ? {
-          name: lease.name || dbLease.name,
-          description: lease.description ?? dbLease.description,
-          active: lease.active ?? dbLease.active,
-          stepperMode: lease.stepperMode ?? dbLease.stepperMode
-        }
-      : lease,
+    updatePayload,
     { new: true }
   ).lean();
 
   if (!dbLease) {
     throw new ServiceError('lease not found', 404);
   }
+
+  const changes = diffObjects(oldLease, lease);
+  await createLog(
+    req,
+    'update',
+    'lease',
+    dbLease._id,
+    dbLease.name || '',
+    changes
+  );
 
   dbLease.usedByTenants = setOfUsedLeases.has(dbLease._id);
   res.json(dbLease);
@@ -99,6 +126,12 @@ export async function remove(req, res) {
   if (!leases.length) {
     throw new ServiceError('lease not found', 404);
   }
+
+  // Capture names before deletion for audit log
+  const leaseNames = leases.reduce((acc, l) => {
+    acc[String(l._id)] = l.name || '';
+    return acc;
+  }, {});
 
   const templates = await Collections.Template.find({
     realmId: realm._id,
@@ -139,6 +172,11 @@ export async function remove(req, res) {
   } finally {
     session.endSession();
   }
+
+  for (const leaseId of leaseIds) {
+    await createLog(req, 'delete', 'lease', leaseId, leaseNames[leaseId] || '');
+  }
+
   res.sendStatus(200);
 }
 

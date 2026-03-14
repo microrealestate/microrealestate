@@ -1,8 +1,10 @@
 import * as accountingManager from './managers/accountingmanager.js';
 import * as attachmentManager from './managers/attachmentmanager.js';
+import * as auditLogManager from './managers/auditlogmanager.js';
 import * as backupManager from './managers/backupmanager.js';
 import * as contractorManager from './managers/contractormanager.js';
 import * as dashboardManager from './managers/dashboardmanager.js';
+import * as dbBackupManager from './managers/dbbackupmanager.js';
 import * as emailManager from './managers/emailmanager.js';
 import * as leaseManager from './managers/leasemanager.js';
 import * as notesManager from './managers/notesmanager.js';
@@ -227,6 +229,11 @@ export default function routes() {
 
   const utilitiesRouter = express.Router();
   utilitiesRouter.get('/', Middlewares.asyncWrapper(utilityManager.all));
+  utilitiesRouter.post(
+    '/parse-upload',
+    upload.single('file'),
+    Middlewares.asyncWrapper(utilityManager.parseUpload)
+  );
   utilitiesRouter.get('/:id', Middlewares.asyncWrapper(utilityManager.one));
   utilitiesRouter.post('/', Middlewares.asyncWrapper(utilityManager.add));
   utilitiesRouter.patch(
@@ -319,6 +326,23 @@ export default function routes() {
   );
   backupsRouter.get('/stats', Middlewares.asyncWrapper(backupManager.stats));
   router.use('/backups', backupsRouter);
+
+  const dbBackupsRouter = express.Router();
+  dbBackupsRouter.get('/', Middlewares.asyncWrapper(dbBackupManager.list));
+  dbBackupsRouter.post('/', Middlewares.asyncWrapper(dbBackupManager.create));
+  dbBackupsRouter.post(
+    '/:name/restore',
+    Middlewares.asyncWrapper(dbBackupManager.restore)
+  );
+  dbBackupsRouter.delete(
+    '/:name',
+    Middlewares.asyncWrapper(dbBackupManager.remove)
+  );
+  router.use('/db-backups', dbBackupsRouter);
+
+  const auditLogsRouter = express.Router();
+  auditLogsRouter.get('/', Middlewares.asyncWrapper(auditLogManager.all));
+  router.use('/audit-logs', auditLogsRouter);
 
   const apiRouter = express.Router();
   apiRouter.use('/api/v2', router);

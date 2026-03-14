@@ -211,6 +211,14 @@ function PropertyOverviewCard() {
               </span>
             </div>
           )}
+          {store.property.selected.lastUpdatedBy && (
+            <div className="flex justify-between text-xs text-muted-foreground border-t pt-2">
+              <span>{t('Last updated by')}:</span>
+              <span className="font-medium">
+                {store.property.selected.lastUpdatedBy}
+              </span>
+            </div>
+          )}
           {parentProperty && (
             <div className="pt-2 border-t">
               <div className="text-xs text-muted-foreground mb-1">

@@ -1,8 +1,14 @@
+import { createLog, diffObjects } from './auditlogmanager.js';
 import { Collections } from '@microrealestate/common';
 import fs from 'fs-extra';
 import { Parser } from 'json2csv';
 import path from 'path';
 import pdfParse from 'pdf-parse/lib/pdf-parse.js';
+
+function _getUserFullName(req) {
+  const u = req.user || {};
+  return [u.firstname, u.lastname].filter(Boolean).join(' ') || u.email || '';
+}
 
 function normalizeText(value) {
   if (typeof value !== 'string') {
@@ -1103,6 +1109,7 @@ export async function one(req, res) {
 
 export async function add(req, res) {
   const payload = normalizePayload(req.body || {});
+  payload.lastUpdatedBy = _getUserFullName(req);
   const validationError = await validatePayload(req.realm._id, payload);
 
   if (validationError) {
@@ -1116,11 +1123,20 @@ export async function add(req, res) {
 
   await statement.save();
 
+  await createLog(
+    req,
+    'create',
+    'tax',
+    statement._id,
+    `Tax ${payload.taxYearLabel || ''} – ${payload.propertyId || ''}`.trim()
+  );
+
   return res.status(201).json(statement.toObject());
 }
 
 export async function update(req, res) {
   const payload = normalizePayload(req.body || {});
+  payload.lastUpdatedBy = _getUserFullName(req);
   const validationError = await validatePayload(
     req.realm._id,
     payload,
@@ -1130,6 +1146,11 @@ export async function update(req, res) {
   if (validationError) {
     return res.status(400).json({ message: validationError });
   }
+
+  const oldStatement = await Collections.PropertyTaxStatement.findOne({
+    _id: req.params.id,
+    realmId: req.realm._id
+  }).lean();
 
   const statement = await Collections.PropertyTaxStatement.findOneAndUpdate(
     {
@@ -1146,10 +1167,28 @@ export async function update(req, res) {
       .json({ message: 'Property tax statement not found' });
   }
 
+  const changes = diffObjects(oldStatement, payload, [
+    'attachmentIds',
+    'paymentConfirmations'
+  ]);
+  await createLog(
+    req,
+    'update',
+    'tax',
+    req.params.id,
+    `Tax ${statement.taxYearLabel || ''} – ${statement.propertyId || ''}`.trim(),
+    changes
+  );
+
   return res.json(statement);
 }
 
 export async function remove(req, res) {
+  const existing = await Collections.PropertyTaxStatement.findOne({
+    _id: req.params.id,
+    realmId: req.realm._id
+  }).lean();
+
   const result = await Collections.PropertyTaxStatement.deleteOne({
     _id: req.params.id,
     realmId: req.realm._id
@@ -1159,6 +1198,16 @@ export async function remove(req, res) {
     return res
       .status(404)
       .json({ message: 'Property tax statement not found' });
+  }
+
+  if (existing) {
+    await createLog(
+      req,
+      'delete',
+      'tax',
+      req.params.id,
+      `Tax ${existing.taxYearLabel || ''} – ${existing.propertyId || ''}`.trim()
+    );
   }
 
   return res.sendStatus(204);

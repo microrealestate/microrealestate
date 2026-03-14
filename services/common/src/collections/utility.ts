@@ -38,7 +38,8 @@ const UtilitySchema = new mongoose.Schema<CollectionTypes.Utility>(
       enum: ['equal', 'percentage'],
       default: 'equal'
     },
-    splitItems: { type: [UtilitySplitSchema], default: [] }
+    splitItems: { type: [UtilitySplitSchema], default: [] },
+    lastUpdatedBy: { type: String, default: '' }
   },
   {
     timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' }

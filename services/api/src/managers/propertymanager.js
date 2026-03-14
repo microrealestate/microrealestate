@@ -1,5 +1,11 @@
 import * as FD from './frontdata.js';
+import { createLog, diffObjects } from './auditlogmanager.js';
 import { Collections } from '@microrealestate/common';
+
+function _getUserFullName(req) {
+  const u = req.user || {};
+  return [u.firstname, u.lastname].filter(Boolean).join(' ') || u.email || '';
+}
 
 function _normalizeParentPropertyId(parentPropertyId) {
   if (parentPropertyId === undefined || parentPropertyId === null) {
@@ -174,11 +180,20 @@ export async function add(req, res) {
     return res.status(400).json({ message: parentValidationError });
   }
 
+  const lastUpdatedBy = _getUserFullName(req);
   const property = new Collections.Property({
     ...propertyData,
-    realmId: realm._id
+    realmId: realm._id,
+    lastUpdatedBy
   });
   await property.save();
+  await createLog(
+    req,
+    'create',
+    'property',
+    property._id,
+    propertyData.name || ''
+  );
   const properties = await _toPropertiesData(realm, [property]);
   return res.json(properties[0]);
 }
@@ -209,19 +224,35 @@ export async function update(req, res) {
   }
 
   const { _id, ...propertyToUpdate } = property;
+  const lastUpdatedBy = _getUserFullName(req);
+
+  const oldProperty = await Collections.Property.findOne({
+    realmId: realm._id,
+    _id: propertyId
+  }).lean();
 
   const dbProperty = await Collections.Property.findOneAndUpdate(
     {
       realmId: realm._id,
       _id: propertyId
     },
-    propertyToUpdate,
+    { ...propertyToUpdate, lastUpdatedBy },
     { new: true }
   ).lean();
 
   if (!dbProperty) {
     return res.status(404).json({ message: 'Property not found' });
   }
+
+  const changes = diffObjects(oldProperty, propertyToUpdate);
+  await createLog(
+    req,
+    'update',
+    'property',
+    propertyId,
+    dbProperty.name || '',
+    changes
+  );
 
   const properties = await _toPropertiesData(realm, [dbProperty]);
   return res.json(properties[0]);
@@ -231,12 +262,21 @@ export async function remove(req, res) {
   const realm = req.realm;
   const ids = req.params.ids.split(',');
 
+  const deleted = await Collections.Property.find({
+    _id: { $in: ids },
+    realmId: realm._id
+  }).lean();
+
   await Collections.Property.deleteMany({
     _id: { $in: ids },
     realmId: realm._id
   });
 
-  res.sendStatus(200); // better to return 204
+  for (const prop of deleted) {
+    await createLog(req, 'delete', 'property', prop._id, prop.name || '');
+  }
+
+  res.sendStatus(200);
 }
 
 export async function all(req, res) {

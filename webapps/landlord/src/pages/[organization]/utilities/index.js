@@ -1,3 +1,11 @@
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from '../../../components/ui/dialog';
 import { FaDroplet, FaFaucet } from 'react-icons/fa6';
 import {
   LuDownload,
@@ -41,6 +49,19 @@ function normalizeCategory(value) {
   return String(value || '')
     .trim()
     .toLowerCase();
+}
+
+function formatCategoryLabel(value) {
+  const normalized = normalizeCategory(value);
+  if (!normalized) {
+    return '';
+  }
+
+  if (normalized === 'hoa') {
+    return 'HOA';
+  }
+
+  return normalized.replace(/\b[a-z]/g, (letter) => letter.toUpperCase());
 }
 
 function getCurrentBillingMonth() {
@@ -189,6 +210,15 @@ function sumAllocationPercentages(allocations) {
 function formatPercentage(value) {
   const parsed = Number(value || 0);
   return `${parsed.toFixed(2)}%`;
+}
+
+function formatAllocationSummary(allocations = [], propertyById = {}) {
+  return (Array.isArray(allocations) ? allocations : [])
+    .map((allocation) => {
+      const property = propertyById[String(allocation.propertyId)];
+      return `${getPropertyLabel(property, propertyById)} (${formatPercentage(allocation.percentage)})`;
+    })
+    .join(' • ');
 }
 
 function sumSplitPercentages(items) {
@@ -405,6 +435,25 @@ export function UtilitiesPage({ view = 'all' }) {
   const [submitting, setSubmitting] = useState(false);
   const [savingAccount, setSavingAccount] = useState(false);
   const [billFile, setBillFile] = useState(null);
+  const [batchBillFiles, setBatchBillFiles] = useState([]);
+  const [parsingUtilityUpload, setParsingUtilityUpload] = useState(false);
+  const [batchUploadingBills, setBatchUploadingBills] = useState(false);
+  const [batchWorkflowOpen, setBatchWorkflowOpen] = useState(false);
+  const [batchPreparingReview, setBatchPreparingReview] = useState(false);
+  const [batchReviewItems, setBatchReviewItems] = useState([]);
+  const [previewUtilityAttachmentOpen, setPreviewUtilityAttachmentOpen] =
+    useState(false);
+  const [previewUtilityAttachmentUrl, setPreviewUtilityAttachmentUrl] =
+    useState('');
+  const [previewUtilityAttachmentName, setPreviewUtilityAttachmentName] =
+    useState('');
+  const [workingUtilityAttachmentId, setWorkingUtilityAttachmentId] =
+    useState('');
+  const [workingBatchReviewItemId, setWorkingBatchReviewItemId] = useState('');
+  const [
+    expandedAllocationHistoryAccountId,
+    setExpandedAllocationHistoryAccountId
+  ] = useState('');
   const [customCategories, setCustomCategories] = useState([]);
   const [hiddenCategories, setHiddenCategories] = useState([]);
   const [utilitiesTab, setUtilitiesTab] = useState(
@@ -443,6 +492,14 @@ export function UtilitiesPage({ view = 'all' }) {
   useEffect(() => {
     taxDraftRef.current = taxDraft;
   }, [taxDraft]);
+
+  useEffect(() => {
+    return () => {
+      if (previewUtilityAttachmentUrl) {
+        window.URL.revokeObjectURL(previewUtilityAttachmentUrl);
+      }
+    };
+  }, [previewUtilityAttachmentUrl]);
 
   const { data: properties = [], isLoading: loadingProperties } = useQuery({
     queryKey: ['utilities-properties'],
@@ -656,6 +713,13 @@ export function UtilitiesPage({ view = 'all' }) {
       ) || null
     );
   }, [billDraft.utilityAccountId, utilityAccounts]);
+
+  const utilityAccountById = useMemo(() => {
+    return utilityAccounts.reduce((accumulator, utilityAccount) => {
+      accumulator[String(utilityAccount._id)] = utilityAccount;
+      return accumulator;
+    }, {});
+  }, [utilityAccounts]);
 
   useEffect(() => {
     if (!selectedUtilityAccount) {
@@ -984,10 +1048,30 @@ export function UtilitiesPage({ view = 'all' }) {
           }))
         : [{ propertyId: '', percentage: '' }]
     });
+
+    setExpandedAllocationHistoryAccountId(String(utilityAccount._id));
   };
 
   const resetAccountDraft = () => {
     setAccountDraft(getInitialAccountDraft());
+  };
+
+  const handleSelectExistingUtilityAccount = (accountId) => {
+    if (!accountId) {
+      resetAccountDraft();
+      return;
+    }
+
+    const utilityAccount = utilityAccounts.find(
+      (item) => String(item._id) === String(accountId)
+    );
+
+    if (!utilityAccount) {
+      resetAccountDraft();
+      return;
+    }
+
+    handleEditUtilityAccount(utilityAccount);
   };
 
   const handleSaveUtilityAccount = async () => {
@@ -1224,6 +1308,359 @@ export function UtilitiesPage({ view = 'all' }) {
       );
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const mergeExtractedUtilityBillDraft = (
+    draft,
+    extracted = {},
+    matchedAccount = null
+  ) => {
+    const mergedDraft = { ...draft };
+
+    if (matchedAccount?._id) {
+      mergedDraft.utilityAccountId = String(matchedAccount._id);
+      mergedDraft.propertyId = '';
+      mergedDraft.type = matchedAccount.type || draft.type;
+      mergedDraft.customType = '';
+      mergedDraft.provider = matchedAccount.provider || draft.provider;
+      mergedDraft.accountNumber =
+        matchedAccount.accountNumber ||
+        extracted.accountNumber ||
+        draft.accountNumber;
+    } else {
+      if (extracted.type) {
+        mergedDraft.type = String(extracted.type);
+      }
+      if (extracted.provider) {
+        mergedDraft.provider = String(extracted.provider);
+      }
+      if (extracted.accountNumber) {
+        mergedDraft.accountNumber = String(extracted.accountNumber);
+      }
+    }
+
+    if (extracted.billingMonth) {
+      mergedDraft.billingMonth = String(extracted.billingMonth);
+    }
+
+    const extractedAmount = Number(extracted.amount);
+    if (Number.isFinite(extractedAmount) && extractedAmount >= 0) {
+      mergedDraft.amount = String(extractedAmount);
+    }
+
+    if (extracted.dueDate) {
+      mergedDraft.dueDate = String(extracted.dueDate).slice(0, 10);
+    }
+
+    return mergedDraft;
+  };
+
+  const handleAutoFillFromBillFile = async () => {
+    if (!billFile) {
+      toast.error(t('Choose a utility bill file first'));
+      return;
+    }
+
+    setParsingUtilityUpload(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', billFile);
+
+      const response = await apiFetcher().post(
+        '/utilities/parse-upload',
+        formData,
+        {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        }
+      );
+
+      const extracted = response.data?.extracted || {};
+      const matchedAccount = response.data?.matchedAccount || null;
+
+      setBillDraft((previous) =>
+        mergeExtractedUtilityBillDraft(previous, extracted, matchedAccount)
+      );
+
+      const warnings = response.data?.warnings || [];
+      if (warnings.length) {
+        toast.warning(warnings.join(' '));
+      } else {
+        toast.success(t('Utility bill parsed and fields auto-filled'));
+      }
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message || t('Failed to parse utility bill file')
+      );
+    } finally {
+      setParsingUtilityUpload(false);
+    }
+  };
+
+  const handleUploadBillPdfToMatchedAccount = async () => {
+    if (!billFile) {
+      toast.error(t('Choose a utility bill PDF first'));
+      return;
+    }
+
+    setParsingUtilityUpload(true);
+    try {
+      const parseFormData = new FormData();
+      parseFormData.append('file', billFile);
+
+      const parseResponse = await apiFetcher().post(
+        '/utilities/parse-upload',
+        parseFormData,
+        {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        }
+      );
+
+      const extracted = parseResponse.data?.extracted || {};
+      const matchedAccount = parseResponse.data?.matchedAccount || null;
+
+      setBillDraft((previous) =>
+        mergeExtractedUtilityBillDraft(previous, extracted, matchedAccount)
+      );
+
+      if (!matchedAccount?._id) {
+        toast.error(
+          t('Could not match this PDF to a saved utility account number')
+        );
+        return;
+      }
+
+      const billingMonth = String(extracted.billingMonth || '').trim();
+      const amount = Number(extracted.amount);
+
+      if (!billingMonth || !Number.isFinite(amount) || amount < 0) {
+        toast.error(
+          t('Could not parse billing month and amount from this PDF')
+        );
+        return;
+      }
+
+      const uploadFormData = new FormData();
+      uploadFormData.append('file', billFile);
+      uploadFormData.append('targetType', 'utility_account');
+      uploadFormData.append('targetId', String(matchedAccount._id));
+      uploadFormData.append('category', 'utility_bill');
+
+      const uploadResponse = await apiFetcher().post(
+        '/attachments',
+        uploadFormData,
+        {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        }
+      );
+
+      const attachmentId = uploadResponse.data?._id || null;
+
+      await apiFetcher().post(`/utility-accounts/${matchedAccount._id}/bills`, {
+        billingMonth,
+        amount,
+        dueDate: extracted.dueDate || null,
+        paidDate: null,
+        notes: `${t('Auto-uploaded from PDF')}: ${billFile.name}`,
+        attachmentIds: attachmentId ? [attachmentId] : []
+      });
+
+      toast.success(
+        t('PDF posted to matched utility account and split allocations applied')
+      );
+
+      setBillFile(null);
+      await utilitiesQuery.refetch();
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message ||
+          t('Failed to upload PDF bill to matched account')
+      );
+    } finally {
+      setParsingUtilityUpload(false);
+    }
+  };
+
+  const handleBatchUploadUtilityBills = async () => {
+    if (!batchBillFiles.length) {
+      toast.error(t('Choose one or more utility bill files first'));
+      return;
+    }
+
+    const toReviewItem = (file, extracted, matchedAccount, warnings) => {
+      const billingMonth = String(extracted?.billingMonth || '').trim();
+      const amountValue = Number(extracted?.amount);
+      const amount =
+        Number.isFinite(amountValue) && amountValue >= 0
+          ? String(amountValue)
+          : '';
+      const matchedAccountId = matchedAccount?._id
+        ? String(matchedAccount._id)
+        : '';
+      const isReady =
+        Boolean(matchedAccountId) &&
+        Boolean(billingMonth) &&
+        amount !== '' &&
+        Number(amount) >= 0;
+
+      return {
+        id: `${file.name}-${file.size}-${file.lastModified}`,
+        file,
+        fileName: file.name,
+        accountId: matchedAccountId,
+        billingMonth,
+        amount,
+        dueDate: extracted?.dueDate
+          ? String(extracted.dueDate).slice(0, 10)
+          : '',
+        provider: String(extracted?.provider || ''),
+        type: String(extracted?.type || ''),
+        warnings: Array.isArray(warnings) ? warnings : [],
+        isReady
+      };
+    };
+
+    setBatchPreparingReview(true);
+    try {
+      const reviewItems = [];
+
+      for (const file of batchBillFiles) {
+        try {
+          const parseFormData = new FormData();
+          parseFormData.append('file', file);
+
+          const parseResponse = await apiFetcher().post(
+            '/utilities/parse-upload',
+            parseFormData,
+            {
+              headers: { 'Content-Type': 'multipart/form-data' }
+            }
+          );
+
+          reviewItems.push(
+            toReviewItem(
+              file,
+              parseResponse.data?.extracted || {},
+              parseResponse.data?.matchedAccount || null,
+              parseResponse.data?.warnings || []
+            )
+          );
+        } catch {
+          reviewItems.push({
+            id: `${file.name}-${file.size}-${file.lastModified}`,
+            file,
+            fileName: file.name,
+            accountId: '',
+            billingMonth: '',
+            amount: '',
+            dueDate: '',
+            provider: '',
+            type: '',
+            warnings: [t('Could not parse this file')],
+            isReady: false
+          });
+        }
+      }
+
+      setBatchReviewItems(reviewItems);
+      setBatchWorkflowOpen(true);
+    } finally {
+      setBatchPreparingReview(false);
+    }
+  };
+
+  const handleBatchReviewChange = (itemId, key, value) => {
+    setBatchReviewItems((previous) =>
+      previous.map((item) => {
+        if (item.id !== itemId) {
+          return item;
+        }
+
+        const nextItem = {
+          ...item,
+          [key]: value
+        };
+        const amountValue = Number(nextItem.amount);
+        nextItem.isReady =
+          Boolean(String(nextItem.accountId || '').trim()) &&
+          Boolean(String(nextItem.billingMonth || '').trim()) &&
+          Number.isFinite(amountValue) &&
+          amountValue >= 0;
+
+        return nextItem;
+      })
+    );
+  };
+
+  const handleConfirmBatchWorkflow = async () => {
+    const readyItems = batchReviewItems.filter((item) => item.isReady);
+    const skippedCount = batchReviewItems.length - readyItems.length;
+
+    if (!readyItems.length) {
+      toast.error(t('No ready files to upload. Complete the required fields.'));
+      return;
+    }
+
+    setBatchUploadingBills(true);
+    try {
+      let createdCount = 0;
+      const failedFiles = [];
+
+      for (const item of readyItems) {
+        try {
+          const uploadFormData = new FormData();
+          uploadFormData.append('file', item.file);
+          uploadFormData.append('targetType', 'utility_account');
+          uploadFormData.append('targetId', String(item.accountId));
+          uploadFormData.append('category', 'utility_bill');
+
+          const uploadResponse = await apiFetcher().post(
+            '/attachments',
+            uploadFormData,
+            {
+              headers: { 'Content-Type': 'multipart/form-data' }
+            }
+          );
+
+          const attachmentId = uploadResponse.data?._id || null;
+
+          await apiFetcher().post(`/utility-accounts/${item.accountId}/bills`, {
+            billingMonth: item.billingMonth,
+            amount: Number(item.amount),
+            dueDate: item.dueDate || null,
+            paidDate: null,
+            notes: `${t('Batch upload')}: ${item.fileName}`,
+            attachmentIds: attachmentId ? [attachmentId] : []
+          });
+
+          createdCount += 1;
+        } catch {
+          failedFiles.push(item.fileName);
+        }
+      }
+
+      if (createdCount > 0) {
+        toast.success(
+          `${createdCount} ${t('utility bill(s) uploaded and posted')}`
+        );
+        await utilitiesQuery.refetch();
+      }
+
+      if (skippedCount > 0) {
+        toast.warning(`${skippedCount} ${t('file(s) were skipped in review')}`);
+      }
+
+      if (failedFiles.length) {
+        toast.warning(
+          `${failedFiles.length} ${t('file(s) failed while posting')}`
+        );
+      }
+
+      setBatchWorkflowOpen(false);
+      setBatchReviewItems([]);
+      setBatchBillFiles([]);
+    } finally {
+      setBatchUploadingBills(false);
     }
   };
 
@@ -2019,6 +2456,138 @@ export function UtilitiesPage({ view = 'all' }) {
     }
   };
 
+  const closeUtilityAttachmentPreview = () => {
+    if (previewUtilityAttachmentUrl) {
+      window.URL.revokeObjectURL(previewUtilityAttachmentUrl);
+    }
+    setPreviewUtilityAttachmentOpen(false);
+    setPreviewUtilityAttachmentUrl('');
+    setPreviewUtilityAttachmentName('');
+  };
+
+  const downloadBlobAsFile = (blob, fileName) => {
+    const blobUrl = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(blobUrl);
+  };
+
+  const getFirstUtilityAttachmentId = (utility) => {
+    const attachmentIds = Array.isArray(utility?.attachmentIds)
+      ? utility.attachmentIds
+      : [];
+
+    if (!attachmentIds.length) {
+      return '';
+    }
+
+    return String(attachmentIds[0]);
+  };
+
+  const handleDownloadUtilityBillAttachment = async (utility) => {
+    const attachmentId = getFirstUtilityAttachmentId(utility);
+    if (!attachmentId) {
+      toast.error(t('No source bill attachment found'));
+      return;
+    }
+
+    setWorkingUtilityAttachmentId(attachmentId);
+    try {
+      const response = await apiFetcher().get(
+        `/attachments/${attachmentId}/download`,
+        {
+          responseType: 'blob'
+        }
+      );
+
+      const fallbackName = `utility-bill-${utility.billingMonth || 'record'}.pdf`;
+      const fileName = getFilenameFromDisposition(
+        response.headers?.['content-disposition'],
+        fallbackName
+      );
+
+      downloadBlobAsFile(response.data, fileName);
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message || t('Failed to download bill file')
+      );
+    } finally {
+      setWorkingUtilityAttachmentId('');
+    }
+  };
+
+  const handlePreviewUtilityBillAttachment = async (utility) => {
+    const attachmentId = getFirstUtilityAttachmentId(utility);
+    if (!attachmentId) {
+      toast.error(t('No source bill attachment found'));
+      return;
+    }
+
+    setWorkingUtilityAttachmentId(attachmentId);
+    try {
+      const response = await apiFetcher().get(
+        `/attachments/${attachmentId}/download`,
+        {
+          responseType: 'blob'
+        }
+      );
+
+      const fallbackName = `utility-bill-${utility.billingMonth || 'record'}.pdf`;
+      const fileName = getFilenameFromDisposition(
+        response.headers?.['content-disposition'],
+        fallbackName
+      );
+
+      if (previewUtilityAttachmentUrl) {
+        window.URL.revokeObjectURL(previewUtilityAttachmentUrl);
+      }
+
+      const blobUrl = window.URL.createObjectURL(response.data);
+      setPreviewUtilityAttachmentUrl(blobUrl);
+      setPreviewUtilityAttachmentName(fileName);
+      setPreviewUtilityAttachmentOpen(true);
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message || t('Failed to open bill preview')
+      );
+    } finally {
+      setWorkingUtilityAttachmentId('');
+    }
+  };
+
+  const handlePreviewBatchReviewFile = (item) => {
+    if (!item?.file) {
+      toast.error(t('No PDF file available for preview'));
+      return;
+    }
+
+    setWorkingBatchReviewItemId(String(item.id || ''));
+    if (previewUtilityAttachmentUrl) {
+      window.URL.revokeObjectURL(previewUtilityAttachmentUrl);
+    }
+
+    const blobUrl = window.URL.createObjectURL(item.file);
+    setPreviewUtilityAttachmentUrl(blobUrl);
+    setPreviewUtilityAttachmentName(item.fileName || t('Utility bill record'));
+    setPreviewUtilityAttachmentOpen(true);
+    setWorkingBatchReviewItemId('');
+  };
+
+  const handleDownloadBatchReviewFile = (item) => {
+    if (!item?.file) {
+      toast.error(t('No PDF file available for download'));
+      return;
+    }
+
+    setWorkingBatchReviewItemId(String(item.id || ''));
+    downloadBlobAsFile(item.file, item.fileName || 'utility-bill.pdf');
+    setWorkingBatchReviewItemId('');
+  };
+
   return (
     <Page loading={loading} dataCy="utilitiesPage">
       <Card className="p-6 space-y-6">
@@ -2050,6 +2619,12 @@ export function UtilitiesPage({ view = 'all' }) {
                 onClick={() => setUtilitiesTab('bills')}
               >
                 {t('Add utility bill')}
+              </Button>
+              <Button
+                variant={utilitiesTab === 'list' ? 'default' : 'outline'}
+                onClick={() => setUtilitiesTab('list')}
+              >
+                {t('Saved utility bills')}
               </Button>
             </>
           ) : null}
@@ -2124,11 +2699,41 @@ export function UtilitiesPage({ view = 'all' }) {
                   )}
                 </p>
               </div>
-              {accountDraft.id ? (
-                <Button variant="outline" onClick={resetAccountDraft}>
-                  {t('Clear')}
-                </Button>
-              ) : null}
+              <div className="flex items-center gap-2">
+                {accountDraft.id ? (
+                  <div className="text-xs text-muted-foreground">
+                    {t('Editing')}: {accountDraft.accountNumber}
+                  </div>
+                ) : null}
+                {accountDraft.id ? (
+                  <Button variant="outline" onClick={resetAccountDraft}>
+                    {t('Clear')}
+                  </Button>
+                ) : null}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+              <div>
+                <label className="text-xs text-muted-foreground">
+                  {t('Edit existing account')}
+                </label>
+                <select
+                  value={accountDraft.id || ''}
+                  onChange={(event) =>
+                    handleSelectExistingUtilityAccount(event.target.value)
+                  }
+                  className="w-full px-3 py-2 border rounded-md text-sm bg-background"
+                >
+                  <option value="">{t('Create new account')}</option>
+                  {utilityAccounts.map((utilityAccount) => (
+                    <option key={utilityAccount._id} value={utilityAccount._id}>
+                      {utilityAccount.accountNumber} •{' '}
+                      {formatCategoryLabel(utilityAccount.type)}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
@@ -2169,7 +2774,9 @@ export function UtilitiesPage({ view = 'all' }) {
                 >
                   {createCategoryOptions.map((type) => (
                     <option key={type} value={type}>
-                      {type === 'custom' ? t('Custom category') : type}
+                      {type === 'custom'
+                        ? t('Custom category')
+                        : formatCategoryLabel(type)}
                     </option>
                   ))}
                 </select>
@@ -2331,20 +2938,79 @@ export function UtilitiesPage({ view = 'all' }) {
                     >
                       <div className="space-y-1">
                         <div className="text-sm font-semibold">
-                          {utilityAccount.accountNumber} • {utilityAccount.type}
+                          {utilityAccount.accountNumber} •{' '}
+                          {formatCategoryLabel(utilityAccount.type)}
                         </div>
                         <div className="text-sm text-muted-foreground">
                           {utilityAccount.provider || t('No provider')}
                         </div>
                         <div className="text-xs text-muted-foreground">
-                          {(utilityAccount.allocations || [])
-                            .map((allocation) => {
-                              const property =
-                                propertyById[String(allocation.propertyId)];
-                              return `${getPropertyLabel(property, propertyById)} (${formatPercentage(allocation.percentage)})`;
-                            })
-                            .join(' • ')}
+                          {formatAllocationSummary(
+                            utilityAccount.allocations,
+                            propertyById
+                          )}
                         </div>
+                        {(utilityAccount.allocationHistory || []).length ? (
+                          <div className="text-xs text-muted-foreground pt-1">
+                            <Button
+                              variant="outline"
+                              className="h-7 px-2"
+                              onClick={() =>
+                                setExpandedAllocationHistoryAccountId(
+                                  expandedAllocationHistoryAccountId ===
+                                    String(utilityAccount._id)
+                                    ? ''
+                                    : String(utilityAccount._id)
+                                )
+                              }
+                            >
+                              {expandedAllocationHistoryAccountId ===
+                              String(utilityAccount._id)
+                                ? t('Hide split history')
+                                : t('Show split history')}{' '}
+                              ({(utilityAccount.allocationHistory || []).length}
+                              )
+                            </Button>
+                          </div>
+                        ) : null}
+                        {expandedAllocationHistoryAccountId ===
+                        String(utilityAccount._id) ? (
+                          <div className="mt-2 space-y-2">
+                            {(utilityAccount.allocationHistory || []).map(
+                              (entry, entryIndex) => (
+                                <div
+                                  key={`${utilityAccount._id}-history-${entryIndex}`}
+                                  className="rounded border p-2"
+                                >
+                                  <div className="text-xs text-muted-foreground">
+                                    {entry.changedAt
+                                      ? new Date(
+                                          entry.changedAt
+                                        ).toLocaleString()
+                                      : t('Unknown time')}
+                                    {entry.changedBy
+                                      ? ` • ${entry.changedBy}`
+                                      : ''}
+                                  </div>
+                                  <div className="text-xs text-muted-foreground mt-1">
+                                    {t('Was')}:{' '}
+                                    {formatAllocationSummary(
+                                      entry.previousAllocations,
+                                      propertyById
+                                    ) || t('None')}
+                                  </div>
+                                  <div className="text-xs text-muted-foreground">
+                                    {t('Now')}:{' '}
+                                    {formatAllocationSummary(
+                                      entry.nextAllocations,
+                                      propertyById
+                                    ) || t('None')}
+                                  </div>
+                                </div>
+                              )
+                            )}
+                          </div>
+                        ) : null}
                       </div>
                       <div className="flex gap-2">
                         <Button
@@ -2383,6 +3049,83 @@ export function UtilitiesPage({ view = 'all' }) {
                   'Choose a saved account number to distribute one bill across its assigned properties, or leave it blank for a manual single-property entry.'
                 )}
               </p>
+            </div>
+
+            <div className="rounded-md border bg-muted/20 p-3 space-y-3">
+              <div className="text-sm font-medium">{t('Upload bill PDF')}</div>
+              <p className="text-xs text-muted-foreground">
+                {t(
+                  'Upload a bill PDF first to auto-fill fields or auto-post to the matched account and split.'
+                )}
+              </p>
+              <div className="grid grid-cols-1 gap-2 md:grid-cols-[minmax(0,1fr)_auto_auto] md:items-end">
+                <Input
+                  type="file"
+                  accept="application/pdf"
+                  onChange={(event) =>
+                    setBillFile(event.target.files?.[0] || null)
+                  }
+                />
+                <Button
+                  variant="outline"
+                  onClick={handleAutoFillFromBillFile}
+                  disabled={!billFile || parsingUtilityUpload}
+                >
+                  {parsingUtilityUpload
+                    ? t('Reading bill...')
+                    : t('Auto-fill from bill file')}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleUploadBillPdfToMatchedAccount}
+                  disabled={!billFile || parsingUtilityUpload}
+                >
+                  {parsingUtilityUpload
+                    ? t('Uploading PDF...')
+                    : t('Upload PDF to matched account')}
+                </Button>
+              </div>
+            </div>
+
+            <div className="rounded-md border bg-muted/20 p-3 space-y-2">
+              <div className="text-sm font-medium">
+                {t('Batch upload bills')}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {t(
+                  'Upload multiple bill files at once. Each file is auto-read, matched to a saved account number, then posted through that account allocation split.'
+                )}
+              </p>
+              <Input
+                type="file"
+                accept="application/pdf"
+                multiple
+                onChange={(event) =>
+                  setBatchBillFiles(Array.from(event.target.files || []))
+                }
+              />
+              <div className="text-xs text-muted-foreground">
+                {batchBillFiles.length
+                  ? t('{{count}} file(s) selected', {
+                      count: batchBillFiles.length
+                    })
+                  : t('No files selected')}
+              </div>
+              <div className="flex justify-end">
+                <Button
+                  variant="outline"
+                  onClick={handleBatchUploadUtilityBills}
+                  disabled={
+                    !batchBillFiles.length ||
+                    batchUploadingBills ||
+                    batchPreparingReview
+                  }
+                >
+                  {batchPreparingReview
+                    ? t('Preparing review...')
+                    : t('Review in popup')}
+                </Button>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
@@ -2427,7 +3170,8 @@ export function UtilitiesPage({ view = 'all' }) {
                   <option value="">{t('Manual entry')}</option>
                   {utilityAccounts.map((utilityAccount) => (
                     <option key={utilityAccount._id} value={utilityAccount._id}>
-                      {utilityAccount.accountNumber} • {utilityAccount.type}
+                      {utilityAccount.accountNumber} •{' '}
+                      {formatCategoryLabel(utilityAccount.type)}
                     </option>
                   ))}
                 </select>
@@ -2466,7 +3210,8 @@ export function UtilitiesPage({ view = 'all' }) {
               {billDraft.utilityAccountId ? (
                 <div className="md:col-span-3 rounded-md border bg-muted/20 p-3 space-y-1">
                   <div className="text-sm font-medium">
-                    {billDraft.accountNumber} • {billDraft.type}
+                    {billDraft.accountNumber} •{' '}
+                    {formatCategoryLabel(billDraft.type)}
                   </div>
                   <div className="text-sm text-muted-foreground">
                     {billDraft.provider || t('No provider')}
@@ -2521,7 +3266,9 @@ export function UtilitiesPage({ view = 'all' }) {
                     >
                       {createCategoryOptions.map((type) => (
                         <option key={type} value={type}>
-                          {type === 'custom' ? t('Custom category') : type}
+                          {type === 'custom'
+                            ? t('Custom category')
+                            : formatCategoryLabel(type)}
                         </option>
                       ))}
                     </select>
@@ -2606,17 +3353,6 @@ export function UtilitiesPage({ view = 'all' }) {
                       ...previous,
                       paidDate: event.target.value
                     }))
-                  }
-                />
-              </div>
-              <div>
-                <label className="text-xs text-muted-foreground">
-                  {t('Bill file')}
-                </label>
-                <Input
-                  type="file"
-                  onChange={(event) =>
-                    setBillFile(event.target.files?.[0] || null)
                   }
                 />
               </div>
@@ -3776,6 +4512,9 @@ export function UtilitiesPage({ view = 'all' }) {
                                 {statement.mapNumber
                                   ? ` • ${t('Map')}: ${statement.mapNumber}`
                                   : ''}
+                                {statement.lastUpdatedBy
+                                  ? ` • ${t('Updated by')}: ${statement.lastUpdatedBy}`
+                                  : ''}
                               </div>
                             </div>
                             {/* Action buttons */}
@@ -4384,11 +5123,7 @@ export function UtilitiesPage({ view = 'all' }) {
           </div>
         ) : null}
 
-        {utilitiesTab !== 'tax-new' &&
-        utilitiesTab !== 'tax-edit' &&
-        utilitiesTab !== 'tax-view' &&
-        utilitiesTab !== 'tax-saved' &&
-        utilitiesTab !== 'tax-report' ? (
+        {!isTaxOnly && utilitiesTab === 'list' ? (
           <>
             <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
               <div className="md:col-span-2 relative">
@@ -4411,7 +5146,7 @@ export function UtilitiesPage({ view = 'all' }) {
                   <option value="all">{t('All types')}</option>
                   {availableCategories.map((type) => (
                     <option key={type} value={type}>
-                      {type}
+                      {formatCategoryLabel(type)}
                     </option>
                   ))}
                 </select>
@@ -4453,7 +5188,8 @@ export function UtilitiesPage({ view = 'all' }) {
                     >
                       <div className="space-y-1">
                         <div className="text-sm font-semibold">
-                          {utility.type} • {utility.billingMonth}
+                          {formatCategoryLabel(utility.type)} •{' '}
+                          {utility.billingMonth}
                         </div>
                         <div className="text-sm text-muted-foreground">
                           {propertyName}
@@ -4467,12 +5203,57 @@ export function UtilitiesPage({ view = 'all' }) {
                             ? `${t('Paid')} ${String(utility.paidDate).slice(0, 10)}`
                             : t('Not paid yet')}
                         </div>
+                        <div className="text-xs text-muted-foreground">
+                          {(utility.attachmentIds || []).length
+                            ? t('Source bill on file')
+                            : t('No source bill attached')}
+                        </div>
+                        {utility.lastUpdatedBy ? (
+                          <div className="text-xs text-muted-foreground">
+                            {t('Updated by')}:{' '}
+                            <span className="font-medium">
+                              {utility.lastUpdatedBy}
+                            </span>
+                          </div>
+                        ) : null}
                       </div>
 
-                      <div className="flex items-center gap-3">
+                      <div className="flex flex-wrap items-center gap-2 sm:gap-3 sm:justify-end">
                         <div className="text-sm font-semibold">
                           {toCurrency(utility.amount)}
                         </div>
+                        {(utility.attachmentIds || []).length ? (
+                          <>
+                            <Button
+                              variant="outline"
+                              className="gap-2"
+                              onClick={() =>
+                                handlePreviewUtilityBillAttachment(utility)
+                              }
+                              disabled={
+                                workingUtilityAttachmentId ===
+                                String(utility.attachmentIds?.[0] || '')
+                              }
+                            >
+                              <LuFileSearch className="size-4" />
+                              {t('View bill')}
+                            </Button>
+                            <Button
+                              variant="outline"
+                              className="gap-2"
+                              onClick={() =>
+                                handleDownloadUtilityBillAttachment(utility)
+                              }
+                              disabled={
+                                workingUtilityAttachmentId ===
+                                String(utility.attachmentIds?.[0] || '')
+                              }
+                            >
+                              <LuDownload className="size-4" />
+                              {t('Download bill')}
+                            </Button>
+                          </>
+                        ) : null}
                         <Button
                           variant="outline"
                           className="gap-2"
@@ -4493,6 +5274,273 @@ export function UtilitiesPage({ view = 'all' }) {
             )}
           </>
         ) : null}
+
+        <Dialog open={batchWorkflowOpen} onOpenChange={setBatchWorkflowOpen}>
+          <DialogContent className="max-w-5xl max-h-[85vh] overflow-hidden flex flex-col">
+            <DialogHeader>
+              <DialogTitle>{t('Batch utility upload review')}</DialogTitle>
+              <DialogDescription>
+                {t(
+                  'Review each parsed file, adjust account or values where needed, then confirm to post all ready items.'
+                )}
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="flex-1 min-h-0 space-y-3 overflow-y-auto pr-1">
+              {batchReviewItems.map((item) => {
+                const account =
+                  utilityAccountById[String(item.accountId)] || null;
+                const allocationPreview = (account?.allocations || [])
+                  .map((allocation) => {
+                    const property =
+                      propertyById[String(allocation.propertyId)];
+                    return `${getPropertyLabel(property, propertyById)} (${formatPercentage(allocation.percentage)})`;
+                  })
+                  .join(' • ');
+
+                return (
+                  <div
+                    key={item.id}
+                    className="rounded-md border p-3 space-y-2"
+                  >
+                    <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="text-sm font-medium">{item.fileName}</div>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          className="gap-2"
+                          onClick={() => handlePreviewBatchReviewFile(item)}
+                          disabled={
+                            workingBatchReviewItemId === String(item.id)
+                          }
+                        >
+                          <LuFileSearch className="size-4" />
+                          {t('View file')}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="gap-2"
+                          onClick={() => handleDownloadBatchReviewFile(item)}
+                          disabled={
+                            workingBatchReviewItemId === String(item.id)
+                          }
+                        >
+                          <LuDownload className="size-4" />
+                          {t('Download file')}
+                        </Button>
+                        <span
+                          className={`text-xs px-2 py-1 rounded-full ${
+                            item.isReady
+                              ? 'bg-green-100 text-green-700'
+                              : 'bg-amber-100 text-amber-700'
+                          }`}
+                        >
+                          {item.isReady ? t('Ready') : t('Needs attention')}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-2 md:grid-cols-4">
+                      <div className="md:col-span-2">
+                        <label className="text-xs text-muted-foreground">
+                          {t('Account')}
+                        </label>
+                        <select
+                          value={item.accountId}
+                          onChange={(event) =>
+                            handleBatchReviewChange(
+                              item.id,
+                              'accountId',
+                              event.target.value
+                            )
+                          }
+                          className="w-full px-3 py-2 border rounded-md text-sm bg-background"
+                        >
+                          <option value="">{t('Select account')}</option>
+                          {utilityAccounts.map((utilityAccount) => (
+                            <option
+                              key={utilityAccount._id}
+                              value={utilityAccount._id}
+                            >
+                              {utilityAccount.accountNumber} •{' '}
+                              {formatCategoryLabel(utilityAccount.type)}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted-foreground">
+                          {t('Billing month')}
+                        </label>
+                        <Input
+                          type="month"
+                          value={item.billingMonth}
+                          onChange={(event) =>
+                            handleBatchReviewChange(
+                              item.id,
+                              'billingMonth',
+                              event.target.value
+                            )
+                          }
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted-foreground">
+                          {t('Amount')}
+                        </label>
+                        <Input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={item.amount}
+                          onChange={(event) =>
+                            handleBatchReviewChange(
+                              item.id,
+                              'amount',
+                              event.target.value
+                            )
+                          }
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
+                      <div>
+                        <label className="text-xs text-muted-foreground">
+                          {t('Due date')}
+                        </label>
+                        <Input
+                          type="date"
+                          value={item.dueDate}
+                          onChange={(event) =>
+                            handleBatchReviewChange(
+                              item.id,
+                              'dueDate',
+                              event.target.value
+                            )
+                          }
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted-foreground">
+                          {t('Provider')}
+                        </label>
+                        <Input
+                          type="text"
+                          value={item.provider}
+                          readOnly
+                          className="bg-muted/30"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted-foreground">
+                          {t('Category')}
+                        </label>
+                        <Input
+                          type="text"
+                          value={formatCategoryLabel(item.type)}
+                          readOnly
+                          className="bg-muted/30"
+                        />
+                      </div>
+                    </div>
+
+                    {allocationPreview ? (
+                      <div className="text-xs text-muted-foreground">
+                        {allocationPreview}
+                      </div>
+                    ) : null}
+
+                    {item.warnings.length ? (
+                      <div className="text-xs text-amber-700">
+                        {item.warnings.join(' ')}
+                      </div>
+                    ) : null}
+                  </div>
+                );
+              })}
+            </div>
+
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setBatchWorkflowOpen(false)}
+                disabled={batchUploadingBills}
+              >
+                {t('Cancel')}
+              </Button>
+              <Button
+                onClick={handleConfirmBatchWorkflow}
+                disabled={batchUploadingBills}
+              >
+                {batchUploadingBills
+                  ? t('Posting batch...')
+                  : t('Confirm and post ready items')}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog
+          open={previewUtilityAttachmentOpen}
+          onOpenChange={(open) => {
+            if (open) {
+              setPreviewUtilityAttachmentOpen(true);
+              return;
+            }
+
+            closeUtilityAttachmentPreview();
+          }}
+        >
+          <DialogContent className="max-w-5xl">
+            <DialogHeader>
+              <DialogTitle>{t('Utility bill record')}</DialogTitle>
+              <DialogDescription>
+                {previewUtilityAttachmentName || t('Source bill attachment')}
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="rounded-md border overflow-hidden h-[70vh] bg-muted/20">
+              {previewUtilityAttachmentUrl ? (
+                <iframe
+                  src={previewUtilityAttachmentUrl}
+                  title={previewUtilityAttachmentName || t('Utility bill')}
+                  className="w-full h-full"
+                />
+              ) : (
+                <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
+                  {t('No preview available')}
+                </div>
+              )}
+            </div>
+
+            <DialogFooter>
+              <Button variant="outline" onClick={closeUtilityAttachmentPreview}>
+                {t('Close')}
+              </Button>
+              <Button
+                onClick={() => {
+                  if (
+                    !previewUtilityAttachmentUrl ||
+                    !previewUtilityAttachmentName
+                  ) {
+                    return;
+                  }
+
+                  fetch(previewUtilityAttachmentUrl)
+                    .then((response) => response.blob())
+                    .then((blob) => {
+                      downloadBlobAsFile(blob, previewUtilityAttachmentName);
+                    });
+                }}
+                disabled={!previewUtilityAttachmentUrl}
+              >
+                <LuDownload className="size-4 mr-2" />
+                {t('Download')}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </Card>
     </Page>
   );

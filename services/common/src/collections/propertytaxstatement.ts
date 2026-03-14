@@ -65,7 +65,8 @@ const PropertyTaxStatementSchema =
       paymentConfirmations: {
         type: [PropertyTaxPaymentConfirmationSchema],
         default: []
-      }
+      },
+      lastUpdatedBy: { type: String, default: '' }
     },
     {
       timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' }
