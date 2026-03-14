@@ -18,12 +18,14 @@ import {
   LuTrash2
 } from 'react-icons/lu';
 import { useEffect, useMemo, useRef, useState } from 'react';
+
 import { apiFetcher } from '../../../utils/fetch';
 import { Button } from '../../../components/ui/button';
 import { Card } from '../../../components/ui/card';
 import { Input } from '../../../components/ui/input';
 import NotesPanel from '../../../components/NotesPanel';
 import Page from '../../../components/Page';
+import SavedBills from '../../../components/utilities/SavedBills';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/router';
@@ -5124,155 +5126,33 @@ export function UtilitiesPage({ view = 'all' }) {
         ) : null}
 
         {!isTaxOnly && utilitiesTab === 'list' ? (
-          <>
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
-              <div className="md:col-span-2 relative">
-                <LuSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  placeholder={t(
-                    'Search by property, type, provider, account number, month...'
-                  )}
-                  value={searchText}
-                  onChange={(event) => setSearchText(event.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              <div>
-                <select
-                  value={typeFilter}
-                  onChange={(event) => setTypeFilter(event.target.value)}
-                  className="w-full px-3 py-2 border rounded-md text-sm bg-background"
-                >
-                  <option value="all">{t('All types')}</option>
-                  {availableCategories.map((type) => (
-                    <option key={type} value={type}>
-                      {formatCategoryLabel(type)}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <select
-                  value={monthFilter}
-                  onChange={(event) => setMonthFilter(event.target.value)}
-                  className="w-full px-3 py-2 border rounded-md text-sm bg-background"
-                >
-                  <option value="all">{t('All months')}</option>
-                  {billingMonths.map((month) => (
-                    <option key={month} value={month}>
-                      {month}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            {isError ? (
-              <div className="text-sm text-red-600">
-                {t('Failed to load utilities')}
-              </div>
-            ) : filteredUtilities.length === 0 ? (
-              <div className="text-sm text-muted-foreground py-8 text-center">
-                {t('No utilities found for current filters')}
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {filteredUtilities.map((utility) => {
-                  const property = propertyById[String(utility.propertyId)];
-                  const propertyName = property?.name || t('Unknown property');
-
-                  return (
-                    <div
-                      key={utility._id}
-                      className="rounded-lg border p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
-                    >
-                      <div className="space-y-1">
-                        <div className="text-sm font-semibold">
-                          {formatCategoryLabel(utility.type)} •{' '}
-                          {utility.billingMonth}
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          {propertyName}
-                          {utility.provider ? ` • ${utility.provider}` : ''}
-                          {utility.accountNumber
-                            ? ` • ${utility.accountNumber}`
-                            : ''}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {utility.paidDate
-                            ? `${t('Paid')} ${String(utility.paidDate).slice(0, 10)}`
-                            : t('Not paid yet')}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {(utility.attachmentIds || []).length
-                            ? t('Source bill on file')
-                            : t('No source bill attached')}
-                        </div>
-                        {utility.lastUpdatedBy ? (
-                          <div className="text-xs text-muted-foreground">
-                            {t('Updated by')}:{' '}
-                            <span className="font-medium">
-                              {utility.lastUpdatedBy}
-                            </span>
-                          </div>
-                        ) : null}
-                      </div>
-
-                      <div className="flex flex-wrap items-center gap-2 sm:gap-3 sm:justify-end">
-                        <div className="text-sm font-semibold">
-                          {toCurrency(utility.amount)}
-                        </div>
-                        {(utility.attachmentIds || []).length ? (
-                          <>
-                            <Button
-                              variant="outline"
-                              className="gap-2"
-                              onClick={() =>
-                                handlePreviewUtilityBillAttachment(utility)
-                              }
-                              disabled={
-                                workingUtilityAttachmentId ===
-                                String(utility.attachmentIds?.[0] || '')
-                              }
-                            >
-                              <LuFileSearch className="size-4" />
-                              {t('View bill')}
-                            </Button>
-                            <Button
-                              variant="outline"
-                              className="gap-2"
-                              onClick={() =>
-                                handleDownloadUtilityBillAttachment(utility)
-                              }
-                              disabled={
-                                workingUtilityAttachmentId ===
-                                String(utility.attachmentIds?.[0] || '')
-                              }
-                            >
-                              <LuDownload className="size-4" />
-                              {t('Download bill')}
-                            </Button>
-                          </>
-                        ) : null}
-                        <Button
-                          variant="outline"
-                          className="gap-2"
-                          onClick={() =>
-                            router.push(
-                              `/${router.query.organization}/properties/${utility.propertyId}`
-                            )
-                          }
-                        >
-                          <LuExternalLink className="size-4" />
-                          {t('Open property')}
-                        </Button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </>
+          <SavedBills
+            t={t}
+            filteredUtilities={filteredUtilities}
+            totalAmount={totalAmount}
+            loading={loading}
+            searchText={searchText}
+            setSearchText={setSearchText}
+            typeFilter={typeFilter}
+            setTypeFilter={setTypeFilter}
+            monthFilter={monthFilter}
+            setMonthFilter={setMonthFilter}
+            availableCategories={availableCategories}
+            billingMonths={billingMonths}
+            propertyById={propertyById}
+            normalizeCategory={normalizeCategory}
+            formatCategoryLabel={formatCategoryLabel}
+            toCurrency={toCurrency}
+            router={router}
+            isError={isError}
+            workingUtilityAttachmentId={workingUtilityAttachmentId}
+            handlePreviewUtilityBillAttachment={
+              handlePreviewUtilityBillAttachment
+            }
+            handleDownloadUtilityBillAttachment={
+              handleDownloadUtilityBillAttachment
+            }
+          />
         ) : null}
 
         <Dialog open={batchWorkflowOpen} onOpenChange={setBatchWorkflowOpen}>

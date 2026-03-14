@@ -1,6 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
-import { apiFetcher } from '../../utils/fetch';
 import { useEffect, useState } from 'react';
+
+import { apiFetcher } from '../../utils/fetch';
 import PropertyIcon from './PropertyIcon';
 
 export default function PropertyAvatar({ property }) {

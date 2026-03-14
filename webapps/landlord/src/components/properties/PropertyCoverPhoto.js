@@ -1,5 +1,6 @@
-import { apiFetcher } from '../../utils/fetch';
 import { useEffect, useMemo, useState } from 'react';
+
+import { apiFetcher } from '../../utils/fetch';
 import { toast } from 'sonner';
 
 export default function PropertyCoverPhoto({
