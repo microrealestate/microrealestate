@@ -35,6 +35,7 @@
     "format": "yarn workspaces foreach run format",
     "lint": "yarn workspaces foreach -pv run lint",
     "dev": "cross-env MRE_VERSION=dev node cli/src/index.js dev",
+    "check:startup": "./scripts/check-startup-health.sh",
     "mre": "cross-env MRE_VERSION=local node cli/src/index.js",
     "build": "yarn run mre build",
     "start": "yarn run mre start",

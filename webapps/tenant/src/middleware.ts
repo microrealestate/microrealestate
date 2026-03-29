@@ -50,7 +50,31 @@ function getRequestLocale(request: NextRequest) {
     requestHeaders[key] = value;
   });
   const languages = new Negotiator({ headers: requestHeaders }).languages();
-  return match(languages, LOCALES, DEFAULT_LOCALE) as Locale;
+  const validLanguages = filterValidLocales(languages);
+  return match(validLanguages, LOCALES, DEFAULT_LOCALE) as Locale;
+}
+
+function filterValidLocales(locales: string[]) {
+  // Some clients can send malformed locale values (or "*") that crash
+  // Intl locale canonicalization used by intl-localematcher.
+  const validLocales: string[] = [];
+  for (const locale of locales) {
+    if (!locale || locale === '*') {
+      continue;
+    }
+    try {
+      Intl.getCanonicalLocales(locale);
+      validLocales.push(locale);
+    } catch (_error) {
+      // Ignore invalid locale values and keep matching from valid ones.
+    }
+  }
+
+  if (!validLocales.length) {
+    return [DEFAULT_LOCALE];
+  }
+
+  return validLocales;
 }
 
 function injectLocale(request: NextRequest) {
