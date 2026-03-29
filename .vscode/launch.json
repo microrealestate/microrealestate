@@ -5,13 +5,18 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Run cli",
+      "name": "Run cli (dev, Docker API 1.41)",
       "program": "${workspaceFolder}/cli/src/index.js",
       "args": ["dev"],
       "request": "launch",
       "skipFiles": ["<node_internals>/**"],
       "type": "node",
-      "console": "integratedTerminal"
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "MRE_VERSION": "dev",
+        "DOCKER_API_VERSION": "1.41"
+      }
     },
     {
       "type": "node",

@@ -21,7 +21,7 @@ services:
   # Mongo
   ###############################################################################
   mongo:
-    image: mongo:7
+    image: mongo:4.4.30
     environment:
       MONGO_PORT: 27017
     command: --quiet --logpath /dev/null

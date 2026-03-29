@@ -129,6 +129,7 @@ export namespace CollectionTypes {
     timeRange: LeaseTimeRange;
     active: boolean;
     stepperMode: boolean;
+    lastUpdatedBy?: string;
   };
 
   export type Property = {
@@ -163,6 +164,7 @@ export namespace CollectionTypes {
     countyRecordsReference?: string | null;
     coverPhotoAttachmentId?: string | null;
     floorPlanAttachmentId?: string | null;
+    lastUpdatedBy?: string;
 
     // ORIGINAL LEGACY FIELDS (COMMENT SAYS THEY ARE TO BE REMOVED LATER)
     // KEEPING THEM TO AVOID BREAKING EXISTING CODE
@@ -514,6 +516,7 @@ export namespace CollectionTypes {
     attachmentIds?: string[];
     splitMethod: 'equal' | 'percentage';
     splitItems: UtilitySplit[];
+    lastUpdatedBy?: string;
     createdAt?: Date;
     updatedAt?: Date;
   };
@@ -569,6 +572,7 @@ export namespace CollectionTypes {
     notes?: string;
     attachmentIds?: string[];
     paymentConfirmations?: PropertyTaxPaymentConfirmation[];
+    lastUpdatedBy?: string;
     createdAt?: Date;
     updatedAt?: Date;
   };
