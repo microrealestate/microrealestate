@@ -89,7 +89,7 @@ export default class User {
       this.setUserFromToken(accessToken);
       return 200;
     } catch (error) {
-      return error.response.status;
+      return error?.response?.status || 0;
     }
   }
 

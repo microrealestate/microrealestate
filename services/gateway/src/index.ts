@@ -64,13 +64,16 @@ async function Main() {
 function configureCORS(application: Express.Application) {
   const config = Service.getInstance().envConfig.getValues();
   if (config.CORS_ENABLED && (config.DOMAIN_URL || config.APP_DOMAIN)) {
-    let domain = config.APP_DOMAIN;
-    if (config.DOMAIN_URL) {
-      domain = URLUtils.destructUrl(config.DOMAIN_URL).domain;
+    // Prefer APP_DOMAIN when available. DOMAIN_URL is kept for backward compatibility.
+    const domain =
+      config.APP_DOMAIN ||
+      (config.DOMAIN_URL ? URLUtils.destructUrl(config.DOMAIN_URL).domain : undefined);
+    if (!domain) {
+      return;
     }
     const corsOptions = {
       origin: new RegExp(`^https?://(.*\\.)?${domain}$`),
-      methods: 'GET,POST,PUT,PATCH,DELETE',
+      methods: 'GET,POST,PUT,PATCH,DELETE,OPTIONS',
       allowedHeaders:
         //',If-Modified-Since,Range, DNT',
         'Origin,User-Agent,X-Requested-With,Cache-Control,Content-Type,Accept,Authorization,organizationId,timeout',
@@ -78,7 +81,9 @@ function configureCORS(application: Express.Application) {
     };
 
     application.use('/api', cors(corsOptions));
+    application.options('/api/*', cors(corsOptions));
     application.use('/tenantapi', cors(corsOptions));
+    application.options('/tenantapi/*', cors(corsOptions));
   }
 }
 

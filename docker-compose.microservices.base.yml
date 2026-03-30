@@ -18,7 +18,7 @@ services:
   # Mongo
   ###############################################################################
   mongo:
-    image: mongo:4.4.30
+    image: mongo:7
     command: --quiet
     expose:
       - '$MONGO_PORT'

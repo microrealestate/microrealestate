@@ -64,6 +64,7 @@ services:
       LANDLORD_BASE_PATH: /landlord
       TENANT_FRONTEND_URL: http://tenant-frontend:8190
       TENANT_BASE_PATH: /tenant
+      DOMAIN_URL: ${APP_PROTOCOL:-http}://${APP_DOMAIN:-localhost}${APP_PORT:+:}${APP_PORT}
       APP_DOMAIN: ${APP_DOMAIN:-localhost}${APP_PORT:+:}${APP_PORT}
       CORS_ENABLED: 'true'
       TENANTAPI_URL: http://tenantapi:8250/tenantapi

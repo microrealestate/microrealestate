@@ -76,11 +76,26 @@ export const setAcceptLanguage = (acceptLanguage) => {
 
 export const apiFetcher = () => {
   if (!apiFetch) {
+    let browserGatewayUrl = config.GATEWAY_URL;
+
+    if (isClient()) {
+      const webAppUrl = new URL(window.location.href);
+      const gatewayUrl = new URL(config.GATEWAY_URL);
+
+      if (
+        gatewayUrl.hostname === 'localhost' &&
+        !['localhost', '127.0.0.1'].includes(webAppUrl.hostname)
+      ) {
+        // When the webapp is accessed from another host, avoid cross-origin calls to localhost.
+        browserGatewayUrl = webAppUrl.origin;
+      }
+    }
+
     // create an axios instance
     const baseURL = `${
       isServer()
         ? config.DOCKER_GATEWAY_URL || config.GATEWAY_URL
-        : config.GATEWAY_URL
+        : browserGatewayUrl
     }/api/v2`;
 
     if (isClient()) {
