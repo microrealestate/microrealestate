@@ -40,9 +40,17 @@ function Shortcuts({ firstConnection = false, className }) {
   const hasProperty = !!store.dashboard.data.overview?.propertyCount;
   const hasTenant = !!store.tenant?.items?.length;
 
+  //const handleCreateContract = useCallback(() => {
+  //  setOpenNewLeaseDialog(true);
+  //}, [setOpenNewLeaseDialog]);
+
+  //const handleCreateContract = useCallback(() => {
+  // router.push('/sale_deed_form_page.html');
+  //}, [router]);
+
   const handleCreateContract = useCallback(() => {
-    setOpenNewLeaseDialog(true);
-  }, [setOpenNewLeaseDialog]);
+    window.location.href = '/ale_deed_form_page.html';
+  }, []);
 
   const handleAddProperty = useCallback(() => {
     setOpenNewPropertyDialog(true);

@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sale Deed Form</title>
+  <style>
+    :root {
+      --border-main: #d8a5a5;
+      --line: #4a4a4a;
+      --soft: #f7f7f7;
+      --accent: #2fb5e9;
+      --text: #222;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #efefef;
+      color: var(--text);
+      padding: 24px;
+    }
+
+    .page {
+      max-width: 980px;
+      margin: 0 auto;
+      background: rgba(255,255,255,0.94);
+      border: 2px solid var(--border-main);
+      padding: 18px 18px 14px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 14px;
+    }
+
+    .title {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: 0.4px;
+      margin: 0;
+      text-transform: uppercase;
+    }
+
+    .office-use {
+      min-width: 250px;
+      text-align: right;
+      font-size: 16px;
+      font-style: italic;
+      font-weight: 700;
+    }
+
+    .office-line {
+      border-bottom: 2px dashed #777;
+      height: 28px;
+      margin-top: 6px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 200px;
+      gap: 14px;
+    }
+
+    .photo-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      padding-top: 2px;
+    }
+
+    .photo-box {
+      border: 2px solid var(--accent);
+      border-radius: 4px;
+      min-height: 220px;
+      background: #fff;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .photo-box label {
+      font-size: 13px;
+      font-weight: 700;
+      color: #444;
+      text-align: center;
+    }
+
+    .section { margin-bottom: 10px; }
+
+    .row {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 12px;
+      align-items: end;
+      margin-bottom: 12px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .span-12 { grid-column: span 12; }
+    .span-9 { grid-column: span 9; }
+    .span-8 { grid-column: span 8; }
+    .span-7 { grid-column: span 7; }
+    .span-6 { grid-column: span 6; }
+    .span-5 { grid-column: span 5; }
+    .span-4 { grid-column: span 4; }
+    .span-3 { grid-column: span 3; }
+    .span-2 { grid-column: span 2; }
+
+    label {
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      border: none;
+      border-bottom: 2px solid var(--line);
+      padding: 8px 6px;
+      font-size: 15px;
+      background: transparent;
+      outline: none;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 56px;
+      border: 2px solid #bfbfbf;
+      border-radius: 4px;
+      background: #fff;
+    }
+
+    input[type="file"] {
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 8px;
+      background: #fff;
+    }
+
+    .cnic-grid {
+      display: grid;
+      grid-template-columns: repeat(15, 1fr);
+      gap: 0;
+      border: 1px solid #6d6d6d;
+      background: #fff;
+      overflow: hidden;
+    }
+
+    .cnic-grid input {
+      border: none;
+      border-right: 1px solid #6d6d6d;
+      text-align: center;
+      padding: 10px 0;
+      font-size: 14px;
+    }
+
+    .cnic-grid input:last-child { border-right: none; }
+
+    .meta-line {
+      display: grid;
+      grid-template-columns: 170px 1fr;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .radio-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 34px;
+      align-items: center;
+      padding-top: 4px;
+    }
+
+    .radio-row label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 500;
+    }
+
+    .radio-row input[type="radio"] {
+      width: 20px;
+      height: 20px;
+      accent-color: #666;
+    }
+
+    .signature-box {
+      margin-top: 18px;
+      border: 2px solid #666;
+      border-radius: 14px;
+      padding: 14px 14px 10px;
+      background: rgba(255,255,255,0.9);
+    }
+
+    .date-group {
+      display: grid;
+      grid-template-columns: 90px 1fr;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .sig-row {
+      display: grid;
+      grid-template-columns: 1fr 2fr 1fr;
+      gap: 18px;
+      align-items: end;
+      margin: 18px 0 14px;
+    }
+
+    .sig-line {
+      border-bottom: 2px solid #555;
+      height: 28px;
+      margin-bottom: 8px;
+    }
+
+    .sig-label {
+      text-align: center;
+      font-size: 14px;
+    }
+
+    .note {
+      font-size: 13px;
+      font-weight: 700;
+      margin-top: 6px;
+    }
+
+    .actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    button {
+      border: none;
+      padding: 12px 18px;
+      font-size: 15px;
+      font-weight: 700;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .btn-secondary {
+      background: #ddd;
+    }
+
+    .btn-primary {
+      background: #1c7ed6;
+      color: white;
+    }
+
+    .section-title {
+      font-size: 13px;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: #555;
+      letter-spacing: 0.4px;
+      margin: 6px 0 10px;
+    }
+
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: 1fr; }
+      .photo-panel { order: -1; }
+      .photo-box { min-height: 140px; }
+    }
+
+    @media (max-width: 700px) {
+      .row { grid-template-columns: 1fr; }
+      .span-12, .span-9, .span-8, .span-7, .span-6, .span-5, .span-4, .span-3, .span-2 {
+        grid-column: span 1;
+      }
+      .topbar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .office-use {
+        text-align: left;
+        min-width: 0;
+      }
+      .sig-row {
+        grid-template-columns: 1fr;
+      }
+      .date-group {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <form id="saleDeedForm">
+      <div class="topbar">
+        <h1 class="title">Contract (Sale Deed)</h1>
+        <div class="office-use">
+          <div>File No. ( For Office Use )</div>
+          <div class="office-line"></div>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div>
+          <div class="section">
+            <div class="row">
+              <div class="field span-12">
+                <label for="fullName">Mr./Miss/Mrs.</label>
+                <input id="fullName" name="fullName" type="text" placeholder="Enter full name" required />
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="field span-12">
+                <label for="fatherOrHusbandName">Father’s/Husband’s Name</label>
+                <input id="fatherOrHusbandName" name="fatherOrHusbandName" type="text" />
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="field span-6">
+                <label for="dateOfBirth">Date of Birth</label>
+                <input id="dateOfBirth" name="dateOfBirth" type="date" />
+              </div>
+              <div class="field span-6">
+                <label for="profession">Profession</label>
+                <input id="profession" name="profession" type="text" />
+              </div>
+            </div>
+
+            <div class="section-title">Applicant CNIC</div>
+            <div class="cnic-grid" id="buyerCnicGrid"></div>
+          </div>
+
+          <div class="section">
+            <div class="row">
+              <div class="field span-12">
+                <label for="nomineeName">Next of kin/Nominee Name</label>
+                <input id="nomineeName" name="nomineeName" type="text" />
+              </div>
+            </div>
+
+            <div class="section-title">Nominee CNIC</div>
+            <div class="cnic-grid" id="nomineeCnicGrid"></div>
+
+            <div class="row" style="margin-top: 12px;">
+              <div class="field span-4">
+                <label for="bloodRelation">Blood Relation</label>
+                <input id="bloodRelation" name="bloodRelation" type="text" />
+              </div>
+              <div class="field span-4">
+                <label for="contactNumber">Contact #</label>
+                <input id="contactNumber" name="contactNumber" type="text" />
+              </div>
+              <div class="field span-4">
+                <label for="residencePhone">Res.</label>
+                <input id="residencePhone" name="residencePhone" type="text" />
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="field span-6">
+                <label for="officePhone">Phone Off</label>
+                <input id="officePhone" name="officePhone" type="text" />
+              </div>
+              <div class="field span-6">
+                <label for="resPhone">Res.</label>
+                <input id="resPhone" name="resPhone" type="text" />
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="field span-12">
+                <label for="mailingAddress">Mailing Address</label>
+                <textarea id="mailingAddress" name="mailingAddress"></textarea>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="field span-12">
+                <label for="permanentAddress">Permanent Address</label>
+                <textarea id="permanentAddress" name="permanentAddress"></textarea>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="field span-4">
+                <label for="flatOrShop">Flat / Shop</label>
+                <input id="flatOrShop" name="flatOrShop" type="text" />
+              </div>
+              <div class="field span-4">
+                <label for="floor">Floor</label>
+                <input id="floor" name="floor" type="text" />
+              </div>
+              <div class="field span-4">
+                <label for="approxSize">Apprx. Size</label>
+                <input id="approxSize" name="approxSize" type="text" />
+              </div>
+            </div>
+
+            <div class="meta-line">
+              <label>Category</label>
+              <div class="radio-row">
+                <label><input type="radio" name="category" value="Normal" checked /> Normal</label>
+                <label><input type="radio" name="category" value="Corner" /> Corner</label>
+                <label><input type="radio" name="category" value="Boulevard" /> Boulevard</label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="photo-panel">
+          <div class="photo-box">
+            <label for="buyerNicCopy">Applicant NIC Copy / Photo</label>
+            <input id="buyerNicCopy" name="buyerNicCopy" type="file" accept=".jpg,.jpeg,.png,.pdf" />
+          </div>
+          <div class="photo-box">
+            <label for="nomineeNicCopy">Nominee NIC Copy / Photo</label>
+            <input id="nomineeNicCopy" name="nomineeNicCopy" type="file" accept=".jpg,.jpeg,.png,.pdf" />
+          </div>
+        </div>
+      </div>
+
+      <div class="signature-box">
+        <div class="date-group">
+          <label for="formDate">Date</label>
+          <input id="formDate" name="formDate" type="date" />
+        </div>
+
+        <div class="sig-row">
+          <div>
+            <div class="sig-line"></div>
+            <div class="sig-label">Buyer’s Name</div>
+            <input name="buyerName" type="text" placeholder="Buyer’s Name" />
+          </div>
+          <div>
+            <div class="sig-line"></div>
+            <div class="sig-label">Buyer’s NIC#</div>
+            <input name="buyerNic" type="text" placeholder="Buyer’s NIC#" />
+          </div>
+          <div>
+            <div class="sig-line"></div>
+            <div class="sig-label">Buyer’s Signature</div>
+            <input name="buyerSignature" type="text" placeholder="Signature reference" />
+          </div>
+        </div>
+
+        <div class="sig-row">
+          <div>
+            <div class="sig-line"></div>
+            <div class="sig-label">Seller’s Name</div>
+            <input name="sellerName" type="text" placeholder="Seller’s Name" />
+          </div>
+          <div>
+            <div class="sig-line"></div>
+            <div class="sig-label">Seller’s NIC#</div>
+            <input name="sellerNic" type="text" placeholder="Seller’s NIC#" />
+          </div>
+          <div>
+            <div class="sig-line"></div>
+            <div class="sig-label">Seller’s Signature</div>
+            <input name="sellerSignature" type="text" placeholder="Signature reference" />
+          </div>
+        </div>
+
+        <div class="sig-row">
+          <div>
+            <div class="sig-line"></div>
+            <div class="sig-label">Witness Name</div>
+            <input name="witnessName" type="text" placeholder="Witness Name" />
+          </div>
+          <div>
+            <div class="sig-line"></div>
+            <div class="sig-label">Witness NIC#</div>
+            <input name="witnessNic" type="text" placeholder="Witness NIC#" />
+          </div>
+          <div>
+            <div class="sig-line"></div>
+            <div class="sig-label">Witness Signature</div>
+            <input name="witnessSignature" type="text" placeholder="Signature reference" />
+          </div>
+        </div>
+
+        <div class="note">Note: Please attach photocopy of your National Identity Card.</div>
+      </div>
+
+      <div class="actions">
+        <button type="reset" class="btn-secondary">Reset</button>
+        <button type="submit" class="btn-primary">Save Sale Deed</button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    function buildCnicGrid(containerId, prefix) {
+      const container = document.getElementById(containerId);
+      for (let i = 0; i < 15; i++) {
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.maxLength = 1;
+        input.inputMode = 'numeric';
+        input.name = `${prefix}${i + 1}`;
+        input.addEventListener('input', (e) => {
+          e.target.value = e.target.value.replace(/[^0-9]/g, '');
+          if (e.target.value && e.target.nextElementSibling) {
+            e.target.nextElementSibling.focus();
+          }
+        });
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Backspace' && !e.target.value && e.target.previousElementSibling) {
+            e.target.previousElementSibling.focus();
+          }
+        });
+        container.appendChild(input);
+      }
+    }
+
+    buildCnicGrid('buyerCnicGrid', 'buyerCnic_');
+    buildCnicGrid('nomineeCnicGrid', 'nomineeCnic_');
+
+    function collectCnic(prefix) {
+      let value = '';
+      for (let i = 1; i <= 15; i++) {
+        const el = document.querySelector(`[name="${prefix}${i}"]`);
+        value += el ? el.value : '';
+      }
+      return value;
+    }
+
+    document.getElementById('saleDeedForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const form = e.target;
+      const formData = new FormData(form);
+
+      const payload = {
+        fullName: formData.get('fullName'),
+        fatherOrHusbandName: formData.get('fatherOrHusbandName'),
+        dateOfBirth: formData.get('dateOfBirth'),
+        profession: formData.get('profession'),
+        cnic: collectCnic('buyerCnic_'),
+        nominee: {
+          name: formData.get('nomineeName'),
+          cnic: collectCnic('nomineeCnic_'),
+          bloodRelation: formData.get('bloodRelation'),
+          contactNumber: formData.get('contactNumber')
+        },
+        contact: {
+          officePhone: formData.get('officePhone'),
+          residencePhone: formData.get('resPhone'),
+          altResidencePhone: formData.get('residencePhone'),
+          mailingAddress: formData.get('mailingAddress'),
+          permanentAddress: formData.get('permanentAddress')
+        },
+        property: {
+          flatOrShop: formData.get('flatOrShop'),
+          floor: formData.get('floor'),
+          approxSize: formData.get('approxSize'),
+          category: formData.get('category')
+        },
+        transaction: {
+          formDate: formData.get('formDate'),
+          buyerName: formData.get('buyerName'),
+          buyerNic: formData.get('buyerNic'),
+          buyerSignature: formData.get('buyerSignature'),
+          sellerName: formData.get('sellerName'),
+          sellerNic: formData.get('sellerNic'),
+          sellerSignature: formData.get('sellerSignature'),
+          witnessName: formData.get('witnessName'),
+          witnessNic: formData.get('witnessNic'),
+          witnessSignature: formData.get('witnessSignature')
+        }
+      };
+
+      console.log('Form payload ready for API:', payload);
+      alert('Form page is ready. Next step: connect this submit action to your Express/MongoDB API.');
+    });
+  </script>
+</body>
+</html>
