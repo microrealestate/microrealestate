@@ -417,7 +417,11 @@ function getTaxStatusMeta(status) {
   }
 }
 
-function UtilitiesHeaderIcon() {
+function UtilitiesHeaderIcon({ isTaxOnly = false }) {
+  if (isTaxOnly) {
+    return <LuLandmark className="size-5 text-muted-foreground" />;
+  }
+
   return (
     <span className="relative inline-flex size-5 items-center justify-center">
       <FaFaucet className="size-full text-muted-foreground" />
@@ -459,7 +463,7 @@ export function UtilitiesPage({ view = 'all' }) {
   const [customCategories, setCustomCategories] = useState([]);
   const [hiddenCategories, setHiddenCategories] = useState([]);
   const [utilitiesTab, setUtilitiesTab] = useState(
-    isTaxOnly ? 'tax-new' : 'bills'
+    isTaxOnly ? 'tax-saved' : 'bills'
   );
   const [savingTaxStatement, setSavingTaxStatement] = useState(false);
   const [parsingTaxUpload, setParsingTaxUpload] = useState(false);
@@ -476,13 +480,19 @@ export function UtilitiesPage({ view = 'all' }) {
     useState('');
   const [activeTaxPaymentStatementId, setActiveTaxPaymentStatementId] =
     useState('');
+  const [activeTaxPaymentBatchStatementId, setActiveTaxPaymentBatchStatementId] =
+    useState('');
   const [activeTaxPaymentEditIndex, setActiveTaxPaymentEditIndex] =
     useState(null);
   const [activeTaxNotesStatementId, setActiveTaxNotesStatementId] =
     useState('');
   const [savingTaxPaymentConfirmation, setSavingTaxPaymentConfirmation] =
     useState(false);
+  const [parsingTaxPaymentUpload, setParsingTaxPaymentUpload] = useState(false);
+  const [batchUploadingTaxPayments, setBatchUploadingTaxPayments] =
+    useState(false);
   const [taxPaymentFile, setTaxPaymentFile] = useState(null);
+  const [taxPaymentBatchFiles, setTaxPaymentBatchFiles] = useState([]);
   const [taxPaymentDraft, setTaxPaymentDraft] = useState(
     getInitialTaxPaymentDraft()
   );
@@ -2380,10 +2390,26 @@ export function UtilitiesPage({ view = 'all' }) {
   };
 
   const handleStartTaxPaymentLog = (statementId) => {
+    setActiveTaxPaymentBatchStatementId('');
     setActiveTaxPaymentStatementId(statementId);
     setActiveTaxPaymentEditIndex(null);
     setTaxPaymentDraft(getInitialTaxPaymentDraft());
     setTaxPaymentFile(null);
+    setTaxPaymentBatchFiles([]);
+  };
+
+  const handleStartTaxPaymentBatchUpload = (statementId) => {
+    setActiveTaxPaymentStatementId('');
+    setActiveTaxPaymentEditIndex(null);
+    setTaxPaymentDraft(getInitialTaxPaymentDraft());
+    setTaxPaymentFile(null);
+    setActiveTaxPaymentBatchStatementId(statementId);
+    setTaxPaymentBatchFiles([]);
+  };
+
+  const handleCancelTaxPaymentBatchUpload = () => {
+    setActiveTaxPaymentBatchStatementId('');
+    setTaxPaymentBatchFiles([]);
   };
 
   const handleStartTaxPaymentEdit = (
@@ -2391,6 +2417,7 @@ export function UtilitiesPage({ view = 'all' }) {
     confirmation,
     confirmationIndex
   ) => {
+    setActiveTaxPaymentBatchStatementId('');
     setActiveTaxPaymentStatementId(statementId);
     setActiveTaxPaymentEditIndex(confirmationIndex);
     setTaxPaymentDraft({
@@ -2402,6 +2429,7 @@ export function UtilitiesPage({ view = 'all' }) {
       notes: String(confirmation?.notes || '')
     });
     setTaxPaymentFile(null);
+    setTaxPaymentBatchFiles([]);
   };
 
   const handleCancelTaxPaymentLog = () => {
@@ -2409,6 +2437,250 @@ export function UtilitiesPage({ view = 'all' }) {
     setActiveTaxPaymentEditIndex(null);
     setTaxPaymentDraft(getInitialTaxPaymentDraft());
     setTaxPaymentFile(null);
+  };
+
+  const mergeExtractedTaxPaymentDraft = (draft, extracted = {}) => {
+    const merged = { ...draft };
+    const parseDateInput = (value) => {
+      const parsed = new Date(value);
+      if (Number.isNaN(parsed.getTime())) {
+        return '';
+      }
+
+      return parsed.toISOString().slice(0, 10);
+    };
+
+    const paidOn = parseDateInput(extracted.paidOn);
+    const paidAmount = Number(extracted.paidAmount);
+    const feeAmount = Number(extracted.feeAmount);
+
+    if (paidOn && !merged.paidOn) {
+      merged.paidOn = paidOn;
+    }
+
+    if (Number.isFinite(paidAmount) && Number(merged.paidAmount || 0) === 0) {
+      merged.paidAmount = String(paidAmount);
+    }
+
+    if (Number.isFinite(feeAmount) && Number(merged.feeAmount || 0) === 0) {
+      merged.feeAmount = String(feeAmount);
+    }
+
+    if (extracted.paymentMethod && !merged.paymentMethod) {
+      merged.paymentMethod = String(extracted.paymentMethod);
+    }
+
+    if (extracted.confirmationNumber && !merged.confirmationNumber) {
+      merged.confirmationNumber = String(extracted.confirmationNumber);
+    }
+
+    if (extracted.notes && !merged.notes) {
+      merged.notes = String(extracted.notes);
+    }
+
+    return merged;
+  };
+
+  const handleAutoFillTaxPaymentFromFile = async () => {
+    if (!taxPaymentFile) {
+      toast.error(t('Choose a confirmation file first'));
+      return;
+    }
+
+    setParsingTaxPaymentUpload(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', taxPaymentFile);
+
+      const response = await apiFetcher().post(
+        '/property-tax-statements/payment-confirmations/parse-upload',
+        formData,
+        {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        }
+      );
+
+      const extracted = response.data?.extracted || {};
+      setTaxPaymentDraft((previous) =>
+        mergeExtractedTaxPaymentDraft(previous, extracted)
+      );
+
+      const warnings = response.data?.warnings || [];
+      if (warnings.length) {
+        toast.warning(warnings.join(' '));
+      } else {
+        toast.success(t('Confirmation file parsed and fields auto-filled'));
+      }
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message ||
+          t('Failed to parse confirmation file for auto-fill')
+      );
+    } finally {
+      setParsingTaxPaymentUpload(false);
+    }
+  };
+
+  const handleBatchUploadTaxPaymentConfirmations = async () => {
+    if (!taxPaymentBatchFiles.length) {
+      toast.error(t('Choose one or more confirmation files first'));
+      return;
+    }
+
+    setBatchUploadingTaxPayments(true);
+    let createdCount = 0;
+    const skippedMissingRequired = [];
+    const skippedMissingAccount = [];
+    const skippedUnmatchedAccount = [];
+    const skippedParse = [];
+
+    try {
+      for (const file of taxPaymentBatchFiles) {
+        let extracted = {};
+
+        try {
+          const parseFormData = new FormData();
+          parseFormData.append('file', file);
+          const parseResponse = await apiFetcher().post(
+            '/property-tax-statements/payment-confirmations/parse-upload',
+            parseFormData,
+            {
+              headers: { 'Content-Type': 'multipart/form-data' }
+            }
+          );
+          extracted = parseResponse.data?.extracted || {};
+        } catch {
+          skippedParse.push(file.name);
+          continue;
+        }
+
+        const extractedAccountNumber = String(
+          extracted.accountNumber || ''
+        ).trim();
+        const paidOn = String(extracted.paidOn || '').slice(0, 10);
+        const paidAmount = Number(extracted.paidAmount || 0);
+        const feeAmount = Number(extracted.feeAmount || 0);
+
+        if (!paidOn || !Number.isFinite(paidAmount) || paidAmount <= 0) {
+          skippedMissingRequired.push(file.name);
+          continue;
+        }
+
+        if (!extractedAccountNumber) {
+          skippedMissingAccount.push(file.name);
+          continue;
+        }
+
+        const normalizedExtractedAccount = extractedAccountNumber
+          .toLowerCase()
+          .replace(/\s+/g, '');
+
+        const matchedStatements = propertyTaxStatements.filter((item) =>
+          String(item.accountNumber || '')
+            .toLowerCase()
+            .replace(/\s+/g, '') === normalizedExtractedAccount
+        );
+
+        if (!matchedStatements.length) {
+          skippedUnmatchedAccount.push(file.name);
+          continue;
+        }
+
+        const targetStatement = [...matchedStatements].sort((left, right) => {
+          const leftYear = Number(
+            String(left.taxYearLabel || '').match(/(20\d{2})/)?.[1] || 0
+          );
+          const rightYear = Number(
+            String(right.taxYearLabel || '').match(/(20\d{2})/)?.[1] || 0
+          );
+          if (leftYear !== rightYear) {
+            return rightYear - leftYear;
+          }
+
+          const leftDate = new Date(
+            left.updatedAt || left.createdAt || 0
+          ).getTime();
+          const rightDate = new Date(
+            right.updatedAt || right.createdAt || 0
+          ).getTime();
+          return rightDate - leftDate;
+        })[0];
+
+        const uploadFormData = new FormData();
+        uploadFormData.append('file', file);
+        uploadFormData.append('targetType', 'property_tax_statement');
+        uploadFormData.append('targetId', targetStatement._id);
+        uploadFormData.append('category', 'tax_payment_confirmation');
+
+        let attachmentIds = [];
+        const uploadResponse = await apiFetcher().post(
+          '/attachments',
+          uploadFormData,
+          {
+            headers: { 'Content-Type': 'multipart/form-data' }
+          }
+        );
+        if (uploadResponse.data?._id) {
+          attachmentIds = [uploadResponse.data._id];
+        }
+
+        await apiFetcher().post(
+          `/property-tax-statements/${targetStatement._id}/payment-confirmations`,
+          {
+            paidOn,
+            paidAmount,
+            feeAmount: Number.isFinite(feeAmount) && feeAmount >= 0 ? feeAmount : 0,
+            paymentMethod: String(extracted.paymentMethod || ''),
+            confirmationNumber: String(extracted.confirmationNumber || ''),
+            notes: String(extracted.notes || ''),
+            attachmentIds
+          }
+        );
+
+        createdCount += 1;
+      }
+
+      if (createdCount > 0) {
+        toast.success(
+          `${createdCount} ${t('payment confirmation(s) uploaded')}`
+        );
+      }
+
+      if (skippedMissingRequired.length) {
+        toast.warning(
+          `${skippedMissingRequired.length} ${t('file(s) skipped due to missing paid date/amount')}`
+        );
+      }
+
+      if (skippedMissingAccount.length) {
+        toast.warning(
+          `${skippedMissingAccount.length} ${t('file(s) skipped because account number could not be extracted')}`
+        );
+      }
+
+      if (skippedUnmatchedAccount.length) {
+        toast.warning(
+          `${skippedUnmatchedAccount.length} ${t('file(s) skipped because account number did not match any saved statement')}`
+        );
+      }
+
+      if (skippedParse.length) {
+        toast.warning(
+          `${skippedParse.length} ${t('file(s) skipped because parsing failed')}`
+        );
+      }
+
+      setTaxPaymentBatchFiles([]);
+      setActiveTaxPaymentBatchStatementId('');
+      await propertyTaxStatementsQuery.refetch();
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message ||
+          t('Failed to batch upload payment confirmations')
+      );
+    } finally {
+      setBatchUploadingTaxPayments(false);
+    }
   };
 
   const buildTaxStatementUpdatePayload = (statement, overrides = {}) => ({
@@ -2708,7 +2980,7 @@ export function UtilitiesPage({ view = 'all' }) {
       <Card className="p-6 space-y-6">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
-            <UtilitiesHeaderIcon />
+            <UtilitiesHeaderIcon isTaxOnly={isTaxOnly} />
             <h1 className="text-2xl font-bold">
               {isTaxOnly ? t('Property taxes') : t('Utilities')}
             </h1>
@@ -4540,6 +4812,57 @@ export function UtilitiesPage({ view = 'all' }) {
                   </div>
                 </div>
 
+                <div className="rounded-md border p-3 space-y-2">
+                  <div className="text-xs font-semibold">
+                    {t('Batch upload payment confirmations')}
+                  </div>
+                  <div className="grid grid-cols-1 gap-2 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] md:items-end">
+                    <div>
+                      <label className="text-xs text-muted-foreground">
+                        {t('Auto-match rule')}
+                      </label>
+                      <div className="w-full px-3 py-2 border rounded-md text-sm bg-muted/20 text-muted-foreground">
+                        {t(
+                          'Each file is matched by parsed account number to saved tax statement account number.'
+                        )}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground">
+                        {t('Confirmation files')}
+                      </label>
+                      <Input
+                        type="file"
+                        multiple
+                        onChange={(event) =>
+                          setTaxPaymentBatchFiles(
+                            Array.from(event.target.files || [])
+                          )
+                        }
+                      />
+                    </div>
+                    <div className="flex gap-2 justify-end md:justify-start">
+                      <Button
+                        variant="outline"
+                        onClick={handleCancelTaxPaymentBatchUpload}
+                      >
+                        {t('Clear')}
+                      </Button>
+                      <Button
+                        onClick={handleBatchUploadTaxPaymentConfirmations}
+                        disabled={
+                          batchUploadingTaxPayments ||
+                          !taxPaymentBatchFiles.length
+                        }
+                      >
+                        {batchUploadingTaxPayments
+                          ? t('Uploading batch...')
+                          : t('Batch upload & auto-fill')}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
                 {!propertyTaxStatements.length ? (
                   <div className="text-sm text-muted-foreground">
                     {t('No property tax statements saved yet')}
@@ -5059,6 +5382,23 @@ export function UtilitiesPage({ view = 'all' }) {
                                           )
                                         }
                                       />
+                                      <div className="pt-1">
+                                        <Button
+                                          type="button"
+                                          variant="ghost"
+                                          size="sm"
+                                          className="h-7 px-2"
+                                          onClick={handleAutoFillTaxPaymentFromFile}
+                                          disabled={
+                                            parsingTaxPaymentUpload ||
+                                            !taxPaymentFile
+                                          }
+                                        >
+                                          {parsingTaxPaymentUpload
+                                            ? t('Auto-filling...')
+                                            : t('Auto-fill from file')}
+                                        </Button>
+                                      </div>
                                     </div>
                                     <div className="md:col-span-3">
                                       <label className="text-xs text-muted-foreground">
@@ -5101,17 +5441,20 @@ export function UtilitiesPage({ view = 'all' }) {
                                     </Button>
                                   </div>
                                 </div>
-                              ) : (
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() =>
-                                    handleStartTaxPaymentLog(statement._id)
-                                  }
-                                >
-                                  {t('Log payment confirmation')}
-                                </Button>
-                              )}
+                              ) : null}
+                              {activeTaxPaymentStatementId !== statement._id ? (
+                                <div className="flex flex-wrap gap-2">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() =>
+                                      handleStartTaxPaymentLog(statement._id)
+                                    }
+                                  >
+                                    {t('Log payment confirmation')}
+                                  </Button>
+                                </div>
+                              ) : null}
                             </div>
 
                             {/* ── Inline notes panel ── */}

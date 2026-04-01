@@ -305,6 +305,13 @@ export default function routes() {
     '/:id/payment-confirmations',
     Middlewares.asyncWrapper(propertyTaxStatementManager.addPaymentConfirmation)
   );
+  propertyTaxStatementsRouter.post(
+    '/payment-confirmations/parse-upload',
+    upload.single('file'),
+    Middlewares.asyncWrapper(
+      propertyTaxStatementManager.parsePaymentConfirmationUpload
+    )
+  );
   propertyTaxStatementsRouter.patch(
     '/:id',
     Middlewares.asyncWrapper(propertyTaxStatementManager.update)

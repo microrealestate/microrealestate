@@ -796,6 +796,72 @@ export function parseTaxStatementFields(text, filename = '') {
   };
 }
 
+export function parsePaymentConfirmationFields(text, filename = '') {
+  const mergedText = `${String(filename || '')}\n${String(text || '')}`;
+  const accountNumber = parseAccountNumberFromText(mergedText);
+
+  const paidOn =
+    toIsoDateString(
+      parseLabeledValue(mergedText, [
+        /paid\s*on\s*[:\-]?\s*([^\n]+)/i,
+        /payment\s*date\s*[:\-]?\s*([^\n]+)/i,
+        /date\s*paid\s*[:\-]?\s*([^\n]+)/i,
+        /transaction\s*date\s*[:\-]?\s*([^\n]+)/i,
+        /receipt\s*date\s*[:\-]?\s*([^\n]+)/i
+      ])
+    ) ||
+    toIsoDateString(
+      mergedText.match(
+        /(\d{4}[/-]\d{1,2}[/-]\d{1,2}|\d{1,2}[/-]\d{1,2}[/-]\d{2,4}|(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\s+\d{1,2},?\s+\d{2,4})/i
+      )?.[1] || ''
+    ) ||
+    null;
+
+  const paidAmount =
+    parseNumberFromText(mergedText, [
+      /paid\s*amount\s*[:$]?\s*([\d,.]+)/i,
+      /amount\s*paid\s*[:$]?\s*([\d,.]+)/i,
+      /payment\s*amount\s*[:$]?\s*([\d,.]+)/i,
+      /total\s*paid\s*[:$]?\s*([\d,.]+)/i,
+      /amount\s*[:$]?\s*([\d,.]+)\s*(?:usd|dollars?)?/i
+    ]) || null;
+
+  const feeAmount =
+    parseNumberFromText(mergedText, [
+      /fee\s*amount\s*[:$]?\s*([\d,.]+)/i,
+      /processing\s*fee\s*[:$]?\s*([\d,.]+)/i,
+      /convenience\s*fee\s*[:$]?\s*([\d,.]+)/i,
+      /service\s*fee\s*[:$]?\s*([\d,.]+)/i
+    ]) || 0;
+
+  const paymentMethod = normalizeText(
+    parseLabeledValue(mergedText, [
+      /payment\s*method\s*[:\-]?\s*([^\n]+)/i,
+      /method\s*[:\-]?\s*([^\n]+)/i,
+      /paid\s*by\s*[:\-]?\s*([^\n]+)/i
+    ])
+  );
+
+  const confirmationNumber = normalizeText(
+    parseLabeledValue(mergedText, [
+      /confirmation\s*(?:number|no\.?|#)?\s*[:\-]?\s*([^\n]+)/i,
+      /reference\s*(?:number|no\.?|#)?\s*[:\-]?\s*([^\n]+)/i,
+      /transaction\s*(?:id|number|no\.?|#)?\s*[:\-]?\s*([^\n]+)/i,
+      /receipt\s*(?:number|no\.?|#)?\s*[:\-]?\s*([^\n]+)/i
+    ])
+  );
+
+  return {
+    accountNumber,
+    paidOn,
+    paidAmount,
+    feeAmount,
+    paymentMethod,
+    confirmationNumber,
+    notes: ''
+  };
+}
+
 function normalizePayload(payload) {
   const taxBeforeDiscount = normalizeNumber(payload.taxBeforeDiscount);
   const delinquentTaxes = normalizeNumber(payload.delinquentTaxes);
@@ -1277,6 +1343,38 @@ export async function parseUpload(req, res) {
       ? []
       : [
           'No tax fields could be extracted. For image-only PDFs/photos, OCR is required and is not enabled in this environment.'
+        ]
+  });
+}
+
+export async function parsePaymentConfirmationUpload(req, res) {
+  if (!req.file) {
+    return res.status(400).json({ message: 'Missing file' });
+  }
+
+  const text = await extractTextFromBuffer(
+    Buffer.from(req.file.buffer || ''),
+    req.file.mimetype,
+    req.file.originalname
+  );
+
+  const extracted = parsePaymentConfirmationFields(
+    text,
+    req.file.originalname || ''
+  );
+  const hasAnyExtractedValue =
+    extracted.accountNumber ||
+    extracted.paidOn ||
+    Number.isFinite(Number(extracted.paidAmount)) ||
+    extracted.paymentMethod ||
+    extracted.confirmationNumber;
+
+  return res.json({
+    extracted,
+    warnings: hasAnyExtractedValue
+      ? []
+      : [
+          'No payment confirmation fields could be extracted. Please review and fill values manually before saving.'
         ]
   });
 }
