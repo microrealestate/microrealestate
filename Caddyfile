@@ -1,0 +1,7 @@
+{
+  # The first directive is the address of your site.
+  # Caddy will automatically provision and renew a TLS certificate for it.
+  ${APP_DOMAIN}:${APP_PORT}
+}
+reverse_proxy gateway:8080
+encode gzip zstd

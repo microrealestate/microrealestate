@@ -476,6 +476,8 @@ export function UtilitiesPage({ view = 'all' }) {
     useState('');
   const [activeTaxPaymentStatementId, setActiveTaxPaymentStatementId] =
     useState('');
+  const [activeTaxPaymentEditIndex, setActiveTaxPaymentEditIndex] =
+    useState(null);
   const [activeTaxNotesStatementId, setActiveTaxNotesStatementId] =
     useState('');
   const [savingTaxPaymentConfirmation, setSavingTaxPaymentConfirmation] =
@@ -2379,19 +2381,93 @@ export function UtilitiesPage({ view = 'all' }) {
 
   const handleStartTaxPaymentLog = (statementId) => {
     setActiveTaxPaymentStatementId(statementId);
+    setActiveTaxPaymentEditIndex(null);
     setTaxPaymentDraft(getInitialTaxPaymentDraft());
+    setTaxPaymentFile(null);
+  };
+
+  const handleStartTaxPaymentEdit = (
+    statementId,
+    confirmation,
+    confirmationIndex
+  ) => {
+    setActiveTaxPaymentStatementId(statementId);
+    setActiveTaxPaymentEditIndex(confirmationIndex);
+    setTaxPaymentDraft({
+      paidOn: String(confirmation?.paidOn || '').slice(0, 10),
+      paidAmount: String(confirmation?.paidAmount ?? ''),
+      feeAmount: String(confirmation?.feeAmount ?? ''),
+      paymentMethod: String(confirmation?.paymentMethod || ''),
+      confirmationNumber: String(confirmation?.confirmationNumber || ''),
+      notes: String(confirmation?.notes || '')
+    });
     setTaxPaymentFile(null);
   };
 
   const handleCancelTaxPaymentLog = () => {
     setActiveTaxPaymentStatementId('');
+    setActiveTaxPaymentEditIndex(null);
     setTaxPaymentDraft(getInitialTaxPaymentDraft());
     setTaxPaymentFile(null);
   };
 
+  const buildTaxStatementUpdatePayload = (statement, overrides = {}) => ({
+    propertyId: statement.propertyId,
+    taxYearLabel: statement.taxYearLabel,
+    periodStart: statement.periodStart || null,
+    periodEnd: statement.periodEnd || null,
+    county: statement.county || '',
+    accountNumber: statement.accountNumber || '',
+    mapNumber: statement.mapNumber || '',
+    rmvLandLastYear: Number(statement.rmvLandLastYear || 0),
+    rmvLandThisYear: Number(statement.rmvLandThisYear || 0),
+    rmvBuildingLastYear: Number(statement.rmvBuildingLastYear || 0),
+    rmvBuildingThisYear: Number(statement.rmvBuildingThisYear || 0),
+    rmvTotalLastYear: Number(statement.rmvTotalLastYear || 0),
+    rmvTotalThisYear: Number(statement.rmvTotalThisYear || 0),
+    assessedValueLastYear: Number(statement.assessedValueLastYear || 0),
+    assessedValueThisYear: Number(statement.assessedValueThisYear || 0),
+    propertyTaxesLastYear: Number(statement.propertyTaxesLastYear || 0),
+    propertyTaxesThisYear: Number(statement.propertyTaxesThisYear || 0),
+    taxBeforeDiscount: Number(statement.taxBeforeDiscount || 0),
+    delinquentTaxes: Number(statement.delinquentTaxes || 0),
+    totalAfterDiscount: Number(statement.totalAfterDiscount || 0),
+    landLeasedPercentage: Number(statement.landLeasedPercentage || 0),
+    buildingUnitSplits: Array.isArray(statement.buildingUnitSplits)
+      ? statement.buildingUnitSplits
+      : [],
+    landUnitSplits: Array.isArray(statement.landUnitSplits)
+      ? statement.landUnitSplits
+      : [],
+    estimatedIncreasePercentage: Number(statement.estimatedIncreasePercentage || 0),
+    priorYearEstimatedTotal:
+      statement.priorYearEstimatedTotal === null ||
+      statement.priorYearEstimatedTotal === undefined
+        ? null
+        : Number(statement.priorYearEstimatedTotal),
+    notes: statement.notes || '',
+    attachmentIds: Array.isArray(statement.attachmentIds)
+      ? statement.attachmentIds
+      : [],
+    paymentConfirmations: Array.isArray(statement.paymentConfirmations)
+      ? statement.paymentConfirmations
+      : [],
+    ...overrides
+  });
+
   const handleSaveTaxPaymentConfirmation = async (statement) => {
     const paidAmount = Number(taxPaymentDraft.paidAmount);
     const feeAmount = Number(taxPaymentDraft.feeAmount || 0);
+    const isEditing =
+      activeTaxPaymentStatementId === statement._id &&
+      Number.isInteger(activeTaxPaymentEditIndex) &&
+      activeTaxPaymentEditIndex >= 0;
+    const paymentConfirmations = Array.isArray(statement.paymentConfirmations)
+      ? statement.paymentConfirmations
+      : [];
+    const editingConfirmation = isEditing
+      ? paymentConfirmations[activeTaxPaymentEditIndex]
+      : null;
 
     if (!taxPaymentDraft.paidOn) {
       toast.error(t('Paid date is required'));
@@ -2410,7 +2486,9 @@ export function UtilitiesPage({ view = 'all' }) {
 
     setSavingTaxPaymentConfirmation(true);
     try {
-      let attachmentIds = [];
+      let attachmentIds = Array.isArray(editingConfirmation?.attachmentIds)
+        ? editingConfirmation.attachmentIds
+        : [];
 
       if (taxPaymentFile) {
         const formData = new FormData();
@@ -2428,30 +2506,65 @@ export function UtilitiesPage({ view = 'all' }) {
         );
 
         if (uploadResponse.data?._id) {
-          attachmentIds = [uploadResponse.data._id];
+          attachmentIds = Array.from(
+            new Set([...attachmentIds, uploadResponse.data._id])
+          );
         }
       }
 
-      await apiFetcher().post(
-        `/property-tax-statements/${statement._id}/payment-confirmations`,
-        {
-          paidOn: taxPaymentDraft.paidOn,
-          paidAmount,
-          feeAmount,
-          paymentMethod: taxPaymentDraft.paymentMethod,
-          confirmationNumber: taxPaymentDraft.confirmationNumber,
-          notes: taxPaymentDraft.notes,
-          attachmentIds
-        }
-      );
+      if (isEditing) {
+        const updatedConfirmations = paymentConfirmations.map(
+          (confirmation, index) => {
+            if (index !== activeTaxPaymentEditIndex) {
+              return confirmation;
+            }
 
-      toast.success(t('Payment confirmation logged'));
+            return {
+              ...confirmation,
+              paidOn: taxPaymentDraft.paidOn,
+              paidAmount,
+              feeAmount,
+              paymentMethod: taxPaymentDraft.paymentMethod,
+              confirmationNumber: taxPaymentDraft.confirmationNumber,
+              notes: taxPaymentDraft.notes,
+              attachmentIds
+            };
+          }
+        );
+
+        await apiFetcher().patch(
+          `/property-tax-statements/${statement._id}`,
+          buildTaxStatementUpdatePayload(statement, {
+            paymentConfirmations: updatedConfirmations
+          })
+        );
+
+        toast.success(t('Payment confirmation updated'));
+      } else {
+        await apiFetcher().post(
+          `/property-tax-statements/${statement._id}/payment-confirmations`,
+          {
+            paidOn: taxPaymentDraft.paidOn,
+            paidAmount,
+            feeAmount,
+            paymentMethod: taxPaymentDraft.paymentMethod,
+            confirmationNumber: taxPaymentDraft.confirmationNumber,
+            notes: taxPaymentDraft.notes,
+            attachmentIds
+          }
+        );
+
+        toast.success(t('Payment confirmation logged'));
+      }
+
       handleCancelTaxPaymentLog();
       await propertyTaxStatementsQuery.refetch();
     } catch (error) {
       toast.error(
         error?.response?.data?.message ||
-          t('Failed to log payment confirmation')
+          (isEditing
+            ? t('Failed to update payment confirmation')
+            : t('Failed to log payment confirmation'))
       );
     } finally {
       setSavingTaxPaymentConfirmation(false);
@@ -4782,6 +4895,20 @@ export function UtilitiesPage({ view = 'all' }) {
                                               {t('by')} {confirmation.createdBy}
                                             </span>
                                           ) : null}
+                                          <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-6 px-2"
+                                            onClick={() =>
+                                              handleStartTaxPaymentEdit(
+                                                statement._id,
+                                                confirmation,
+                                                confirmationIndex
+                                              )
+                                            }
+                                          >
+                                            {t('Edit')}
+                                          </Button>
                                         </div>
                                         {confirmation.notes ? (
                                           <div className="text-muted-foreground italic">
@@ -4833,7 +4960,9 @@ export function UtilitiesPage({ view = 'all' }) {
                               {activeTaxPaymentStatementId === statement._id ? (
                                 <div className="rounded-md border p-3 space-y-2">
                                   <div className="text-xs font-semibold">
-                                    {t('Log payment confirmation')}
+                                    {Number.isInteger(activeTaxPaymentEditIndex)
+                                      ? t('Edit payment confirmation')
+                                      : t('Log payment confirmation')}
                                   </div>
                                   <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
                                     <div>
@@ -4918,7 +5047,9 @@ export function UtilitiesPage({ view = 'all' }) {
                                     </div>
                                     <div>
                                       <label className="text-xs text-muted-foreground">
-                                        {t('Confirmation file')}
+                                        {Number.isInteger(activeTaxPaymentEditIndex)
+                                          ? t('Add confirmation file')
+                                          : t('Confirmation file')}
                                       </label>
                                       <Input
                                         type="file"
@@ -4962,7 +5093,11 @@ export function UtilitiesPage({ view = 'all' }) {
                                     >
                                       {savingTaxPaymentConfirmation
                                         ? t('Saving...')
-                                        : t('Save confirmation')}
+                                        : Number.isInteger(
+                                              activeTaxPaymentEditIndex
+                                            )
+                                          ? t('Update confirmation')
+                                          : t('Save confirmation')}
                                     </Button>
                                   </div>
                                 </div>
