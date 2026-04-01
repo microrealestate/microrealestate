@@ -488,6 +488,8 @@ export function UtilitiesPage({ view = 'all' }) {
     useState('');
   const [savingTaxPaymentConfirmation, setSavingTaxPaymentConfirmation] =
     useState(false);
+  const [deletingTaxPaymentConfirmationKey, setDeletingTaxPaymentConfirmationKey] =
+    useState('');
   const [parsingTaxPaymentUpload, setParsingTaxPaymentUpload] = useState(false);
   const [batchUploadingTaxPayments, setBatchUploadingTaxPayments] =
     useState(false);
@@ -2840,6 +2842,55 @@ export function UtilitiesPage({ view = 'all' }) {
       );
     } finally {
       setSavingTaxPaymentConfirmation(false);
+    }
+  };
+
+  const handleDeleteTaxPaymentConfirmation = async (
+    statement,
+    confirmationIndex
+  ) => {
+    const paymentConfirmations = Array.isArray(statement.paymentConfirmations)
+      ? statement.paymentConfirmations
+      : [];
+
+    if (
+      confirmationIndex < 0 ||
+      confirmationIndex >= paymentConfirmations.length
+    ) {
+      return;
+    }
+
+    const confirmationKey = `${statement._id}-${confirmationIndex}`;
+    setDeletingTaxPaymentConfirmationKey(confirmationKey);
+    try {
+      const updatedConfirmations = paymentConfirmations.filter(
+        (_, index) => index !== confirmationIndex
+      );
+
+      await apiFetcher().patch(
+        `/property-tax-statements/${statement._id}`,
+        buildTaxStatementUpdatePayload(statement, {
+          paymentConfirmations: updatedConfirmations
+        })
+      );
+
+      if (
+        activeTaxPaymentStatementId === statement._id &&
+        Number.isInteger(activeTaxPaymentEditIndex) &&
+        activeTaxPaymentEditIndex === confirmationIndex
+      ) {
+        handleCancelTaxPaymentLog();
+      }
+
+      toast.success(t('Payment confirmation deleted'));
+      await propertyTaxStatementsQuery.refetch();
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message ||
+          t('Failed to delete payment confirmation')
+      );
+    } finally {
+      setDeletingTaxPaymentConfirmationKey('');
     }
   };
 
@@ -5231,6 +5282,26 @@ export function UtilitiesPage({ view = 'all' }) {
                                             }
                                           >
                                             {t('Edit')}
+                                          </Button>
+                                          <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-6 px-2 text-destructive hover:text-destructive"
+                                            onClick={() =>
+                                              handleDeleteTaxPaymentConfirmation(
+                                                statement,
+                                                confirmationIndex
+                                              )
+                                            }
+                                            disabled={
+                                              deletingTaxPaymentConfirmationKey ===
+                                              `${statement._id}-${confirmationIndex}`
+                                            }
+                                          >
+                                            {deletingTaxPaymentConfirmationKey ===
+                                            `${statement._id}-${confirmationIndex}`
+                                              ? t('Deleting...')
+                                              : t('Delete')}
                                           </Button>
                                         </div>
                                         {confirmation.notes ? (
