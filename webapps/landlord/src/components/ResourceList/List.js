@@ -23,14 +23,16 @@ export default function List({
   filters,
   filterFn,
   renderActions,
-  renderList
+  renderList,
+  pageSize: pageSizeProp = 5,
+  onPageSizeChange
 }) {
-  const pageSize = 21;
+  const [pageSize, setPageSize] = useState(pageSizeProp);
   const [pageIndex, setPageIndex] = useState(1);
   const [filteredData, setFilteredData] = useState([]);
   const chunks = useMemo(
     () => _computeChunks(pageSize, filteredData),
-    [filteredData]
+    [pageSize, filteredData]
   );
 
   const handleSearch = useCallback(
@@ -48,6 +50,12 @@ export default function List({
     setPageIndex(pageIndex);
   }, []);
 
+  const handlePageSizeChange = useCallback((newSize) => {
+    setPageSize(newSize);
+    onPageSizeChange?.(newSize);
+    setPageIndex(1); // Reset to first page when page size changes
+  }, [onPageSizeChange]);
+
   return (
     <div className="flex flex-col gap-8">
       <Header
@@ -61,6 +69,8 @@ export default function List({
       <Pagination
         chunks={chunks}
         data={filteredData}
+        pageSize={pageSize}
+        onPageSizeChange={handlePageSizeChange}
         onChange={handlePageChange}
       />
     </div>

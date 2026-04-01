@@ -102,7 +102,7 @@ export default function PropertyListItem({
                 {isParent && (
                   <span className="text-xs font-normal text-muted-foreground ml-2">
                     ({childProperties.length}{' '}
-                    {childProperties.length === 1 ? t('unit') : t('units')})
+                    {childProperties.length === 1 ? t('property') : t('properties')})
                   </span>
                 )}
               </Button>
@@ -153,7 +153,7 @@ export default function PropertyListItem({
       {isParent && isExpanded && childProperties.length > 0 && (
         <div className="mt-4 pt-4 border-t">
           <h4 className="text-sm font-semibold text-muted-foreground mb-3 px-6">
-            Sub Properties
+            {t('Child Properties')}
           </h4>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 px-6 pb-4">
             {childProperties.map((child) => (

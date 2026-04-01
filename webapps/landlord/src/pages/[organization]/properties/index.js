@@ -1,5 +1,5 @@
 import { fetchProperties, QueryKeys } from '../../../utils/restcalls';
-import { useCallback, useContext, useState } from 'react';
+import { useCallback, useContext, useMemo, useState } from 'react';
 import { Button } from '../../../components/ui/button';
 import { List } from '../../../components/ResourceList';
 import {
@@ -28,40 +28,117 @@ function CityRentRatesIcon() {
   );
 }
 
-function _filterData(data = [], filters) {
-  let filteredItems = data;
+function _groupPropertiesByHierarchy(data = []) {
+  // Create a map of all properties by ID for quick lookup
+  const propertyMap = data.reduce((acc, property) => {
+    acc[property._id] = property;
+    return acc;
+  }, {});
+
+  // Identify parent IDs (all unique parentPropertyId values)
+  const parentIds = new Set();
+  data.forEach((property) => {
+    if (property.parentPropertyId) {
+      const parentId =
+        typeof property.parentPropertyId === 'object' &&
+        property.parentPropertyId._id
+          ? property.parentPropertyId._id
+          : property.parentPropertyId;
+      parentIds.add(parentId);
+    }
+  });
+
+  // Create a map of children by parent ID
+  const childrenByParent = data.reduce((acc, property) => {
+    if (property.parentPropertyId) {
+      const parentId =
+        typeof property.parentPropertyId === 'object' &&
+        property.parentPropertyId._id
+          ? property.parentPropertyId._id
+          : property.parentPropertyId;
+
+      if (!acc[parentId]) {
+        acc[parentId] = [];
+      }
+      acc[parentId].push(property);
+    }
+    return acc;
+  }, {});
+
+  // Separate properties into groups:
+  // 1. Parent properties with their children (as a single group)
+  // 2. Standalone properties (no parent, no children)
+  const parentProperties = data.filter((p) => parentIds.has(p._id));
+  const standaloneProperties = data.filter(
+    (p) => !parentIds.has(p._id) && !p.parentPropertyId
+  );
+
+  // Create groups where each parent + its children = one group
+  const groups = parentProperties.map((parentProperty) => ({
+    type: 'parent-group',
+    parent: parentProperty,
+    children: childrenByParent[parentProperty._id] || []
+  }));
+
+  // Add standalone properties as individual groups
+  standaloneProperties.forEach((property) => {
+    groups.push({
+      type: 'standalone',
+      parent: property,
+      children: []
+    });
+  });
+
+  return groups;
+}
+
+function _filterGroups(groups = [], filters) {
+  let filteredGroups = groups;
+  
+  // Filter by status and type
   if (filters.statuses?.length) {
     const typeFilters = filters.statuses.filter(
       (status) => !['vacant', 'occupied'].includes(status)
     );
-    if (typeFilters.length) {
-      filteredItems = filteredItems.filter(({ type }) =>
-        typeFilters.includes(type)
-      );
-    }
-
     const statusFilters = filters.statuses.filter((status) =>
       ['vacant', 'occupied'].includes(status)
     );
-    if (statusFilters.length) {
-      filteredItems = filteredItems.filter(({ status }) =>
-        statusFilters.includes(status)
-      );
-    }
+
+    filteredGroups = filteredGroups.filter((group) => {
+      const parent = group.parent;
+      
+      // Check type filter
+      if (typeFilters.length && !typeFilters.includes(parent.type)) {
+        return false;
+      }
+
+      // Check status filter
+      if (statusFilters.length && !statusFilters.includes(parent.status)) {
+        return false;
+      }
+
+      return true;
+    });
   }
 
+  // Filter by search text
   if (filters.searchText) {
     const regExp = /\s|\.|-/gi;
     const cleanedSearchText = filters.searchText
       .toLowerCase()
       .replace(regExp, '');
 
-    filteredItems = filteredItems.filter(
-      ({ name }) =>
-        name.replace(regExp, '').toLowerCase().indexOf(cleanedSearchText) != -1
+    filteredGroups = filteredGroups.filter(({ parent }) =>
+      parent.name.replace(regExp, '').toLowerCase().indexOf(cleanedSearchText) !=
+      -1
     );
   }
-  return filteredItems;
+
+  return filteredGroups;
+}
+
+function _filterData(data = [], filters) {
+  return _filterGroups(data, filters);
 }
 
 function Properties() {
@@ -74,6 +151,13 @@ function Properties() {
   });
 
   const [openNewPropertyDialog, setOpenNewPropertyDialog] = useState(false);
+  const [pageSize, setPageSize] = useState(5);
+
+  // Group properties into hierarchy groups (parent + children as units)
+  const groupedData = useMemo(
+    () => (data ? _groupPropertiesByHierarchy(data) : []),
+    [data]
+  );
 
   const handleAction = useCallback(() => {
     setOpenNewPropertyDialog(true);
@@ -86,7 +170,9 @@ function Properties() {
   return (
     <Page title={t('Properties')} loading={isLoading} dataCy="propertiesPage">
       <List
-        data={data}
+        data={groupedData}
+        pageSize={pageSize}
+        onPageSizeChange={setPageSize}
         filters={[
           { id: 'vacant', label: t('Vacant') },
           { id: 'occupied', label: t('Rented') },

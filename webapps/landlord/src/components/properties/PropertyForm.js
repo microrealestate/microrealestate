@@ -70,7 +70,7 @@ const validationSchema = Yup.object().shape({
   rentMedianSqftYear: Yup.number().min(0).nullable(),
   rentHighSqftYear: Yup.number().min(0).nullable(),
 
-  // NEW OPTIONAL FIELD FOR BUILDING RELATIONSHIP
+  // NEW OPTIONAL FIELD FOR PARENT/CHILD PROPERTY RELATIONSHIP
   parentPropertyId: Yup.string().nullable()
 });
 
@@ -152,7 +152,7 @@ const PropertyForm = observer(({ onSubmit }) => {
       // ORIGINAL RENT FIELD (BACKED BY price ON THE BACKEND)
       rent: store.property.selected?.price || '',
 
-      // NEW FIELD — BUILDING / UNIT RELATIONSHIP
+      // NEW FIELD — PARENT/CHILD PROPERTY RELATIONSHIP
       parentPropertyId: store.property.selected?.parentPropertyId || '',
 
       // NEW FIELDS — RENT RANGE IN $ / SQ FT / YEAR
@@ -200,30 +200,27 @@ const PropertyForm = observer(({ onSubmit }) => {
   ]);
 
   /*
-    NEW — BUILDING OPTIONS
+    NEW — PARENT PROPERTY OPTIONS
 
-    - FILTER ALL PROPERTIES TO ONLY KEEP type === 'building'
-    - USED FOR parentPropertyId WHEN CREATING / EDITING UNITS
+    - INCLUDE ALL PROPERTIES THAT CAN BE PARENTS
+    - USED FOR parentPropertyId WHEN CREATING / EDITING CHILD PROPERTIES
   */
-  const buildingOptions = useMemo(
+  const parentPropertyOptions = useMemo(
     () =>
       store.property.items
-        .filter((p) => p.type === 'building')
-        .map((b) => ({
-          id: b._id,
-          value: b._id,
-          label: b.name
+        .map((p) => ({
+          id: p._id,
+          value: p._id,
+          label: `${p.name} (${p.type})`
         })),
     [store.property.items]
   );
 
-  // WHICH TYPES SHOULD HAVE A "BUILDING" DROPDOWN?
-  const unitTypes = useMemo(
-    () =>
-      propertyTypes
-        .map((type) => type.value)
-        .filter((type) => type !== 'building'),
-    [propertyTypes]
+  // WHICH TYPES CAN HAVE A PARENT PROPERTY?
+  // ALL PROPERTY TYPES CAN NOW HAVE A PARENT PROPERTY
+  const hasParentPropertyOption = useMemo(
+    () => true,
+    []
   );
 
   const handleSubmit = (formValues) => {
@@ -242,7 +239,6 @@ const PropertyForm = observer(({ onSubmit }) => {
       onSubmit={handleSubmit}
     >
       {({ values, isSubmitting }) => {
-        const isUnit = unitTypes.includes(values.type);
         const surfaceSqm = values.surface ? sqftToSqm(values.surface) : 0;
 
         return (
@@ -259,19 +255,19 @@ const PropertyForm = observer(({ onSubmit }) => {
               <TextField label={t('Description')} name="description" />
 
               {/*
-                NEW SECTION — BUILDING RELATIONSHIP
+                NEW SECTION — PARENT PROPERTY RELATIONSHIP
 
-                - ONLY SHOWN WHEN type IS ONE OF THE UNIT TYPES
-                - LETS YOU ASSOCIATE THIS PROPERTY WITH A PARENT BUILDING
+                - ALWAYS SHOWN
+                - LETS YOU ASSOCIATE THIS PROPERTY WITH A PARENT PROPERTY OF ANY TYPE
               */}
-              {isUnit && (
+              {hasParentPropertyOption && (
                 <div className="sm:flex sm:gap-2 mt-2">
                   <SelectField
-                    label={t('Building')}
+                    label={t('Parent Property')}
                     name="parentPropertyId"
                     values={[
-                      { id: '', value: '', label: t('No building') },
-                      ...buildingOptions
+                      { id: '', value: '', label: t('No parent') },
+                      ...parentPropertyOptions
                     ]}
                   />
                 </div>

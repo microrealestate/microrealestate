@@ -390,9 +390,9 @@ export function toProperty(inputProperty, inputOccupant, inputOccupants) {
     digicode: inputProperty.digicode,
     address: inputProperty.address,
 
-    // NEW FIELD — BUILDING / UNIT RELATIONSHIP
-    // IF SET → THIS PROPERTY BELONGS TO ANOTHER PROPERTY (LIKELY A BUILDING)
-    // IF NULL → THIS IS A BUILDING OR STANDALONE PROPERTY
+    // NEW FIELD — PARENT/CHILD PROPERTY RELATIONSHIP
+    // IF SET → THIS PROPERTY BELONGS TO ANOTHER PROPERTY (PARENT)
+    // IF NULL → THIS IS A PARENT OR STANDALONE PROPERTY
     parentPropertyId: inputProperty.parentPropertyId,
 
     // ORIGINAL FIELD — CURRENT RENT PRICE
