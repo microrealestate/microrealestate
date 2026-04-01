@@ -49,7 +49,7 @@ function Shortcuts({ firstConnection = false, className }) {
   //}, [router]);
 
   const handleCreateContract = useCallback(() => {
-    window.location.href = '/ale_deed_form_page.html';
+    window.location.href = '/sale_deed_form_page.html';
   }, []);
 
   const handleAddProperty = useCallback(() => {
