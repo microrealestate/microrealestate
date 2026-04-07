@@ -201,7 +201,7 @@ export default function () {
 
   // parse locale
   landlordRouter.use(
-    locale(['fr-FR', 'en-US', 'pt-BR', 'de-DE', 'es-CO'], 'en-US')
+    locale(['fr-FR', 'en-US', 'pt-BR', 'de-DE', 'es-CO', 'ru-RU'], 'en-US')
   );
 
   if (SIGNUP) {

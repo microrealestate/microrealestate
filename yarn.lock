@@ -2028,8 +2028,8 @@ __metadata:
     formik: 2.2.9
     moment: 2.29.4
     next: 14.2.26
-    next-translate: 2.6.2
-    next-translate-plugin: 2.6.2
+    next-translate: 3.1.1
+    next-translate-plugin: 3.1.1
     prop-types: 15.8.1
     react: 18.2.0
     react-dom: 18.2.0
@@ -2166,8 +2166,8 @@ __metadata:
     nanoid: 5.1.0
     next: 14.2.26
     next-themes: 0.3.0
-    next-translate: 2.6.2
-    next-translate-plugin: 2.6.2
+    next-translate: 3.1.1
+    next-translate-plugin: 3.1.1
     pdfjs-dist: 3.11.174
     pigeon-maps: 0.21.3
     postcss: 8.5.3
@@ -13153,24 +13153,24 @@ __metadata:
   languageName: node
   linkType: hard
 
-"next-translate-plugin@npm:2.6.2":
-  version: 2.6.2
-  resolution: "next-translate-plugin@npm:2.6.2"
+"next-translate-plugin@npm:3.1.1":
+  version: 3.1.1
+  resolution: "next-translate-plugin@npm:3.1.1"
   dependencies:
-    typescript: 4.5.2
+    typescript: 5.9.3
   peerDependencies:
     next-translate: ">= 2.4.1"
-  checksum: ea35c944530dca2a1156ae981e2d29ce0abe45a6bc621aea984cbbcd12bb27caf3531eb3d8c5f0ca98f89dd055c7771f1802e39de371da05ccbeed29a6680173
+  checksum: 43a518a2379a566cef7aa4c5d874dcb5e10a1bc38e37edd4d674e9145680a496f697f32929650fad24f792fcffddcb4b62d523503696f371c65a4abe01b22dee
   languageName: node
   linkType: hard
 
-"next-translate@npm:2.6.2":
-  version: 2.6.2
-  resolution: "next-translate@npm:2.6.2"
+"next-translate@npm:3.1.1":
+  version: 3.1.1
+  resolution: "next-translate@npm:3.1.1"
   peerDependencies:
     next: ">= 13.2.5"
     react: ">= 18.0.0"
-  checksum: 99508f853b40e4c9de5bb26d7409869f512d1818d567edf194408908c695ce8ded5b5aca5224e1fb54e2e51da2174e7d243e07c2800ce1b2d47b90a68394823d
+  checksum: f63f682d86795c84fc97d326674f835aac21d6ff2205dd5515471d3308ebb39737476fdf601cc1627ee85dd377900246e48d693bac183f915be51d5b480240b2
   languageName: node
   linkType: hard
 

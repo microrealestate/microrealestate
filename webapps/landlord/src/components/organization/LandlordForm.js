@@ -76,6 +76,7 @@ const currencies = [
 const languages = [
   { id: 'none', label: '', value: '' },
   { id: 'pt-BR', label: 'Brasileiro', value: 'pt-BR' },
+  { id: 'ru-RU', label: 'Русский (Россия)', value: 'ru-RU' },
   { id: 'en', label: 'English', value: 'en' },
   { id: 'fr-FR', label: 'Français (France)', value: 'fr-FR' },
   { id: 'de-DE', label: 'Deutsch (Deutschland)', value: 'de-DE' },
