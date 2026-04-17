@@ -49,19 +49,17 @@ function Settings() {
             description={t('Your organizations')}
           />
           {store.user.isAdministrator ? (
-            <SettingLink
-              href="/settings/thirdparties"
-              title={t('Email server')}
-              description={t(
-                'Configure the email server used for invitations, password reset, and tenant communication'
-              )}
-            />
-          ) : null}
-          {store.user.isAdministrator ? (
             <>
               <div className="text-lg text-muted-foreground mt-6">
                 {t('Organization information')}
               </div>
+              <SettingLink
+                href="/settings/email-server"
+                title={t('Email server')}
+                description={t(
+                  'Configure the email server used for invitations, password reset, and tenant communication'
+                )}
+              />
               <SettingLink
                 href="/settings/landlord"
                 title={t('Landlord')}

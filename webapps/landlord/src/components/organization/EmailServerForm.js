@@ -125,62 +125,32 @@ const validationSchema = Yup.object().shape({
   mailgun_domain: Yup.string().when('emailDeliveryServiceName', {
     is: 'mailgun',
     then: Yup.string().required()
-  }),
-
-  fromEmail: Yup.string().email().when('emailDeliveryServiceActive', {
-    is: true,
-    then: Yup.string().email().required()
-  }),
-  replyToEmail: Yup.string().email().when('emailDeliveryServiceActive', {
-    is: true,
-    then: Yup.string().email().required()
-  }),
-
-  b2Active: Yup.boolean().required(),
-  keyId: Yup.string().when('b2Active', {
-    is: true,
-    then: Yup.string().required()
-  }),
-  applicationKey: Yup.string().when('b2Active', {
-    is: true,
-    then: Yup.string().required()
-  }),
-  endpoint: Yup.string().when('b2Active', {
-    is: true,
-    then: Yup.string().required()
-  }),
-  bucket: Yup.string().when('b2Active', {
-    is: true,
-    then: Yup.string().required()
   })
 });
 
-export default function ThirdPartiesForm({ organization, excludeEmailSettings = false }) {
+function EmailServerForm({ organization }) {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const queryClient = useQueryClient();
-  const { mutateAsync, isError } = useMutation({
-    mutationFn: updateOrganization,
-    onSuccess: (updatedOrganization) => {
-      updateStoreOrganization(store, updatedOrganization);
-      queryClient.invalidateQueries({ queryKey: [QueryKeys.ORGANIZATIONS] });
-    }
-  });
-  const {
-    mutateAsync: sendTestEmailMutateAsync,
-    isLoading: isSendingTestEmail
-  } = useMutation({
-    mutationFn: sendEmailServerTest
+
+  const { mutateAsync } = useMutation({
+    mutationFn: updateOrganization
   });
 
-  if (isError) {
-    toast.error(t('Error updating organization'));
-  }
+  const { mutateAsync: sendTestEmailMutateAsync, isPending: isSendingTestEmail } =
+    useMutation({
+      mutationFn: sendEmailServerTest,
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: [QueryKeys.ORGANIZATIONS]
+        });
+      }
+    });
 
   const initialValues = useMemo(() => {
-    let emailDeliveryServiceName;
-    let fromEmail = organization.contacts?.[0]?.email || '';
-    let replyToEmail = organization.contacts?.[0]?.email || '';
+    let emailDeliveryServiceName = 'gmail';
+    let fromEmail = '';
+    let replyToEmail = '';
 
     if (organization.thirdParties?.gmail?.selected) {
       emailDeliveryServiceName = 'gmail';
@@ -245,56 +215,9 @@ export default function ThirdPartiesForm({ organization, excludeEmailSettings = 
 
       fromEmail,
       replyToEmail,
-      testEmailRecipient: '',
-
-      b2Active: !!organization.thirdParties?.b2?.keyId,
-      keyId: organization.thirdParties?.b2?.keyId,
-      applicationKey: organization.thirdParties?.b2?.applicationKey,
-      endpoint: organization.thirdParties?.b2?.endpoint,
-      bucket: organization.thirdParties?.b2?.bucket
+      testEmailRecipient: ''
     };
-  }, [
-    organization.contacts,
-    organization.thirdParties?.b2?.applicationKey,
-    organization.thirdParties?.b2?.bucket,
-    organization.thirdParties?.b2?.endpoint,
-    organization.thirdParties?.b2?.keyId,
-    organization.thirdParties?.gmail?.appPassword,
-    organization.thirdParties?.gmail?.email,
-    organization.thirdParties?.gmail?.fromEmail,
-    organization.thirdParties?.gmail?.replyToEmail,
-    organization.thirdParties?.gmail?.selected,
-    organization.thirdParties?.graph?.tenantId,
-    organization.thirdParties?.graph?.clientId,
-    organization.thirdParties?.graph?.clientSecret,
-    organization.thirdParties?.graph?.senderEmail,
-    organization.thirdParties?.graph?.fromEmail,
-    organization.thirdParties?.graph?.replyToEmail,
-    organization.thirdParties?.graph?.selected,
-    organization.thirdParties?.exchange?.authentication,
-    organization.thirdParties?.exchange?.fromEmail,
-    organization.thirdParties?.exchange?.password,
-    organization.thirdParties?.exchange?.port,
-    organization.thirdParties?.exchange?.replyToEmail,
-    organization.thirdParties?.exchange?.secure,
-    organization.thirdParties?.exchange?.selected,
-    organization.thirdParties?.exchange?.server,
-    organization.thirdParties?.exchange?.username,
-    organization.thirdParties?.mailgun?.apiKey,
-    organization.thirdParties?.mailgun?.domain,
-    organization.thirdParties?.mailgun?.fromEmail,
-    organization.thirdParties?.mailgun?.replyToEmail,
-    organization.thirdParties?.mailgun?.selected,
-    organization.thirdParties?.smtp?.authentication,
-    organization.thirdParties?.smtp?.fromEmail,
-    organization.thirdParties?.smtp?.password,
-    organization.thirdParties?.smtp?.port,
-    organization.thirdParties?.smtp?.replyToEmail,
-    organization.thirdParties?.smtp?.secure,
-    organization.thirdParties?.smtp?.selected,
-    organization.thirdParties?.smtp?.server,
-    organization.thirdParties?.smtp?.username
-  ]);
+  }, [organization.thirdParties]);
 
   const onSubmit = useCallback(
     async ({
@@ -321,96 +244,73 @@ export default function ThirdPartiesForm({ organization, excludeEmailSettings = 
       mailgun_apiKey,
       mailgun_domain,
       fromEmail,
-      replyToEmail,
-      b2Active,
-      keyId,
-      applicationKey,
-      endpoint,
-      bucket
+      replyToEmail
     }) => {
       const formData = { thirdParties: {} };
-      
-      // Only handle email settings if they're not excluded from the form
-      if (!excludeEmailSettings) {
-        if (emailDeliveryServiceActive) {
-          formData.thirdParties.gmail = {
-            selected: emailDeliveryServiceName === 'gmail',
-            email: gmail_email,
-            appPassword: gmail_appPassword,
-            appPasswordUpdated:
-              gmail_appPassword !== initialValues.gmail_appPassword,
-            fromEmail,
-            replyToEmail
-          };
+      if (emailDeliveryServiceActive) {
+        formData.thirdParties.gmail = {
+          selected: emailDeliveryServiceName === 'gmail',
+          email: gmail_email,
+          appPassword: gmail_appPassword,
+          appPasswordUpdated:
+            gmail_appPassword !== initialValues.gmail_appPassword,
+          fromEmail,
+          replyToEmail
+        };
 
-          formData.thirdParties.graph = {
-            selected: emailDeliveryServiceName === 'graph',
-            tenantId: graph_tenantId,
-            clientId: graph_clientId,
-            clientSecret: graph_clientSecret,
-            clientSecretUpdated:
-              graph_clientSecret !== initialValues.graph_clientSecret,
-            senderEmail: graph_senderEmail,
-            fromEmail,
-            replyToEmail
-          };
+        formData.thirdParties.graph = {
+          selected: emailDeliveryServiceName === 'graph',
+          tenantId: graph_tenantId,
+          clientId: graph_clientId,
+          clientSecret: graph_clientSecret,
+          clientSecretUpdated:
+            graph_clientSecret !== initialValues.graph_clientSecret,
+          senderEmail: graph_senderEmail,
+          fromEmail,
+          replyToEmail
+        };
 
-          formData.thirdParties.exchange = {
-            selected: emailDeliveryServiceName === 'exchange',
-            server: exchange_server,
-            port: exchange_port,
-            secure: exchange_secure,
-            authentication: exchange_authentication,
-            username: exchange_username,
-            password: exchange_password,
-            passwordUpdated:
-              exchange_password !== initialValues.exchange_password,
-            fromEmail,
-            replyToEmail
-          };
+        formData.thirdParties.exchange = {
+          selected: emailDeliveryServiceName === 'exchange',
+          server: exchange_server,
+          port: exchange_port,
+          secure: exchange_secure,
+          authentication: exchange_authentication,
+          username: exchange_username,
+          password: exchange_password,
+          passwordUpdated:
+            exchange_password !== initialValues.exchange_password,
+          fromEmail,
+          replyToEmail
+        };
 
-          formData.thirdParties.smtp = {
-            selected: emailDeliveryServiceName === 'smtp',
-            server: smtp_server,
-            port: smtp_port,
-            secure: smtp_secure,
-            authentication: smtp_authentication,
-            username: smtp_username,
-            password: smtp_password,
-            passwordUpdated: smtp_password !== initialValues.smtp_password,
-            fromEmail,
-            replyToEmail
-          };
+        formData.thirdParties.smtp = {
+          selected: emailDeliveryServiceName === 'smtp',
+          server: smtp_server,
+          port: smtp_port,
+          secure: smtp_secure,
+          authentication: smtp_authentication,
+          username: smtp_username,
+          password: smtp_password,
+          passwordUpdated: smtp_password !== initialValues.smtp_password,
+          fromEmail,
+          replyToEmail
+        };
 
-          formData.thirdParties.mailgun = {
-            selected: emailDeliveryServiceName === 'mailgun',
-            apiKey: mailgun_apiKey,
-            apiKeyUpdated: mailgun_apiKey !== initialValues.mailgun_apiKey,
-            domain: mailgun_domain,
-            fromEmail,
-            replyToEmail
-          };
-        } else {
-          formData.thirdParties.gmail = null;
-          formData.thirdParties.graph = null;
-          formData.thirdParties.exchange = null;
-          formData.thirdParties.smtp = null;
-          formData.thirdParties.mailgun = null;
-        }
-      }
-      
-      if (b2Active) {
-        formData.thirdParties.b2 = {
-          keyId,
-          applicationKey,
-          keyIdUpdated: keyId !== initialValues.keyId,
-          applicationKeyUpdated:
-            applicationKey !== initialValues.applicationKey,
-          endpoint,
-          bucket
+        formData.thirdParties.mailgun = {
+          selected: emailDeliveryServiceName === 'mailgun',
+          apiKey: mailgun_apiKey,
+          apiKeyUpdated: mailgun_apiKey !== initialValues.mailgun_apiKey,
+          domain: mailgun_domain,
+          fromEmail,
+          replyToEmail
         };
       } else {
-        formData.thirdParties.b2 = null;
+        formData.thirdParties.gmail = null;
+        formData.thirdParties.graph = null;
+        formData.thirdParties.exchange = null;
+        formData.thirdParties.smtp = null;
+        formData.thirdParties.mailgun = null;
       }
       await mutateAsync({
         store,
@@ -421,14 +321,11 @@ export default function ThirdPartiesForm({ organization, excludeEmailSettings = 
       mutateAsync,
       store,
       organization,
-      excludeEmailSettings,
       initialValues.gmail_appPassword,
       initialValues.graph_clientSecret,
       initialValues.exchange_password,
       initialValues.smtp_password,
-      initialValues.mailgun_apiKey,
-      initialValues.keyId,
-      initialValues.applicationKey
+      initialValues.mailgun_apiKey
     ]
   );
 
@@ -437,7 +334,7 @@ export default function ThirdPartiesForm({ organization, excludeEmailSettings = 
       validateYupSchema(value, validationSchema, true, value);
     } catch (err) {
       console.error(err);
-      return yupToFormErrors(err); //for rendering validation errors
+      return yupToFormErrors(err);
     }
     return {};
   }, []);
@@ -473,15 +370,14 @@ export default function ThirdPartiesForm({ organization, excludeEmailSettings = 
       {({ values, isSubmitting }) => {
         return (
           <Form autoComplete="off">
-            {!excludeEmailSettings && (
-              <Section
-                label={t('Email delivery service')}
-                description={t(
-                  'Configuration required for sending invoices, notices and all kind of communication to the tenants'
-                )}
-                withSwitch
-                switchName="emailDeliveryServiceActive"
-              >
+            <Section
+              label={t('Email delivery service')}
+              description={t(
+                'Configuration required for sending invoices, notices and all kind of communication to the tenants'
+              )}
+              withSwitch
+              switchName="emailDeliveryServiceActive"
+            >
               {values?.emailDeliveryServiceActive ? (
                 <>
                   <RadioFieldGroup
@@ -661,36 +557,6 @@ export default function ThirdPartiesForm({ organization, excludeEmailSettings = 
                 </>
               ) : null}
             </Section>
-            )}
-            <Section
-              label="Backblaze B2 Cloud Storage"
-              description={t(
-                'Configuration required to store documents in the cloud'
-              )}
-              withSwitch
-              switchName="b2Active"
-            >
-              {values?.b2Active ? (
-                <>
-                  <TextField
-                    label="KeyId"
-                    name="keyId"
-                    type="password"
-                    showHidePassword={values.keyId !== initialValues.keyId}
-                  />
-                  <TextField
-                    label="ApplicationKey"
-                    name="applicationKey"
-                    type="password"
-                    showHidePassword={
-                      values.applicationKey !== initialValues.applicationKey
-                    }
-                  />
-                  <TextField label={t('Bucket')} name="bucket" />
-                  <TextField label={t('Bucket endpoint')} name="endpoint" />
-                </>
-              ) : null}
-            </Section>
             <SubmitButton
               size="large"
               label={!isSubmitting ? t('Save') : t('Saving')}
@@ -701,3 +567,5 @@ export default function ThirdPartiesForm({ organization, excludeEmailSettings = 
     </Formik>
   );
 }
+
+export default EmailServerForm;

@@ -8,14 +8,14 @@ import {
 import { fetchOrganizations, QueryKeys } from '../../../utils/restcalls';
 import Page from '../../../components/Page';
 import { StoreContext } from '../../../store';
-import ThirdPartiesForm from '../../../components/organization/ThirdPartiesForm';
+import EmailServerForm from '../../../components/organization/EmailServerForm';
 import { toast } from 'sonner';
 import { useContext } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import useTranslation from 'next-translate/useTranslation';
 import { withAuthentication } from '../../../components/Authentication';
 
-function ThirdPartiesSettings() {
+function EmailServerSettings() {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const {
@@ -36,23 +36,22 @@ function ThirdPartiesSettings() {
     orgs?.[0];
 
   return (
-    <Page loading={isLoading} dataCy="thirdpartiesPage">
+    <Page loading={isLoading} dataCy="emailServerPage">
       <Card>
         <CardHeader>
-          <CardTitle>{t('Third-parties')}</CardTitle>
+          <CardTitle>{t('Email server')}</CardTitle>
           <CardDescription>
-            {t('Connect third-parties to extend the functionality of your organization')}
+            {t(
+              'Configure the email server used for invitations, password reset, and tenant communication'
+            )}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <ThirdPartiesForm
-            organization={organization}
-            excludeEmailSettings={true}
-          />
+          <EmailServerForm organization={organization} />
         </CardContent>
       </Card>
     </Page>
   );
 }
 
-export default withAuthentication(ThirdPartiesSettings);
+export default withAuthentication(EmailServerSettings);
