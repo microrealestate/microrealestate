@@ -41,6 +41,9 @@ function _escapeSecrets(realm) {
   if (realm.thirdParties?.gmail?.appPassword) {
     realm.thirdParties.gmail.appPassword = SECRET_PLACEHOLDER;
   }
+  if (realm.thirdParties?.graph?.clientSecret) {
+    realm.thirdParties.graph.clientSecret = SECRET_PLACEHOLDER;
+  }
   if (realm.thirdParties?.exchange?.password) {
     realm.thirdParties.exchange.password = SECRET_PLACEHOLDER;
   }
@@ -71,6 +74,12 @@ export async function add(req, res) {
   if (newRealm.thirdParties?.gmail?.appPassword) {
     newRealm.thirdParties.gmail.appPassword = Crypto.encrypt(
       newRealm.thirdParties.gmail.appPassword
+    );
+  }
+
+  if (newRealm.thirdParties?.graph?.clientSecret) {
+    newRealm.thirdParties.graph.clientSecret = Crypto.encrypt(
+      newRealm.thirdParties.graph.clientSecret
     );
   }
 
@@ -110,6 +119,8 @@ export async function add(req, res) {
 export async function update(req, res) {
   const gmailAppPasswordUpdated =
     !!req.body.thirdParties?.gmail?.appPasswordUpdated;
+  const graphClientSecretUpdated =
+    !!req.body.thirdParties?.graph?.clientSecretUpdated;
   const exchangePasswordUpdated =
     !!req.body.thirdParties?.exchange?.passwordUpdated;
   const smtpPasswordUpdated = !!req.body.thirdParties?.smtp?.passwordUpdated;
@@ -157,6 +168,18 @@ export async function update(req, res) {
     } else {
       updatedRealm.thirdParties.gmail.appPassword =
         previousRealm.thirdParties.gmail?.appPassword;
+    }
+  }
+
+  if (req.body.thirdParties?.graph) {
+    logger.debug('realm update with Graph third party emailer');
+    if (graphClientSecretUpdated) {
+      updatedRealm.thirdParties.graph.clientSecret = Crypto.encrypt(
+        req.body.thirdParties.graph.clientSecret
+      );
+    } else {
+      updatedRealm.thirdParties.graph.clientSecret =
+        previousRealm.thirdParties.graph?.clientSecret;
     }
   }
 
@@ -351,6 +374,8 @@ export async function sendTestEmail(req, res) {
 
   const provider = req.realm.thirdParties?.gmail?.selected
     ? 'Gmail'
+    : req.realm.thirdParties?.graph?.selected
+      ? 'Microsoft Graph'
     : req.realm.thirdParties?.exchange?.selected
       ? 'Exchange'
       : req.realm.thirdParties?.smtp?.selected

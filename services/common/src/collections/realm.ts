@@ -62,6 +62,15 @@ const RealmSchema = new mongoose.Schema<CollectionTypes.Realm>({
       fromEmail: String,
       replyToEmail: String
     },
+    graph: {
+      selected: Boolean,
+      tenantId: String,
+      clientId: String,
+      clientSecret: String,
+      senderEmail: String,
+      fromEmail: String,
+      replyToEmail: String
+    },
     exchange: {
       selected: Boolean,
       server: String,

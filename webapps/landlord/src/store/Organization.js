@@ -34,6 +34,7 @@ export default class Organization {
   get canSendEmails() {
     return (
       !!this.selected?.thirdParties?.gmail?.selected ||
+      !!this.selected?.thirdParties?.graph?.selected ||
       !!this.selected?.thirdParties?.exchange?.selected ||
       this.selected?.thirdParties?.smtp?.selected ||
       this.selected?.thirdParties?.mailgun?.selected

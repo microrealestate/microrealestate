@@ -72,6 +72,15 @@ export namespace CollectionTypes {
         fromEmail: string;
         replyToEmail: string;
       };
+      graph: {
+        selected: boolean;
+        tenantId: string;
+        clientId: string;
+        clientSecret: string;
+        senderEmail: string;
+        fromEmail: string;
+        replyToEmail: string;
+      };
       exchange: {
         selected: boolean;
         server: string;

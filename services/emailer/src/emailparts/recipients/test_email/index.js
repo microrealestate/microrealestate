@@ -9,6 +9,10 @@ export function get(email, params, data) {
     emailDeliveryServiceConfig = data.landlord.thirdParties.gmail;
   }
 
+  if (data.landlord.thirdParties?.graph?.selected) {
+    emailDeliveryServiceConfig = data.landlord.thirdParties.graph;
+  }
+
   if (data.landlord.thirdParties?.exchange?.selected) {
     emailDeliveryServiceConfig = data.landlord.thirdParties.exchange;
   }

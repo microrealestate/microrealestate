@@ -39,6 +39,23 @@ const validationSchema = Yup.object().shape({
     then: Yup.string().required()
   }),
 
+  graph_tenantId: Yup.string().when('emailDeliveryServiceName', {
+    is: 'graph',
+    then: Yup.string().required()
+  }),
+  graph_clientId: Yup.string().when('emailDeliveryServiceName', {
+    is: 'graph',
+    then: Yup.string().required()
+  }),
+  graph_clientSecret: Yup.string().when('emailDeliveryServiceName', {
+    is: 'graph',
+    then: Yup.string().required()
+  }),
+  graph_senderEmail: Yup.string().when('emailDeliveryServiceName', {
+    is: 'graph',
+    then: Yup.string().email().required()
+  }),
+
   exchange_server: Yup.string().when('emailDeliveryServiceName', {
     is: 'exchange',
     then: Yup.string().required()
@@ -169,6 +186,10 @@ export default function ThirdPartiesForm({ organization }) {
       emailDeliveryServiceName = 'gmail';
       fromEmail = organization.thirdParties?.gmail?.fromEmail || '';
       replyToEmail = organization.thirdParties?.gmail?.replyToEmail || '';
+    } else if (organization.thirdParties?.graph?.selected) {
+      emailDeliveryServiceName = 'graph';
+      fromEmail = organization.thirdParties?.graph?.fromEmail || '';
+      replyToEmail = organization.thirdParties?.graph?.replyToEmail || '';
     } else if (organization.thirdParties?.exchange?.selected) {
       emailDeliveryServiceName = 'exchange';
       fromEmail = organization.thirdParties?.exchange?.fromEmail || '';
@@ -186,12 +207,18 @@ export default function ThirdPartiesForm({ organization }) {
     return {
       emailDeliveryServiceActive:
         !!organization.thirdParties?.gmail?.selected ||
+        !!organization.thirdParties?.graph?.selected ||
         !!organization.thirdParties?.exchange?.selected ||
         !!organization.thirdParties?.smtp?.selected ||
         !!organization.thirdParties?.mailgun?.selected,
       emailDeliveryServiceName,
       gmail_email: organization.thirdParties?.gmail?.email || '',
       gmail_appPassword: organization.thirdParties?.gmail?.appPassword || '',
+
+      graph_tenantId: organization.thirdParties?.graph?.tenantId || '',
+      graph_clientId: organization.thirdParties?.graph?.clientId || '',
+      graph_clientSecret: organization.thirdParties?.graph?.clientSecret || '',
+      graph_senderEmail: organization.thirdParties?.graph?.senderEmail || '',
 
       exchange_server: organization.thirdParties?.exchange?.server || '',
       exchange_port: organization.thirdParties?.exchange?.port || 25,
@@ -237,6 +264,13 @@ export default function ThirdPartiesForm({ organization }) {
     organization.thirdParties?.gmail?.fromEmail,
     organization.thirdParties?.gmail?.replyToEmail,
     organization.thirdParties?.gmail?.selected,
+    organization.thirdParties?.graph?.tenantId,
+    organization.thirdParties?.graph?.clientId,
+    organization.thirdParties?.graph?.clientSecret,
+    organization.thirdParties?.graph?.senderEmail,
+    organization.thirdParties?.graph?.fromEmail,
+    organization.thirdParties?.graph?.replyToEmail,
+    organization.thirdParties?.graph?.selected,
     organization.thirdParties?.exchange?.authentication,
     organization.thirdParties?.exchange?.fromEmail,
     organization.thirdParties?.exchange?.password,
@@ -268,6 +302,10 @@ export default function ThirdPartiesForm({ organization }) {
       emailDeliveryServiceName,
       gmail_email,
       gmail_appPassword,
+      graph_tenantId,
+      graph_clientId,
+      graph_clientSecret,
+      graph_senderEmail,
       exchange_server,
       exchange_port,
       exchange_secure,
@@ -298,6 +336,18 @@ export default function ThirdPartiesForm({ organization }) {
           appPassword: gmail_appPassword,
           appPasswordUpdated:
             gmail_appPassword !== initialValues.gmail_appPassword,
+          fromEmail,
+          replyToEmail
+        };
+
+        formData.thirdParties.graph = {
+          selected: emailDeliveryServiceName === 'graph',
+          tenantId: graph_tenantId,
+          clientId: graph_clientId,
+          clientSecret: graph_clientSecret,
+          clientSecretUpdated:
+            graph_clientSecret !== initialValues.graph_clientSecret,
+          senderEmail: graph_senderEmail,
           fromEmail,
           replyToEmail
         };
@@ -339,6 +389,7 @@ export default function ThirdPartiesForm({ organization }) {
         };
       } else {
         formData.thirdParties.gmail = null;
+        formData.thirdParties.graph = null;
         formData.thirdParties.exchange = null;
         formData.thirdParties.smtp = null;
         formData.thirdParties.mailgun = null;
@@ -366,6 +417,7 @@ export default function ThirdPartiesForm({ organization }) {
       store,
       organization,
       initialValues.gmail_appPassword,
+      initialValues.graph_clientSecret,
       initialValues.exchange_password,
       initialValues.smtp_password,
       initialValues.mailgun_apiKey,
@@ -430,6 +482,7 @@ export default function ThirdPartiesForm({ organization }) {
                     name="emailDeliveryServiceName"
                   >
                     <RadioField value="gmail" label="Gmail" />
+                    <RadioField value="graph" label="Microsoft Graph" />
                     <RadioField value="exchange" label="Exchange" />
                     <RadioField value="smtp" label="SMTP" />
                     <RadioField value="mailgun" label="Mailgun" />
@@ -452,6 +505,25 @@ export default function ThirdPartiesForm({ organization }) {
                         showHidePassword={
                           values.appPassword !== initialValues.appPassword
                         }
+                      />
+                    </>
+                  )}
+                  {values?.emailDeliveryServiceName === 'graph' && (
+                    <>
+                      <TextField label={t('Tenant ID')} name="graph_tenantId" />
+                      <TextField label={t('Client ID')} name="graph_clientId" />
+                      <TextField
+                        label={t('Client secret')}
+                        name="graph_clientSecret"
+                        type="password"
+                        showHidePassword={
+                          values.graph_clientSecret !==
+                          initialValues.graph_clientSecret
+                        }
+                      />
+                      <TextField
+                        label={t('Sender mailbox email')}
+                        name="graph_senderEmail"
                       />
                     </>
                   )}
