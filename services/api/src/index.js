@@ -58,6 +58,8 @@ async function Main() {
           ? process.env.RESTORE_DB.toLowerCase() === 'true'
           : undefined,
         EMAILER_URL: process.env.EMAILER_URL || 'http://localhost:8083/emailer',
+        LANDLORD_APP_URL:
+          process.env.LANDLORD_APP_URL || 'http://localhost:8080/landlord',
         PDFGENERATOR_URL:
           process.env.PDFGENERATOR_URL || 'http://localhost:8082/pdfgenerator',
         ONEDRIVE_ENABLED: process.env.ONEDRIVE_ENABLED

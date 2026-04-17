@@ -1,0 +1,11 @@
+<%- include('../__content_parts/text/greetings.ejs') %>
+
+<%- _.t('This is a test email sent from {{appName}}.', { appName: config.APP_NAME }) %>
+
+<%- _.t('Organization: {{organizationName}}', { organizationName }) %>
+<%- _.t('Provider: {{provider}}', { provider }) %>
+<%- _.t('Triggered by: {{sentBy}}', { sentBy }) %>
+
+<%- _.t('If you received this email, your email server configuration is working.') %>
+
+<%- include('../__content_parts/text/appsignature.ejs') %>

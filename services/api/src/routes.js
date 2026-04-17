@@ -36,6 +36,14 @@ export default function routes() {
   realmsRouter.get('/', realmManager.all);
   realmsRouter.get('/:id', realmManager.one);
   realmsRouter.post('/', Middlewares.asyncWrapper(realmManager.add));
+  realmsRouter.post(
+    '/:id/email/test',
+    Middlewares.asyncWrapper(realmManager.sendTestEmail)
+  );
+  realmsRouter.post(
+    '/:id/members/invite',
+    Middlewares.asyncWrapper(realmManager.inviteMember)
+  );
   realmsRouter.patch('/:id', Middlewares.asyncWrapper(realmManager.update));
   router.use('/realms', realmsRouter);
 

@@ -30,6 +30,23 @@ export async function updateOrganization({ store, organization }) {
   return response.data;
 }
 
+export async function sendCollaboratorInvite({ organizationId, email }) {
+  const response = await apiFetcher().post(
+    `/realms/${organizationId}/members/invite`,
+    {
+      email
+    }
+  );
+  return response.data;
+}
+
+export async function sendEmailServerTest({ organizationId, email }) {
+  const response = await apiFetcher().post(`/realms/${organizationId}/email/test`, {
+    email
+  });
+  return response.data;
+}
+
 export async function createAppCredentials({ organization, expiryDate }) {
   const response = await apiFetcher().post('/authenticator/landlord/appcredz', {
     expiry: expiryDate,

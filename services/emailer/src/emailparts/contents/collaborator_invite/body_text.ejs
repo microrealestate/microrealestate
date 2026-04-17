@@ -1,0 +1,13 @@
+<%- include('../__content_parts/text/greetings.ejs') %>
+
+<%- _.t('You were invited by {{inviterEmail}} to collaborate on {{organizationName}} in {{appName}}.', { inviterEmail, organizationName, appName: config.APP_NAME }) %>
+
+<%- _.t('Your role in this organization will be: {{role}}.', { role }) %>
+
+<%- _.t('Click the link below to continue:') %>
+
+<%- inviteLink %>
+
+<%- _.t("If this link doesn't work, copy it in your browser address bar.") %>
+
+<%- include('../__content_parts/text/appsignature.ejs') %>

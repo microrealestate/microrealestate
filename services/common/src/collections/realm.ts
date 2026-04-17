@@ -62,6 +62,17 @@ const RealmSchema = new mongoose.Schema<CollectionTypes.Realm>({
       fromEmail: String,
       replyToEmail: String
     },
+    exchange: {
+      selected: Boolean,
+      server: String,
+      port: Number,
+      secure: Boolean,
+      authentication: Boolean,
+      username: String,
+      password: String,
+      fromEmail: String,
+      replyToEmail: String
+    },
     smtp: {
       selected: Boolean,
       server: String,

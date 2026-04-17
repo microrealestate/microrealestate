@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+  <%- include('../__content_parts/html/htmlhead.ejs') %>
+  <body>
+    <div class="email-body">
+      <div class="email-container">
+        <div class="bar"></div>
+        <div class="content">
+          <div class="header">
+            <div class="logo"><%- config.APP_NAME %></div>
+          </div>
+
+          <p><%- include('../__content_parts/html/greetings.ejs') %></p>
+
+          <p>
+            <%- _.t('You were invited by {{inviterEmail}} to collaborate on {{organizationName}} in {{appName}}.', { inviterEmail, organizationName, appName: config.APP_NAME }) %>
+          </p>
+
+          <p>
+            <%- _.t('Your role in this organization will be: {{role}}.', { role }) %>
+          </p>
+
+          <p>
+            <%- _.t('Click the button below to continue:') %>
+          </p>
+
+          <div class="cta">
+            <a href="<%- inviteLink %>" target="_blank"><%- _.t(action) %></a>
+          </div>
+
+          <p>
+            <%- _.t("If this link doesn't work, copy it in your browser address bar.") %>
+          </p>
+
+          <p><a href="<%- inviteLink %>" target="_blank"><%- inviteLink %></a></p>
+
+          <%- include('../__content_parts/html/appsignature.ejs') %>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

@@ -72,6 +72,17 @@ export namespace CollectionTypes {
         fromEmail: string;
         replyToEmail: string;
       };
+      exchange: {
+        selected: boolean;
+        server: string;
+        port: number;
+        secure: boolean;
+        authentication: boolean;
+        username: string;
+        password: string;
+        fromEmail: string;
+        replyToEmail: string;
+      };
       mailgun: {
         selected: boolean;
         apiKey: string;

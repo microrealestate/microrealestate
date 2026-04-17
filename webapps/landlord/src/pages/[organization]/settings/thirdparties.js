@@ -39,10 +39,10 @@ function ThirdPartiesSettings() {
     <Page loading={isLoading} dataCy="thirdpartiesPage">
       <Card>
         <CardHeader>
-          <CardTitle>{t('Third-parties')}</CardTitle>
+          <CardTitle>{t('Email server')}</CardTitle>
           <CardDescription>
             {t(
-              'Connect third-parties to extend the functionality of your organization'
+              'Configure the email server used for invitations, password reset, and tenant communication'
             )}
           </CardDescription>
         </CardHeader>

@@ -46,7 +46,7 @@ async function _sendWithSmtp(config, email) {
 
   const transporter = nodemailer.createTransport({
     host: config.server,
-    port: config.ports,
+    port: config.port,
     secure: config.secure,
     auth
   });
@@ -113,6 +113,21 @@ export function sendEmail(email, data) {
         password: Crypto.decrypt(data.landlord.thirdParties.gmail.appPassword)
       };
     }
+    if (data.landlord.thirdParties?.exchange?.selected) {
+      emailDeliveryServiceConfig = {
+        name: 'exchange',
+        server: data.landlord.thirdParties.exchange.server,
+        port: data.landlord.thirdParties.exchange.port,
+        secure: data.landlord.thirdParties.exchange.secure,
+        authentication: data.landlord.thirdParties.exchange.authentication,
+        username: data.landlord.thirdParties.exchange.authentication
+          ? data.landlord.thirdParties.exchange.username
+          : null,
+        password: data.landlord.thirdParties.exchange.authentication
+          ? Crypto.decrypt(data.landlord.thirdParties.exchange.password)
+          : null
+      };
+    }
     if (data.landlord.thirdParties?.smtp?.selected) {
       emailDeliveryServiceConfig = {
         name: 'smtp',
@@ -148,6 +163,7 @@ export function sendEmail(email, data) {
   switch (emailDeliveryServiceConfig.name) {
     case 'gmail':
     case 'smtp':
+    case 'exchange':
       return _sendWithSmtp(emailDeliveryServiceConfig, email);
     case 'mailgun':
       return _sendWithMailgun(emailDeliveryServiceConfig, email);

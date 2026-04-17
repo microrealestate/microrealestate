@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+  <%- include('../__content_parts/html/htmlhead.ejs') %>
+  <body>
+    <div class="email-body">
+      <div class="email-container">
+        <div class="bar"></div>
+        <div class="content">
+          <div class="header">
+            <div class="logo"><%- config.APP_NAME %></div>
+          </div>
+
+          <p><%- include('../__content_parts/html/greetings.ejs') %></p>
+
+          <p>
+            <%- _.t('This is a test email sent from {{appName}}.', { appName: config.APP_NAME }) %>
+          </p>
+
+          <p><strong><%- _.t('Organization: {{organizationName}}', { organizationName }) %></strong></p>
+          <p><strong><%- _.t('Provider: {{provider}}', { provider }) %></strong></p>
+          <p><strong><%- _.t('Triggered by: {{sentBy}}', { sentBy }) %></strong></p>
+
+          <p>
+            <%- _.t('If you received this email, your email server configuration is working.') %>
+          </p>
+
+          <%- include('../__content_parts/html/appsignature.ejs') %>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

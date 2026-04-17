@@ -1,6 +1,10 @@
 import { ADMIN_ROLE, ROLES } from '../../store/User';
 import { mergeOrganization, updateStoreOrganization } from './utils';
-import { QueryKeys, updateOrganization } from '../../utils/restcalls';
+import {
+  QueryKeys,
+  sendCollaboratorInvite,
+  updateOrganization
+} from '../../utils/restcalls';
 import {
   Select,
   SelectContent,
@@ -16,6 +20,7 @@ import { Card } from '../ui/card';
 import { cn } from '../../utils';
 import ConfirmDialog from '../ConfirmDialog';
 import { Input } from '../ui/input';
+import { LuMail } from 'react-icons/lu';
 import { LuTrash } from 'react-icons/lu';
 import moment from 'moment';
 import { StoreContext } from '../../store';
@@ -32,6 +37,9 @@ export default function Members({ organization }) {
       updateStoreOrganization(store, organization);
       queryClient.invalidateQueries({ queryKey: [QueryKeys.ORGANIZATIONS] });
     }
+  });
+  const { mutateAsync: inviteMutateAsync } = useMutation({
+    mutationFn: sendCollaboratorInvite
   });
 
   const [openMemberToRemoveConfirmDialog, setOpenMemberToRemoveConfirmDialog] =
@@ -97,6 +105,24 @@ export default function Members({ organization }) {
       setUpdating();
     },
     [mutateAsync, organization, store]
+  );
+
+  const onInviteMember = useCallback(
+    async (member) => {
+      setUpdating(member);
+      try {
+        await inviteMutateAsync({
+          organizationId: organization._id,
+          email: member.email
+        });
+        toast.success(t('Invitation email sent'));
+      } catch (error) {
+        toast.error(t('Error sending invitation email'));
+      } finally {
+        setUpdating();
+      }
+    },
+    [inviteMutateAsync, organization?._id, t]
   );
 
   if (isError) {
@@ -216,6 +242,16 @@ export default function Members({ organization }) {
                   ) : null}
                 </div>
                 <div className="flex gap-2 md:col-start-3 md:col-end-3">
+                  {!isRegistered ? (
+                    <Button
+                      variant="outline"
+                      onClick={() => onInviteMember(member)}
+                      disabled={isActionDisabled}
+                    >
+                      <LuMail className="size-4 mr-2" />
+                      {t('Invite')}
+                    </Button>
+                  ) : null}
                   <Select
                     value={member.role}
                     onValueChange={(value) => onRoleChange(value, member)}

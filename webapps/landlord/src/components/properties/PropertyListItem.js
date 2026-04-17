@@ -128,6 +128,26 @@ export default function PropertyListItem({
             />
           </CardContent>
         )}
+        {isParent && isExpanded && childProperties.length > 0 && (
+          <CardContent className="pt-0 pb-4">
+            <div className="pt-4 border-t">
+              <h4 className="text-sm font-semibold text-muted-foreground mb-3">
+                {t('Child Properties')}
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {childProperties.map((child) => (
+                  <SubPropertyCard
+                    key={child._id}
+                    property={child}
+                    t={t}
+                    router={router}
+                    store={store}
+                  />
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        )}
         <CardFooter className="p-0 flex-col">
           <div className="flex items-center justify-between w-full py-4 px-6">
             <div className="text-xs text-muted-foreground">
@@ -148,26 +168,6 @@ export default function PropertyListItem({
           </div>
         </CardFooter>
       </Card>
-
-      {/* Expanded child properties - compact list with thumbnails */}
-      {isParent && isExpanded && childProperties.length > 0 && (
-        <div className="mt-4 pt-4 border-t">
-          <h4 className="text-sm font-semibold text-muted-foreground mb-3 px-6">
-            {t('Child Properties')}
-          </h4>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 px-6 pb-4">
-            {childProperties.map((child) => (
-              <SubPropertyCard
-                key={child._id}
-                property={child}
-                t={t}
-                router={router}
-                store={store}
-              />
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

@@ -10,6 +10,10 @@ export function get(recordId, params, data) {
     emailDeliveryServiceConfig = data.landlord.thirdParties.gmail;
   }
 
+  if (data.landlord.thirdParties?.exchange?.selected) {
+    emailDeliveryServiceConfig = data.landlord.thirdParties.exchange;
+  }
+
   if (data.landlord.thirdParties?.smtp?.selected) {
     emailDeliveryServiceConfig = data.landlord.thirdParties.smtp;
   }

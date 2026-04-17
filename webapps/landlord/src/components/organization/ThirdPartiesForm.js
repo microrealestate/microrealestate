@@ -8,9 +8,14 @@ import {
   SubmitButton,
   TextField
 } from '@microrealestate/commonui/components';
-import { QueryKeys, updateOrganization } from '../../utils/restcalls';
+import {
+  QueryKeys,
+  sendEmailServerTest,
+  updateOrganization
+} from '../../utils/restcalls';
 import { useCallback, useContext, useMemo } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Button } from '../ui/button';
 import Link from '../Link';
 import { Section } from '../formfields/Section';
 import { StoreContext } from '../../store';
@@ -34,9 +39,40 @@ const validationSchema = Yup.object().shape({
     then: Yup.string().required()
   }),
 
+  exchange_server: Yup.string().when('emailDeliveryServiceName', {
+    is: 'exchange',
+    then: Yup.string().required()
+  }),
+  exchange_port: Yup.string().when('emailDeliveryServiceName', {
+    is: 'exchange',
+    then: Yup.number().required().integer().min(1).max(65535)
+  }),
+  exchange_secure: Yup.string().when('emailDeliveryServiceName', {
+    is: 'exchange',
+    then: Yup.boolean().required()
+  }),
+  exchange_authentication: Yup.string().when('emailDeliveryServiceName', {
+    is: 'exchange',
+    then: Yup.boolean().required()
+  }),
+  exchange_username: Yup.string().when(
+    ['emailDeliveryServiceName', 'exchange_authentication'],
+    {
+      is: (scheme, auth) => scheme === 'exchange' && auth,
+      then: Yup.string().required()
+    }
+  ),
+  exchange_password: Yup.string().when(
+    ['emailDeliveryServiceName', 'exchange_authentication'],
+    {
+      is: (scheme, auth) => scheme === 'exchange' && auth,
+      then: Yup.string().required()
+    }
+  ),
+
   smtp_server: Yup.string().when('emailDeliveryServiceName', {
     is: 'smtp',
-    then: Yup.string().email().required()
+    then: Yup.string().required()
   }),
   smtp_port: Yup.string().when('emailDeliveryServiceName', {
     is: 'smtp',
@@ -113,6 +149,12 @@ export default function ThirdPartiesForm({ organization }) {
       queryClient.invalidateQueries({ queryKey: [QueryKeys.ORGANIZATIONS] });
     }
   });
+  const {
+    mutateAsync: sendTestEmailMutateAsync,
+    isLoading: isSendingTestEmail
+  } = useMutation({
+    mutationFn: sendEmailServerTest
+  });
 
   if (isError) {
     toast.error(t('Error updating organization'));
@@ -127,6 +169,10 @@ export default function ThirdPartiesForm({ organization }) {
       emailDeliveryServiceName = 'gmail';
       fromEmail = organization.thirdParties?.gmail?.fromEmail || '';
       replyToEmail = organization.thirdParties?.gmail?.replyToEmail || '';
+    } else if (organization.thirdParties?.exchange?.selected) {
+      emailDeliveryServiceName = 'exchange';
+      fromEmail = organization.thirdParties?.exchange?.fromEmail || '';
+      replyToEmail = organization.thirdParties?.exchange?.replyToEmail || '';
     } else if (organization.thirdParties?.smtp?.selected) {
       emailDeliveryServiceName = 'smtp';
       fromEmail = organization.thirdParties?.smtp?.fromEmail || '';
@@ -140,11 +186,22 @@ export default function ThirdPartiesForm({ organization }) {
     return {
       emailDeliveryServiceActive:
         !!organization.thirdParties?.gmail?.selected ||
+        !!organization.thirdParties?.exchange?.selected ||
         !!organization.thirdParties?.smtp?.selected ||
         !!organization.thirdParties?.mailgun?.selected,
       emailDeliveryServiceName,
       gmail_email: organization.thirdParties?.gmail?.email || '',
       gmail_appPassword: organization.thirdParties?.gmail?.appPassword || '',
+
+      exchange_server: organization.thirdParties?.exchange?.server || '',
+      exchange_port: organization.thirdParties?.exchange?.port || 25,
+      exchange_secure: !!organization.thirdParties?.exchange?.secure,
+      exchange_authentication:
+        organization.thirdParties?.exchange?.authentication === undefined
+          ? true
+          : organization.thirdParties.exchange.authentication,
+      exchange_username: organization.thirdParties?.exchange?.username || '',
+      exchange_password: organization.thirdParties?.exchange?.password || '',
 
       smtp_server: organization.thirdParties?.smtp?.server || '',
       smtp_port: organization.thirdParties?.smtp?.port || 25,
@@ -161,6 +218,7 @@ export default function ThirdPartiesForm({ organization }) {
 
       fromEmail,
       replyToEmail,
+      testEmailRecipient: '',
 
       b2Active: !!organization.thirdParties?.b2?.keyId,
       keyId: organization.thirdParties?.b2?.keyId,
@@ -179,6 +237,15 @@ export default function ThirdPartiesForm({ organization }) {
     organization.thirdParties?.gmail?.fromEmail,
     organization.thirdParties?.gmail?.replyToEmail,
     organization.thirdParties?.gmail?.selected,
+    organization.thirdParties?.exchange?.authentication,
+    organization.thirdParties?.exchange?.fromEmail,
+    organization.thirdParties?.exchange?.password,
+    organization.thirdParties?.exchange?.port,
+    organization.thirdParties?.exchange?.replyToEmail,
+    organization.thirdParties?.exchange?.secure,
+    organization.thirdParties?.exchange?.selected,
+    organization.thirdParties?.exchange?.server,
+    organization.thirdParties?.exchange?.username,
     organization.thirdParties?.mailgun?.apiKey,
     organization.thirdParties?.mailgun?.domain,
     organization.thirdParties?.mailgun?.fromEmail,
@@ -201,6 +268,12 @@ export default function ThirdPartiesForm({ organization }) {
       emailDeliveryServiceName,
       gmail_email,
       gmail_appPassword,
+      exchange_server,
+      exchange_port,
+      exchange_secure,
+      exchange_authentication,
+      exchange_username,
+      exchange_password,
       smtp_server,
       smtp_port,
       smtp_secure,
@@ -229,6 +302,20 @@ export default function ThirdPartiesForm({ organization }) {
           replyToEmail
         };
 
+        formData.thirdParties.exchange = {
+          selected: emailDeliveryServiceName === 'exchange',
+          server: exchange_server,
+          port: exchange_port,
+          secure: exchange_secure,
+          authentication: exchange_authentication,
+          username: exchange_username,
+          password: exchange_password,
+          passwordUpdated:
+            exchange_password !== initialValues.exchange_password,
+          fromEmail,
+          replyToEmail
+        };
+
         formData.thirdParties.smtp = {
           selected: emailDeliveryServiceName === 'smtp',
           server: smtp_server,
@@ -252,6 +339,7 @@ export default function ThirdPartiesForm({ organization }) {
         };
       } else {
         formData.thirdParties.gmail = null;
+        formData.thirdParties.exchange = null;
         formData.thirdParties.smtp = null;
         formData.thirdParties.mailgun = null;
       }
@@ -278,6 +366,7 @@ export default function ThirdPartiesForm({ organization }) {
       store,
       organization,
       initialValues.gmail_appPassword,
+      initialValues.exchange_password,
       initialValues.smtp_password,
       initialValues.mailgun_apiKey,
       initialValues.keyId,
@@ -294,6 +383,28 @@ export default function ThirdPartiesForm({ organization }) {
     }
     return {};
   }, []);
+
+  const onSendTestEmail = useCallback(
+    async (organizationId, recipientEmail) => {
+      const email = String(recipientEmail || '').trim().toLowerCase();
+      if (!email) {
+        toast.error(t('Please enter a recipient email'));
+        return;
+      }
+      try {
+        await sendTestEmailMutateAsync({ organizationId, email });
+        toast.success(t('Test email sent'));
+      } catch (error) {
+        const status = error?.response?.status;
+        if (status === 422) {
+          toast.error(t('Please configure and save the email server first'));
+          return;
+        }
+        toast.error(t('Error sending test email'));
+      }
+    },
+    [sendTestEmailMutateAsync, t]
+  );
 
   return (
     <Formik
@@ -319,6 +430,7 @@ export default function ThirdPartiesForm({ organization }) {
                     name="emailDeliveryServiceName"
                   >
                     <RadioField value="gmail" label="Gmail" />
+                    <RadioField value="exchange" label="Exchange" />
                     <RadioField value="smtp" label="SMTP" />
                     <RadioField value="mailgun" label="Mailgun" />
                   </RadioFieldGroup>
@@ -341,6 +453,48 @@ export default function ThirdPartiesForm({ organization }) {
                           values.appPassword !== initialValues.appPassword
                         }
                       />
+                    </>
+                  )}
+                  {values?.emailDeliveryServiceName === 'exchange' && (
+                    <>
+                      <TextField
+                        label={t('Exchange server')}
+                        name="exchange_server"
+                      />
+                      <NumberField
+                        label={t('Port')}
+                        name="exchange_port"
+                        min="1"
+                        max="65535"
+                      />
+                      <SwitchField
+                        label={t(
+                          'Enable explicit TLS (Implicit TLS / StartTLS is always used when supported by the server)'
+                        )}
+                        name="exchange_secure"
+                      />
+                      <br />
+                      <SwitchField
+                        label={t('Use authentication')}
+                        name="exchange_authentication"
+                      />
+                      {values?.exchange_authentication ? (
+                        <>
+                          <TextField
+                            label={t('Username')}
+                            name="exchange_username"
+                          />
+                          <TextField
+                            label={t('Password')}
+                            name="exchange_password"
+                            type="password"
+                            showHidePassword={
+                              values.exchange_password !==
+                              initialValues.exchange_password
+                            }
+                          />
+                        </>
+                      ) : null}
                     </>
                   )}
                   {values?.emailDeliveryServiceName === 'smtp' && (
@@ -404,6 +558,27 @@ export default function ThirdPartiesForm({ organization }) {
                   )}
                   <TextField label={t('From Email')} name="fromEmail" />
                   <TextField label={t('Reply to email')} name="replyToEmail" />
+                  <div className="pt-2 space-y-2">
+                    <TextField
+                      label={t('Test email recipient')}
+                      name="testEmailRecipient"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() =>
+                        onSendTestEmail(
+                          organization?._id,
+                          values.testEmailRecipient
+                        )
+                      }
+                      disabled={isSendingTestEmail}
+                    >
+                      {isSendingTestEmail
+                        ? t('Sending test email...')
+                        : t('Send test email')}
+                    </Button>
+                  </div>
                 </>
               ) : null}
             </Section>

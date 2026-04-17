@@ -1,7 +1,11 @@
 import * as Yup from 'yup';
 import { Form, Formik } from 'formik';
 import { mergeOrganization, updateStoreOrganization } from '../utils';
-import { QueryKeys, updateOrganization } from '../../../utils/restcalls';
+import {
+  QueryKeys,
+  sendCollaboratorInvite,
+  updateOrganization
+} from '../../../utils/restcalls';
 import { RENTER_ROLE, ROLES } from '../../../store/User';
 import { useCallback, useContext, useMemo, useRef } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -41,15 +45,26 @@ export default function MemberFormDialog({
 
   const _onSubmit = useCallback(
     async (member) => {
-      await mutateAsync({
+      const updatedOrganization = await mutateAsync({
         store,
         organization: mergeOrganization(organization, {
           members: [...organization.members, member]
         })
       });
+
+      try {
+        await sendCollaboratorInvite({
+          organizationId: updatedOrganization._id,
+          email: member.email
+        });
+        toast.success(t('Invitation email sent'));
+      } catch (error) {
+        toast.error(t('Collaborator added but invitation email failed'));
+      }
+
       handleClose();
     },
-    [mutateAsync, store, organization, handleClose]
+    [mutateAsync, store, organization, t, handleClose]
   );
 
   const validationSchema = useMemo(

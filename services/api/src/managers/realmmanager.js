@@ -2,8 +2,10 @@ import {
   Collections,
   Crypto,
   logger,
+  Service,
   ServiceError
 } from '@microrealestate/common';
+import axios from 'axios';
 
 const SECRET_PLACEHOLDER = '**********';
 
@@ -39,6 +41,9 @@ function _escapeSecrets(realm) {
   if (realm.thirdParties?.gmail?.appPassword) {
     realm.thirdParties.gmail.appPassword = SECRET_PLACEHOLDER;
   }
+  if (realm.thirdParties?.exchange?.password) {
+    realm.thirdParties.exchange.password = SECRET_PLACEHOLDER;
+  }
   if (realm.thirdParties?.smtp?.password) {
     realm.thirdParties.smtp.password = SECRET_PLACEHOLDER;
   }
@@ -66,6 +71,12 @@ export async function add(req, res) {
   if (newRealm.thirdParties?.gmail?.appPassword) {
     newRealm.thirdParties.gmail.appPassword = Crypto.encrypt(
       newRealm.thirdParties.gmail.appPassword
+    );
+  }
+
+  if (newRealm.thirdParties?.exchange?.password) {
+    newRealm.thirdParties.exchange.password = Crypto.encrypt(
+      newRealm.thirdParties.exchange.password
     );
   }
 
@@ -99,6 +110,8 @@ export async function add(req, res) {
 export async function update(req, res) {
   const gmailAppPasswordUpdated =
     !!req.body.thirdParties?.gmail?.appPasswordUpdated;
+  const exchangePasswordUpdated =
+    !!req.body.thirdParties?.exchange?.passwordUpdated;
   const smtpPasswordUpdated = !!req.body.thirdParties?.smtp?.passwordUpdated;
   const mailgunApiKeyUpdated = !!req.body.thirdParties?.mailgun?.apiKeyUpdated;
   const b2KeyIdUpdated = !!req.body.thirdParties?.b2?.keyIdUpdated;
@@ -144,6 +157,18 @@ export async function update(req, res) {
     } else {
       updatedRealm.thirdParties.gmail.appPassword =
         previousRealm.thirdParties.gmail?.appPassword;
+    }
+  }
+
+  if (req.body.thirdParties?.exchange) {
+    logger.debug('realm update with Exchange third party emailer');
+    if (exchangePasswordUpdated) {
+      updatedRealm.thirdParties.exchange.password = Crypto.encrypt(
+        req.body.thirdParties.exchange.password
+      );
+    } else {
+      updatedRealm.thirdParties.exchange.password =
+        previousRealm.thirdParties.exchange?.password;
     }
   }
 
@@ -221,6 +246,147 @@ export async function update(req, res) {
 
   previousRealm.set(updatedRealm);
   res.json(_escapeSecrets(await previousRealm.save()));
+}
+
+export async function inviteMember(req, res) {
+  const realmId = req.params.id;
+  if (!realmId) {
+    throw new ServiceError('missing fields', 422);
+  }
+
+  if (req.user.role !== 'administrator') {
+    throw new ServiceError(
+      'only administrator member can invite collaborators',
+      403
+    );
+  }
+
+  if (req.realm._id.toString() !== realmId) {
+    throw new ServiceError(
+      'only current selected organization can be updated',
+      403
+    );
+  }
+
+  const email = String(req.body?.email || '')
+    .trim()
+    .toLowerCase();
+  if (!email) {
+    throw new ServiceError('missing fields', 422);
+  }
+
+  const member = req.realm.members.find(
+    ({ email: memberEmail }) =>
+      String(memberEmail || '')
+        .trim()
+        .toLowerCase() === email
+  );
+  if (!member) {
+    throw new ServiceError('member not found in organization', 404);
+  }
+
+  const existingAccount = await Collections.Account.findOne({ email });
+  const action = existingAccount ? 'signin' : 'signup';
+  const { EMAILER_URL, LANDLORD_APP_URL } =
+    Service.getInstance().envConfig.getValues();
+  const appUrl = (LANDLORD_APP_URL || 'http://localhost:8080/landlord').replace(
+    /\/$/,
+    ''
+  );
+
+  const inviteLink = `${appUrl}/${action}?email=${encodeURIComponent(email)}`;
+
+  await axios.post(
+    EMAILER_URL,
+    {
+      templateName: 'collaborator_invite',
+      recordId: email,
+      params: {
+        inviteLink,
+        organizationId: String(req.realm._id),
+        organizationName: req.realm.name,
+        inviterEmail: req.user.email,
+        role: member.role,
+        action: action === 'signup' ? 'Sign up' : 'Sign in'
+      }
+    },
+    {
+      headers: {
+        authorization: req.headers.authorization,
+        organizationid: req.headers.organizationid || String(req.realm._id),
+        'Accept-Language': req.headers['accept-language']
+      }
+    }
+  );
+
+  res.sendStatus(204);
+}
+
+export async function sendTestEmail(req, res) {
+  const realmId = req.params.id;
+  if (!realmId) {
+    throw new ServiceError('missing fields', 422);
+  }
+
+  if (req.user.role !== 'administrator') {
+    throw new ServiceError(
+      'only administrator member can send test emails',
+      403
+    );
+  }
+
+  if (req.realm._id.toString() !== realmId) {
+    throw new ServiceError(
+      'only current selected organization can be updated',
+      403
+    );
+  }
+
+  const email = String(req.body?.email || '')
+    .trim()
+    .toLowerCase();
+  if (!email) {
+    throw new ServiceError('missing fields', 422);
+  }
+
+  const provider = req.realm.thirdParties?.gmail?.selected
+    ? 'Gmail'
+    : req.realm.thirdParties?.exchange?.selected
+      ? 'Exchange'
+      : req.realm.thirdParties?.smtp?.selected
+        ? 'SMTP'
+        : req.realm.thirdParties?.mailgun?.selected
+          ? 'Mailgun'
+          : null;
+
+  if (!provider) {
+    throw new ServiceError('email service is not configured', 422);
+  }
+
+  const { EMAILER_URL } = Service.getInstance().envConfig.getValues();
+
+  await axios.post(
+    EMAILER_URL,
+    {
+      templateName: 'test_email',
+      recordId: email,
+      params: {
+        organizationId: String(req.realm._id),
+        organizationName: req.realm.name,
+        provider,
+        sentBy: req.user.email
+      }
+    },
+    {
+      headers: {
+        authorization: req.headers.authorization,
+        organizationid: req.headers.organizationid || String(req.realm._id),
+        'Accept-Language': req.headers['accept-language']
+      }
+    }
+  );
+
+  res.sendStatus(204);
 }
 
 export function one(req, res) {
