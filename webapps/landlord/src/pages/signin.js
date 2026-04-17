@@ -3,6 +3,7 @@ import { Form, Formik } from 'formik';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import config from '../config';
 import Link from '../components/Link';
+import { setAccessToken } from '../utils/fetch';
 import { setOrganizationId } from '../utils/fetch';
 import SignInUpLayout from '../components/SignInUpLayout';
 import { StoreContext } from '../store';
@@ -34,8 +35,17 @@ export default function SignIn() {
         email: 'demo@demo.com',
         password: 'demo'
       });
+      return;
     }
-  }, []);
+
+    const invitedEmail = String(router.query?.email || '').trim().toLowerCase();
+    if (invitedEmail) {
+      setInitialValues((prev) => ({
+        ...prev,
+        email: invitedEmail
+      }));
+    }
+  }, [router.query?.email]);
 
   const signIn = useCallback(
     async ({ email, password }) => {
@@ -55,7 +65,37 @@ export default function SignIn() {
           }
         }
 
-        await store.organization.fetch();
+        // Ensure axios default Authorization header is set before loading organizations.
+        // This avoids a race where /realms is requested without an access token.
+        const refreshResult = await store.user.refreshTokens();
+        if (refreshResult?.status && refreshResult.status !== 200) {
+          toast.error(t('Something went wrong'));
+          return;
+        }
+
+        // Explicitly set auth header before loading organizations.
+        setAccessToken(store.user.token);
+
+        let orgFetch = await store.organization.fetch();
+        let orgFetchStatus =
+          typeof orgFetch === 'number' ? orgFetch : orgFetch?.status;
+
+        // Retry once after a token refresh if organization loading failed.
+        if (orgFetchStatus !== 200) {
+          const secondRefresh = await store.user.refreshTokens();
+          if (secondRefresh?.status === 200) {
+            setAccessToken(store.user.token);
+            orgFetch = await store.organization.fetch();
+            orgFetchStatus =
+              typeof orgFetch === 'number' ? orgFetch : orgFetch?.status;
+          }
+        }
+
+        if (orgFetchStatus !== 200) {
+          toast.error(t('Authentication failed. Please sign in again.'));
+          return;
+        }
+
         if (store.organization.items.length) {
           if (!store.organization.selected) {
             store.organization.setSelected(

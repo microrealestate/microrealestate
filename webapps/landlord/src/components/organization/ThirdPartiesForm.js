@@ -56,37 +56,6 @@ const validationSchema = Yup.object().shape({
     then: Yup.string().email().required()
   }),
 
-  exchange_server: Yup.string().when('emailDeliveryServiceName', {
-    is: 'exchange',
-    then: Yup.string().required()
-  }),
-  exchange_port: Yup.string().when('emailDeliveryServiceName', {
-    is: 'exchange',
-    then: Yup.number().required().integer().min(1).max(65535)
-  }),
-  exchange_secure: Yup.string().when('emailDeliveryServiceName', {
-    is: 'exchange',
-    then: Yup.boolean().required()
-  }),
-  exchange_authentication: Yup.string().when('emailDeliveryServiceName', {
-    is: 'exchange',
-    then: Yup.boolean().required()
-  }),
-  exchange_username: Yup.string().when(
-    ['emailDeliveryServiceName', 'exchange_authentication'],
-    {
-      is: (scheme, auth) => scheme === 'exchange' && auth,
-      then: Yup.string().required()
-    }
-  ),
-  exchange_password: Yup.string().when(
-    ['emailDeliveryServiceName', 'exchange_authentication'],
-    {
-      is: (scheme, auth) => scheme === 'exchange' && auth,
-      then: Yup.string().required()
-    }
-  ),
-
   smtp_server: Yup.string().when('emailDeliveryServiceName', {
     is: 'smtp',
     then: Yup.string().required()
@@ -190,10 +159,6 @@ export default function ThirdPartiesForm({ organization, excludeEmailSettings = 
       emailDeliveryServiceName = 'graph';
       fromEmail = organization.thirdParties?.graph?.fromEmail || '';
       replyToEmail = organization.thirdParties?.graph?.replyToEmail || '';
-    } else if (organization.thirdParties?.exchange?.selected) {
-      emailDeliveryServiceName = 'exchange';
-      fromEmail = organization.thirdParties?.exchange?.fromEmail || '';
-      replyToEmail = organization.thirdParties?.exchange?.replyToEmail || '';
     } else if (organization.thirdParties?.smtp?.selected) {
       emailDeliveryServiceName = 'smtp';
       fromEmail = organization.thirdParties?.smtp?.fromEmail || '';
@@ -208,7 +173,6 @@ export default function ThirdPartiesForm({ organization, excludeEmailSettings = 
       emailDeliveryServiceActive:
         !!organization.thirdParties?.gmail?.selected ||
         !!organization.thirdParties?.graph?.selected ||
-        !!organization.thirdParties?.exchange?.selected ||
         !!organization.thirdParties?.smtp?.selected ||
         !!organization.thirdParties?.mailgun?.selected,
       emailDeliveryServiceName,
@@ -219,16 +183,6 @@ export default function ThirdPartiesForm({ organization, excludeEmailSettings = 
       graph_clientId: organization.thirdParties?.graph?.clientId || '',
       graph_clientSecret: organization.thirdParties?.graph?.clientSecret || '',
       graph_senderEmail: organization.thirdParties?.graph?.senderEmail || '',
-
-      exchange_server: organization.thirdParties?.exchange?.server || '',
-      exchange_port: organization.thirdParties?.exchange?.port || 25,
-      exchange_secure: !!organization.thirdParties?.exchange?.secure,
-      exchange_authentication:
-        organization.thirdParties?.exchange?.authentication === undefined
-          ? true
-          : organization.thirdParties.exchange.authentication,
-      exchange_username: organization.thirdParties?.exchange?.username || '',
-      exchange_password: organization.thirdParties?.exchange?.password || '',
 
       smtp_server: organization.thirdParties?.smtp?.server || '',
       smtp_port: organization.thirdParties?.smtp?.port || 25,
@@ -271,15 +225,6 @@ export default function ThirdPartiesForm({ organization, excludeEmailSettings = 
     organization.thirdParties?.graph?.fromEmail,
     organization.thirdParties?.graph?.replyToEmail,
     organization.thirdParties?.graph?.selected,
-    organization.thirdParties?.exchange?.authentication,
-    organization.thirdParties?.exchange?.fromEmail,
-    organization.thirdParties?.exchange?.password,
-    organization.thirdParties?.exchange?.port,
-    organization.thirdParties?.exchange?.replyToEmail,
-    organization.thirdParties?.exchange?.secure,
-    organization.thirdParties?.exchange?.selected,
-    organization.thirdParties?.exchange?.server,
-    organization.thirdParties?.exchange?.username,
     organization.thirdParties?.mailgun?.apiKey,
     organization.thirdParties?.mailgun?.domain,
     organization.thirdParties?.mailgun?.fromEmail,
@@ -306,12 +251,6 @@ export default function ThirdPartiesForm({ organization, excludeEmailSettings = 
       graph_clientId,
       graph_clientSecret,
       graph_senderEmail,
-      exchange_server,
-      exchange_port,
-      exchange_secure,
-      exchange_authentication,
-      exchange_username,
-      exchange_password,
       smtp_server,
       smtp_port,
       smtp_secure,
@@ -355,20 +294,6 @@ export default function ThirdPartiesForm({ organization, excludeEmailSettings = 
             replyToEmail
           };
 
-          formData.thirdParties.exchange = {
-            selected: emailDeliveryServiceName === 'exchange',
-            server: exchange_server,
-            port: exchange_port,
-            secure: exchange_secure,
-            authentication: exchange_authentication,
-            username: exchange_username,
-            password: exchange_password,
-            passwordUpdated:
-              exchange_password !== initialValues.exchange_password,
-            fromEmail,
-            replyToEmail
-          };
-
           formData.thirdParties.smtp = {
             selected: emailDeliveryServiceName === 'smtp',
             server: smtp_server,
@@ -393,7 +318,6 @@ export default function ThirdPartiesForm({ organization, excludeEmailSettings = 
         } else {
           formData.thirdParties.gmail = null;
           formData.thirdParties.graph = null;
-          formData.thirdParties.exchange = null;
           formData.thirdParties.smtp = null;
           formData.thirdParties.mailgun = null;
         }
@@ -424,7 +348,6 @@ export default function ThirdPartiesForm({ organization, excludeEmailSettings = 
       excludeEmailSettings,
       initialValues.gmail_appPassword,
       initialValues.graph_clientSecret,
-      initialValues.exchange_password,
       initialValues.smtp_password,
       initialValues.mailgun_apiKey,
       initialValues.keyId,
@@ -490,7 +413,6 @@ export default function ThirdPartiesForm({ organization, excludeEmailSettings = 
                   >
                     <RadioField value="gmail" label="Gmail" />
                     <RadioField value="graph" label="Microsoft Graph" />
-                    <RadioField value="exchange" label="Exchange" />
                     <RadioField value="smtp" label="SMTP" />
                     <RadioField value="mailgun" label="Mailgun" />
                   </RadioFieldGroup>
@@ -532,48 +454,6 @@ export default function ThirdPartiesForm({ organization, excludeEmailSettings = 
                         label={t('Sender mailbox email')}
                         name="graph_senderEmail"
                       />
-                    </>
-                  )}
-                  {values?.emailDeliveryServiceName === 'exchange' && (
-                    <>
-                      <TextField
-                        label={t('Exchange server')}
-                        name="exchange_server"
-                      />
-                      <NumberField
-                        label={t('Port')}
-                        name="exchange_port"
-                        min="1"
-                        max="65535"
-                      />
-                      <SwitchField
-                        label={t(
-                          'Enable explicit TLS (Implicit TLS / StartTLS is always used when supported by the server)'
-                        )}
-                        name="exchange_secure"
-                      />
-                      <br />
-                      <SwitchField
-                        label={t('Use authentication')}
-                        name="exchange_authentication"
-                      />
-                      {values?.exchange_authentication ? (
-                        <>
-                          <TextField
-                            label={t('Username')}
-                            name="exchange_username"
-                          />
-                          <TextField
-                            label={t('Password')}
-                            name="exchange_password"
-                            type="password"
-                            showHidePassword={
-                              values.exchange_password !==
-                              initialValues.exchange_password
-                            }
-                          />
-                        </>
-                      ) : null}
                     </>
                   )}
                   {values?.emailDeliveryServiceName === 'smtp' && (

@@ -18,6 +18,12 @@ export function mergeOrganization(organization = {}, orgPart) {
         appPasswordUpdated: false
       }
     : null;
+  const graph = organization.thirdParties?.graph
+    ? {
+        ...organization.thirdParties.graph,
+        clientSecretUpdated: false
+      }
+    : null;
   const smtp = organization.thirdParties?.smtp
     ? {
         ...organization.thirdParties.smtp,
@@ -33,20 +39,25 @@ export function mergeOrganization(organization = {}, orgPart) {
   const b2 = organization.thirdParties?.b2
     ? {
         ...organization.thirdParties.b2,
-        applicationKeyIdUpdated: false,
+        keyIdUpdated: false,
         applicationKeyUpdated: false
       }
     : null;
 
+  const mergedThirdParties = {
+    ...(organization.thirdParties || {}),
+    gmail,
+    graph,
+    smtp,
+    mailgun,
+    b2,
+    ...(orgPart?.thirdParties || {})
+  };
+
   const mergedOrg = {
     ...organization,
     // Do not update keys when the thirdParties is not touched
-    thirdParties: {
-      gmail,
-      smtp,
-      mailgun,
-      b2
-    },
+    thirdParties: mergedThirdParties,
     ...orgPart
   };
   return mergedOrg;

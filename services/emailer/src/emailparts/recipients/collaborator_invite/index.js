@@ -13,10 +13,6 @@ export function get(email, params, data) {
     emailDeliveryServiceConfig = data.landlord.thirdParties.graph;
   }
 
-  if (data.landlord.thirdParties?.exchange?.selected) {
-    emailDeliveryServiceConfig = data.landlord.thirdParties.exchange;
-  }
-
   if (data.landlord.thirdParties?.smtp?.selected) {
     emailDeliveryServiceConfig = data.landlord.thirdParties.smtp;
   }

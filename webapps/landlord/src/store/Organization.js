@@ -35,7 +35,6 @@ export default class Organization {
     return (
       !!this.selected?.thirdParties?.gmail?.selected ||
       !!this.selected?.thirdParties?.graph?.selected ||
-      !!this.selected?.thirdParties?.exchange?.selected ||
       this.selected?.thirdParties?.smtp?.selected ||
       this.selected?.thirdParties?.mailgun?.selected
     );

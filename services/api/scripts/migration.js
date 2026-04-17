@@ -11,10 +11,17 @@ async function updateThirdPartyConfiguration() {
   logger.info(`updating Realm ${landlords.length} records`);
   await Promise.all(
     landlords.map(async (landlord) => {
+      const hasMailgunApiKey =
+        landlord.thirdParties?.mailgun?.apiKey !== undefined;
+      const mailgunSelectedUndefined =
+        landlord.thirdParties?.mailgun?.selected === undefined;
+      const gmailSelectedUndefined =
+        landlord.thirdParties?.gmail?.selected === undefined;
+
       if (
-        landlord.thirdParties.mailgun.apiKey !== undefined &&
-        landlord.thirdParties.mailgun.selected === undefined &&
-        landlord.thirdParties.gmail.selected === undefined
+        hasMailgunApiKey &&
+        mailgunSelectedUndefined &&
+        gmailSelectedUndefined
       ) {
         landlord.thirdParties.gmail.selected = false;
         landlord.thirdParties.mailgun.selected = true;
@@ -26,46 +33,45 @@ async function updateThirdPartyConfiguration() {
 }
 
 async function cleanupUnusedAttributes() {
-  const landlords = await Collections.Realm.find({});
-  logger.info(`cleaning up Realm ${landlords.length} records`);
-  await Promise.all(
-    landlords.map(async (landlord) => {
-      landlord.set('administrator', undefined, { strict: false });
-      landlord.set('bank', undefined, { strict: false });
-      landlord.set('capital', undefined, { strict: false });
-      landlord.set('city', undefined, { strict: false });
-      landlord.set('company', undefined, { strict: false });
-      landlord.set('contact', undefined, { strict: false });
-      landlord.set('email', undefined, { strict: false });
-      landlord.set('legalForm', undefined, { strict: false });
-      landlord.set('manager', undefined, { strict: false });
-      landlord.set('phone1', undefined, { strict: false });
-      landlord.set('phone2', undefined, { strict: false });
-      landlord.set('rcs', undefined, { strict: false });
-      landlord.set('renter', undefined, { strict: false });
-
-      landlord.set('realmId', undefined, { strict: false });
-      landlord.set('realmName', undefined, { strict: false });
-      landlord.set('rib', undefined, { strict: false });
-      landlord.set('siret', undefined, { strict: false });
-      landlord.set('street1', undefined, { strict: false });
-      landlord.set('street2', undefined, { strict: false });
-      landlord.set('vatNumber', undefined, { strict: false });
-      landlord.set('zipCode', undefined, { strict: false });
-
-      landlord.set('user1', undefined, { strict: false });
-      landlord.set('user1', undefined, { strict: false });
-      landlord.set('user2', undefined, { strict: false });
-      landlord.set('user3', undefined, { strict: false });
-      landlord.set('user4', undefined, { strict: false });
-      landlord.set('user5', undefined, { strict: false });
-      landlord.set('user6', undefined, { strict: false });
-      landlord.set('user7', undefined, { strict: false });
-      landlord.set('user8', undefined, { strict: false });
-      landlord.set('user9', undefined, { strict: false });
-      landlord.set('user10', undefined, { strict: false });
-      return await landlord.save();
-    })
+  const landlordsCount = await Collections.Realm.countDocuments({});
+  logger.info(`cleaning up Realm ${landlordsCount} records`);
+  await Collections.Realm.updateMany(
+    {},
+    {
+      $unset: {
+        administrator: '',
+        bank: '',
+        capital: '',
+        city: '',
+        company: '',
+        contact: '',
+        email: '',
+        legalForm: '',
+        manager: '',
+        phone1: '',
+        phone2: '',
+        rcs: '',
+        renter: '',
+        realmId: '',
+        realmName: '',
+        rib: '',
+        siret: '',
+        street1: '',
+        street2: '',
+        vatNumber: '',
+        zipCode: '',
+        user1: '',
+        user2: '',
+        user3: '',
+        user4: '',
+        user5: '',
+        user6: '',
+        user7: '',
+        user8: '',
+        user9: '',
+        user10: ''
+      }
+    }
   );
 
   const leases = await Collections.Lease.find({});

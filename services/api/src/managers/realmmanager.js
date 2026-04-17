@@ -44,9 +44,6 @@ function _escapeSecrets(realm) {
   if (realm.thirdParties?.graph?.clientSecret) {
     realm.thirdParties.graph.clientSecret = SECRET_PLACEHOLDER;
   }
-  if (realm.thirdParties?.exchange?.password) {
-    realm.thirdParties.exchange.password = SECRET_PLACEHOLDER;
-  }
   if (realm.thirdParties?.smtp?.password) {
     realm.thirdParties.smtp.password = SECRET_PLACEHOLDER;
   }
@@ -83,12 +80,6 @@ export async function add(req, res) {
     );
   }
 
-  if (newRealm.thirdParties?.exchange?.password) {
-    newRealm.thirdParties.exchange.password = Crypto.encrypt(
-      newRealm.thirdParties.exchange.password
-    );
-  }
-
   if (newRealm.thirdParties?.smtp?.password) {
     newRealm.thirdParties.smtp.password = Crypto.encrypt(
       newRealm.thirdParties.smtp.password
@@ -121,8 +112,6 @@ export async function update(req, res) {
     !!req.body.thirdParties?.gmail?.appPasswordUpdated;
   const graphClientSecretUpdated =
     !!req.body.thirdParties?.graph?.clientSecretUpdated;
-  const exchangePasswordUpdated =
-    !!req.body.thirdParties?.exchange?.passwordUpdated;
   const smtpPasswordUpdated = !!req.body.thirdParties?.smtp?.passwordUpdated;
   const mailgunApiKeyUpdated = !!req.body.thirdParties?.mailgun?.apiKeyUpdated;
   const b2KeyIdUpdated = !!req.body.thirdParties?.b2?.keyIdUpdated;
@@ -180,18 +169,6 @@ export async function update(req, res) {
     } else {
       updatedRealm.thirdParties.graph.clientSecret =
         previousRealm.thirdParties.graph?.clientSecret;
-    }
-  }
-
-  if (req.body.thirdParties?.exchange) {
-    logger.debug('realm update with Exchange third party emailer');
-    if (exchangePasswordUpdated) {
-      updatedRealm.thirdParties.exchange.password = Crypto.encrypt(
-        req.body.thirdParties.exchange.password
-      );
-    } else {
-      updatedRealm.thirdParties.exchange.password =
-        previousRealm.thirdParties.exchange?.password;
     }
   }
 
@@ -312,12 +289,19 @@ export async function inviteMember(req, res) {
   const action = existingAccount ? 'signin' : 'signup';
   const { EMAILER_URL, LANDLORD_APP_URL } =
     Service.getInstance().envConfig.getValues();
-  const appUrl = (LANDLORD_APP_URL || 'http://localhost:8080/landlord').replace(
-    /\/$/,
-    ''
-  );
-
-  const inviteLink = `${appUrl}/${action}?email=${encodeURIComponent(email)}`;
+  const requestLandlordUrl = req.headers.origin
+    ? `${req.headers.origin.replace(/\/$/, '')}/landlord`
+    : null;
+  const appUrl = (
+    requestLandlordUrl ||
+    LANDLORD_APP_URL ||
+    'http://localhost:8080/landlord'
+  ).replace(/\/$/, '');
+  const inviteQuery = new URLSearchParams({
+    email,
+    invite: 'collaborator'
+  });
+  const inviteLink = `${appUrl}/${action}?${inviteQuery.toString()}`;
 
   await axios.post(
     EMAILER_URL,
@@ -376,9 +360,7 @@ export async function sendTestEmail(req, res) {
     ? 'Gmail'
     : req.realm.thirdParties?.graph?.selected
       ? 'Microsoft Graph'
-    : req.realm.thirdParties?.exchange?.selected
-      ? 'Exchange'
-      : req.realm.thirdParties?.smtp?.selected
+    : req.realm.thirdParties?.smtp?.selected
         ? 'SMTP'
         : req.realm.thirdParties?.mailgun?.selected
           ? 'Mailgun'
