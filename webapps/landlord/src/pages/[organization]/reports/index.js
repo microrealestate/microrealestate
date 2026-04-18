@@ -1,20 +1,21 @@
+/* eslint-disable sort-imports */
 import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/router';
 
-import { apiFetcher } from '../../../utils/fetch';
-import { downloadDocument } from '../../../utils/fetch';
-import { withAuthentication } from '../../../components/Authentication';
-import { Button } from '../../../components/ui/button';
-import { Card } from '../../../components/ui/card';
-import { Input } from '../../../components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../components/ui/tabs';
-import Page from '../../../components/Page';
-import RentReportCard from '../../../components/reports/RentReportCard';
 import {
   loadCityRentRanges,
   mergeCityRentRanges
 } from '../../../components/properties/CityEstimatesCard';
+import { Button } from '../../../components/ui/button';
+import { Card } from '../../../components/ui/card';
+import { Input } from '../../../components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../components/ui/tabs';
+import { apiFetcher, downloadDocument } from '../../../utils/fetch';
+import { withAuthentication } from '../../../components/Authentication';
+import Page from '../../../components/Page';
+import RentReportCard from '../../../components/reports/RentReportCard';
+import UtilityReportCard from '../../../components/reports/UtilityReportCard';
 
 function toCurrency(value) {
   return `$${Number(value || 0).toFixed(2)}`;
@@ -54,6 +55,16 @@ function buildDefaultDateRange() {
     endDate: toISODate(end)
   };
 }
+
+const DEFAULT_UTILITY_TYPES = [
+  'power',
+  'gas',
+  'water',
+  'sewer',
+  'trash',
+  'internet',
+  'other'
+];
 
 function ReportsPage() {
   const router = useRouter();
@@ -134,16 +145,36 @@ function ReportsPage() {
     }
   });
 
-  const breakdownRows = reportsQuery.data?.sections?.propertyCostBreakdown || [];
-  const utilityTypes = reportsQuery.data?.sections?.utilityTypes || [
-    'power',
-    'gas',
-    'water',
-    'sewer',
-    'trash',
-    'internet',
-    'other'
-  ];
+  const utilityReportQuery = useQuery({
+    queryKey: [
+      'reports-utility-ledger',
+      startDate,
+      endDate,
+      propertyId,
+      includePending
+    ],
+    queryFn: async () => {
+      const response = await apiFetcher().get('/reports/utility-ledger', {
+        params: {
+          startDate,
+          endDate,
+          propertyId: propertyId || undefined,
+          includePending
+        }
+      });
+      return response.data;
+    }
+  });
+
+  const breakdownRows = useMemo(() => {
+    return reportsQuery.data?.sections?.propertyCostBreakdown || [];
+  }, [reportsQuery.data]);
+
+  const utilityTypes = useMemo(() => {
+    return reportsQuery.data?.sections?.utilityTypes || DEFAULT_UTILITY_TYPES;
+  }, [reportsQuery.data]);
+
+  const utilityReportRows = utilityReportQuery.data?.rows || [];
 
   const totals = useMemo(() => {
     return breakdownRows.reduce(
@@ -163,7 +194,7 @@ function ReportsPage() {
         { utilities: 0, combined: 0 }
       )
     );
-  }, [breakdownRows]);
+  }, [breakdownRows, utilityTypes]);
 
   function handleExportCsv() {
     const suffix = `${startDate || 'start'}_${endDate || 'end'}`;
@@ -179,7 +210,11 @@ function ReportsPage() {
 
   return (
     <Page
-      loading={reportsQuery.isLoading || propertiesQuery.isLoading}
+      loading={
+        reportsQuery.isLoading ||
+        utilityReportQuery.isLoading ||
+        propertiesQuery.isLoading
+      }
       dataCy="reportsPage"
     >
       <Card className="p-4 mb-4">
@@ -229,18 +264,17 @@ function ReportsPage() {
             </Button>
           </div>
         </div>
-        <div className="mt-3 flex flex-wrap gap-2">
-        </div>
       </Card>
 
       <Tabs defaultValue="property-cost-breakdown" className="mb-4">
         <TabsList className="mb-4 w-full justify-start overflow-x-auto">
           <TabsTrigger value="property-cost-breakdown">Utility Breakdown</TabsTrigger>
+          <TabsTrigger value="utility-report">Utility Report</TabsTrigger>
           <TabsTrigger value="rent-report">Rent Report</TabsTrigger>
         </TabsList>
 
         <TabsContent value="property-cost-breakdown">
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 mb-4">
+          <div className="grid grid-cols-1 gap-3 mb-4 md:grid-cols-2 xl:grid-cols-4">
             <Card className="p-4">
               <div className="text-xs uppercase text-muted-foreground">Utilities total</div>
               <div className="text-xl font-semibold">{toCurrency(totals.utilities)}</div>
@@ -254,13 +288,15 @@ function ReportsPage() {
           </div>
 
           <Card className="p-4 mb-4 overflow-x-auto">
-            <h2 className="text-lg font-semibold mb-3">Utility breakdown</h2>
+            <h2 className="mb-3 text-lg font-semibold">Utility breakdown</h2>
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left border-b">
                   <th className="py-2 pr-2">Property</th>
                   {utilityTypes.map((type) => (
-                    <th key={type} className="py-2 pr-2 capitalize">{type}</th>
+                    <th key={type} className="py-2 pr-2 capitalize">
+                      {type}
+                    </th>
                   ))}
                   <th className="py-2 pr-2">Combined</th>
                 </tr>
@@ -291,6 +327,16 @@ function ReportsPage() {
               ))}
             </table>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="utility-report">
+          <UtilityReportCard
+            rows={utilityReportRows}
+            startDate={startDate}
+            endDate={endDate}
+            propertyId={propertyId}
+            includePending={includePending}
+          />
         </TabsContent>
 
         <TabsContent value="rent-report">

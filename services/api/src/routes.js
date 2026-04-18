@@ -365,6 +365,14 @@ export default function routes() {
     Middlewares.asyncWrapper(reportsManager.propertyCostsCsv)
   );
   reportsRouter.get(
+    '/utility-ledger',
+    Middlewares.asyncWrapper(reportsManager.utilityLedger)
+  );
+  reportsRouter.get(
+    '/utility-ledger.csv',
+    Middlewares.asyncWrapper(reportsManager.utilityLedgerCsv)
+  );
+  reportsRouter.get(
     '/space-marketing-summary',
     Middlewares.asyncWrapper(reportsManager.spaceMarketingSummary)
   );

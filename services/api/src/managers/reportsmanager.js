@@ -603,6 +603,247 @@ export async function propertyCostsCsv(req, res) {
   return res.send(csv);
 }
 
+function normalizeAccountNumber(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '');
+}
+
+function normalizeDateValue(value) {
+  if (!value) {
+    return '';
+  }
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return '';
+  }
+
+  return parsed.toISOString().slice(0, 10);
+}
+
+function buildUtilityAccountKey(type, accountNumber) {
+  return `${String(type || '').trim().toLowerCase()}::${normalizeAccountNumber(
+    accountNumber
+  )}`;
+}
+
+function getUtilityAccountLabel(utilityAccount) {
+  if (!utilityAccount) {
+    return '';
+  }
+
+  return [utilityAccount.provider, utilityAccount.accountNumber]
+    .filter(Boolean)
+    .join(' / ');
+}
+
+function buildUtilityReportRows({
+  properties,
+  utilities,
+  utilityAccounts,
+  selectedPropertyId,
+  includePending,
+  startDate,
+  endDate
+}) {
+  const propertyById = properties.reduce((accumulator, property) => {
+    accumulator[normalizeId(property._id)] = property;
+    return accumulator;
+  }, {});
+
+  const utilityAccountByKey = utilityAccounts.reduce((accumulator, utilityAccount) => {
+    accumulator[buildUtilityAccountKey(utilityAccount.type, utilityAccount.accountNumber)] = utilityAccount;
+    return accumulator;
+  }, {});
+
+  const scopedPropertyIds = resolveScopedPropertyIds(
+    properties,
+    propertyById,
+    selectedPropertyId
+  );
+
+  return utilities
+    .filter((utility) => {
+      const propertyId = normalizeId(utility?.propertyId);
+      if (!scopedPropertyIds.has(propertyId)) {
+        return false;
+      }
+
+      if (!includePending && String(utility?.status || 'confirmed') !== 'confirmed') {
+        return false;
+      }
+
+      const utilityDate = parseBillingMonthToDate(utility?.billingMonth);
+      return isWithinDateRange(utilityDate, startDate, endDate);
+    })
+    .map((utility) => {
+      const propertyId = normalizeId(utility?.propertyId);
+      const property = propertyById[propertyId];
+      if (!property) {
+        return null;
+      }
+
+      const parentPropertyId = normalizePropertyParentId(property);
+      const parentProperty = parentPropertyId ? propertyById[parentPropertyId] : null;
+      const matchedAccount = utilityAccountByKey[
+        buildUtilityAccountKey(utility?.type, utility?.accountNumber)
+      ];
+      const accountAllocationLabels = Array.isArray(matchedAccount?.allocations)
+        ? matchedAccount.allocations
+            .map((allocation) => propertyById[normalizeId(allocation?.propertyId)])
+            .filter(Boolean)
+            .map((allocationProperty) => getPropertyLabel(allocationProperty, propertyById))
+        : [];
+
+      return {
+        id: normalizeId(utility?._id),
+        propertyId,
+        propertyLabel: getPropertyLabel(property, propertyById),
+        parentPropertyId,
+        parentPropertyLabel: parentProperty
+          ? String(parentProperty.name || 'Unnamed property')
+          : '',
+        childPropertyLabel: String(property.name || 'Unnamed property'),
+        accountKey: buildUtilityAccountKey(utility?.type, utility?.accountNumber),
+        accountNumber: String(utility?.accountNumber || matchedAccount?.accountNumber || ''),
+        accountLabel: getUtilityAccountLabel(matchedAccount) || String(utility?.accountNumber || ''),
+        provider: String(utility?.provider || matchedAccount?.provider || ''),
+        accountAllocationLabels,
+        billingMonth: String(utility?.billingMonth || ''),
+        amount: roundCurrency(utility?.amount || 0),
+        dueDate: normalizeDateValue(utility?.dueDate),
+        paidDate: normalizeDateValue(utility?.paidDate),
+        type: String(utility?.type || 'other').trim().toLowerCase() || 'other',
+        status: String(utility?.status || 'confirmed').trim().toLowerCase() || 'confirmed',
+        source: String(utility?.source || 'manual').trim().toLowerCase() || 'manual',
+        notes: String(utility?.notes || '').trim(),
+        lastUpdatedBy: String(utility?.lastUpdatedBy || '').trim(),
+        createdAt: normalizeDateValue(utility?.createdAt),
+        updatedAt: normalizeDateValue(utility?.updatedAt)
+      };
+    })
+    .filter(Boolean)
+    .sort((left, right) => {
+      const monthComparison = String(right.billingMonth || '').localeCompare(
+        String(left.billingMonth || '')
+      );
+      if (monthComparison !== 0) {
+        return monthComparison;
+      }
+
+      const propertyComparison = String(left.propertyLabel || '').localeCompare(
+        String(right.propertyLabel || '')
+      );
+      if (propertyComparison !== 0) {
+        return propertyComparison;
+      }
+
+      return String(left.accountLabel || '').localeCompare(String(right.accountLabel || ''));
+    });
+}
+
+function buildUtilityReportSummary(rows) {
+  return rows.reduce(
+    (accumulator, row) => {
+      accumulator.totalAmount = roundCurrency(accumulator.totalAmount + Number(row.amount || 0));
+      accumulator.byStatus[row.status] = roundCurrency(
+        Number(accumulator.byStatus[row.status] || 0) + Number(row.amount || 0)
+      );
+      accumulator.byType[row.type] = roundCurrency(
+        Number(accumulator.byType[row.type] || 0) + Number(row.amount || 0)
+      );
+      return accumulator;
+    },
+    {
+      totalAmount: 0,
+      byStatus: { confirmed: 0, pending: 0 },
+      byType: {}
+    }
+  );
+}
+
+export async function utilityLedger(req, res) {
+  const realmId = String(req.realm._id);
+  const selectedPropertyId = normalizeId(req.query.propertyId);
+  const includePending =
+    String(req.query.includePending || 'true').toLowerCase() !== 'false';
+  const startDate = parseDateParam(req.query.startDate, 'start');
+  const endDate = parseDateParam(req.query.endDate, 'end');
+
+  const [properties, utilities, utilityAccounts] = await Promise.all([
+    Collections.Property.find({ realmId }).lean(),
+    Collections.Utility.find({ realmId }).lean(),
+    Collections.UtilityAccount.find({ realmId }).lean()
+  ]);
+
+  const rows = buildUtilityReportRows({
+    properties,
+    utilities,
+    utilityAccounts,
+    selectedPropertyId,
+    includePending,
+    startDate,
+    endDate
+  });
+  const summary = buildUtilityReportSummary(rows);
+  const billingMonths = [...new Set(rows.map((row) => row.billingMonth).filter(Boolean))].sort(
+    (left, right) => right.localeCompare(left)
+  );
+
+  return res.json({
+    filters: {
+      startDate: startDate ? startDate.toISOString().slice(0, 10) : null,
+      endDate: endDate ? endDate.toISOString().slice(0, 10) : null,
+      propertyId: selectedPropertyId || null,
+      includePending
+    },
+    rows,
+    summary,
+    billingMonths,
+    utilityTypes: UTILITY_TYPE_ORDER
+  });
+}
+
+export async function utilityLedgerCsv(req, res) {
+  const fakeRes = {
+    jsonPayload: null,
+    json(payload) {
+      this.jsonPayload = payload;
+      return payload;
+    }
+  };
+
+  await utilityLedger(req, fakeRes);
+
+  const rows = fakeRes?.jsonPayload?.rows || [];
+  const fields = [
+    { label: 'Billing Month', value: 'billingMonth' },
+    { label: 'Property', value: 'propertyLabel' },
+    { label: 'Parent Property', value: 'parentPropertyLabel' },
+    { label: 'Account Number', value: 'accountNumber' },
+    { label: 'Account', value: 'accountLabel' },
+    { label: 'Account Allocations', value: (row) => (row.accountAllocationLabels || []).join(' | ') },
+    { label: 'Type', value: 'type' },
+    { label: 'Status', value: 'status' },
+    { label: 'Source', value: 'source' },
+    { label: 'Amount', value: 'amount' },
+    { label: 'Due Date', value: 'dueDate' },
+    { label: 'Paid Date', value: 'paidDate' },
+    { label: 'Notes', value: 'notes' },
+    { label: 'Last Updated By', value: 'lastUpdatedBy' },
+    { label: 'Created At', value: 'createdAt' },
+    { label: 'Updated At', value: 'updatedAt' }
+  ];
+
+  const parser = new Parser({ fields, delimiter: ';', withBOM: true });
+  const csv = parser.parse(rows);
+
+  res.header('Content-Type', 'text/csv');
+  return res.send(csv);
+}
+
 export async function spaceMarketingSummary(req, res) {
   const realmId = String(req.realm._id);
   const selectedPropertyId = normalizeId(req.query.propertyId);

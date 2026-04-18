@@ -14,6 +14,11 @@ export const REPORT_SUBPAGES = [
     slug: 'property-cost-breakdown',
     title: 'Property Cost Breakdown',
     description: 'Parent and child rollups for utilities and property taxes.'
+  },
+  {
+    slug: 'utility-report',
+    title: 'Utility Report',
+    description: 'Sortable utility ledger with a pivot-style summary.'
   }
 ];
 
