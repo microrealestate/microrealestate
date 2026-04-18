@@ -11,6 +11,7 @@ import ApplicationFormDialog from '../../../components/organization/members/Appl
 import ApplicationShowDialog from '../../../components/organization/members/ApplicationShowDialog';
 import { LuPlusCircle } from 'react-icons/lu';
 import MemberFormDialog from '../../../components/organization/members/MemberFormDialog';
+import UserAccountFormDialog from '../../../components/organization/members/UserAccountFormDialog';
 import Members from '../../../components/organization/Members';
 import Page from '../../../components/Page';
 import ShortcutButton from '../../../components/ShortcutButton';
@@ -29,6 +30,10 @@ function AccessSettings() {
   });
   const [openMemberFormDialog, setOpenMemberFormDialog] = useState(false);
   const [selectedOrgForMember, setSelectedOrgForMember] = useState(null);
+  const [openUserAccountFormDialog, setOpenUserAccountFormDialog] =
+    useState(false);
+  const [selectedOrgForUserAccount, setSelectedOrgForUserAccount] =
+    useState(null);
   const [openApplicationFormDialog, setOpenApplicationFormDialog] =
     useState(false);
   const [selectedOrgForApp, setSelectedOrgForApp] = useState(null);
@@ -55,6 +60,15 @@ function AccessSettings() {
             onClick={() => {
               setSelectedOrgForMember(organization);
               setOpenMemberFormDialog(true);
+            }}
+            disabled={!store.user.isAdministrator}
+          />
+          <ShortcutButton
+            label={t('New user account')}
+            Icon={LuPlusCircle}
+            onClick={() => {
+              setSelectedOrgForUserAccount(organization);
+              setOpenUserAccountFormDialog(true);
             }}
             disabled={!store.user.isAdministrator}
           />
@@ -86,6 +100,11 @@ function AccessSettings() {
         open={openMemberFormDialog}
         setOpen={setOpenMemberFormDialog}
         data={selectedOrgForMember}
+      />
+      <UserAccountFormDialog
+        open={openUserAccountFormDialog}
+        setOpen={setOpenUserAccountFormDialog}
+        data={selectedOrgForUserAccount}
       />
       <ApplicationFormDialog
         open={openApplicationFormDialog}

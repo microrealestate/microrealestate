@@ -16,6 +16,7 @@ export default class User {
     this.lastName = undefined;
     this.email = undefined;
     this.role = undefined;
+    this.mustChangePassword = false;
 
     makeObservable(this, {
       token: observable,
@@ -24,6 +25,7 @@ export default class User {
       lastName: observable,
       email: observable,
       role: observable,
+      mustChangePassword: observable,
       signedIn: computed,
       isAdministrator: computed,
       setRole: action,
@@ -33,7 +35,8 @@ export default class User {
       signOut: flow,
       refreshTokens: flow,
       forgotPassword: flow,
-      resetPassword: flow
+      resetPassword: flow,
+      changePassword: flow
     });
   }
 
@@ -51,12 +54,13 @@ export default class User {
 
   setUserFromToken(accessToken) {
     const {
-      account: { firstname, lastname, email },
+      account: { firstname, lastname, email, passwordChangeRequired },
       exp
     } = jose.decodeJwt(accessToken);
     this.firstName = firstname;
     this.lastName = lastname;
     this.email = email;
+    this.mustChangePassword = !!passwordChangeRequired;
     this.token = accessToken;
     this.tokenExpiry = exp;
     setAccessToken(accessToken);
@@ -87,6 +91,7 @@ export default class User {
       );
       const { accessToken } = response.data;
       this.setUserFromToken(accessToken);
+      this.mustChangePassword = !!response.data.mustChangePassword;
       return 200;
     } catch (error) {
       return error?.response?.status || 0;
@@ -102,6 +107,7 @@ export default class User {
       this.email = null;
       this.token = null;
       this.tokenExpiry = undefined;
+      this.mustChangePassword = false;
       setAccessToken(null);
     }
   }
@@ -137,6 +143,7 @@ export default class User {
         this.email = undefined;
         this.token = undefined;
         this.tokenExpiry = undefined;
+        this.mustChangePassword = false;
         setAccessToken(null);
       }
     } catch (error) {
@@ -145,6 +152,7 @@ export default class User {
       this.email = undefined;
       this.token = undefined;
       this.tokenExpiry = undefined;
+      this.mustChangePassword = false;
       setAccessToken(null);
       return { status: error?.response?.status, error };
     }
@@ -167,6 +175,25 @@ export default class User {
         resetToken,
         password
       });
+      return 200;
+    } catch (error) {
+      return error.response.status;
+    }
+  }
+
+  *changePassword(currentPassword, password) {
+    try {
+      const response = yield apiFetcher().post(
+        '/authenticator/landlord/changepassword',
+        {
+          currentPassword,
+          password
+        }
+      );
+      const { accessToken } = response.data;
+      if (accessToken) {
+        this.setUserFromToken(accessToken);
+      }
       return 200;
     } catch (error) {
       return error.response.status;

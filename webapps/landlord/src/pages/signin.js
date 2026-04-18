@@ -76,6 +76,11 @@ export default function SignIn() {
         // Explicitly set auth header before loading organizations.
         setAccessToken(store.user.token);
 
+        if (store.user.mustChangePassword) {
+          router.push('/change-password');
+          return;
+        }
+
         let orgFetch = await store.organization.fetch();
         let orgFetchStatus =
           typeof orgFetch === 'number' ? orgFetch : orgFetch?.status;

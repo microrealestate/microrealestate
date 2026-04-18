@@ -226,6 +226,10 @@ export function HamburgerMenu({ className, onChange }) {
 
   const handleMenuClick = useCallback(
     (menuItem) => {
+      const selectedOrganization = store.organization.selected;
+      if (!selectedOrganization) {
+        return;
+      }
       setSelectedMenu(menuItem);
       onChange?.(menuItem);
       let pathname = menuItem.pathname.replace(
@@ -234,10 +238,10 @@ export function HamburgerMenu({ className, onChange }) {
       );
       pathname = pathname.replace('[year]', moment().year());
       router.push(
-        `/${store.organization.selected.name}${pathname}`,
+        `/${selectedOrganization.name}${pathname}`,
         undefined,
         {
-          locale: store.organization.selected.locale
+          locale: selectedOrganization.locale
         }
       );
     },
@@ -313,6 +317,10 @@ export function SideMenu({ className }) {
 
   const handleMenuClick = useCallback(
     (menuItem) => () => {
+      const selectedOrganization = store.organization.selected;
+      if (!selectedOrganization) {
+        return;
+      }
       setSelectedMenu(menuItem);
       let pathname = menuItem.pathname.replace(
         '[yearMonth]',
@@ -320,10 +328,10 @@ export function SideMenu({ className }) {
       );
       pathname = pathname.replace('[year]', moment().year());
       router.push(
-        `/${store.organization.selected.name}${pathname}`,
+        `/${selectedOrganization.name}${pathname}`,
         undefined,
         {
-          locale: store.organization.selected.locale
+          locale: selectedOrganization.locale
         }
       );
     },
@@ -342,7 +350,7 @@ export function SideMenu({ className }) {
       )}
     >
       <div className="whitespace-nowrap text-2xl font-semibold px-4 -mt-10">
-        {store.organization.selected.name}
+        {store.organization.selected?.name || ''}
       </div>
       <div className="text-muted-foreground px-4 mt-2">{config.APP_NAME}</div>
       <Separator className="bg-secondary-foreground/25 my-4" />

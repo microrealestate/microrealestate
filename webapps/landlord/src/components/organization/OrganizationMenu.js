@@ -116,12 +116,16 @@ export default function OrganizationMenu({ className }) {
 
   const handleMenuClick = useCallback(
     (menuItem) => {
+      const selectedOrganization = store.organization.selected;
+      if (!selectedOrganization) {
+        return;
+      }
       setSelectedMenu(menuItem);
       router.push(
-        `/${store.organization.selected.name}${menuItem.pathname}`,
+        `/${selectedOrganization.name}${menuItem.pathname}`,
         undefined,
         {
-          locale: store.organization.selected.locale
+          locale: selectedOrganization.locale
         }
       );
     },
@@ -164,7 +168,7 @@ export default function OrganizationMenu({ className }) {
             <Separator className="bg-secondary-foreground/25" />
             <SheetDescription className="px-4">
               {t('Organization information', {
-                organization: store.organization.selected.name
+                organization: store.organization.selected?.name || ''
               })}
             </SheetDescription>
             <div>

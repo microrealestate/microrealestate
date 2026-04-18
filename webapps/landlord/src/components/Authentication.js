@@ -31,6 +31,15 @@ export function withAuthentication(PageComponent, grantedRole) {
     }
 
     if (
+      store.user.mustChangePassword &&
+      router.pathname !== '/change-password'
+    ) {
+      window.location.assign(`${config.BASE_PATH}/change-password`);
+      return null;
+    }
+
+    if (
+      !store.user.mustChangePassword &&
       router.pathname !== '/firstaccess' &&
       !store.organization.items.length
     ) {

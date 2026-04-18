@@ -32,6 +32,124 @@ const _generateTokens = async (dbAccount) => {
   };
 };
 
+const _normalizeAccountEmail = (email) => String(email || '').trim().toLowerCase();
+
+const _validatePasswordChangeRequest = ({ currentPassword, password }) => {
+  if (
+    [currentPassword, password].map((el) => String(el || '').trim()).some((el) => !!el === false)
+  ) {
+    throw new ServiceError('missing fields', 422);
+  }
+};
+
+const _createAccount = Middlewares.asyncWrapper(async (req, res) => {
+  if (req.user.role !== 'administrator') {
+    throw new ServiceError(
+      'your current role does not allow to perform this action',
+      403
+    );
+  }
+
+  const {
+    firstname,
+    lastname,
+    email,
+    password,
+    passwordChangeRequired,
+    role = 'renter'
+  } = req.body;
+  if (
+    [firstname, lastname, email, password]
+      .map((el) => String(el || '').trim())
+      .some((el) => !!el === false)
+  ) {
+    throw new ServiceError('missing fields', 422);
+  }
+
+  const normalizedEmail = _normalizeAccountEmail(email);
+  const account = await Collections.Account.findOne({
+    email: normalizedEmail
+  });
+
+  if (account) {
+    account.firstname = firstname;
+    account.lastname = lastname;
+    account.password = password;
+    account.passwordChangeRequired = !!passwordChangeRequired;
+    await account.save();
+  } else {
+    await Collections.Account.create({
+      firstname,
+      lastname,
+      email: normalizedEmail,
+      password,
+      passwordChangeRequired: !!passwordChangeRequired
+    });
+  }
+
+  const realm = await Collections.Realm.findOne({ _id: req.realm._id });
+  if (!realm) {
+    throw new ServiceError('organization not found', 404);
+  }
+
+  const member = realm.members.find(
+    ({ email: memberEmail }) =>
+      String(memberEmail || '')
+        .trim()
+        .toLowerCase() === normalizedEmail
+  );
+
+  const memberName = `${firstname} ${lastname}`.trim();
+  if (member) {
+    member.role = role;
+    member.name = memberName;
+    member.registered = true;
+  } else {
+    realm.members.push({
+      email: normalizedEmail,
+      role,
+      name: memberName,
+      registered: true
+    });
+  }
+
+  await realm.save();
+
+  res.sendStatus(account ? 200 : 201);
+});
+
+const _changePassword = Middlewares.asyncWrapper(async (req, res) => {
+  const { TOKEN_COOKIE_ATTRIBUTES } =
+    Service.getInstance().envConfig.getValues();
+  const { currentPassword, password } = req.body;
+  _validatePasswordChangeRequest({ currentPassword, password });
+
+  const email = _normalizeAccountEmail(req.user.email);
+  const account = await Collections.Account.findOne({ email });
+  if (!account) {
+    throw new ServiceError('invalid credentials', 401);
+  }
+
+  const validPassword = await bcrypt.compare(currentPassword, account.password);
+  if (!validPassword) {
+    throw new ServiceError('invalid credentials', 401);
+  }
+
+  account.password = password;
+  account.passwordChangeRequired = false;
+  await account.save();
+
+  const oldRefreshToken = req.cookies.refreshToken;
+  if (oldRefreshToken) {
+    await _clearTokens(oldRefreshToken);
+    res.clearCookie('refreshToken', TOKEN_COOKIE_ATTRIBUTES);
+  }
+
+  const { refreshToken, accessToken } = await _generateTokens(account.toObject());
+  res.cookie('refreshToken', refreshToken, TOKEN_COOKIE_ATTRIBUTES);
+  res.json({ accessToken });
+});
+
 const _refreshTokens = async (oldRefreshToken) => {
   const { REFRESH_TOKEN_SECRET } = Service.getInstance().envConfig.getValues();
   const oldAccessToken =
@@ -184,7 +302,8 @@ const _userSignIn = Middlewares.asyncWrapper(async (req, res) => {
   );
   res.cookie('refreshToken', refreshToken, TOKEN_COOKIE_ATTRIBUTES);
   res.json({
-    accessToken
+    accessToken,
+    mustChangePassword: !!account.passwordChangeRequired
   });
 });
 
@@ -250,6 +369,19 @@ export default function () {
       }
     })
   );
+
+  landlordRouter.use(
+    '/accounts',
+    Middlewares.needAccessToken(ACCESS_TOKEN_SECRET),
+    Middlewares.checkOrganization()
+  );
+  landlordRouter.post('/accounts', _createAccount);
+
+  landlordRouter.use(
+    '/changepassword',
+    Middlewares.needAccessToken(ACCESS_TOKEN_SECRET)
+  );
+  landlordRouter.post('/changepassword', _changePassword);
 
   landlordRouter.use(
     '/appcredz',
@@ -404,6 +536,7 @@ export default function () {
         email: email.toLowerCase()
       });
       account.password = password;
+      account.passwordChangeRequired = false;
       await account.save();
 
       res.sendStatus(200);

@@ -55,6 +55,38 @@ export async function createAppCredentials({ organization, expiryDate }) {
   return response.data;
 }
 
+export async function createUserAccount({
+  organization,
+  firstname,
+  lastname,
+  email,
+  password,
+  passwordChangeRequired,
+  role
+}) {
+  const response = await apiFetcher().post('/authenticator/landlord/accounts', {
+    firstname,
+    lastname,
+    email,
+    password,
+    passwordChangeRequired,
+    role
+  }, {
+    headers: {
+      organizationid: organization._id
+    }
+  });
+  return response.data;
+}
+
+export async function changePassword({ currentPassword, password }) {
+  const response = await apiFetcher().post('/authenticator/landlord/changepassword', {
+    currentPassword,
+    password
+  });
+  return response.data;
+}
+
 export async function fetchProperties(store) {
   const response = await store.property.fetch();
   return response.data;

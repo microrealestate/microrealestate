@@ -23,6 +23,7 @@ export namespace CollectionTypes {
     lastname: string;
     email: string;
     password: string;
+    passwordChangeRequired?: boolean;
     createdDate?: Date;
   };
 
