@@ -13,6 +13,7 @@ import * as projectManager from './managers/projectmanager.js';
 import * as propertyManager from './managers/propertymanager.js';
 import * as propertyTaxStatementManager from './managers/propertytaxstatementmanager.js';
 import * as realmManager from './managers/realmmanager.js';
+import * as reportsManager from './managers/reportsmanager.js';
 import * as rentManager from './managers/rentmanager.js';
 import * as utilityAccountManager from './managers/utilityaccountmanager.js';
 import * as utilityManager from './managers/utilitymanager.js';
@@ -353,6 +354,21 @@ export default function routes() {
     Middlewares.asyncWrapper(propertyTaxStatementManager.remove)
   );
   router.use('/property-tax-statements', propertyTaxStatementsRouter);
+
+  const reportsRouter = express.Router();
+  reportsRouter.get(
+    '/property-costs',
+    Middlewares.asyncWrapper(reportsManager.propertyCosts)
+  );
+  reportsRouter.get(
+    '/property-costs.csv',
+    Middlewares.asyncWrapper(reportsManager.propertyCostsCsv)
+  );
+  reportsRouter.get(
+    '/space-marketing-summary',
+    Middlewares.asyncWrapper(reportsManager.spaceMarketingSummary)
+  );
+  router.use('/reports', reportsRouter);
 
   const backupsRouter = express.Router();
   backupsRouter.post(

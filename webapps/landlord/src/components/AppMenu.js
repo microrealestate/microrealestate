@@ -142,6 +142,20 @@ const menuItems = [
     dataCy: 'accountingNav'
   },
   {
+    key: 'reports',
+    labelId: 'Reports',
+    pathname: '/reports',
+    Icon: LuClipboardList,
+    dataCy: 'reportsNav'
+  },
+  {
+    key: 'marketing',
+    labelId: 'Marketing',
+    pathname: '/marketing',
+    Icon: LuBuilding2,
+    dataCy: 'marketingNav'
+  },
+  {
     key: 'settings',
     labelId: 'Settings',
     pathname: '/settings',
@@ -207,6 +221,18 @@ const menuItems = [
     key: 'spacesSettings',
     labelId: 'Settings',
     pathname: '/settings/spaces'
+  },
+  {
+    hidden: true,
+    key: 'reportsRoot',
+    labelId: 'Reports',
+    pathname: '/reports'
+  },
+  {
+    hidden: true,
+    key: 'marketingRoot',
+    labelId: 'Marketing',
+    pathname: '/marketing'
   }
 ];
 
