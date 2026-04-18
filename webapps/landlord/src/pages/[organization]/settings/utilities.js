@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 import { toast } from 'sonner';
+import Link from '../../../components/Link';
 
 import { withAuthentication } from '../../../components/Authentication';
 import Page from '../../../components/Page';
@@ -176,6 +177,14 @@ function UtilityCategorySettings() {
           <CardTitle>{t('Utility categories')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div className="text-sm">
+            <Link
+              href={`/${organizationSlug}/settings/utilities-email-connection`}
+              className="font-medium"
+            >
+              {t('Open utilities email connection settings')}
+            </Link>
+          </div>
           <p className="text-sm text-muted-foreground">
             {t(
               'Manage which categories appear in Utilities for this organization.'

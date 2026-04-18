@@ -1,6 +1,17 @@
 import { createLog, diffObjects } from './auditlogmanager.js';
-import { Collections } from '@microrealestate/common';
+import {
+  Collections,
+  Crypto,
+  logger,
+  ServiceError
+} from '@microrealestate/common';
+import axios from 'axios';
+import fs from 'fs-extra';
+import { nanoid } from 'nanoid';
 import pdfParse from 'pdf-parse/lib/pdf-parse.js';
+import path from 'path';
+
+const SECRET_PLACEHOLDER = '**********';
 
 function _getUserFullName(req) {
   const u = req.user || {};
@@ -521,6 +532,9 @@ function normalizeSplitItems(splitItems = [], splitMethod = 'equal') {
 }
 
 function normalizePayload(payload) {
+  const status = payload.status === 'pending' ? 'pending' : 'confirmed';
+  const source = payload.source === 'email' ? 'email' : 'manual';
+
   return {
     propertyId: payload.propertyId ? String(payload.propertyId) : null,
     type: normalizeType(payload.type) || 'other',
@@ -533,6 +547,13 @@ function normalizePayload(payload) {
     notes: payload.notes || '',
     attachmentIds: Array.isArray(payload.attachmentIds)
       ? payload.attachmentIds.map((id) => String(id))
+      : [],
+    status,
+    source,
+    confirmationNumber: String(payload.confirmationNumber || '').trim(),
+    emailMessageId: String(payload.emailMessageId || '').trim(),
+    importIssues: Array.isArray(payload.importIssues)
+      ? payload.importIssues.map((issue) => String(issue)).filter(Boolean)
       : [],
     splitMethod: payload.splitMethod === 'percentage' ? 'percentage' : 'equal',
     splitItems: normalizeSplitItems(payload.splitItems, payload.splitMethod)
@@ -594,7 +615,8 @@ async function validatePayload(realmId, payload, utilityId = null) {
     realmId,
     propertyId: payload.propertyId,
     type: payload.type,
-    billingMonth: payload.billingMonth
+    billingMonth: payload.billingMonth,
+    status: payload.status || 'confirmed'
   };
 
   if (utilityId) {
@@ -611,7 +633,7 @@ async function validatePayload(realmId, payload, utilityId = null) {
 
 export async function all(req, res) {
   const realm = req.realm;
-  const { propertyId, billingMonth, type } = req.query;
+  const { propertyId, billingMonth, type, status, source } = req.query;
 
   const query = { realmId: realm._id };
 
@@ -631,6 +653,22 @@ export async function all(req, res) {
 
   if (type) {
     query.type = String(type);
+  }
+
+  if (status) {
+    const normalizedStatus = String(status).toLowerCase();
+    if (!['pending', 'confirmed'].includes(normalizedStatus)) {
+      return res.status(400).json({ message: 'status must be pending or confirmed' });
+    }
+    query.status = normalizedStatus;
+  }
+
+  if (source) {
+    const normalizedSource = String(source).toLowerCase();
+    if (!['manual', 'email'].includes(normalizedSource)) {
+      return res.status(400).json({ message: 'source must be manual or email' });
+    }
+    query.source = normalizedSource;
   }
 
   const utilities = await Collections.Utility.find(query)
@@ -821,4 +859,984 @@ export async function parseUpload(req, res) {
       : null,
     warnings
   });
+}
+
+function assertAdministrator(req) {
+  if (req.user?.role !== 'administrator') {
+    throw new ServiceError('only administrator can manage utility email import', 403);
+  }
+}
+
+function splitEmails(value) {
+  if (Array.isArray(value)) {
+    return value
+      .map((email) => String(email || '').trim().toLowerCase())
+      .filter(Boolean);
+  }
+
+  return String(value || '')
+    .split(/[;,\n]/)
+    .map((email) => email.trim().toLowerCase())
+    .filter(Boolean);
+}
+
+function normalizeUtilitiesInboxGraphConfig(payload = {}) {
+  return {
+    selected: !!payload.selected,
+    tenantId: String(payload.tenantId || '').trim(),
+    clientId: String(payload.clientId || '').trim(),
+    mailboxEmail: String(payload.mailboxEmail || '').trim().toLowerCase(),
+    notificationEmails: splitEmails(payload.notificationEmails),
+    pollingEnabled: payload.pollingEnabled !== false,
+    pollingHourUtc: Number.isFinite(Number(payload.pollingHourUtc))
+      ? Math.min(23, Math.max(0, Number(payload.pollingHourUtc)))
+      : 6
+  };
+}
+
+function getUtilitiesInboxGraphConfigForResponse(realm = {}) {
+  const config = realm.thirdParties?.utilitiesInboxGraph || {};
+
+  return {
+    selected: !!config.selected,
+    tenantId: config.tenantId || '',
+    clientId: config.clientId || '',
+    clientSecret: config.clientSecret ? SECRET_PLACEHOLDER : '',
+    mailboxEmail: config.mailboxEmail || '',
+    notificationEmails: Array.isArray(config.notificationEmails)
+      ? config.notificationEmails
+      : [],
+    pollingEnabled: config.pollingEnabled !== false,
+    pollingHourUtc:
+      Number.isFinite(Number(config.pollingHourUtc))
+        ? Number(config.pollingHourUtc)
+        : 6,
+    hasClientSecret: !!config.clientSecret,
+    lastSuccessfulSyncAt: config.lastSuccessfulSyncAt || null,
+    lastSyncAt: config.lastSyncAt || null,
+    lastSyncError: config.lastSyncError || ''
+  };
+}
+
+function getUtilitiesInboxGraphConfigForImport(realm = {}) {
+  const config = realm.thirdParties?.utilitiesInboxGraph || {};
+
+  return {
+    selected: !!config.selected,
+    tenantId: String(config.tenantId || '').trim(),
+    clientId: String(config.clientId || '').trim(),
+    clientSecret: config.clientSecret
+      ? Crypto.decrypt(config.clientSecret)
+      : '',
+    mailboxEmail: String(config.mailboxEmail || '').trim().toLowerCase(),
+    notificationEmails: Array.isArray(config.notificationEmails)
+      ? config.notificationEmails
+      : [],
+    pollingEnabled: config.pollingEnabled !== false,
+    pollingHourUtc:
+      Number.isFinite(Number(config.pollingHourUtc))
+        ? Number(config.pollingHourUtc)
+        : 6,
+    lastSuccessfulSyncAt: config.lastSuccessfulSyncAt || null,
+    lastSyncAt: config.lastSyncAt || null,
+    lastSyncError: config.lastSyncError || ''
+  };
+}
+
+function validateRequiredGraphFields(config, hasSecret) {
+  if (!config.tenantId || !config.clientId || !config.mailboxEmail) {
+    throw new ServiceError(
+      'tenantId, clientId and mailboxEmail are required',
+      422
+    );
+  }
+
+  if (!hasSecret) {
+    throw new ServiceError('clientSecret is required', 422);
+  }
+}
+
+async function getGraphAccessToken(config) {
+  const tokenEndpoint = `https://login.microsoftonline.com/${config.tenantId}/oauth2/v2.0/token`;
+  const params = new URLSearchParams();
+  params.append('client_id', config.clientId);
+  params.append('client_secret', config.clientSecret);
+  params.append('scope', 'https://graph.microsoft.com/.default');
+  params.append('grant_type', 'client_credentials');
+
+  const response = await axios.post(tokenEndpoint, params, {
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+  });
+
+  return response.data?.access_token || '';
+}
+
+async function listGraphInboxMessages(config, { top = 25 } = {}) {
+  const token = await getGraphAccessToken(config);
+
+  const response = await axios.get(
+    `https://graph.microsoft.com/v1.0/users/${encodeURIComponent(config.mailboxEmail)}/mailFolders/inbox/messages`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`
+      },
+      params: {
+        $top: top,
+        $orderby: 'receivedDateTime desc',
+        $select:
+          'id,internetMessageId,subject,receivedDateTime,from,body,bodyPreview'
+      }
+    }
+  );
+
+  return Array.isArray(response.data?.value) ? response.data.value : [];
+}
+
+function htmlToPlainText(html = '') {
+  return String(html || '')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/\r/g, '\n')
+    .replace(/[ \t]+/g, ' ')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+function parseNwNaturalPayment(messageText = '') {
+  const confirmationNumber = extractByPatterns(messageText, [
+    /confirmation\s*number\s*[:#-]?\s*([a-z0-9-]+)/i
+  ]);
+  const paymentDate = parseIsoDate(
+    extractByPatterns(messageText, [/payment\s*date\s*[:#-]?\s*([^\n]+)/i])
+  );
+  const dueDate = parseIsoDate(
+    extractByPatterns(messageText, [/date\s*due\s*[:#-]?\s*([^\n]+)/i])
+  );
+  const amount = parseCurrencyValue(
+    extractByPatterns(messageText, [
+      /payment\s*amount\s*[:$-]?\s*\$?\s*([\d,]+(?:\.\d{2})?)/i,
+      /total\s*amount\s*charged\s*[:$-]?\s*\$?\s*([\d,]+(?:\.\d{2})?)/i
+    ])
+  );
+  const paymentStatus = extractByPatterns(messageText, [
+    /payment\s*status\s*[:#-]?\s*([a-z]+)/i
+  ]);
+  const accountNumber = extractByPatterns(messageText, [
+    /account\s*number\s*[:#-]?\s*([*x\-\d]+)/i
+  ]);
+
+  return {
+    provider: 'NW Natural',
+    type: 'gas',
+    confirmationNumber,
+    paymentDate,
+    dueDate,
+    amount,
+    paymentStatus,
+    accountNumber
+  };
+}
+
+function parseOregonCityStatement(messageText = '') {
+  const confirmationNumber = extractByPatterns(messageText, [
+    /authorization\s*code\s*[:#-]?\s*([a-z0-9-]+)/i,
+    /confirmation\s*number\s*[:#-]?\s*([a-z0-9-]+)/i
+  ]);
+
+  const amount = parseCurrencyValue(
+    extractByPatterns(messageText, [
+      /account\s*balance\s*[:$-]?\s*\$?\s*([\d,]+(?:\.\d{2})?)/i,
+      /charged\s+your\s+credit\s+card\s+in\s+the\s+amount\s+of\s+\$?\s*([\d,]+(?:\.\d{2})?)/i
+    ])
+  );
+  const dueDate = parseIsoDate(
+    extractByPatterns(messageText, [/due\s*date\s*[:#-]?\s*([^\n]+)/i])
+  );
+  const accountNumber = extractByPatterns(messageText, [
+    /account\s*number\s*[:#-]?\s*([*x\-\d]+)/i
+  ]);
+
+  return {
+    provider: 'Oregon City',
+    type: 'water',
+    confirmationNumber,
+    paymentDate: '',
+    dueDate,
+    amount,
+    paymentStatus: '',
+    accountNumber
+  };
+}
+
+function parsePaymentConfirmationMessage(message = {}) {
+  const fromEmail = String(message?.from?.emailAddress?.address || '').toLowerCase();
+  const subject = String(message?.subject || '');
+  const body = String(message?.body?.content || '');
+  const bodyText = message?.body?.contentType === 'html' ? htmlToPlainText(body) : String(body || '');
+  const combinedText = `${subject}\n${bodyText}`;
+
+  const issues = [];
+  let parsed;
+
+  if (
+    fromEmail.includes('nwnatural.com') ||
+    /payment\s*confirmation\s*-\s*nw\s*natural/i.test(subject)
+  ) {
+    parsed = parseNwNaturalPayment(combinedText);
+  } else if (
+    /online\s*bill\s*pay\s*-\s*statement\s*notification/i.test(subject) ||
+    /oregon\s*city\s*utility/i.test(combinedText)
+  ) {
+    parsed = parseOregonCityStatement(combinedText);
+  } else {
+    return null;
+  }
+
+  if (!parsed.confirmationNumber) {
+    issues.push('missing_confirmation_number');
+  }
+  if (!parsed.paymentDate) {
+    issues.push('missing_payment_date');
+  }
+  if (!parsed.amount || parsed.amount <= 0) {
+    issues.push('missing_amount');
+  }
+  if (!parsed.accountNumber) {
+    issues.push('missing_account_number');
+  }
+
+  return {
+    ...parsed,
+    subject,
+    fromEmail,
+    emailMessageId: String(message?.id || message?.internetMessageId || ''),
+    receivedDateTime: String(message?.receivedDateTime || ''),
+    rawText: combinedText,
+    issues
+  };
+}
+
+function normalizeAccountForSuffixMatch(value) {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '')
+    .replace(/^[x*]+/g, '');
+}
+
+function accountNumbersMatchWithMask(savedAccountNumber, parsedAccountNumber) {
+  if (accountNumbersLikelyMatch(savedAccountNumber, parsedAccountNumber)) {
+    return true;
+  }
+
+  const saved = normalizeAccountForSuffixMatch(savedAccountNumber);
+  const parsed = normalizeAccountForSuffixMatch(parsedAccountNumber);
+
+  if (!saved || !parsed) {
+    return false;
+  }
+
+  if (parsed.length >= 4 && saved.endsWith(parsed)) {
+    return true;
+  }
+
+  if (saved.length >= 4 && parsed.endsWith(saved)) {
+    return true;
+  }
+
+  return false;
+}
+
+async function saveRawEmailAttachment({ realmId, utilityId, reqUser, rawText, provider }) {
+  const uploadDir = path.resolve(process.cwd(), 'data', 'uploads', 'attachments');
+  await fs.ensureDir(uploadDir);
+
+  const storageKey = `utility_${utilityId}_${nanoid(16)}`;
+  const filePath = path.join(uploadDir, storageKey);
+  const fileContent = String(rawText || '');
+  await fs.writeFile(filePath, fileContent, 'utf8');
+
+  const uploadedById =
+    reqUser?._id || reqUser?.email || reqUser?.clientId || 'utility-email-import';
+  const uploadedByName = reqUser?.firstname
+    ? `${reqUser.firstname} ${reqUser.lastname || ''}`.trim()
+    : reqUser?.email || 'Utility Email Import';
+
+  const attachment = new Collections.Attachment({
+    realmId,
+    targetType: 'utility',
+    targetId: String(utilityId),
+    storageKey,
+    filename: `utility-email-${String(provider || 'import').toLowerCase().replace(/\s+/g, '-')}.txt`,
+    mimeType: 'text/plain',
+    size: Buffer.byteLength(fileContent),
+    category: 'other',
+    uploadedById,
+    uploadedByName,
+    backupStatus: 'pending'
+  });
+
+  await attachment.save();
+  return String(attachment._id);
+}
+
+async function importParsedMessage({ realmId, reqUser, parsedMessage, utilityAccounts }) {
+  const result = {
+    created: [],
+    duplicates: [],
+    issues: []
+  };
+
+  const paidDateIso = parsedMessage.paymentDate || parsedMessage.receivedDateTime;
+  const paidDate = parseIsoDate(paidDateIso);
+  const dueDate = parseIsoDate(parsedMessage.dueDate);
+  const billingMonth =
+    toBillingMonthFromDate(paidDate) ||
+    toBillingMonthFromDate(dueDate) ||
+    toBillingMonthFromDate(parseIsoDate(parsedMessage.receivedDateTime)) ||
+    new Date().toISOString().slice(0, 7);
+
+  if (!billingMonth) {
+    result.issues.push('missing_billing_month');
+    return result;
+  }
+
+  const duplicateByMessageId = parsedMessage.emailMessageId
+    ? await Collections.Utility.findOne({
+        realmId,
+        emailMessageId: parsedMessage.emailMessageId,
+        source: 'email'
+      })
+        .select('_id')
+        .lean()
+    : null;
+
+  if (duplicateByMessageId) {
+    result.duplicates.push('duplicate_message_id');
+    return result;
+  }
+
+  if (parsedMessage.confirmationNumber && paidDate) {
+    const start = new Date(`${paidDate}T00:00:00.000Z`);
+    const end = new Date(`${paidDate}T23:59:59.999Z`);
+    const duplicateByConfirmation = await Collections.Utility.findOne({
+      realmId,
+      confirmationNumber: parsedMessage.confirmationNumber,
+      paidDate: { $gte: start, $lte: end },
+      source: 'email'
+    })
+      .select('_id')
+      .lean();
+
+    if (duplicateByConfirmation) {
+      result.duplicates.push('duplicate_confirmation_number');
+      return result;
+    }
+  }
+
+  const candidateAccounts = utilityAccounts.filter((utilityAccount) => {
+    if (parsedMessage.type && normalizeType(utilityAccount.type) !== normalizeType(parsedMessage.type)) {
+      return false;
+    }
+
+    return accountNumbersMatchWithMask(
+      utilityAccount.accountNumber,
+      parsedMessage.accountNumber
+    );
+  });
+
+  if (candidateAccounts.length !== 1) {
+    result.issues.push(
+      candidateAccounts.length === 0
+        ? 'no_matching_utility_account'
+        : 'ambiguous_account_match'
+    );
+    return result;
+  }
+
+  const matchedAccount = candidateAccounts[0];
+  const allocations = Array.isArray(matchedAccount.allocations)
+    ? matchedAccount.allocations.filter((allocation) => allocation?.propertyId)
+    : [];
+
+  if (!allocations.length) {
+    result.issues.push('missing_utility_account_allocations');
+    return result;
+  }
+
+  const totalAmount = Number(parsedMessage.amount || 0);
+  let distributedAmount = 0;
+
+  for (let index = 0; index < allocations.length; index += 1) {
+    const allocation = allocations[index];
+    const isLast = index === allocations.length - 1;
+    const amount = isLast
+      ? Number((totalAmount - distributedAmount).toFixed(2))
+      : Number(((totalAmount * Number(allocation.percentage || 0)) / 100).toFixed(2));
+
+    distributedAmount += amount;
+
+    const existingPending = await Collections.Utility.findOne({
+      realmId,
+      propertyId: String(allocation.propertyId),
+      type: normalizeType(matchedAccount.type),
+      billingMonth,
+      status: 'pending',
+      source: 'email',
+      confirmationNumber: parsedMessage.confirmationNumber || ''
+    })
+      .select('_id')
+      .lean();
+
+    if (existingPending) {
+      continue;
+    }
+
+    const utility = new Collections.Utility({
+      realmId,
+      propertyId: String(allocation.propertyId),
+      type: normalizeType(matchedAccount.type),
+      provider: matchedAccount.provider || parsedMessage.provider || '',
+      accountNumber: matchedAccount.accountNumber || parsedMessage.accountNumber,
+      billingMonth,
+      amount,
+      dueDate: dueDate ? new Date(`${dueDate}T00:00:00.000Z`) : null,
+      paidDate: paidDate ? new Date(`${paidDate}T00:00:00.000Z`) : null,
+      notes: `Imported from mailbox: ${parsedMessage.subject}`,
+      attachmentIds: [],
+      status: 'pending',
+      source: 'email',
+      confirmationNumber: parsedMessage.confirmationNumber || '',
+      emailMessageId: parsedMessage.emailMessageId || '',
+      importIssues: parsedMessage.issues,
+      splitMethod: 'equal',
+      splitItems: [],
+      lastUpdatedBy: _getUserFullName({ user: reqUser })
+    });
+
+    await utility.save();
+
+    const emailAttachmentId = await saveRawEmailAttachment({
+      realmId,
+      utilityId: utility._id,
+      reqUser,
+      rawText: parsedMessage.rawText,
+      provider: parsedMessage.provider
+    });
+
+    utility.attachmentIds = [emailAttachmentId];
+    await utility.save();
+
+    await createLog(
+      { user: reqUser, realm: { _id: realmId } },
+      'create',
+      'utility',
+      utility._id,
+      `${utility.type || ''} ${utility.billingMonth || ''}`.trim()
+    );
+
+    result.created.push(String(utility._id));
+  }
+
+  if (!result.created.length && !result.issues.length) {
+    result.duplicates.push('duplicate_pending_entry');
+  }
+
+  return result;
+}
+
+function getUtcDateKey(value = new Date()) {
+  const year = value.getUTCFullYear();
+  const month = String(value.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(value.getUTCDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function escapeHtml(value = '') {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+async function sendGraphNotificationEmail(config, recipients = [], message = {}) {
+  if (!recipients.length) {
+    return;
+  }
+
+  const token = await getGraphAccessToken(config);
+  await axios.post(
+    `https://graph.microsoft.com/v1.0/users/${encodeURIComponent(config.mailboxEmail)}/sendMail`,
+    {
+      message: {
+        subject: String(message.subject || 'Utilities email import notification'),
+        body: {
+          contentType: 'HTML',
+          content: String(message.htmlBody || '')
+        },
+        toRecipients: recipients.map((email) => ({
+          emailAddress: { address: email }
+        }))
+      },
+      saveToSentItems: true
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    }
+  );
+}
+
+async function sendImportFailureNotification({ realm, config, summary }) {
+  const recipients = Array.isArray(config.notificationEmails)
+    ? config.notificationEmails.filter(Boolean)
+    : [];
+
+  if (!recipients.length || !summary.failed) {
+    return;
+  }
+
+  const lines = summary.failures
+    .slice(0, 25)
+    .map(
+      (failure) =>
+        `<li><strong>${escapeHtml(failure.subject || 'Unknown subject')}</strong> (${escapeHtml(
+          failure.accountNumber || 'n/a'
+        )}) - ${escapeHtml((failure.issues || []).join(', '))}</li>`
+    )
+    .join('');
+
+  const htmlBody = `
+    <p>Utilities inbox import completed with failures.</p>
+    <p><strong>Organization:</strong> ${escapeHtml(realm.name || '')}</p>
+    <p><strong>Checked:</strong> ${summary.checked} | <strong>Parsed:</strong> ${summary.parsed} | <strong>Created:</strong> ${summary.created} | <strong>Duplicates:</strong> ${summary.duplicates} | <strong>Failed:</strong> ${summary.failed}</p>
+    <p><strong>Top failures:</strong></p>
+    <ul>${lines || '<li>No failure details</li>'}</ul>
+  `;
+
+  await sendGraphNotificationEmail(config, recipients, {
+    subject: `Utilities import warnings (${summary.failed}) - ${realm.name}`,
+    htmlBody
+  });
+}
+
+async function runImportForRealm({ realm, reqUser, limit = 50 }) {
+  const config = getUtilitiesInboxGraphConfigForImport(realm);
+  validateRequiredGraphFields(config, !!config.clientSecret);
+
+  const summary = {
+    checked: 0,
+    parsed: 0,
+    created: 0,
+    duplicates: 0,
+    failed: 0,
+    failures: []
+  };
+
+  const messages = await listGraphInboxMessages(config, {
+    top: Math.min(100, Math.max(1, Number(limit || 50)))
+  });
+
+  const utilityAccounts = await Collections.UtilityAccount.find({
+    realmId: realm._id
+  })
+    .select('_id type provider accountNumber allocations')
+    .lean();
+
+  summary.checked = messages.length;
+
+  for (const message of messages) {
+    const parsed = parsePaymentConfirmationMessage(message);
+    if (!parsed) {
+      continue;
+    }
+
+    summary.parsed += 1;
+
+    const importResult = await importParsedMessage({
+      realmId: realm._id,
+      reqUser,
+      parsedMessage: parsed,
+      utilityAccounts
+    });
+
+    summary.created += importResult.created.length;
+    summary.duplicates += importResult.duplicates.length;
+
+    if (importResult.issues.length) {
+      summary.failed += 1;
+      summary.failures.push({
+        subject: parsed.subject,
+        accountNumber: parsed.accountNumber,
+        issues: importResult.issues
+      });
+    }
+  }
+
+  return { summary, config };
+}
+
+function shouldRunScheduledImport(config) {
+  if (!config.selected || config.pollingEnabled === false) {
+    return false;
+  }
+
+  const now = new Date();
+  const targetHour = Number(config.pollingHourUtc ?? 6);
+
+  if (now.getUTCHours() !== targetHour) {
+    return false;
+  }
+
+  const lastSyncAt = config.lastSyncAt ? new Date(config.lastSyncAt) : null;
+  if (!lastSyncAt || Number.isNaN(lastSyncAt.getTime())) {
+    return true;
+  }
+
+  return getUtcDateKey(now) !== getUtcDateKey(lastSyncAt);
+}
+
+async function deleteUtilityAttachments(utility = {}) {
+  const attachmentIds = Array.isArray(utility.attachmentIds)
+    ? utility.attachmentIds.map((id) => String(id))
+    : [];
+
+  if (!attachmentIds.length) {
+    return;
+  }
+
+  const attachments = await Collections.Attachment.find({
+    _id: { $in: attachmentIds },
+    targetType: 'utility',
+    targetId: String(utility._id)
+  }).lean();
+
+  for (const attachment of attachments) {
+    const filePath = path.resolve(
+      process.cwd(),
+      'data',
+      'uploads',
+      'attachments',
+      attachment.storageKey
+    );
+
+    try {
+      const exists = await fs.pathExists(filePath);
+      if (exists) {
+        await fs.remove(filePath);
+      }
+    } catch (error) {
+      logger.warn(
+        `Unable to remove utility attachment file ${attachment.storageKey}: ${error.message}`
+      );
+    }
+  }
+
+  await Collections.Attachment.deleteMany({
+    _id: { $in: attachments.map((attachment) => attachment._id) }
+  });
+}
+
+export async function getEmailConnection(req, res) {
+  assertAdministrator(req);
+  const realm = await Collections.Realm.findOne({ _id: req.realm._id }).lean();
+  if (!realm) {
+    throw new ServiceError('organization not found', 404);
+  }
+
+  return res.json(getUtilitiesInboxGraphConfigForResponse(realm));
+}
+
+export async function upsertEmailConnection(req, res) {
+  assertAdministrator(req);
+
+  const realm = await Collections.Realm.findOne({ _id: req.realm._id });
+  if (!realm) {
+    throw new ServiceError('organization not found', 404);
+  }
+
+  const current = realm.thirdParties?.utilitiesInboxGraph || {};
+  const normalized = normalizeUtilitiesInboxGraphConfig(req.body || {});
+  const clientSecretUpdated = !!req.body?.clientSecretUpdated;
+
+  const hasSecret = clientSecretUpdated
+    ? !!String(req.body?.clientSecret || '').trim()
+    : !!current.clientSecret;
+
+  validateRequiredGraphFields(normalized, hasSecret);
+
+  const encryptedSecret = clientSecretUpdated
+    ? Crypto.encrypt(String(req.body?.clientSecret || '').trim())
+    : current.clientSecret || '';
+
+  if (!realm.thirdParties) {
+    realm.thirdParties = {};
+  }
+
+  realm.thirdParties.utilitiesInboxGraph = {
+    ...current,
+    ...normalized,
+    clientSecret: encryptedSecret
+  };
+
+  await realm.save();
+
+  return res.json(getUtilitiesInboxGraphConfigForResponse(realm.toObject()));
+}
+
+export async function testEmailConnection(req, res) {
+  assertAdministrator(req);
+
+  const realm = await Collections.Realm.findOne({ _id: req.realm._id });
+  if (!realm) {
+    throw new ServiceError('organization not found', 404);
+  }
+
+  const config = getUtilitiesInboxGraphConfigForImport(realm.toObject());
+  validateRequiredGraphFields(config, !!config.clientSecret);
+
+  try {
+    const messages = await listGraphInboxMessages(config, { top: 1 });
+    return res.json({
+      success: true,
+      mailboxEmail: config.mailboxEmail,
+      messageCountChecked: messages.length
+    });
+  } catch (error) {
+    const message = error.response?.data?.error?.message || error.message;
+    return res.status(400).json({ success: false, message });
+  }
+}
+
+export async function importEmailConfirmations(req, res) {
+  assertAdministrator(req);
+
+  const realm = await Collections.Realm.findOne({ _id: req.realm._id });
+  if (!realm) {
+    throw new ServiceError('organization not found', 404);
+  }
+
+  try {
+    const { summary, config } = await runImportForRealm({
+      realm: realm.toObject(),
+      reqUser: req.user,
+      limit: req.body?.limit || 50
+    });
+
+    if (!realm.thirdParties) {
+      realm.thirdParties = {};
+    }
+
+    realm.thirdParties.utilitiesInboxGraph = {
+      ...(realm.thirdParties.utilitiesInboxGraph || {}),
+      lastSuccessfulSyncAt: new Date(),
+      lastSyncAt: new Date(),
+      lastSyncError: ''
+    };
+    await realm.save();
+
+    if (summary.failed) {
+      try {
+        await sendImportFailureNotification({
+          realm: realm.toObject(),
+          config,
+          summary
+        });
+      } catch (notifyError) {
+        logger.warn(
+          `Utility import notification failed for realm ${realm._id}: ${notifyError.message}`
+        );
+      }
+    }
+
+    return res.json(summary);
+  } catch (error) {
+    const message = error.response?.data?.error?.message || error.message;
+    if (!realm.thirdParties) {
+      realm.thirdParties = {};
+    }
+
+    realm.thirdParties.utilitiesInboxGraph = {
+      ...(realm.thirdParties.utilitiesInboxGraph || {}),
+      lastSyncAt: new Date(),
+      lastSyncError: message
+    };
+    await realm.save();
+
+    return res.status(400).json({ message });
+  }
+}
+
+export async function approvePendingConfirmation(req, res) {
+  assertAdministrator(req);
+
+  const utility = await Collections.Utility.findOne({
+    _id: req.params.id,
+    realmId: req.realm._id
+  });
+
+  if (!utility) {
+    return res.status(404).json({ message: 'Utility entry not found' });
+  }
+
+  if (utility.status !== 'pending' || utility.source !== 'email') {
+    return res
+      .status(400)
+      .json({ message: 'Only pending email-import utilities can be approved' });
+  }
+
+  const previous = utility.toObject();
+  utility.status = 'confirmed';
+  utility.lastUpdatedBy = _getUserFullName(req);
+  await utility.save();
+
+  await createLog(
+    req,
+    'update',
+    'utility',
+    utility._id,
+    `${utility.type || ''} ${utility.billingMonth || ''}`.trim(),
+    diffObjects(previous, { ...previous, status: 'confirmed' })
+  );
+
+  return res.json(utility.toObject());
+}
+
+export async function rejectPendingConfirmation(req, res) {
+  assertAdministrator(req);
+
+  const utility = await Collections.Utility.findOne({
+    _id: req.params.id,
+    realmId: req.realm._id
+  });
+
+  if (!utility) {
+    return res.status(404).json({ message: 'Utility entry not found' });
+  }
+
+  if (utility.status !== 'pending' || utility.source !== 'email') {
+    return res
+      .status(400)
+      .json({ message: 'Only pending email-import utilities can be rejected' });
+  }
+
+  const snapshot = utility.toObject();
+  await deleteUtilityAttachments(snapshot);
+  await Collections.Utility.deleteOne({ _id: utility._id, realmId: req.realm._id });
+
+  await createLog(
+    req,
+    'delete',
+    'utility',
+    utility._id,
+    `${utility.type || ''} ${utility.billingMonth || ''}`.trim()
+  );
+
+  return res.sendStatus(204);
+}
+
+let utilityImportSchedulerHandle = null;
+
+export function startUtilityImportScheduler() {
+  if (utilityImportSchedulerHandle) {
+    return;
+  }
+
+  const runTick = async () => {
+    try {
+      const realms = await Collections.Realm.find({
+        'thirdParties.utilitiesInboxGraph.selected': true,
+        'thirdParties.utilitiesInboxGraph.pollingEnabled': { $ne: false }
+      }).lean();
+
+      for (const realm of realms) {
+        const config = getUtilitiesInboxGraphConfigForImport(realm);
+        if (!shouldRunScheduledImport(config)) {
+          continue;
+        }
+
+        try {
+          const { summary, config: resolvedConfig } = await runImportForRealm({
+            realm,
+            reqUser: {
+              email: 'utility-email-scheduler@system.local',
+              firstname: 'Utility',
+              lastname: 'Scheduler'
+            },
+            limit: 50
+          });
+
+          await Collections.Realm.updateOne(
+            { _id: realm._id },
+            {
+              $set: {
+                'thirdParties.utilitiesInboxGraph.lastSuccessfulSyncAt':
+                  new Date(),
+                'thirdParties.utilitiesInboxGraph.lastSyncAt': new Date(),
+                'thirdParties.utilitiesInboxGraph.lastSyncError': ''
+              }
+            }
+          );
+
+          if (summary.failed) {
+            try {
+              await sendImportFailureNotification({
+                realm,
+                config: resolvedConfig,
+                summary
+              });
+            } catch (notifyError) {
+              logger.warn(
+                `Utility scheduler notification failed for realm ${realm._id}: ${notifyError.message}`
+              );
+            }
+          }
+
+          logger.info(
+            `Utility import scheduler processed realm ${realm._id}: created=${summary.created}, failed=${summary.failed}`
+          );
+        } catch (error) {
+          const message = error.response?.data?.error?.message || error.message;
+          await Collections.Realm.updateOne(
+            { _id: realm._id },
+            {
+              $set: {
+                'thirdParties.utilitiesInboxGraph.lastSyncAt': new Date(),
+                'thirdParties.utilitiesInboxGraph.lastSyncError': message
+              }
+            }
+          );
+          logger.error(
+            `Utility import scheduler failed for realm ${realm._id}: ${message}`
+          );
+        }
+      }
+    } catch (error) {
+      logger.error(`Utility import scheduler tick failed: ${error.message}`);
+    }
+  };
+
+  utilityImportSchedulerHandle = setInterval(runTick, 15 * 60 * 1000);
+  runTick().catch((error) => {
+    logger.error(`Utility import scheduler initial run failed: ${error.message}`);
+  });
+  logger.info('Utility email import scheduler started (15 minute interval)');
+}
+
+export function stopUtilityImportScheduler() {
+  if (!utilityImportSchedulerHandle) {
+    return;
+  }
+  clearInterval(utilityImportSchedulerHandle);
+  utilityImportSchedulerHandle = null;
 }

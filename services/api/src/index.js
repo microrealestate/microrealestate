@@ -6,6 +6,7 @@ import migratedb from '../scripts/migration.js';
 import path from 'path';
 import { restoreDB } from '../scripts/dbbackup.js';
 import routes from './routes.js';
+import { startUtilityImportScheduler } from './managers/utilitymanager.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -43,6 +44,8 @@ async function onStartUp(application) {
   }
 
   application.use(routes());
+
+  startUtilityImportScheduler();
 }
 
 async function Main() {

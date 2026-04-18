@@ -198,6 +198,12 @@ const menuItems = [
   },
   {
     hidden: true,
+    key: 'utilitiesEmailConnectionSettings',
+    labelId: 'Settings',
+    pathname: '/settings/utilities-email-connection'
+  },
+  {
+    hidden: true,
     key: 'spacesSettings',
     labelId: 'Settings',
     pathname: '/settings/spaces'

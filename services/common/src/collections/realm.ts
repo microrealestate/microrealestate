@@ -71,6 +71,19 @@ const RealmSchema = new mongoose.Schema<CollectionTypes.Realm>({
       fromEmail: String,
       replyToEmail: String
     },
+    utilitiesInboxGraph: {
+      selected: Boolean,
+      tenantId: String,
+      clientId: String,
+      clientSecret: String,
+      mailboxEmail: String,
+      notificationEmails: [String],
+      pollingEnabled: Boolean,
+      pollingHourUtc: Number,
+      lastSuccessfulSyncAt: Date,
+      lastSyncAt: Date,
+      lastSyncError: String
+    },
     smtp: {
       selected: Boolean,
       server: String,

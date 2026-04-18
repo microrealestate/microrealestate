@@ -237,6 +237,30 @@ export default function routes() {
 
   const utilitiesRouter = express.Router();
   utilitiesRouter.get('/', Middlewares.asyncWrapper(utilityManager.all));
+  utilitiesRouter.get(
+    '/email-connection',
+    Middlewares.asyncWrapper(utilityManager.getEmailConnection)
+  );
+  utilitiesRouter.put(
+    '/email-connection',
+    Middlewares.asyncWrapper(utilityManager.upsertEmailConnection)
+  );
+  utilitiesRouter.post(
+    '/email-connection/test',
+    Middlewares.asyncWrapper(utilityManager.testEmailConnection)
+  );
+  utilitiesRouter.post(
+    '/import-email-confirmations',
+    Middlewares.asyncWrapper(utilityManager.importEmailConfirmations)
+  );
+  utilitiesRouter.post(
+    '/:id/approve-pending',
+    Middlewares.asyncWrapper(utilityManager.approvePendingConfirmation)
+  );
+  utilitiesRouter.delete(
+    '/:id/reject-pending',
+    Middlewares.asyncWrapper(utilityManager.rejectPendingConfirmation)
+  );
   utilitiesRouter.post(
     '/parse-upload',
     upload.single('file'),

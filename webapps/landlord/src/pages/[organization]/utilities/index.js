@@ -14,7 +14,9 @@ import {
   LuFileSpreadsheet,
   LuLandmark,
   LuPlus,
+  LuRefreshCw,
   LuSearch,
+  LuSettings2,
   LuTrash2
 } from 'react-icons/lu';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -444,6 +446,7 @@ export function UtilitiesPage({ view = 'all' }) {
   const [batchBillFiles, setBatchBillFiles] = useState([]);
   const [parsingUtilityUpload, setParsingUtilityUpload] = useState(false);
   const [batchUploadingBills, setBatchUploadingBills] = useState(false);
+  const [checkingEmailInbox, setCheckingEmailInbox] = useState(false);
   const [batchWorkflowOpen, setBatchWorkflowOpen] = useState(false);
   const [batchPreparingReview, setBatchPreparingReview] = useState(false);
   const [batchReviewItems, setBatchReviewItems] = useState([]);
@@ -455,6 +458,7 @@ export function UtilitiesPage({ view = 'all' }) {
     useState('');
   const [workingUtilityAttachmentId, setWorkingUtilityAttachmentId] =
     useState('');
+  const [workingPendingActionId, setWorkingPendingActionId] = useState('');
   const [workingBatchReviewItemId, setWorkingBatchReviewItemId] = useState('');
   const [
     expandedAllocationHistoryAccountId,
@@ -798,6 +802,14 @@ export function UtilitiesPage({ view = 'all' }) {
       ),
     [filteredUtilities]
   );
+
+  const pendingEmailUtilities = useMemo(() => {
+    return filteredUtilities.filter(
+      (utility) =>
+        String(utility?.status || '').toLowerCase() === 'pending' &&
+        String(utility?.source || '').toLowerCase() === 'email'
+    );
+  }, [filteredUtilities]);
 
   const taxYearOptions = useMemo(() => {
     const years = new Set();
@@ -3026,6 +3038,66 @@ export function UtilitiesPage({ view = 'all' }) {
     setWorkingBatchReviewItemId('');
   };
 
+  const handleOpenEmailConnectionSettings = () => {
+    router.push(`/${organizationSlug}/settings/utilities-email-connection`);
+  };
+
+  const handleImportEmailConfirmations = async () => {
+    setCheckingEmailInbox(true);
+    try {
+      const response = await apiFetcher().post('/utilities/import-email-confirmations', {
+        limit: 50
+      });
+      const summary = response.data || {};
+      toast.success(
+        t('Email import complete: {{created}} created, {{duplicates}} duplicate(s), {{failed}} failed', {
+          created: Number(summary.created || 0),
+          duplicates: Number(summary.duplicates || 0),
+          failed: Number(summary.failed || 0)
+        })
+      );
+      await utilitiesQuery.refetch();
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message || t('Failed to import email confirmations')
+      );
+    } finally {
+      setCheckingEmailInbox(false);
+    }
+  };
+
+  const handleApprovePendingUtility = async (utilityId) => {
+    setWorkingPendingActionId(String(utilityId || ''));
+    try {
+      await apiFetcher().post(`/utilities/${utilityId}/approve-pending`);
+      toast.success(t('Pending confirmation approved'));
+      await utilitiesQuery.refetch();
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message ||
+          t('Failed to approve pending confirmation')
+      );
+    } finally {
+      setWorkingPendingActionId('');
+    }
+  };
+
+  const handleRejectPendingUtility = async (utilityId) => {
+    setWorkingPendingActionId(String(utilityId || ''));
+    try {
+      await apiFetcher().delete(`/utilities/${utilityId}/reject-pending`);
+      toast.success(t('Pending confirmation rejected'));
+      await utilitiesQuery.refetch();
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message ||
+          t('Failed to reject pending confirmation')
+      );
+    } finally {
+      setWorkingPendingActionId('');
+    }
+  };
+
   return (
     <Page loading={loading} dataCy="utilitiesPage">
       <Card className="p-6 space-y-6">
@@ -3063,6 +3135,31 @@ export function UtilitiesPage({ view = 'all' }) {
                 onClick={() => setUtilitiesTab('list')}
               >
                 {t('Saved utility bills')}
+              </Button>
+              <Button
+                variant={
+                  utilitiesTab === 'pending-email' ? 'default' : 'outline'
+                }
+                onClick={() => setUtilitiesTab('pending-email')}
+              >
+                {t('Pending confirmations')}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleImportEmailConfirmations}
+                disabled={checkingEmailInbox}
+              >
+                <LuRefreshCw className="size-4 mr-2" />
+                {checkingEmailInbox
+                  ? t('Checking inbox...')
+                  : t('Check email inbox now')}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleOpenEmailConnectionSettings}
+              >
+                <LuSettings2 className="size-4 mr-2" />
+                {t('Email connection settings')}
               </Button>
             </>
           ) : null}
@@ -5702,6 +5799,106 @@ export function UtilitiesPage({ view = 'all' }) {
               handleDownloadUtilityBillAttachment
             }
           />
+        ) : null}
+
+        {!isTaxOnly && utilitiesTab === 'pending-email' ? (
+          <Card className="p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="text-sm font-medium">
+                {t('Pending email confirmations')}
+              </div>
+              <div className="text-xs text-muted-foreground">
+                {pendingEmailUtilities.length} {t('item(s)')}
+              </div>
+            </div>
+
+            {!pendingEmailUtilities.length ? (
+              <div className="text-sm text-muted-foreground">
+                {t('No pending email confirmations')}
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {pendingEmailUtilities.map((utility) => {
+                  const property = propertyById[String(utility.propertyId)];
+                  const utilityId = String(utility._id || '');
+                  const isWorking = workingPendingActionId === utilityId;
+
+                  return (
+                    <div
+                      key={utilityId}
+                      className="rounded-lg border p-3 flex flex-col gap-2"
+                    >
+                      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="text-sm font-semibold">
+                          {formatCategoryLabel(utility.type)} •{' '}
+                          {utility.billingMonth}
+                        </div>
+                        <div className="text-sm font-semibold">
+                          {toCurrency(utility.amount)}
+                        </div>
+                      </div>
+
+                      <div className="text-xs text-muted-foreground">
+                        {(property?.name || t('Unknown property'))}
+                        {utility.provider ? ` • ${utility.provider}` : ''}
+                        {utility.accountNumber ? ` • ${utility.accountNumber}` : ''}
+                      </div>
+
+                      <div className="text-xs text-muted-foreground">
+                        {utility.confirmationNumber
+                          ? `${t('Confirmation')}: ${utility.confirmationNumber}`
+                          : t('No confirmation number found')}
+                      </div>
+
+                      {(utility.importIssues || []).length ? (
+                        <div className="flex flex-wrap gap-1">
+                          {(utility.importIssues || []).map((issue) => (
+                            <span
+                              key={`${utilityId}-${issue}`}
+                              className="text-[11px] px-2 py-1 rounded-full bg-amber-100 text-amber-700"
+                            >
+                              {issue}
+                            </span>
+                          ))}
+                        </div>
+                      ) : null}
+
+                      <div className="flex flex-wrap gap-2 justify-end">
+                        {(utility.attachmentIds || []).length ? (
+                          <Button
+                            variant="outline"
+                            onClick={() =>
+                              handlePreviewUtilityBillAttachment(utility)
+                            }
+                            disabled={
+                              workingUtilityAttachmentId ===
+                                String(utility.attachmentIds?.[0] || '') ||
+                              isWorking
+                            }
+                          >
+                            {t('View source')}
+                          </Button>
+                        ) : null}
+                        <Button
+                          variant="outline"
+                          onClick={() => handleRejectPendingUtility(utilityId)}
+                          disabled={isWorking}
+                        >
+                          {isWorking ? t('Working...') : t('Reject')}
+                        </Button>
+                        <Button
+                          onClick={() => handleApprovePendingUtility(utilityId)}
+                          disabled={isWorking}
+                        >
+                          {isWorking ? t('Working...') : t('Approve')}
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </Card>
         ) : null}
 
         <Dialog open={batchWorkflowOpen} onOpenChange={setBatchWorkflowOpen}>

@@ -82,6 +82,20 @@ export namespace CollectionTypes {
         fromEmail: string;
         replyToEmail: string;
       };
+      utilitiesInboxGraph?: {
+        selected?: boolean;
+        tenantId?: string;
+        clientId?: string;
+        clientSecret?: string;
+        mailboxEmail?: string;
+        notificationEmails?: string[];
+        pollingEnabled?: boolean;
+        pollingHourUtc?: number;
+        clientSecretUpdated?: boolean;
+        lastSuccessfulSyncAt?: Date | null;
+        lastSyncAt?: Date | null;
+        lastSyncError?: string;
+      };
       mailgun: {
         selected: boolean;
         apiKey: string;
@@ -524,6 +538,11 @@ export namespace CollectionTypes {
     paidDate?: Date | null;
     notes?: string;
     attachmentIds?: string[];
+    status?: 'confirmed' | 'pending';
+    source?: 'manual' | 'email';
+    confirmationNumber?: string;
+    emailMessageId?: string;
+    importIssues?: string[];
     splitMethod: 'equal' | 'percentage';
     splitItems: UtilitySplit[];
     lastUpdatedBy?: string;

@@ -33,6 +33,21 @@ const UtilitySchema = new mongoose.Schema<CollectionTypes.Utility>(
     paidDate: { type: Date, default: null },
     notes: { type: String, default: '' },
     attachmentIds: { type: [String], default: [] },
+    status: {
+      type: String,
+      enum: ['confirmed', 'pending'],
+      default: 'confirmed',
+      index: true
+    },
+    source: {
+      type: String,
+      enum: ['manual', 'email'],
+      default: 'manual',
+      index: true
+    },
+    confirmationNumber: { type: String, default: '', index: true },
+    emailMessageId: { type: String, default: '', index: true },
+    importIssues: { type: [String], default: [] },
     splitMethod: {
       type: String,
       enum: ['equal', 'percentage'],

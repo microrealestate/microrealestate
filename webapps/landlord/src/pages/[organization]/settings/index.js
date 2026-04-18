@@ -97,6 +97,11 @@ function Settings() {
                 description={t('Manage utility categories shown in Utilities')}
               />
               <SettingLink
+                href="/settings/utilities-email-connection"
+                title={t('Utilities email connection')}
+                description={t('Configure Microsoft Graph inbox import for utility payment confirmations')}
+              />
+              <SettingLink
                 href="/settings/spaces"
                 title={t('Space types')}
                 description={t('Manage property types shown in Property forms')}

@@ -44,6 +44,9 @@ function _escapeSecrets(realm) {
   if (realm.thirdParties?.graph?.clientSecret) {
     realm.thirdParties.graph.clientSecret = SECRET_PLACEHOLDER;
   }
+  if (realm.thirdParties?.utilitiesInboxGraph?.clientSecret) {
+    realm.thirdParties.utilitiesInboxGraph.clientSecret = SECRET_PLACEHOLDER;
+  }
   if (realm.thirdParties?.smtp?.password) {
     realm.thirdParties.smtp.password = SECRET_PLACEHOLDER;
   }
@@ -80,6 +83,12 @@ export async function add(req, res) {
     );
   }
 
+  if (newRealm.thirdParties?.utilitiesInboxGraph?.clientSecret) {
+    newRealm.thirdParties.utilitiesInboxGraph.clientSecret = Crypto.encrypt(
+      newRealm.thirdParties.utilitiesInboxGraph.clientSecret
+    );
+  }
+
   if (newRealm.thirdParties?.smtp?.password) {
     newRealm.thirdParties.smtp.password = Crypto.encrypt(
       newRealm.thirdParties.smtp.password
@@ -112,6 +121,8 @@ export async function update(req, res) {
     !!req.body.thirdParties?.gmail?.appPasswordUpdated;
   const graphClientSecretUpdated =
     !!req.body.thirdParties?.graph?.clientSecretUpdated;
+  const utilitiesInboxGraphClientSecretUpdated =
+    !!req.body.thirdParties?.utilitiesInboxGraph?.clientSecretUpdated;
   const smtpPasswordUpdated = !!req.body.thirdParties?.smtp?.passwordUpdated;
   const mailgunApiKeyUpdated = !!req.body.thirdParties?.mailgun?.apiKeyUpdated;
   const b2KeyIdUpdated = !!req.body.thirdParties?.b2?.keyIdUpdated;
@@ -169,6 +180,17 @@ export async function update(req, res) {
     } else {
       updatedRealm.thirdParties.graph.clientSecret =
         previousRealm.thirdParties.graph?.clientSecret;
+    }
+  }
+
+  if (req.body.thirdParties?.utilitiesInboxGraph) {
+    logger.debug('realm update with Utilities Inbox Graph settings');
+    if (utilitiesInboxGraphClientSecretUpdated) {
+      updatedRealm.thirdParties.utilitiesInboxGraph.clientSecret =
+        Crypto.encrypt(req.body.thirdParties.utilitiesInboxGraph.clientSecret);
+    } else {
+      updatedRealm.thirdParties.utilitiesInboxGraph.clientSecret =
+        previousRealm.thirdParties.utilitiesInboxGraph?.clientSecret;
     }
   }
 
