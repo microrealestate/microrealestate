@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useRouter } from 'next/router';
 
 import { apiFetcher } from '../../../utils/fetch';
 import { downloadDocument } from '../../../utils/fetch';
@@ -9,6 +10,11 @@ import { Card } from '../../../components/ui/card';
 import { Input } from '../../../components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../components/ui/tabs';
 import Page from '../../../components/Page';
+import RentReportCard from '../../../components/reports/RentReportCard';
+import {
+  loadCityRentRanges,
+  mergeCityRentRanges
+} from '../../../components/properties/CityEstimatesCard';
 
 function toCurrency(value) {
   return `$${Number(value || 0).toFixed(2)}`;
@@ -50,11 +56,16 @@ function buildDefaultDateRange() {
 }
 
 function ReportsPage() {
+  const router = useRouter();
+  const organization = String(router.query.organization || '').trim();
   const defaultRange = useMemo(() => buildDefaultDateRange(), []);
   const [startDate, setStartDate] = useState(defaultRange.startDate);
   const [endDate, setEndDate] = useState(defaultRange.endDate);
   const [propertyId, setPropertyId] = useState('');
   const [includePending, setIncludePending] = useState(false);
+  const [cityRentEstimates, setCityRentEstimates] = useState(() =>
+    mergeCityRentRanges()
+  );
 
   const propertiesQuery = useQuery({
     queryKey: ['reports-properties'],
@@ -79,6 +90,29 @@ function ReportsPage() {
     );
   }, [propertiesQuery.data, propertyById]);
 
+  const cityList = useMemo(() => {
+    return [
+      ...new Set(
+        (propertiesQuery.data || [])
+          .map((property) => property?.address?.city?.trim())
+          .filter(Boolean)
+      )
+    ].sort((left, right) => left.localeCompare(right));
+  }, [propertiesQuery.data]);
+
+  useEffect(() => {
+    const storedRanges = loadCityRentRanges(organization);
+    setCityRentEstimates((previousRanges) =>
+      mergeCityRentRanges(storedRanges, Object.keys(previousRanges))
+    );
+  }, [organization]);
+
+  useEffect(() => {
+    setCityRentEstimates((previousRanges) =>
+      mergeCityRentRanges(previousRanges, cityList)
+    );
+  }, [cityList]);
+
   const reportsQuery = useQuery({
     queryKey: [
       'reports-property-costs',
@@ -101,22 +135,33 @@ function ReportsPage() {
   });
 
   const breakdownRows = reportsQuery.data?.sections?.propertyCostBreakdown || [];
-  const trendRows = reportsQuery.data?.sections?.utilityTrendByCategory || [];
-  const utilityAlerts = reportsQuery.data?.sections?.delinquentAlerts?.utilities || [];
-  const taxAlerts = reportsQuery.data?.sections?.delinquentAlerts?.taxes || [];
-  const anomalies = reportsQuery.data?.sections?.utilityAnomalies || [];
-  const taxRisk = reportsQuery.data?.sections?.taxProjectionRisk || [];
+  const utilityTypes = reportsQuery.data?.sections?.utilityTypes || [
+    'power',
+    'gas',
+    'water',
+    'sewer',
+    'trash',
+    'internet',
+    'other'
+  ];
 
   const totals = useMemo(() => {
     return breakdownRows.reduce(
-      (acc, row) => {
-        acc.utilities += Number(row.utilitiesTotal || 0);
-        acc.taxDue += Number(row.taxDue || 0);
-        acc.taxBalance += Number(row.taxBalance || 0);
-        acc.combined += Number(row.combinedCost || 0);
-        return acc;
+      (accumulator, row) => {
+        accumulator.utilities += Number(row.utilitiesTotal || 0);
+        utilityTypes.forEach((type) => {
+          accumulator[type] += Number(row[`${type}Total`] || 0);
+        });
+        accumulator.combined += Number(row.combinedCost || 0);
+        return accumulator;
       },
-      { utilities: 0, taxDue: 0, taxBalance: 0, combined: 0 }
+      utilityTypes.reduce(
+        (accumulator, type) => ({
+          ...accumulator,
+          [type]: 0
+        }),
+        { utilities: 0, combined: 0 }
+      )
     );
   }, [breakdownRows]);
 
@@ -184,47 +229,39 @@ function ReportsPage() {
             </Button>
           </div>
         </div>
+        <div className="mt-3 flex flex-wrap gap-2">
+        </div>
       </Card>
 
       <Tabs defaultValue="property-cost-breakdown" className="mb-4">
         <TabsList className="mb-4 w-full justify-start overflow-x-auto">
-          <TabsTrigger value="property-cost-breakdown">Property Cost Breakdown</TabsTrigger>
-          <TabsTrigger value="utility-trend">Utility Trend</TabsTrigger>
-          <TabsTrigger value="tax-projection-risk">Tax Projection Risk</TabsTrigger>
-          <TabsTrigger value="delinquent-alerts">Delinquent Alerts</TabsTrigger>
-          <TabsTrigger value="utility-anomalies">Utility Anomalies</TabsTrigger>
+          <TabsTrigger value="property-cost-breakdown">Utility Breakdown</TabsTrigger>
+          <TabsTrigger value="rent-report">Rent Report</TabsTrigger>
         </TabsList>
 
         <TabsContent value="property-cost-breakdown">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 mb-4">
             <Card className="p-4">
-              <div className="text-xs uppercase text-muted-foreground">Utilities</div>
+              <div className="text-xs uppercase text-muted-foreground">Utilities total</div>
               <div className="text-xl font-semibold">{toCurrency(totals.utilities)}</div>
             </Card>
-            <Card className="p-4">
-              <div className="text-xs uppercase text-muted-foreground">Tax Due</div>
-              <div className="text-xl font-semibold">{toCurrency(totals.taxDue)}</div>
-            </Card>
-            <Card className="p-4">
-              <div className="text-xs uppercase text-muted-foreground">Tax Balance</div>
-              <div className="text-xl font-semibold">{toCurrency(totals.taxBalance)}</div>
-            </Card>
-            <Card className="p-4">
-              <div className="text-xs uppercase text-muted-foreground">Combined Cost</div>
-              <div className="text-xl font-semibold">{toCurrency(totals.combined)}</div>
-            </Card>
+            {utilityTypes.map((type) => (
+              <Card key={type} className="p-4">
+                <div className="text-xs uppercase text-muted-foreground">{type}</div>
+                <div className="text-xl font-semibold">{toCurrency(totals[type])}</div>
+              </Card>
+            ))}
           </div>
 
           <Card className="p-4 mb-4 overflow-x-auto">
-            <h2 className="text-lg font-semibold mb-3">Property cost breakdown</h2>
+            <h2 className="text-lg font-semibold mb-3">Utility breakdown</h2>
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left border-b">
                   <th className="py-2 pr-2">Property</th>
-                  <th className="py-2 pr-2">Utilities</th>
-                  <th className="py-2 pr-2">Tax Due</th>
-                  <th className="py-2 pr-2">Tax Paid</th>
-                  <th className="py-2 pr-2">Tax Balance</th>
+                  {utilityTypes.map((type) => (
+                    <th key={type} className="py-2 pr-2 capitalize">{type}</th>
+                  ))}
                   <th className="py-2 pr-2">Combined</th>
                 </tr>
               </thead>
@@ -232,19 +269,21 @@ function ReportsPage() {
                 <tbody key={`group-${row.parentPropertyId}`}>
                   <tr className="border-b bg-muted/25">
                     <td className="py-2 pr-2 font-medium">{row.parentPropertyName}</td>
-                    <td className="py-2 pr-2">{toCurrency(row.utilitiesTotal)}</td>
-                    <td className="py-2 pr-2">{toCurrency(row.taxDue)}</td>
-                    <td className="py-2 pr-2">{toCurrency(row.taxPaid)}</td>
-                    <td className="py-2 pr-2">{toCurrency(row.taxBalance)}</td>
+                    {utilityTypes.map((type) => (
+                      <td key={`${row.parentPropertyId}-${type}`} className="py-2 pr-2">
+                        {toCurrency(row[`${type}Total`])}
+                      </td>
+                    ))}
                     <td className="py-2 pr-2 font-semibold">{toCurrency(row.combinedCost)}</td>
                   </tr>
                   {(row.childRows || []).map((child) => (
                     <tr key={`child-${child.propertyId}`} className="border-b">
                       <td className="py-2 pr-2 pl-6 text-muted-foreground">{child.propertyName}</td>
-                      <td className="py-2 pr-2">{toCurrency(child.utilitiesTotal)}</td>
-                      <td className="py-2 pr-2">{toCurrency(child.taxDue)}</td>
-                      <td className="py-2 pr-2">{toCurrency(child.taxPaid)}</td>
-                      <td className="py-2 pr-2">{toCurrency(child.taxBalance)}</td>
+                      {utilityTypes.map((type) => (
+                        <td key={`${child.propertyId}-${type}`} className="py-2 pr-2">
+                          {toCurrency(child[`${type}Total`])}
+                        </td>
+                      ))}
                       <td className="py-2 pr-2">{toCurrency(child.combinedCost)}</td>
                     </tr>
                   ))}
@@ -254,105 +293,12 @@ function ReportsPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="utility-trend">
-          <Card className="p-4 mb-4">
-            <h2 className="text-lg font-semibold mb-3">Utility trend by category</h2>
-            <div className="space-y-2 max-h-96 overflow-auto text-sm">
-              {trendRows.length ? (
-                trendRows.map((row) => (
-                  <div key={row.billingMonth} className="border rounded p-2">
-                    <div className="font-medium">{row.billingMonth}</div>
-                    <div className="text-muted-foreground">Total: {toCurrency(row.total)}</div>
-                    <div className="mt-1 text-xs">
-                      {Object.entries(row.categories || {})
-                        .map(([category, amount]) => `${category}: ${toCurrency(amount)}`)
-                        .join(' | ')}
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="text-sm text-muted-foreground">No utility trend data for selected filters.</div>
-              )}
-            </div>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="tax-projection-risk">
-          <Card className="p-4 mb-4">
-            <h2 className="text-lg font-semibold mb-3">Tax projection risk</h2>
-            <div className="space-y-2 max-h-96 overflow-auto text-sm">
-              {taxRisk.length ? (
-                taxRisk.map((item) => (
-                  <div key={item.propertyId} className="border rounded p-2">
-                    <div className="font-medium">{item.propertyLabel}</div>
-                    <div>Current: {toCurrency(item.currentTotal)}</div>
-                    <div>Projected: {toCurrency(item.projectedTotal)}</div>
-                    <div>
-                      Increase: {toCurrency(item.projectedIncrease)} ({item.projectedIncreasePercent.toFixed(2)}%)
-                    </div>
-                    <div className="uppercase text-xs text-muted-foreground">Risk: {item.riskLevel}</div>
-                  </div>
-                ))
-              ) : (
-                <div className="text-sm text-muted-foreground">No tax risk data for selected filters.</div>
-              )}
-            </div>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="delinquent-alerts">
-          <Card className="p-4 mb-4">
-            <h2 className="text-lg font-semibold mb-3">Delinquent and unpaid alerts</h2>
-            <div className="space-y-2 text-sm max-h-96 overflow-auto">
-              {utilityAlerts.length === 0 && taxAlerts.length === 0 ? (
-                <div className="text-muted-foreground">No delinquent alerts in selected range.</div>
-              ) : null}
-
-              {utilityAlerts.map((alert) => (
-                <div key={`u-${alert.utilityId}`} className="rounded border p-2">
-                  <div className="font-medium">Utility: {alert.propertyLabel}</div>
-                  <div>
-                    {alert.type} {alert.billingMonth ? `(${alert.billingMonth})` : ''} - {toCurrency(alert.amount)}
-                  </div>
-                </div>
-              ))}
-
-              {taxAlerts.map((alert) => (
-                <div key={`t-${alert.statementId}`} className="rounded border p-2">
-                  <div className="font-medium">Tax: {alert.propertyLabel}</div>
-                  <div>
-                    {alert.taxYearLabel} balance {toCurrency(alert.balance)}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="utility-anomalies">
-          <Card className="p-4 mb-4">
-            <h2 className="text-lg font-semibold mb-3">Utility anomaly detection</h2>
-            <div className="space-y-2 text-sm max-h-96 overflow-auto">
-              {anomalies.length ? (
-                anomalies.map((anomaly) => (
-                  <div key={anomaly.utilityId} className="rounded border p-2">
-                    <div className="font-medium">
-                      {anomaly.propertyLabel} - {anomaly.type}
-                    </div>
-                    <div>
-                      {anomaly.billingMonth} amount {toCurrency(anomaly.amount)}
-                    </div>
-                    <div>
-                      Baseline {toCurrency(anomaly.baselineAmount)} (+{anomaly.percentAbove.toFixed(2)}%)
-                    </div>
-                    <div className="uppercase text-xs text-muted-foreground">{anomaly.severity}</div>
-                  </div>
-                ))
-              ) : (
-                <div className="text-muted-foreground">No anomalies detected for selected range.</div>
-              )}
-            </div>
-          </Card>
+        <TabsContent value="rent-report">
+          <RentReportCard
+            cityList={cityList}
+            cityRentEstimates={cityRentEstimates}
+            properties={propertiesQuery.data || []}
+          />
         </TabsContent>
       </Tabs>
     </Page>

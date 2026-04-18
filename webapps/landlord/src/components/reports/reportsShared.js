@@ -14,31 +14,6 @@ export const REPORT_SUBPAGES = [
     slug: 'property-cost-breakdown',
     title: 'Property Cost Breakdown',
     description: 'Parent and child rollups for utilities and property taxes.'
-  },
-  {
-    slug: 'utility-trend',
-    title: 'Utility Trend by Category',
-    description: 'Monthly utility totals split by category.'
-  },
-  {
-    slug: 'tax-projection-risk',
-    title: 'Tax Projection Risk',
-    description: 'Current vs projected tax totals and risk level.'
-  },
-  {
-    slug: 'delinquent-alerts',
-    title: 'Delinquent and Unpaid Alerts',
-    description: 'Unpaid utilities and tax balances requiring action.'
-  },
-  {
-    slug: 'utility-anomalies',
-    title: 'Utility Anomaly Detection',
-    description: 'Bills that exceed baseline thresholds.'
-  },
-  {
-    slug: 'space-marketing',
-    title: 'Space Marketing Generator',
-    description: 'Email template and one-page flyer output for a space.'
   }
 ];
 

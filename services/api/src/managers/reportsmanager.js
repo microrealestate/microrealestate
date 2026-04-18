@@ -1,6 +1,8 @@
 import { Collections } from '@microrealestate/common';
 import { Parser } from 'json2csv';
 
+const UTILITY_TYPE_ORDER = ['power', 'gas', 'water', 'sewer', 'trash', 'internet', 'other'];
+
 function toNumber(value, fallback = 0) {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : fallback;
@@ -42,6 +44,25 @@ function getPropertyLabel(property, propertyById) {
   }
 
   return `${parentProperty.name} / ${property.name}`;
+}
+
+function buildUtilityTotals() {
+  return UTILITY_TYPE_ORDER.reduce((accumulator, type) => {
+    accumulator[type] = 0;
+    return accumulator;
+  }, {});
+}
+
+function addUtilityAmount(target, type, amount) {
+  const normalizedType = UTILITY_TYPE_ORDER.includes(type) ? type : 'other';
+  target[normalizedType] = roundCurrency(toNumber(target[normalizedType]) + amount);
+}
+
+function flattenUtilityTotals(totals) {
+  return UTILITY_TYPE_ORDER.reduce((accumulator, type) => {
+    accumulator[`${type}Total`] = roundCurrency(totals[type]);
+    return accumulator;
+  }, {});
 }
 
 function parseBillingMonthToDate(value) {
@@ -398,14 +419,9 @@ export async function propertyCosts(req, res) {
   const startDate = parseDateParam(req.query.startDate, 'start');
   const endDate = parseDateParam(req.query.endDate, 'end');
 
-  const thresholdPercent = Math.max(0, toNumber(req.query.anomalyThreshold, 40));
-  const lookbackMonths = Math.max(2, toNumber(req.query.anomalyLookbackMonths, 3));
-  const minBillAmount = Math.max(0, toNumber(req.query.anomalyMinBillAmount, 0));
-
-  const [properties, utilities, propertyTaxStatements] = await Promise.all([
+  const [properties, utilities] = await Promise.all([
     Collections.Property.find({ realmId }).lean(),
-    Collections.Utility.find({ realmId }).lean(),
-    Collections.PropertyTaxStatement.find({ realmId }).lean()
+    Collections.Utility.find({ realmId }).lean()
   ]);
 
   const propertyById = properties.reduce((accumulator, property) => {
@@ -434,10 +450,7 @@ export async function propertyCosts(req, res) {
         parentPropertyId: topParentId,
         parentPropertyName: String(topParent?.name || 'Unnamed property'),
         utilitiesTotal: 0,
-        taxDue: 0,
-        taxPaid: 0,
-        taxBalance: 0,
-        combinedCost: 0,
+        utilityTotalsByType: buildUtilityTotals(),
         childRows: {}
       };
     }
@@ -447,16 +460,10 @@ export async function propertyCosts(req, res) {
         propertyId,
         propertyName: String(property?.name || 'Unnamed property'),
         utilitiesTotal: 0,
-        taxDue: 0,
-        taxPaid: 0,
-        taxBalance: 0,
-        combinedCost: 0
+        utilityTotalsByType: buildUtilityTotals()
       };
     }
   });
-
-  const categoryTotalsByMonth = {};
-  const delinquentUtilities = [];
 
   const scopedUtilities = utilities.filter((utility) => {
     const propertyId = normalizeId(utility?.propertyId);
@@ -479,223 +486,55 @@ export async function propertyCosts(req, res) {
       return;
     }
 
+    const amount = roundCurrency(utility?.amount || 0);
+    const category = String(utility?.type || 'other').trim().toLowerCase() || 'other';
     const topParentId = resolveTopParentId(property, propertyById);
     const parentRow = parentRowsMap[topParentId];
     if (!parentRow) {
       return;
     }
 
-    const amount = roundCurrency(utility?.amount || 0);
     parentRow.utilitiesTotal = roundCurrency(parentRow.utilitiesTotal + amount);
+    addUtilityAmount(parentRow.utilityTotalsByType, category, amount);
 
     const parentPropertyId = normalizePropertyParentId(property);
     if (parentPropertyId && parentRow.childRows[propertyId]) {
       parentRow.childRows[propertyId].utilitiesTotal = roundCurrency(
         parentRow.childRows[propertyId].utilitiesTotal + amount
       );
-    }
-
-    const month = String(utility?.billingMonth || '').trim();
-    const category = String(utility?.type || 'other').trim().toLowerCase() || 'other';
-    if (month) {
-      if (!categoryTotalsByMonth[month]) {
-        categoryTotalsByMonth[month] = {};
-      }
-      categoryTotalsByMonth[month][category] = roundCurrency(
-        toNumber(categoryTotalsByMonth[month][category]) + amount
-      );
-    }
-
-    if (!utility?.paidDate) {
-      delinquentUtilities.push({
-        utilityId: normalizeId(utility?._id),
-        propertyId,
-        propertyLabel: getPropertyLabel(property, propertyById),
-        type: category,
-        billingMonth: month,
-        dueDate: utility?.dueDate ? new Date(utility.dueDate).toISOString().slice(0, 10) : '',
+      addUtilityAmount(
+        parentRow.childRows[propertyId].utilityTotalsByType,
+        category,
         amount
-      });
-    }
-  });
-
-  const taxAlerts = [];
-  const taxRiskByProperty = {};
-
-  const scopedTaxStatements = propertyTaxStatements.filter((statement) => {
-    const propertyId = normalizeId(statement?.propertyId);
-    if (!scopedPropertyIds.has(propertyId)) {
-      return false;
-    }
-
-    const statementDate = getTaxStatementDate(statement);
-    return isWithinDateRange(statementDate, startDate, endDate);
-  });
-
-  scopedTaxStatements.forEach((statement) => {
-    const propertyId = normalizeId(statement?.propertyId);
-    const property = propertyById[propertyId];
-    if (!property) {
-      return;
-    }
-
-    const topParentId = resolveTopParentId(property, propertyById);
-    const parentRow = parentRowsMap[topParentId];
-    if (!parentRow) {
-      return;
-    }
-
-    const taxSummary = summarizeTaxStatement(statement);
-
-    parentRow.taxDue = roundCurrency(parentRow.taxDue + taxSummary.due);
-    parentRow.taxPaid = roundCurrency(parentRow.taxPaid + taxSummary.paid);
-    parentRow.taxBalance = roundCurrency(parentRow.taxBalance + taxSummary.balance);
-
-    const splitShares = getTaxSplitShares(statement);
-    const hasSplitShares = Object.keys(splitShares).length > 0;
-    const parentPropertyId = normalizePropertyParentId(property);
-
-    if (hasSplitShares) {
-      Object.entries(splitShares).forEach(([unitId, allocatedDue]) => {
-        const childRow = parentRow.childRows[unitId];
-        if (!childRow) {
-          return;
-        }
-
-        const due = roundCurrency(allocatedDue);
-        const paidShare =
-          taxSummary.due > 0
-            ? roundCurrency((taxSummary.paid * due) / taxSummary.due)
-            : 0;
-        const balance = roundCurrency(Math.max(0, due - paidShare));
-
-        childRow.taxDue = roundCurrency(childRow.taxDue + due);
-        childRow.taxPaid = roundCurrency(childRow.taxPaid + paidShare);
-        childRow.taxBalance = roundCurrency(childRow.taxBalance + balance);
-      });
-    } else if (parentPropertyId && parentRow.childRows[propertyId]) {
-      parentRow.childRows[propertyId].taxDue = roundCurrency(
-        parentRow.childRows[propertyId].taxDue + taxSummary.due
-      );
-      parentRow.childRows[propertyId].taxPaid = roundCurrency(
-        parentRow.childRows[propertyId].taxPaid + taxSummary.paid
-      );
-      parentRow.childRows[propertyId].taxBalance = roundCurrency(
-        parentRow.childRows[propertyId].taxBalance + taxSummary.balance
       );
     }
-
-    if (taxSummary.balance > 0) {
-      taxAlerts.push({
-        statementId: normalizeId(statement?._id),
-        propertyId,
-        propertyLabel: getPropertyLabel(property, propertyById),
-        taxYearLabel: String(statement?.taxYearLabel || ''),
-        totalDue: taxSummary.due,
-        totalPaid: taxSummary.paid,
-        balance: taxSummary.balance
-      });
-    }
-
-    if (!taxRiskByProperty[topParentId]) {
-      taxRiskByProperty[topParentId] = {
-        propertyId: topParentId,
-        propertyLabel: parentRow.parentPropertyName,
-        currentTotal: 0,
-        projectedTotal: 0,
-        projectedIncrease: 0,
-        projectedIncreasePercent: 0
-      };
-    }
-
-    taxRiskByProperty[topParentId].currentTotal = roundCurrency(
-      taxRiskByProperty[topParentId].currentTotal + taxSummary.due
-    );
-    taxRiskByProperty[topParentId].projectedTotal = roundCurrency(
-      taxRiskByProperty[topParentId].projectedTotal +
-        toNumber(taxSummary.estimatedNextYearTotal)
-    );
   });
 
   const parentRows = Object.values(parentRowsMap)
-    .map((row) => {
-      const childRows = Object.values(row.childRows)
+    .map((row) => ({
+      ...row,
+      ...flattenUtilityTotals(row.utilityTotalsByType),
+      combinedCost: roundCurrency(row.utilitiesTotal),
+      childRows: Object.values(row.childRows)
         .map((child) => ({
           ...child,
-          combinedCost: roundCurrency(child.utilitiesTotal + child.taxDue)
+          ...flattenUtilityTotals(child.utilityTotalsByType),
+          combinedCost: roundCurrency(child.utilitiesTotal)
         }))
-        .sort((left, right) => left.propertyName.localeCompare(right.propertyName));
-
-      return {
-        ...row,
-        combinedCost: roundCurrency(row.utilitiesTotal + row.taxDue),
-        childRows
-      };
-    })
+        .sort((left, right) => left.propertyName.localeCompare(right.propertyName))
+    }))
     .sort((left, right) => left.parentPropertyName.localeCompare(right.parentPropertyName));
-
-  const utilityTrendByCategory = Object.entries(categoryTotalsByMonth)
-    .sort(([left], [right]) => left.localeCompare(right))
-    .map(([billingMonth, categories]) => ({
-      billingMonth,
-      categories,
-      total: roundCurrency(
-        Object.values(categories).reduce(
-          (sum, value) => sum + toNumber(value),
-          0
-        )
-      )
-    }));
-
-  const taxProjectionRisk = Object.values(taxRiskByProperty)
-    .map((item) => {
-      const projectedIncrease = roundCurrency(item.projectedTotal - item.currentTotal);
-      const projectedIncreasePercent =
-        item.currentTotal > 0
-          ? roundCurrency((projectedIncrease / item.currentTotal) * 100)
-          : 0;
-
-      return {
-        ...item,
-        projectedIncrease,
-        projectedIncreasePercent,
-        riskLevel:
-          projectedIncreasePercent >= 15
-            ? 'high'
-            : projectedIncreasePercent >= 8
-              ? 'medium'
-              : 'low'
-      };
-    })
-    .sort((left, right) => right.projectedIncreasePercent - left.projectedIncreasePercent);
-
-  const anomalies = buildAnomalyRows(
-    scopedUtilities,
-    propertyById,
-    thresholdPercent,
-    lookbackMonths,
-    minBillAmount
-  );
 
   return res.json({
     filters: {
       startDate: startDate ? startDate.toISOString().slice(0, 10) : null,
       endDate: endDate ? endDate.toISOString().slice(0, 10) : null,
       propertyId: selectedPropertyId || null,
-      includePending,
-      anomalyThreshold: thresholdPercent,
-      anomalyLookbackMonths: lookbackMonths,
-      anomalyMinBillAmount: minBillAmount
+      includePending
     },
     sections: {
       propertyCostBreakdown: parentRows,
-      utilityTrendByCategory,
-      delinquentAlerts: {
-        utilities: delinquentUtilities,
-        taxes: taxAlerts
-      },
-      taxProjectionRisk,
-      utilityAnomalies: anomalies
+      utilityTypes: UTILITY_TYPE_ORDER
     }
   });
 }
@@ -712,8 +551,7 @@ export async function propertyCostsCsv(req, res) {
   await propertyCosts(req, fakeRes);
 
   const rows = [];
-  const breakdown =
-    fakeRes?.jsonPayload?.sections?.propertyCostBreakdown || [];
+  const breakdown = fakeRes?.jsonPayload?.sections?.propertyCostBreakdown || [];
 
   breakdown.forEach((parentRow) => {
     rows.push({
@@ -721,9 +559,10 @@ export async function propertyCostsCsv(req, res) {
       parentProperty: parentRow.parentPropertyName,
       property: parentRow.parentPropertyName,
       utilitiesTotal: parentRow.utilitiesTotal,
-      taxDue: parentRow.taxDue,
-      taxPaid: parentRow.taxPaid,
-      taxBalance: parentRow.taxBalance,
+      ...UTILITY_TYPE_ORDER.reduce((accumulator, type) => {
+        accumulator[type] = parentRow[`${type}Total`] || 0;
+        return accumulator;
+      }, {}),
       combinedCost: parentRow.combinedCost
     });
 
@@ -733,9 +572,10 @@ export async function propertyCostsCsv(req, res) {
         parentProperty: parentRow.parentPropertyName,
         property: childRow.propertyName,
         utilitiesTotal: childRow.utilitiesTotal,
-        taxDue: childRow.taxDue,
-        taxPaid: childRow.taxPaid,
-        taxBalance: childRow.taxBalance,
+        ...UTILITY_TYPE_ORDER.reduce((accumulator, type) => {
+          accumulator[type] = childRow[`${type}Total`] || 0;
+          return accumulator;
+        }, {}),
         combinedCost: childRow.combinedCost
       });
     });
@@ -746,9 +586,13 @@ export async function propertyCostsCsv(req, res) {
     { label: 'Parent Property', value: 'parentProperty' },
     { label: 'Property', value: 'property' },
     { label: 'Utilities Total', value: 'utilitiesTotal' },
-    { label: 'Tax Due', value: 'taxDue' },
-    { label: 'Tax Paid', value: 'taxPaid' },
-    { label: 'Tax Balance', value: 'taxBalance' },
+    { label: 'Power', value: 'power' },
+    { label: 'Gas', value: 'gas' },
+    { label: 'Water', value: 'water' },
+    { label: 'Sewer', value: 'sewer' },
+    { label: 'Trash', value: 'trash' },
+    { label: 'Internet', value: 'internet' },
+    { label: 'Other', value: 'other' },
     { label: 'Combined Cost', value: 'combinedCost' }
   ];
 
