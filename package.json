@@ -34,6 +34,17 @@
     "e2e:open": "yarn workspace @microrealestate/e2e run cypress:open",
     "format": "yarn workspaces foreach run format",
     "lint": "yarn workspaces foreach -pv run lint",
+    "test": "yarn workspaces foreach -pv run test",
+    "test:watch": "yarn workspaces foreach run test:watch",
+    "test:coverage": "yarn workspaces foreach run test:coverage",
+    "test:api": "yarn workspace @microrealestate/api run test",
+    "test:authenticator": "yarn workspace @microrealestate/authenticator run test",
+    "test:emailer": "yarn workspace @microrealestate/emailer run test",
+    "test:pdfgenerator": "yarn workspace @microrealestate/pdfgenerator run test",
+    "test:resetservice": "yarn workspace @microrealestate/resetservice run test",
+    "test:tenantapi": "yarn workspace @microrealestate/tenantapi run test",
+    "test:landlord": "yarn workspace @microrealestate/landlord run test",
+    "test:all": "yarn test && yarn e2e:run",
     "dev": "cross-env MRE_VERSION=dev node cli/src/index.js dev",
     "check:startup": "./scripts/check-startup-health.sh",
     "mre": "cross-env MRE_VERSION=local node cli/src/index.js",
@@ -63,8 +74,10 @@
   "devDependencies": {
     "cross-env": "7.0.3",
     "husky": "9.1.7",
+    "jest": "29.7.0",
     "lint-staged": "15.4.3",
-    "prettier": "3.5.2"
+    "prettier": "3.5.2",
+    "ts-jest": "29.1.1"
   },
   "resolutions": {
     "axios": "1.8.4",

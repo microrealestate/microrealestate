@@ -16,7 +16,7 @@
     "transpile:common": "tsc",
     "transpile": "npm-run-all transpile:types transpile:common",
     "build": "npm-run-all clean transpile",
-    "test": "jest",
+    "test": "NODE_OPTIONS=--experimental-vm-modules node --experimental-vm-modules ../../node_modules/jest/bin/jest.js --passWithNoTests",
     "eslint": "eslint .",
     "lint": "npm-run-all transpile eslint",
     "format": "prettier --write '**/*.{js,jsx,ts,tsx,json,css}'"

@@ -181,25 +181,36 @@ async function enrichNotesWithLabels(notes, realmId) {
 export async function add(req, res) {
   const { entityType, entityId, content, tags, pinned } = req.body;
 
-  if (!entityType || !entityId || !content) {
+  if (!content) {
     return res
       .status(400)
-      .json({ message: 'entityType, entityId, and content are required' });
+      .json({ message: 'content is required' });
   }
 
-  ensureEntityType(entityType);
+  const hasEntityContext = entityType && entityId;
+  const hasPartialEntityContext = entityType || entityId;
 
-  // Validate access to the entity
-  const hasAccess = await validateEntityAccess(
-    entityType,
-    entityId,
-    req.realm?._id
-  );
+  if (hasPartialEntityContext && !hasEntityContext) {
+    return res
+      .status(400)
+      .json({ message: 'entityType and entityId must be provided together' });
+  }
 
-  if (!hasAccess) {
-    return res.status(403).json({
-      message: 'You do not have access to this resource'
-    });
+  if (hasEntityContext) {
+    ensureEntityType(entityType);
+
+    // Validate access to the entity
+    const hasAccess = await validateEntityAccess(
+      entityType,
+      entityId,
+      req.realm?._id
+    );
+
+    if (!hasAccess) {
+      return res.status(403).json({
+        message: 'You do not have access to this resource'
+      });
+    }
   }
 
   const authorId = getAuthorId(req);
@@ -207,14 +218,19 @@ export async function add(req, res) {
 
   const note = await Collections.Note.create({
     realmId: req.realm?._id,
-    entityType,
-    entityId: String(entityId),
     authorId: String(authorId),
     authorName: req.user?.name || req.user?.email || String(authorId),
     content: String(content),
     tags: Array.isArray(tags) ? tags : [],
     pinned: !!pinned,
     deletedDate: null
+    ,
+    ...(hasEntityContext
+      ? {
+          entityType: String(entityType),
+          entityId: String(entityId)
+        }
+      : {})
   });
 
   const enriched = await enrichNotesWithLabels(

@@ -31,7 +31,7 @@ const NoteSchema = new mongoose.Schema(
       index: true
     },
 
-    entityId: { type: String, required: true, index: true },
+    entityId: { type: String, index: true },
 
     authorId: { type: String, required: true },
 

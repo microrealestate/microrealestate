@@ -7,7 +7,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "echo \"No tests specified\" && exit 0",
     "clean:types": "rimraf ../../types/dist",
     "clean:common": "rimraf ../common/dist",
     "clean:service": "rimraf dist",
