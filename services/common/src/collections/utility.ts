@@ -54,6 +54,13 @@ const UtilitySchema = new mongoose.Schema<CollectionTypes.Utility>(
       default: 'equal'
     },
     splitItems: { type: [UtilitySplitSchema], default: [] },
+    originalAmount: { type: Number, default: null },
+    splitTotal: { type: Number, default: null },
+    sourceUtilityId: { type: String, default: '' },
+    invoicedAt: { type: Date, default: null },
+    invoicedBy: { type: String, default: '' },
+    billEnteredAt: { type: Date, default: Date.now },
+    billEnteredBy: { type: String, default: '' },
     lastUpdatedBy: { type: String, default: '' }
   },
   {

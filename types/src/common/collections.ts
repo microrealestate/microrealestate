@@ -545,9 +545,65 @@ export namespace CollectionTypes {
     importIssues?: string[];
     splitMethod: 'equal' | 'percentage';
     splitItems: UtilitySplit[];
+    originalAmount?: number; // Bill total before splits
+    splitTotal?: number; // Sum of split items (for validation)
+    sourceUtilityId?: string; // Parent bill if resplit
+    invoicedAt?: Date | null; // Set when first invoice is created
+    invoicedBy?: string; // User who triggered invoicing
+    billEnteredAt?: Date; // When bill was first entered
+    billEnteredBy?: string; // User who entered it
     lastUpdatedBy?: string;
     createdAt?: Date;
     updatedAt?: Date;
+  };
+
+  export type UtilityInvoice = {
+    _id?: string;
+    realmId: string;
+    utilityId: string; // Reference to Utility bill
+    propertyId: string; // Primary property for the split
+    occupantId: string; // Tenant/occupant
+    occupantEmail: string; // Email to send invoice to
+    billingMonth: string; // YYYY-MM
+    invoiceAmount: number; // Occupant's share of the split
+    invoiceNumber: string; // Sequential invoice ID for reference
+    status: 'draft' | 'sent' | 'outstanding' | 'paid' | 'void'; // State machine
+    createdAt?: Date;
+    sentAt?: Date | null; // When email was sent
+    sentBy?: string; // User who approved send
+    paidAt?: Date | null; // When marked paid
+    paidBy?: string; // User who recorded payment
+    voidedAt?: Date | null; // If voided
+    voidedBy?: string;
+    attachmentId?: string; // PDF invoice attachment ID
+    emailMessageId?: string; // Email message ID from emailer service
+    paymentMethod?: string; // 'check', 'transfer', 'cash', 'other'
+    paymentReference?: string; // Check number, transaction ID, etc.
+    paymentNotes?: string; // Additional payment details
+    dueDate?: Date; // From utility bill
+    updatedAt?: Date;
+  };
+
+  export type UtilityActivity = {
+    _id?: string;
+    realmId: string;
+    utilityId: string; // Reference to utility bill
+    eventType: 'split_created' | 'qb_posted' | 'invoiced' | 'invoice_sent' | 'payment_received';
+    actor: string; // User email/ID who triggered event
+    timestamp: Date;
+    details?: {
+      splitMethod?: 'equal' | 'percentage';
+      splitCount?: number;
+      qbPostedAt?: Date;
+      qbReference?: string; // For future QB sync
+      invoiceIds?: string[];
+      invoiceId?: string;
+      paidAmount?: number;
+      paymentMethod?: string;
+      paymentReference?: string;
+    };
+    notes?: string; // Free text notes
+    createdAt?: Date;
   };
 
   export type PropertyTaxUnitSplit = {
