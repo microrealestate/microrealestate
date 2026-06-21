@@ -19,7 +19,7 @@ import {
   LuSettings2,
   LuTrash2
 } from 'react-icons/lu';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { apiFetcher } from '../../../utils/fetch';
@@ -440,6 +440,7 @@ export function UtilitiesPage({ view = 'all' }) {
   const [searchText, setSearchText] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [monthFilter, setMonthFilter] = useState('all');
+  const [propertyFilter, setPropertyFilter] = useState('all');
   const [submitting, setSubmitting] = useState(false);
   const [savingAccount, setSavingAccount] = useState(false);
   const [billFile, setBillFile] = useState(null);
@@ -771,6 +772,17 @@ export function UtilitiesPage({ view = 'all' }) {
         return false;
       }
 
+      if (propertyFilter !== 'all') {
+        const matchesDirect =
+          String(utility.propertyId) === propertyFilter;
+        const prop = propertyById[String(utility.propertyId)];
+        const matchesAsChild =
+          prop && String(prop.parentPropertyId || '') === propertyFilter;
+        if (!matchesDirect && !matchesAsChild) {
+          return false;
+        }
+      }
+
       if (!cleanedSearchText) {
         return true;
       }
@@ -792,7 +804,7 @@ export function UtilitiesPage({ view = 'all' }) {
         accountNumber.includes(cleanedSearchText)
       );
     });
-  }, [monthFilter, propertyById, searchText, typeFilter, utilities]);
+  }, [monthFilter, propertyById, propertyFilter, searchText, typeFilter, utilities]);
 
   const totalAmount = useMemo(
     () =>
@@ -5847,6 +5859,9 @@ export function UtilitiesPage({ view = 'all' }) {
             handleDownloadUtilityBillAttachment={
               handleDownloadUtilityBillAttachment
             }
+            propertyFilter={propertyFilter}
+            setPropertyFilter={setPropertyFilter}
+            propertyOptions={propertyOptions}
             onGenerateInvoices={handleGenerateInvoices}
             onLogQbPosted={handleLogQbPosted}
           />

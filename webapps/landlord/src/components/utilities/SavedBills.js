@@ -15,6 +15,15 @@ import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { Input } from '../ui/input';
 
+function getPropertyLabel(property, propertyById) {
+  const parent = property?.parentPropertyId
+    ? propertyById[String(property.parentPropertyId)]
+    : null;
+  return parent
+    ? `${parent.name || ''} / ${property.name || ''}`
+    : property?.name || '';
+}
+
 function SavedBills({
   t,
   filteredUtilities,
@@ -26,6 +35,9 @@ function SavedBills({
   setTypeFilter,
   monthFilter,
   setMonthFilter,
+  propertyFilter,
+  setPropertyFilter,
+  propertyOptions,
   availableCategories,
   billingMonths,
   propertyById,
@@ -110,7 +122,7 @@ function SavedBills({
           </Button>
         ))}
       </div>
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-4 mb-4">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-5 mb-4">
         <div className="md:col-span-2 relative">
           <LuSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -146,6 +158,22 @@ function SavedBills({
             {billingMonths.map((month) => (
               <option key={month} value={month}>
                 {month}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <select
+            value={propertyFilter || 'all'}
+            onChange={(event) =>
+              setPropertyFilter && setPropertyFilter(event.target.value)
+            }
+            className="w-full px-3 py-2 border rounded-md text-sm bg-background"
+          >
+            <option value="all">{t('All properties')}</option>
+            {(propertyOptions || []).map((property) => (
+              <option key={String(property._id)} value={String(property._id)}>
+                {getPropertyLabel(property, propertyById)}
               </option>
             ))}
           </select>

@@ -60,12 +60,24 @@ export async function generateInvoices(req, res) {
       .json({ message: 'Invoices have already been generated for this utility bill' });
   }
 
-  // Find occupants currently assigned to this property
+  // Find occupants assigned to this property AND any child units/spaces under it
+  const childProperties = await Collections.Property.find({
+    realmId,
+    parentPropertyId: String(utility.propertyId)
+  })
+    .select('_id')
+    .lean();
+
+  const allPropertyIds = [
+    String(utility.propertyId),
+    ...childProperties.map((p) => String(p._id))
+  ];
+
   const occupants = await Collections.Tenant.find({
     realmId,
-    'properties.propertyId': String(utility.propertyId)
+    'properties.propertyId': { $in: allPropertyIds }
   })
-    .select('_id name properties beginDate endDate terminationDate')
+    .select('_id name contacts properties beginDate endDate terminationDate')
     .lean();
 
   if (!occupants.length) {
