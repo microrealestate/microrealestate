@@ -29,7 +29,7 @@ import NotesPanel from '../../../components/NotesPanel';
 import Page from '../../../components/Page';
 import SavedBills from '../../../components/utilities/SavedBills';
 import { toast } from 'sonner';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 import { withAuthentication } from '../../../components/Authentication';
@@ -2938,6 +2938,32 @@ export function UtilitiesPage({ view = 'all' }) {
     return String(attachmentIds[0]);
   };
 
+  const queryClient = useQueryClient();
+
+  const generateInvoicesMutation = useMutation({
+    mutationFn: async (utilityId) => {
+      const response = await apiFetcher().post('/utility-invoices/generate', {
+        utilityId
+      });
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['utilities-all']);
+      queryClient.invalidateQueries(['utility-invoices']);
+      toast.success(t('Invoices generated successfully'));
+    },
+    onError: (error) => {
+      toast.error(
+        error?.response?.data?.message || t('Failed to generate invoices')
+      );
+    }
+  });
+
+  const handleGenerateInvoices = useCallback(
+    (utilityId) => generateInvoicesMutation.mutate(utilityId),
+    [generateInvoicesMutation]
+  );
+
   const handleDownloadUtilityBillAttachment = async (utility) => {
     const attachmentId = getFirstUtilityAttachmentId(utility);
     if (!attachmentId) {
@@ -5798,6 +5824,7 @@ export function UtilitiesPage({ view = 'all' }) {
             handleDownloadUtilityBillAttachment={
               handleDownloadUtilityBillAttachment
             }
+            onGenerateInvoices={handleGenerateInvoices}
           />
         ) : null}
 

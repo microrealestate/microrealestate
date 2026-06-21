@@ -4,7 +4,10 @@ import {
   LuDownload,
   LuExternalLink,
   LuFileSearch,
-  LuSearch
+  LuFileText,
+  LuLock,
+  LuSearch,
+  LuSend
 } from 'react-icons/lu';
 import { useMemo, useState } from 'react';
 import { Button } from '../ui/button';
@@ -32,7 +35,8 @@ function SavedBills({
   isError,
   workingUtilityAttachmentId,
   handlePreviewUtilityBillAttachment,
-  handleDownloadUtilityBillAttachment
+  handleDownloadUtilityBillAttachment,
+  onGenerateInvoices
 }) {
   const [activeTab, setActiveTab] = useState('all');
   const [sortBy, setSortBy] = useState('billingMonth');
@@ -205,9 +209,23 @@ function SavedBills({
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2 sm:gap-3 sm:justify-end">
-                  <div className="text-sm font-semibold">
-                    {toCurrency(utility.amount)}
+                  <div className="text-right">
+                    <div className="text-sm font-semibold">
+                      {toCurrency(utility.amount)}
+                    </div>
+                    {utility.originalAmount != null &&
+                    utility.originalAmount !== utility.amount ? (
+                      <div className="text-xs text-muted-foreground">
+                        {t('Full bill')}: {toCurrency(utility.originalAmount)}
+                      </div>
+                    ) : null}
                   </div>
+                  {utility.invoicedAt ? (
+                    <div className="flex items-center gap-1 text-xs text-amber-600 font-medium">
+                      <LuLock className="size-3" />
+                      {t('Invoiced')}
+                    </div>
+                  ) : null}
                   {(utility.attachmentIds || []).length ? (
                     <>
                       <Button
@@ -252,6 +270,29 @@ function SavedBills({
                     <LuExternalLink className="size-4" />
                     {t('Open property')}
                   </Button>
+                  {utility.invoicedAt ? (
+                    <Button
+                      variant="outline"
+                      className="gap-2"
+                      onClick={() =>
+                        router.push(
+                          `/${router.query.organization}/accounting/utility-invoices`
+                        )
+                      }
+                    >
+                      <LuFileText className="size-4" />
+                      {t('View invoices')}
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      className="gap-2"
+                      onClick={() => onGenerateInvoices && onGenerateInvoices(utility._id)}
+                    >
+                      <LuSend className="size-4" />
+                      {t('Generate invoices')}
+                    </Button>
+                  )}
                 </div>
               </div>
             );
