@@ -2964,6 +2964,29 @@ export function UtilitiesPage({ view = 'all' }) {
     [generateInvoicesMutation]
   );
 
+  const logQbPostedMutation = useMutation({
+    mutationFn: async ({ utilityId, qbReference }) => {
+      const response = await apiFetcher().post(`/utilities/${utilityId}/qb-posted`, {
+        qbReference
+      });
+      return response.data;
+    },
+    onSuccess: () => {
+      toast.success(t('QuickBooks posting logged'));
+    },
+    onError: (error) => {
+      toast.error(
+        error?.response?.data?.message || t('Failed to log QB posting')
+      );
+    }
+  });
+
+  const handleLogQbPosted = useCallback(
+    (utilityId, qbReference) =>
+      logQbPostedMutation.mutate({ utilityId, qbReference }),
+    [logQbPostedMutation]
+  );
+
   const handleDownloadUtilityBillAttachment = async (utility) => {
     const attachmentId = getFirstUtilityAttachmentId(utility);
     if (!attachmentId) {
@@ -5825,6 +5848,7 @@ export function UtilitiesPage({ view = 'all' }) {
               handleDownloadUtilityBillAttachment
             }
             onGenerateInvoices={handleGenerateInvoices}
+            onLogQbPosted={handleLogQbPosted}
           />
         ) : null}
 

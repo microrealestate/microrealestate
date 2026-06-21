@@ -3,6 +3,7 @@ import {
   LuBuilding2,
   LuClipboardList,
   LuDollarSign,
+  LuFileText,
   LuKeyRound,
   LuLandmark,
   LuLayoutDashboard,
@@ -119,6 +120,13 @@ const menuItems = [
     pathname: '/utilities',
     Icon: UtilitiesIcon,
     dataCy: 'utilitiesNav'
+  },
+  {
+    key: 'utilityInvoices',
+    labelId: 'Utility Invoices',
+    pathname: '/accounting/utility-invoices',
+    Icon: LuFileText,
+    dataCy: 'utilityInvoicesNav'
   },
   {
     key: 'propertyTaxes',

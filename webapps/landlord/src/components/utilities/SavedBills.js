@@ -1,6 +1,7 @@
 import {
   LuArrowDown,
   LuArrowUp,
+  LuBookmark,
   LuDownload,
   LuExternalLink,
   LuFileSearch,
@@ -36,11 +37,14 @@ function SavedBills({
   workingUtilityAttachmentId,
   handlePreviewUtilityBillAttachment,
   handleDownloadUtilityBillAttachment,
-  onGenerateInvoices
+  onGenerateInvoices,
+  onLogQbPosted
 }) {
   const [activeTab, setActiveTab] = useState('all');
   const [sortBy, setSortBy] = useState('billingMonth');
   const [sortOrder, setSortOrder] = useState('desc');
+  const [qbUtilityId, setQbUtilityId] = useState(null);
+  const [qbRef, setQbRef] = useState('');
 
   const sortedUtilities = useMemo(() => {
     return [...filteredUtilities].sort((a, b) => {
@@ -293,6 +297,45 @@ function SavedBills({
                       {t('Generate invoices')}
                     </Button>
                   )}
+                  {onLogQbPosted ? (
+                    qbUtilityId === utility._id ? (
+                      <div className="flex items-center gap-1">
+                        <input
+                          className="border rounded px-2 py-1 text-xs w-32"
+                          placeholder={t('QB ref # (optional)')}
+                          value={qbRef}
+                          onChange={(e) => setQbRef(e.target.value)}
+                        />
+                        <Button
+                          size="sm"
+                          className="gap-1"
+                          onClick={() => {
+                            onLogQbPosted(utility._id, qbRef);
+                            setQbUtilityId(null);
+                            setQbRef('');
+                          }}
+                        >
+                          {t('Log')}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => { setQbUtilityId(null); setQbRef(''); }}
+                        >
+                          ✕
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        className="gap-2 text-xs"
+                        onClick={() => setQbUtilityId(utility._id)}
+                      >
+                        <LuBookmark className="size-3" />
+                        {t('Log QB posted')}
+                      </Button>
+                    )
+                  ) : null}
                 </div>
               </div>
             );
