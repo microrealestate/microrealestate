@@ -1,8 +1,49 @@
 /* eslint-env node, jest */
 import mongoose from 'mongoose';
-import { Collections } from '@microrealestate/common';
 
-const { Utility } = Collections;
+// Inline schema mirroring production services/common/src/collections/utility.ts
+// Covers only the new Phase 1 fields; existing fields included for validation context.
+const UtilitySplitSchema = new mongoose.Schema(
+  {
+    subPropertyId: { type: String, default: '' },
+    splitType: { type: String, enum: ['equal', 'percentage'], default: 'equal' },
+    percentage: { type: Number, default: 0 }
+  },
+  { _id: false }
+);
+
+const UtilitySchema = new mongoose.Schema(
+  {
+    realmId: { type: String, required: true },
+    propertyId: { type: String, required: true },
+    type: { type: String, required: true },
+    billingMonth: { type: String, required: true },
+    provider: { type: String, default: '' },
+    accountNumber: { type: String, default: '' },
+    amount: { type: Number, default: null },
+    vat: { type: Number, default: null },
+    status: { type: String, enum: ['confirmed', 'pending'], default: 'confirmed' },
+    source: { type: String, enum: ['manual', 'email'], default: 'manual' },
+    splitMethod: { type: String, enum: ['equal', 'percentage'], default: 'equal' },
+    splitItems: { type: [UtilitySplitSchema], default: [] },
+    confirmationNumber: { type: String, default: '' },
+    notes: { type: String, default: '' },
+    lastUpdatedBy: { type: String, default: '' },
+    // --- Phase 1 additions ---
+    originalAmount: { type: Number, default: null },
+    splitTotal: { type: Number, default: null },
+    sourceUtilityId: { type: String, default: '' },
+    invoicedAt: { type: Date, default: null },
+    invoicedBy: { type: String, default: '' },
+    billEnteredAt: { type: Date, default: Date.now },
+    billEnteredBy: { type: String, default: '' },
+  },
+  { timestamps: true }
+);
+
+const Utility =
+  mongoose.models.TestUtility ||
+  mongoose.model('TestUtility', UtilitySchema);
 
 describe('Utility schema - Phase 1 enhancements', () => {
   let realmId;

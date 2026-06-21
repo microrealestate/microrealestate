@@ -1,8 +1,42 @@
 /* eslint-env node, jest */
 import mongoose from 'mongoose';
-import { Collections } from '@microrealestate/common';
 
-const { UtilityInvoice } = Collections;
+// Inline schema mirroring production services/common/src/collections/utilityinvoice.ts
+const UtilityInvoiceSchema = new mongoose.Schema(
+  {
+    realmId: { type: String, required: true },
+    utilityId: { type: String, required: true },
+    propertyId: { type: String, required: true },
+    occupantId: { type: String, required: true },
+    occupantEmail: { type: String, required: true },
+    billingMonth: { type: String, required: true },
+    invoiceAmount: { type: Number, required: true },
+    invoiceNumber: { type: String, required: true },
+    status: {
+      type: String,
+      enum: ['draft', 'sent', 'outstanding', 'paid', 'void'],
+      default: 'draft',
+    },
+    dueDate: { type: Date, default: null },
+    sentAt: { type: Date, default: null },
+    sentBy: { type: String, default: '' },
+    paidAt: { type: Date, default: null },
+    paidBy: { type: String, default: '' },
+    paymentMethod: { type: String, default: '' },
+    paymentReference: { type: String, default: '' },
+    paymentNotes: { type: String, default: '' },
+    voidedAt: { type: Date, default: null },
+    voidedBy: { type: String, default: '' },
+    attachmentId: { type: String, default: '' },
+    emailMessageId: { type: String, default: '' },
+    notes: { type: String, default: '' },
+  },
+  { timestamps: true }
+);
+
+const UtilityInvoice =
+  mongoose.models.TestUtilityInvoice ||
+  mongoose.model('TestUtilityInvoice', UtilityInvoiceSchema);
 
 describe('UtilityInvoice schema', () => {
   let realmId;

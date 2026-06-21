@@ -1,8 +1,42 @@
 /* eslint-env node, jest */
 import mongoose from 'mongoose';
-import { Collections } from '@microrealestate/common';
 
-const { UtilityActivity } = Collections;
+// Inline schema mirroring production services/common/src/collections/utilityactivity.ts
+const UtilityActivityDetailsSchema = new mongoose.Schema(
+  {
+    splitMethod: { type: String, enum: ['equal', 'percentage', ''], default: '' },
+    splitCount: { type: Number, default: null },
+    qbPostedAt: { type: Date, default: null },
+    qbReference: { type: String, default: '' },
+    invoiceIds: { type: [String], default: [] },
+    invoiceId: { type: String, default: '' },
+    paidAmount: { type: Number, default: null },
+    paymentMethod: { type: String, default: '' },
+    paymentReference: { type: String, default: '' },
+  },
+  { _id: false }
+);
+
+const UtilityActivitySchema = new mongoose.Schema(
+  {
+    realmId: { type: String, required: true },
+    utilityId: { type: String, required: true },
+    eventType: {
+      type: String,
+      enum: ['split_created', 'qb_posted', 'invoiced', 'invoice_sent', 'payment_received'],
+      required: true,
+    },
+    actor: { type: String, required: true },
+    timestamp: { type: Date, default: Date.now },
+    details: { type: UtilityActivityDetailsSchema, default: () => ({}) },
+    notes: { type: String, default: '' },
+  },
+  { timestamps: false }
+);
+
+const UtilityActivity =
+  mongoose.models.TestUtilityActivity ||
+  mongoose.model('TestUtilityActivity', UtilityActivitySchema);
 
 describe('UtilityActivity schema', () => {
   let realmId;

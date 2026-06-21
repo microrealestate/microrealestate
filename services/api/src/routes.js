@@ -16,6 +16,7 @@ import * as realmManager from './managers/realmmanager.js';
 import * as reportsManager from './managers/reportsmanager.js';
 import * as rentManager from './managers/rentmanager.js';
 import * as utilityAccountManager from './managers/utilityaccountmanager.js';
+import * as utilityInvoiceManager from './managers/utilityinvoicemanager.js';
 import * as utilityManager from './managers/utilitymanager.js';
 import { Middlewares, Service } from '@microrealestate/common';
 import express from 'express';
@@ -305,6 +306,43 @@ export default function routes() {
     Middlewares.asyncWrapper(utilityAccountManager.remove)
   );
   router.use('/utility-accounts', utilityAccountsRouter);
+
+  const utilityInvoicesRouter = express.Router();
+  utilityInvoicesRouter.get(
+    '/',
+    Middlewares.asyncWrapper(utilityInvoiceManager.listInvoices)
+  );
+  utilityInvoicesRouter.get(
+    '/outstanding-summary',
+    Middlewares.asyncWrapper(utilityInvoiceManager.outstandingSummary)
+  );
+  utilityInvoicesRouter.get(
+    '/:id',
+    Middlewares.asyncWrapper(utilityInvoiceManager.getInvoice)
+  );
+  utilityInvoicesRouter.post(
+    '/generate',
+    Middlewares.asyncWrapper(utilityInvoiceManager.generateInvoices)
+  );
+  utilityInvoicesRouter.post(
+    '/:id/send',
+    Middlewares.asyncWrapper(utilityInvoiceManager.sendInvoice)
+  );
+  utilityInvoicesRouter.put(
+    '/:id/pay',
+    Middlewares.asyncWrapper(utilityInvoiceManager.markPaid)
+  );
+  utilityInvoicesRouter.post(
+    '/:id/void',
+    Middlewares.asyncWrapper(utilityInvoiceManager.voidInvoice)
+  );
+  router.use('/utility-invoices', utilityInvoicesRouter);
+
+  // QB posting log lives on the utility entry itself
+  utilitiesRouter.post(
+    '/:id/qb-posted',
+    Middlewares.asyncWrapper(utilityInvoiceManager.logQbPosted)
+  );
 
   const propertyTaxStatementsRouter = express.Router();
   propertyTaxStatementsRouter.get(

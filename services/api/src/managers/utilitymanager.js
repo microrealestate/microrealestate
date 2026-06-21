@@ -542,6 +542,7 @@ function normalizePayload(payload) {
     accountNumber: payload.accountNumber || '',
     billingMonth: normalizeMonth(payload.billingMonth),
     amount: Number(payload.amount),
+    originalAmount: Number(payload.amount),
     dueDate: payload.dueDate || null,
     paidDate: payload.paidDate || null,
     notes: payload.notes || '',
@@ -696,6 +697,8 @@ export async function add(req, res) {
   const realm = req.realm;
   const payload = normalizePayload(req.body || {});
   payload.lastUpdatedBy = _getUserFullName(req);
+  payload.billEnteredBy = _getUserFullName(req);
+  payload.billEnteredAt = new Date();
 
   const validationError = await validatePayload(realm._id, payload);
   if (validationError) {
@@ -726,15 +729,26 @@ export async function update(req, res) {
   const payload = normalizePayload(req.body || {});
   payload.lastUpdatedBy = _getUserFullName(req);
 
-  const validationError = await validatePayload(realm._id, payload, utilityId);
-  if (validationError) {
-    return res.status(400).json({ message: validationError });
-  }
-
   const oldUtility = await Collections.Utility.findOne({
     _id: utilityId,
     realmId: realm._id
   }).lean();
+
+  if (oldUtility?.invoicedAt) {
+    return res
+      .status(409)
+      .json({ message: 'Cannot edit a utility bill that has already been invoiced' });
+  }
+
+  // Preserve the original amount recorded when the bill was first entered
+  if (oldUtility?.originalAmount != null) {
+    payload.originalAmount = oldUtility.originalAmount;
+  }
+
+  const validationError = await validatePayload(realm._id, payload, utilityId);
+  if (validationError) {
+    return res.status(400).json({ message: validationError });
+  }
 
   const utility = await Collections.Utility.findOneAndUpdate(
     {
