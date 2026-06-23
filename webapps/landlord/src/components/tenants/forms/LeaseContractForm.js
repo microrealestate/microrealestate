@@ -233,7 +233,7 @@ function LeaseContractForm({ readOnly, onSubmit }) {
       await onSubmit({
         leaseId: lease.leaseId,
         frequency: store.lease.items.find(({ _id }) => _id === lease.leaseId)
-          .timeRange,
+          ?.timeRange,
         beginDate: lease.beginDate?.format('DD/MM/YYYY') || '',
         endDate: lease.endDate?.format('DD/MM/YYYY') || '',
         terminationDate: lease.terminationDate?.format('DD/MM/YYYY') || '',
@@ -385,6 +385,8 @@ function LeaseContractForm({ readOnly, onSubmit }) {
                   endDate: values.endDate
                 }
               ];
+              previousProperty.entryDate = values.beginDate;
+              previousProperty.exitDate = values.endDate;
             }
             handleChange(evt);
           };
