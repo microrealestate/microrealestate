@@ -47,6 +47,12 @@ async function _validateTargetAccess(targetType, targetId, realmId) {
         realmId
       });
       break;
+    case 'lease_instance':
+      targetExists = await Collections.LeaseInstance.exists({
+        _id: targetId,
+        realmId
+      });
+      break;
     case 'contract':
     case 'project':
       // TODO: Implement when Contract and Project collections are added

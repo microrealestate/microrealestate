@@ -6,6 +6,7 @@ import * as contractorManager from './managers/contractormanager.js';
 import * as dashboardManager from './managers/dashboardmanager.js';
 import * as dbBackupManager from './managers/dbbackupmanager.js';
 import * as emailManager from './managers/emailmanager.js';
+import * as leaseInstanceManager from './managers/leaseinstancemanager.js';
 import * as leaseManager from './managers/leasemanager.js';
 import * as notesManager from './managers/notesmanager.js';
 import * as occupantManager from './managers/occupantmanager.js';
@@ -13,8 +14,8 @@ import * as projectManager from './managers/projectmanager.js';
 import * as propertyManager from './managers/propertymanager.js';
 import * as propertyTaxStatementManager from './managers/propertytaxstatementmanager.js';
 import * as realmManager from './managers/realmmanager.js';
-import * as reportsManager from './managers/reportsmanager.js';
 import * as rentManager from './managers/rentmanager.js';
+import * as reportsManager from './managers/reportsmanager.js';
 import * as utilityAccountManager from './managers/utilityaccountmanager.js';
 import * as utilityInvoiceManager from './managers/utilityinvoicemanager.js';
 import * as utilityManager from './managers/utilitymanager.js';
@@ -60,6 +61,24 @@ export default function routes() {
   leasesRouter.patch('/:id', Middlewares.asyncWrapper(leaseManager.update));
   leasesRouter.delete('/:ids', Middlewares.asyncWrapper(leaseManager.remove));
   router.use('/leases', leasesRouter);
+
+  // ── Lease Instance routes (document-centric lifecycle: draft → active → expired) ──
+  const leaseInstanceRouter = express.Router();
+  // List / create
+  leaseInstanceRouter.get('/', Middlewares.asyncWrapper(leaseInstanceManager.all));
+  leaseInstanceRouter.post('/', Middlewares.asyncWrapper(leaseInstanceManager.create));
+  // Reconcile expired (utility / scheduled-job endpoint)
+  leaseInstanceRouter.post('/reconcile-expired', Middlewares.asyncWrapper(leaseInstanceManager.reconcileExpired));
+  // Convenience lookups
+  leaseInstanceRouter.get('/by-tenant/:tenantId', Middlewares.asyncWrapper(leaseInstanceManager.byTenant));
+  leaseInstanceRouter.get('/by-property/:propertyId', Middlewares.asyncWrapper(leaseInstanceManager.byProperty));
+  // Single instance CRUD
+  leaseInstanceRouter.get('/:id', Middlewares.asyncWrapper(leaseInstanceManager.one));
+  leaseInstanceRouter.patch('/:id', Middlewares.asyncWrapper(leaseInstanceManager.update));
+  leaseInstanceRouter.delete('/:id', Middlewares.asyncWrapper(leaseInstanceManager.remove));
+  // Lifecycle transition
+  leaseInstanceRouter.post('/:id/activate', Middlewares.asyncWrapper(leaseInstanceManager.activate));
+  router.use('/lease-instances', leaseInstanceRouter);
 
   const occupantsRouter = express.Router();
   occupantsRouter.get('/', Middlewares.asyncWrapper(occupantManager.all));
