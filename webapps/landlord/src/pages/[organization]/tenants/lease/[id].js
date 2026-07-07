@@ -1,21 +1,21 @@
 /* eslint-disable sort-imports */
 import { LuArrowLeft } from 'react-icons/lu';
 import { useCallback, useContext } from 'react';
-import { Card } from '../../../../../components/ui/card';
-import ContractOverviewCard from '../../../../../components/tenants/ContractOverviewCard';
-import LeaseContractForm from '../../../../../components/tenants/forms/LeaseContractForm';
-import LeaseWorkflowPanel from '../../../../../components/leaseinstances/LeaseWorkflowPanel';
-import Page from '../../../../../components/Page';
-import RentOverviewCard from '../../../../../components/tenants/RentOverviewCard';
-import ShortcutButton from '../../../../../components/ShortcutButton';
-import { StoreContext } from '../../../../../store';
+import { Card } from '../../../../components/ui/card';
+import ContractOverviewCard from '../../../../components/tenants/ContractOverviewCard';
+import LeaseContractForm from '../../../../components/tenants/forms/LeaseContractForm';
+import LeaseWorkflowPanel from '../../../../components/leaseinstances/LeaseWorkflowPanel';
+import Page from '../../../../components/Page';
+import RentOverviewCard from '../../../../components/tenants/RentOverviewCard';
+import ShortcutButton from '../../../../components/ShortcutButton';
+import { StoreContext } from '../../../../store';
 import { observer } from 'mobx-react-lite';
 import { toast } from 'sonner';
 import { toJS } from 'mobx';
-import useFillStore from '../../../../../hooks/useFillStore';
+import useFillStore from '../../../../hooks/useFillStore';
 import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
-import { withAuthentication } from '../../../../../components/Authentication';
+import { withAuthentication } from '../../../../components/Authentication';
 import moment from 'moment';
 /* eslint-enable sort-imports */
 
