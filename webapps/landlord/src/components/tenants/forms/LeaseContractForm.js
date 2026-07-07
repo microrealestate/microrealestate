@@ -31,6 +31,7 @@ import useTranslation from 'next-translate/useTranslation';
 /* eslint-enable sort-imports */
 
 const CONTRACT_PDF_DESCRIPTION = 'uploaded_contract_pdf';
+const CUSTOM_LEASE_VALUE = '__custom__';
 
 const validationSchema = Yup.object().shape({
   leaseId: Yup.string().nullable(),
@@ -114,7 +115,10 @@ const initValues = (tenant) => {
     : null;
 
   return {
-    leaseId: tenant?.leaseId || '',
+    leaseId:
+      tenant?.leaseId?._id ||
+      tenant?.leaseId ||
+      CUSTOM_LEASE_VALUE,
     beginDate,
     endDate,
     terminated: !!tenant?.terminationDate,
@@ -191,8 +195,8 @@ function LeaseContractForm({ readOnly, onSubmit }) {
   const availableLeases = useMemo(() => {
     return [
       {
-        id: '',
-        value: '',
+        id: CUSTOM_LEASE_VALUE,
+        value: CUSTOM_LEASE_VALUE,
         label: t('Custom lease (no template)')
       },
       ...store.lease.items.map(({ _id, name, active }) => ({
@@ -239,9 +243,12 @@ function LeaseContractForm({ readOnly, onSubmit }) {
 
   const _onSubmit = useCallback(
     async (lease) => {
+      const submittedLeaseId =
+        lease.leaseId === CUSTOM_LEASE_VALUE ? '' : lease.leaseId;
+
       await onSubmit({
-        leaseId: lease.leaseId || '',
-        frequency: store.lease.items.find(({ _id }) => _id === lease.leaseId)
+        leaseId: submittedLeaseId || '',
+        frequency: store.lease.items.find(({ _id }) => _id === submittedLeaseId)
           ?.timeRange,
         beginDate: lease.beginDate?.format('DD/MM/YYYY') || '',
         endDate: lease.endDate?.format('DD/MM/YYYY') || '',
@@ -298,7 +305,11 @@ function LeaseContractForm({ readOnly, onSubmit }) {
         return;
       }
 
-      const leaseIdToUse = leaseId || store.tenant.selected?.leaseId || null;
+      const selectedLeaseId =
+        leaseId === CUSTOM_LEASE_VALUE ? '' : leaseId;
+      const fallbackLeaseId =
+        store.tenant.selected?.leaseId?._id || store.tenant.selected?.leaseId;
+      const leaseIdToUse = selectedLeaseId || fallbackLeaseId || null;
 
       try {
         setUploadingContractPdf(true);
