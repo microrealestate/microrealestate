@@ -120,6 +120,22 @@ async function cleanupUnusedAttributes() {
   );
 }
 
+/**
+ * Ensure MongoDB indexes exist for the new LeaseInstance collection.
+ * Safe to run multiple times (createIndexes is idempotent).
+ */
+async function ensureLeaseInstanceIndexes() {
+  logger.info('Ensuring LeaseInstance indexes...');
+  // Collections.LeaseInstance might not exist if the model hasn't been registered yet
+  // (e.g., running migration before the service boots). Guard gracefully.
+  if (!Collections.LeaseInstance) {
+    logger.warn('LeaseInstance collection not found, skipping index creation');
+    return;
+  }
+  await Collections.LeaseInstance.createIndexes();
+  logger.info('LeaseInstance indexes ensured');
+}
+
 export default async function migratedb() {
   let failure = false;
   let db;
@@ -136,6 +152,7 @@ export default async function migratedb() {
     logger.info('Starting migration...');
     await cleanupUnusedAttributes();
     await updateThirdPartyConfiguration();
+    await ensureLeaseInstanceIndexes();
     logger.info('Migration done');
   } catch (error) {
     logger.error(String(error));

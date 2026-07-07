@@ -1,5 +1,4 @@
 import mongoose from 'mongoose';
-
 export { default as AuditLog } from './auditlog.js';
 export { default as Account } from './account.js';
 export { default as Attachment } from './attachment.js';
@@ -20,5 +19,5 @@ export { default as Utility } from './utility.js';
 export { default as UtilityAccount } from './utilityaccount.js';
 export { default as UtilityInvoice } from './utilityinvoice.js';
 export { default as UtilityActivity } from './utilityactivity.js';
-export const ObjectId = mongoose.Types.ObjectId;
-export const startSession = mongoose.startSession;
+export declare const ObjectId: typeof mongoose.Types.ObjectId;
+export declare const startSession: typeof mongoose.startSession;

@@ -21,6 +21,9 @@ const mockUtilityInvoice = {
 const mockUtilityActivity = {
   create: jest.fn()
 };
+const mockProperty = {
+  find: jest.fn()
+};
 const mockTenant = {
   find: jest.fn()
 };
@@ -31,6 +34,7 @@ jest.unstable_mockModule('@microrealestate/common', () => ({
     Utility: mockUtility,
     UtilityInvoice: mockUtilityInvoice,
     UtilityActivity: mockUtilityActivity,
+    Property: mockProperty,
     Tenant: mockTenant
   }
 }));
@@ -110,6 +114,10 @@ function fakeInvoice(overrides = {}) {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  // Default: no child properties (unit tests target the direct property only)
+  mockProperty.find.mockReturnValue({
+    select: jest.fn().mockReturnValue({ lean: jest.fn().mockResolvedValue([]) })
+  });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────

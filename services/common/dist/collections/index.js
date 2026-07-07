@@ -1,5 +1,4 @@
 import mongoose from 'mongoose';
-
 export { default as AuditLog } from './auditlog.js';
 export { default as Account } from './account.js';
 export { default as Attachment } from './attachment.js';

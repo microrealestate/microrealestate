@@ -127,6 +127,9 @@ const TenantSchema = new mongoose.Schema<CollectionTypes.Tenant>({
   guaranty: Number,
   guarantyPayback: Number,
 
+  // contact / future invoicing
+  invoiceEmail: { type: String, default: null },
+
   // ui state
   stepperMode: { type: Boolean, default: false }
 });

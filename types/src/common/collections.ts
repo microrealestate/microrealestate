@@ -1,4 +1,4 @@
-import { LeaseTimeRange, Locale, PaymentMethod, UserRole } from './index.js';
+import { LeaseInstanceStatus, LeaseTimeRange, Locale, PaymentMethod, UserRole } from './index.js';
 
 export type MongooseDocument<T> = {
   __v: number;
@@ -314,6 +314,9 @@ export namespace CollectionTypes {
     guaranty: number;
     guarantyPayback: number;
 
+    /** Invoice email address for future billing use. Separate from contacts[].email. */
+    invoiceEmail?: string;
+
     stepperMode: boolean;
   };
 
@@ -331,7 +334,8 @@ export namespace CollectionTypes {
       | 'tenant'
       | 'contractor'
       | 'contractor_work'
-      | 'contract';
+      | 'contract'
+      | 'lease_instance';
     targetId: string;
     storageKey: string;
     filename: string;
@@ -621,6 +625,51 @@ export namespace CollectionTypes {
     attachmentIds?: string[];
     createdAt?: Date;
     createdBy?: string;
+  };
+
+  /**
+   * LeaseInstance — an actual lease record tracking lifecycle from draft → active → expired.
+   * This is separate from the legacy Lease template model used by the rent-generation workflow.
+   */
+  export type LeaseInstance = {
+    _id: string;
+    realmId: string;
+
+    /** Current lifecycle status */
+    status: LeaseInstanceStatus;
+
+    /** Lease start date (required before activation) */
+    startDate?: Date;
+
+    /** Lease end date (required before activation) */
+    endDate?: Date;
+
+    /** Timestamp when the lease was activated (draft → active transition) */
+    activatedAt?: Date;
+
+    /** IDs of Tenant documents associated with this lease */
+    tenantIds: string[];
+
+    /** ID of the Property (or unit) this lease is for (required before activation) */
+    propertyId?: string;
+
+    /** Attachment IDs for draft lease files (Word docs, unsigned PDFs) */
+    draftDocumentIds: string[];
+
+    /** Attachment ID for the signed lease document (required before activation) */
+    signedDocumentId?: string;
+
+    /** Optional free-text notes */
+    notes?: string;
+
+    /** Invoice email address (for future invoicing — do not use for billing logic) */
+    invoiceEmail?: string;
+
+    /** Audit: who last modified this record */
+    lastUpdatedBy?: string;
+
+    createdAt?: Date;
+    updatedAt?: Date;
   };
 
   export type PropertyTaxStatement = {
