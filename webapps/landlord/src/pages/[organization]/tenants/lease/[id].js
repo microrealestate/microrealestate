@@ -95,10 +95,11 @@ function TenantLeasePage() {
 
   const onSubmitLease = useCallback(
     async (tenantPart) => {
-      const tenant = {
-        ...toJS(store.tenant.selected),
-        ...tenantPart,
-        properties: (store.tenant.selected.properties || []).map(
+      let tenant = toJS(store.tenant.selected);
+      tenant.properties = tenant.properties || [];
+      tenant = {
+        ...tenant,
+        properties: tenant.properties.map(
           ({ propertyId, entryDate, exitDate, rent, expenses }) => ({
             propertyId,
             entryDate,
@@ -106,7 +107,8 @@ function TenantLeasePage() {
             rent,
             expenses
           })
-        )
+        ),
+        ...tenantPart
       };
 
       const { status, data } = await store.tenant.update(tenant);
@@ -116,6 +118,10 @@ function TenantLeasePage() {
             return toast.error(t('Lease fields are missing'));
           case 403:
             return toast.error(t('You are not allowed to update this lease'));
+          case 409:
+            return toast.error(
+              t('Lease cannot be updated with the current contract values')
+            );
           default:
             return toast.error(t('Something went wrong'));
         }
