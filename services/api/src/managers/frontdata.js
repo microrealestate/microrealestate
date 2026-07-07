@@ -239,10 +239,17 @@ export function toRentData(inputRent, inputOccupant, emailStatus) {
 export function toOccupantData(inputOccupant) {
   const occupant = JSON.parse(JSON.stringify(inputOccupant));
 
+  const formattedBeginDate = occupant.beginDate
+    ? moment(occupant.beginDate).format('DD/MM/YYYY')
+    : '';
+  const formattedEndDate = occupant.endDate
+    ? moment(occupant.endDate).format('DD/MM/YYYY')
+    : '';
+
   // set default values for occupant
   Object.assign(occupant, {
-    beginDate: moment(occupant.beginDate).format('DD/MM/YYYY'),
-    endDate: moment(occupant.endDate).format('DD/MM/YYYY'),
+    beginDate: formattedBeginDate,
+    endDate: formattedEndDate,
     frequency: occupant.frequency || 'months',
     street1: occupant.street1 || '',
     street2: occupant.street2 || '',
@@ -283,13 +290,15 @@ export function toOccupantData(inputOccupant) {
   occupant.status = 'inprogress';
   occupant.terminated = false;
   const currentDate = moment();
-  const endMoment = moment(
-    occupant.terminationDate || occupant.endDate,
-    'DD/MM/YYYY'
-  );
-  if (endMoment.isBefore(currentDate, 'day')) {
-    occupant.terminated = true;
-    occupant.status = 'stopped';
+  if (occupant.terminationDate || occupant.endDate) {
+    const endMoment = moment(
+      occupant.terminationDate || occupant.endDate,
+      'DD/MM/YYYY'
+    );
+    if (endMoment.isValid() && endMoment.isBefore(currentDate, 'day')) {
+      occupant.terminated = true;
+      occupant.status = 'stopped';
+    }
   }
 
   if (occupant.leaseId) {
@@ -310,6 +319,7 @@ export function toOccupantData(inputOccupant) {
       // expense: 0,
     };
     occupant.properties.forEach((item) => {
+      item.expenses = item.expenses || [];
       if (item.propertyId?._id) {
         item.property = item.property || item.propertyId;
         item.propertyId = item.propertyId._id;
