@@ -381,7 +381,11 @@ export default function () {
         throw new ServiceError('missing fields', 422);
       }
 
-      if (!dataSet.leaseId) {
+      const needsLeaseId =
+        dataSet.templateId ||
+        !dataSet.type ||
+        dataSet.type === 'text';
+      if (needsLeaseId && !dataSet.leaseId) {
         logger.error('missing lease Id to generate document');
         throw new ServiceError('missing fields', 422);
       }
@@ -397,7 +401,7 @@ export default function () {
       const documentToCreate = {
         realmId: req.realm._id,
         tenantId: dataSet.tenantId,
-        leaseId: dataSet.leaseId,
+        leaseId: dataSet.leaseId || '',
         templateId: dataSet.templateId,
         type: dataSet.type || template.type,
         name: dataSet.name || template.name,
