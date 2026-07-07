@@ -1,3 +1,4 @@
+/* eslint-disable sort-imports */
 import * as Yup from 'yup';
 import {
   DateField,
@@ -27,11 +28,12 @@ import { StoreContext } from '../../../store';
 import { downloadDocument, uploadDocument } from '../../../utils/fetch';
 import { toast } from 'sonner';
 import useTranslation from 'next-translate/useTranslation';
+/* eslint-enable sort-imports */
 
 const CONTRACT_PDF_DESCRIPTION = 'uploaded_contract_pdf';
 
 const validationSchema = Yup.object().shape({
-  leaseId: Yup.string().required(),
+  leaseId: Yup.string().nullable(),
   beginDate: Yup.date().required(),
   endDate: Yup.date().required(),
   terminationDate: Yup.date()
@@ -187,13 +189,20 @@ function LeaseContractForm({ readOnly, onSubmit }) {
   }, [store.tenant.selected]);
 
   const availableLeases = useMemo(() => {
-    return store.lease.items.map(({ _id, name, active }) => ({
-      id: _id,
-      value: _id,
-      label: name,
-      disabled: !active
-    }));
-  }, [store.lease.items]);
+    return [
+      {
+        id: '',
+        value: '',
+        label: t('Custom lease (no template)')
+      },
+      ...store.lease.items.map(({ _id, name, active }) => ({
+        id: _id,
+        value: _id,
+        label: name,
+        disabled: !active
+      }))
+    ];
+  }, [store.lease.items, t]);
 
   const availableProperties = useMemo(() => {
     const currentProperties = store.tenant.selected?.properties
@@ -231,7 +240,7 @@ function LeaseContractForm({ readOnly, onSubmit }) {
   const _onSubmit = useCallback(
     async (lease) => {
       await onSubmit({
-        leaseId: lease.leaseId,
+        leaseId: lease.leaseId || '',
         frequency: store.lease.items.find(({ _id }) => _id === lease.leaseId)
           ?.timeRange,
         beginDate: lease.beginDate?.format('DD/MM/YYYY') || '',
@@ -289,12 +298,7 @@ function LeaseContractForm({ readOnly, onSubmit }) {
         return;
       }
 
-      if (!leaseId && !store.tenant.selected?.leaseId) {
-        toast.error(t('Please select and save a lease before uploading PDF'));
-        return;
-      }
-
-      const leaseIdToUse = leaseId || store.tenant.selected?.leaseId;
+      const leaseIdToUse = leaseId || store.tenant.selected?.leaseId || null;
 
       try {
         setUploadingContractPdf(true);
@@ -312,7 +316,7 @@ function LeaseContractForm({ readOnly, onSubmit }) {
 
         const { status } = await store.document.create({
           tenantId: store.tenant.selected._id,
-          leaseId: leaseIdToUse,
+          ...(leaseIdToUse ? { leaseId: leaseIdToUse } : {}),
           type: 'file',
           name: file.name,
           description: CONTRACT_PDF_DESCRIPTION,
@@ -426,12 +430,12 @@ function LeaseContractForm({ readOnly, onSubmit }) {
                   endLabel={t('End date')}
                   endName="endDate"
                   duration={contractDuration}
-                  disabled={!values.leaseId || readOnly}
+                  disabled={readOnly}
                 />
                 <NumberField
                   label={t('Deposit')}
                   name="guaranty"
-                  disabled={!values.leaseId || readOnly}
+                  disabled={readOnly}
                 />
 
                 <div className="mt-4 rounded border p-3 space-y-2">
