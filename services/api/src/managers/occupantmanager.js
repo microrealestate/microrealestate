@@ -281,38 +281,58 @@ export async function update(req, res) {
     try {
       const termFrequency = newOccupant.frequency || 'months';
 
-      const contract = {
-        begin: originalOccupant.beginDate,
-        end: originalOccupant.endDate,
-        frequency: termFrequency,
-        terms: Math.ceil(
-          moment(originalOccupant.endDate).diff(
-            moment(originalOccupant.beginDate),
-            termFrequency,
-            true
-          )
-        ),
-        properties: originalOccupant.properties,
-        vatRate: originalOccupant.vatRatio,
-        discount: originalOccupant.discount,
-        rents: originalOccupant.rents
-      };
+      const hasOriginalContractBaseline =
+        originalOccupant.beginDate &&
+        originalOccupant.endDate &&
+        _propertiesHaveRentData(originalOccupant.properties);
 
-      const modification = {
-        begin: newOccupant.beginDate,
-        end: newOccupant.endDate,
-        termination: newOccupant.terminationDate,
-        properties: newOccupant.properties,
-        frequency: termFrequency
-      };
-      if (newOccupant.vatRatio !== undefined) {
-        modification.vatRate = newOccupant.vatRatio;
-      }
-      if (newOccupant.discount !== undefined) {
-        modification.discount = newOccupant.discount;
+      let newContract;
+      if (hasOriginalContractBaseline) {
+        const contract = {
+          begin: originalOccupant.beginDate,
+          end: originalOccupant.endDate,
+          frequency: termFrequency,
+          terms: Math.ceil(
+            moment(originalOccupant.endDate).diff(
+              moment(originalOccupant.beginDate),
+              termFrequency,
+              true
+            )
+          ),
+          properties: originalOccupant.properties,
+          vatRate: originalOccupant.vatRatio,
+          discount: originalOccupant.discount,
+          rents: originalOccupant.rents
+        };
+
+        const modification = {
+          begin: newOccupant.beginDate,
+          end: newOccupant.endDate,
+          termination: newOccupant.terminationDate,
+          properties: newOccupant.properties,
+          frequency: termFrequency
+        };
+        if (newOccupant.vatRatio !== undefined) {
+          modification.vatRate = newOccupant.vatRatio;
+        }
+        if (newOccupant.discount !== undefined) {
+          modification.discount = newOccupant.discount;
+        }
+
+        newContract = Contract.update(contract, modification);
+      } else {
+        // First lease setup for a tenant created without a full contract yet.
+        newContract = Contract.create({
+          begin: newOccupant.beginDate,
+          end: newOccupant.endDate,
+          termination: newOccupant.terminationDate,
+          frequency: termFrequency,
+          properties: newOccupant.properties,
+          vatRate: newOccupant.vatRatio,
+          discount: newOccupant.discount
+        });
       }
 
-      const newContract = Contract.update(contract, modification);
       newOccupant.rents = newContract.rents;
     } catch (e) {
       throw new ServiceError(e, 409);
