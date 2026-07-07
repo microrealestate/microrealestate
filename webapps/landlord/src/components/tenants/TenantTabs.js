@@ -2,7 +2,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import BillingForm from './forms/BillingForm';
 import { Card } from '../ui/card';
 import DocumentsForm from './forms/DocumentsForm';
-import LeaseContractForm from './forms/LeaseContractForm';
 import { LuAlertTriangle } from 'react-icons/lu';
 import NotesPanel from '../NotesPanel';
 import { observer } from 'mobx-react-lite';
@@ -24,9 +23,6 @@ function TenantTabs({ onSubmit /*, setError*/, readOnly }) {
         <TabsTrigger value="tenant" className="min-w-48 sm:w-full">
           {t('Tenant')}
         </TabsTrigger>
-        <TabsTrigger value="lease" className="min-w-48 sm:w-full">
-          {t('Lease')}
-        </TabsTrigger>
         <TabsTrigger value="billing" className="min-w-48 sm:w-full">
           {t('Billing')}
         </TabsTrigger>
@@ -45,11 +41,6 @@ function TenantTabs({ onSubmit /*, setError*/, readOnly }) {
       <TabsContent value="tenant">
         <Card className="p-6">
           <TenantForm onSubmit={onSubmit} readOnly={readOnly} />
-        </Card>
-      </TabsContent>
-      <TabsContent value="lease">
-        <Card className="p-6">
-          <LeaseContractForm onSubmit={onSubmit} readOnly={readOnly} />
         </Card>
       </TabsContent>
       <TabsContent value="billing">

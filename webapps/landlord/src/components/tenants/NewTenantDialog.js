@@ -48,7 +48,7 @@ export default function NewTenantDialog({ open, setOpen }) {
           name: tenantPart.name,
           company: tenantPart.name,
           beginDate: moment().startOf('day').format('DD/MM/YYYY'),
-          stepperMode: true
+          stepperMode: false
         };
         if (tenantPart.isCopyFrom) {
           const {

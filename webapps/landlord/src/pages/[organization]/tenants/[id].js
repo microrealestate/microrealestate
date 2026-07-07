@@ -1,15 +1,14 @@
 import {
   LuArrowLeft,
+  LuFileText,
   LuHistory,
   LuPencil,
   LuStopCircle,
   LuTrash
 } from 'react-icons/lu';
 import { useCallback, useContext, useMemo, useState } from 'react';
-import { Card } from '../../../components/ui/card';
 import ConfirmDialog from '../../../components/ConfirmDialog';
 import ContractOverviewCard from '../../../components/tenants/ContractOverviewCard';
-import LeaseWorkflowPanel from '../../../components/leaseinstances/LeaseWorkflowPanel';
 import moment from 'moment';
 import { observer } from 'mobx-react-lite';
 import Page from '../../../components/Page';
@@ -17,7 +16,6 @@ import RentHistoryDialog from '../../../components/rents/RentHistoryDialog';
 import RentOverviewCard from '../../../components/tenants/RentOverviewCard';
 import ShortcutButton from '../../../components/ShortcutButton';
 import { StoreContext } from '../../../store';
-import TenantStepper from '../../../components/tenants/TenantStepper';
 import TenantTabs from '../../../components/tenants/TenantTabs';
 import TerminateLeaseDialog from '../../../components/tenants/TerminateLeaseDialog';
 import { toast } from 'sonner';
@@ -27,57 +25,9 @@ import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 import { withAuthentication } from '../../../components/Authentication';
 
-function toIsoDate(dateValue) {
-  if (!dateValue) {
-    return null;
-  }
-  const parsed = moment(dateValue, 'DD/MM/YYYY', true);
-  if (!parsed.isValid()) {
-    return null;
-  }
-  return parsed.toDate().toISOString();
-}
-
-async function syncTenantLeaseInstance(store, tenant) {
-  const primaryPropertyId = tenant?.properties?.[0]?.propertyId;
-  if (!tenant?._id || !primaryPropertyId) {
-    return;
-  }
-
-  const startDate = toIsoDate(tenant.beginDate);
-  const endDate = toIsoDate(tenant.endDate);
-  const invoiceEmail = tenant.invoiceEmail || null;
-
-  await store.leaseInstance.fetchByTenant(tenant._id);
-  const existingDraft = (store.leaseInstance.items || []).find(
-    ({ status, propertyId }) =>
-      status === 'draft' && String(propertyId || '') === String(primaryPropertyId)
-  );
-
-  const payload = {
-    propertyId: String(primaryPropertyId),
-    tenantIds: [String(tenant._id)],
-    startDate,
-    endDate,
-    invoiceEmail,
-    notes: tenant.contract || ''
-  };
-
-  if (existingDraft?._id) {
-    await store.leaseInstance.update({
-      _id: existingDraft._id,
-      ...payload
-    });
-    return;
-  }
-
-  await store.leaseInstance.create(payload);
-}
-
 async function fetchData(store, router) {
   const results = await Promise.all([
     store.tenant.fetchOne(router.query.id),
-    store.leaseInstance.fetchByTenant(router.query.id),
     store.property.fetch(),
     store.lease.fetch(),
     store.template.fetch(),
@@ -167,7 +117,6 @@ function Tenant() {
           }
         }
         store.tenant.setSelected(data);
-        await syncTenantLeaseInstance(store, data);
       } else {
         const { status, data } = await store.tenant.create(tenant);
         if (status !== 200) {
@@ -183,7 +132,6 @@ function Tenant() {
           }
         }
         store.tenant.setSelected(data);
-        await syncTenantLeaseInstance(store, data);
         await router.push(
           `/${store.organization.selected.name}/tenants/${data._id}`
         );
@@ -217,6 +165,12 @@ function Tenant() {
   const handleBack = useCallback(() => {
     router.push(store.appHistory.previousPath);
   }, [router, store.appHistory.previousPath]);
+
+  const handleOpenLeasePage = useCallback(() => {
+    router.push(
+      `/${store.organization.selected.name}/tenants/lease/${store.tenant.selected._id}`
+    );
+  }, [router, store.organization.selected.name, store.tenant.selected._id]);
 
   const handleDeleteTenant = useCallback(
     () => setOpenConfirmDeleteTenant(true),
@@ -255,6 +209,11 @@ function Tenant() {
             onClick={handleDeleteTenant}
             dataCy="removeResourceButton"
           />
+          <ShortcutButton
+            label={t('Lease page')}
+            Icon={LuFileText}
+            onClick={handleOpenLeasePage}
+          />
           {showTerminateLeaseButton ? (
             <ShortcutButton
               label={t('Terminate')}
@@ -280,51 +239,42 @@ function Tenant() {
       }
       dataCy="tenantPage"
     >
-      {store.tenant.selected.stepperMode ? (
-        <Card>
-          <TenantStepper onSubmit={onSubmit} />
-        </Card>
-      ) : (
-        <>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="md:col-span-2">
-              <TenantTabs onSubmit={onSubmit} readOnly={readOnly} />
-              <div className="mt-4">
-                <LeaseWorkflowPanel tenantId={store.tenant.selected?._id} />
-              </div>
-            </div>
-            {!!store.tenant.selected.properties && (
-              <div className="hidden md:grid grid-cols-1 gap-4 h-fit">
-                <ContractOverviewCard />
-                <RentOverviewCard />
-              </div>
-            )}
+      <>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="md:col-span-2">
+            <TenantTabs onSubmit={onSubmit} readOnly={readOnly} />
           </div>
-          <TerminateLeaseDialog
-            open={openTerminateLeaseDialog}
-            setOpen={setOpenTerminateLeaseDialog}
-          />
-          <ConfirmDialog
-            title={
-              store.tenant.selected.terminated
-                ? t('Lease terminated on {{terminationDate}}', {
-                    terminationDate: moment(
-                      store.tenant.selected.terminationDate,
-                      'DD/MM/YYYY'
-                    ).format('LL')
-                  })
-                : t('Lease running')
-            }
-            subTitle={t(
-              'Modifying this form might break the contract signed with the tenant'
-            )}
-            subTitle2={t('Continue editing?')}
-            open={openConfirmEditTenant}
-            setOpen={setOpenConfirmEditTenant}
-            onConfirm={onEditTenant}
-          />
-        </>
-      )}
+          {!!store.tenant.selected.properties && (
+            <div className="hidden md:grid grid-cols-1 gap-4 h-fit">
+              <ContractOverviewCard />
+              <RentOverviewCard />
+            </div>
+          )}
+        </div>
+        <TerminateLeaseDialog
+          open={openTerminateLeaseDialog}
+          setOpen={setOpenTerminateLeaseDialog}
+        />
+        <ConfirmDialog
+          title={
+            store.tenant.selected.terminated
+              ? t('Lease terminated on {{terminationDate}}', {
+                  terminationDate: moment(
+                    store.tenant.selected.terminationDate,
+                    'DD/MM/YYYY'
+                  ).format('LL')
+                })
+              : t('Lease running')
+          }
+          subTitle={t(
+            'Modifying this form might break the contract signed with the tenant'
+          )}
+          subTitle2={t('Continue editing?')}
+          open={openConfirmEditTenant}
+          setOpen={setOpenConfirmEditTenant}
+          onConfirm={onEditTenant}
+        />
+      </>
       <RentHistoryDialog
         open={openRentHistoryDialog}
         setOpen={setOpenRentHistoryDialog}
