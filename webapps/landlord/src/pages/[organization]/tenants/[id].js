@@ -9,6 +9,7 @@ import { useCallback, useContext, useMemo, useState } from 'react';
 import { Card } from '../../../components/ui/card';
 import ConfirmDialog from '../../../components/ConfirmDialog';
 import ContractOverviewCard from '../../../components/tenants/ContractOverviewCard';
+import LeaseWorkflowPanel from '../../../components/leaseinstances/LeaseWorkflowPanel';
 import moment from 'moment';
 import { observer } from 'mobx-react-lite';
 import Page from '../../../components/Page';
@@ -26,9 +27,57 @@ import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 import { withAuthentication } from '../../../components/Authentication';
 
+function toIsoDate(dateValue) {
+  if (!dateValue) {
+    return null;
+  }
+  const parsed = moment(dateValue, 'DD/MM/YYYY', true);
+  if (!parsed.isValid()) {
+    return null;
+  }
+  return parsed.toDate().toISOString();
+}
+
+async function syncTenantLeaseInstance(store, tenant) {
+  const primaryPropertyId = tenant?.properties?.[0]?.propertyId;
+  if (!tenant?._id || !primaryPropertyId) {
+    return;
+  }
+
+  const startDate = toIsoDate(tenant.beginDate);
+  const endDate = toIsoDate(tenant.endDate);
+  const invoiceEmail = tenant.invoiceEmail || null;
+
+  await store.leaseInstance.fetchByTenant(tenant._id);
+  const existingDraft = (store.leaseInstance.items || []).find(
+    ({ status, propertyId }) =>
+      status === 'draft' && String(propertyId || '') === String(primaryPropertyId)
+  );
+
+  const payload = {
+    propertyId: String(primaryPropertyId),
+    tenantIds: [String(tenant._id)],
+    startDate,
+    endDate,
+    invoiceEmail,
+    notes: tenant.contract || ''
+  };
+
+  if (existingDraft?._id) {
+    await store.leaseInstance.update({
+      _id: existingDraft._id,
+      ...payload
+    });
+    return;
+  }
+
+  await store.leaseInstance.create(payload);
+}
+
 async function fetchData(store, router) {
   const results = await Promise.all([
     store.tenant.fetchOne(router.query.id),
+    store.leaseInstance.fetchByTenant(router.query.id),
     store.property.fetch(),
     store.lease.fetch(),
     store.template.fetch(),
@@ -118,6 +167,7 @@ function Tenant() {
           }
         }
         store.tenant.setSelected(data);
+        await syncTenantLeaseInstance(store, data);
       } else {
         const { status, data } = await store.tenant.create(tenant);
         if (status !== 200) {
@@ -133,6 +183,7 @@ function Tenant() {
           }
         }
         store.tenant.setSelected(data);
+        await syncTenantLeaseInstance(store, data);
         await router.push(
           `/${store.organization.selected.name}/tenants/${data._id}`
         );
@@ -238,6 +289,9 @@ function Tenant() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="md:col-span-2">
               <TenantTabs onSubmit={onSubmit} readOnly={readOnly} />
+              <div className="mt-4">
+                <LeaseWorkflowPanel tenantId={store.tenant.selected?._id} />
+              </div>
             </div>
             {!!store.tenant.selected.properties && (
               <div className="hidden md:grid grid-cols-1 gap-4 h-fit">

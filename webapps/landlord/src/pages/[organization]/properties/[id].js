@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { withAuthentication } from '../../../components/Authentication';
 import ConfirmDialog from '../../../components/ConfirmDialog';
 import { DashboardCard } from '../../../components/dashboard/DashboardCard';
+import LeaseWorkflowPanel from '../../../components/leaseinstances/LeaseWorkflowPanel';
 import Map from '../../../components/Map';
 import NotesPanel from '../../../components/NotesPanel';
 import NumberFormat from '../../../components/NumberFormat';
@@ -1082,7 +1083,10 @@ function ProjectsPanel() {
 }
 
 async function fetchData(store, router) {
-  const results = await store.property.fetchOne(router.query.id);
+  const [results] = await Promise.all([
+    store.property.fetchOne(router.query.id),
+    store.leaseInstance.fetchByProperty(router.query.id)
+  ]);
   store.property.setSelected(
     store.property.items.find(({ _id }) => _id === router.query.id)
   );
@@ -1231,6 +1235,9 @@ function Property() {
               <TabsTrigger value="utilities" className="w-1/5">
                 {t('Utilities')}
               </TabsTrigger>
+              <TabsTrigger value="leaseWorkflow" className="w-1/5">
+                {t('Lease workflow')}
+              </TabsTrigger>
             </TabsList>
             <TabsContent value="property">
               <Card className="p-6">
@@ -1269,6 +1276,9 @@ function Property() {
                 property={store.property.selected}
                 childUnits={store.property.selected.childProperties || []}
               />
+            </TabsContent>
+            <TabsContent value="leaseWorkflow">
+              <LeaseWorkflowPanel propertyId={store.property.selected?._id} />
             </TabsContent>
           </Tabs>
           <div className="hidden md:grid grid-cols-1 gap-4 h-fit">

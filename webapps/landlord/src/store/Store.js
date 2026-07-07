@@ -7,6 +7,7 @@ import Contractor from './Contractor';
 import Dashboard from './Dashboard';
 import Document from './Document';
 import Lease from './Lease';
+import LeaseInstance from './LeaseInstance';
 import moment from 'moment';
 import Organization from './Organization';
 import Project from './Project';
@@ -22,6 +23,7 @@ export default class Store {
     this.user = new User();
     this.organization = new Organization();
     this.lease = new Lease();
+    this.leaseInstance = new LeaseInstance();
     this.rent = new Rent();
     this.tenant = new Tenant();
     this.contractor = new Contractor();
@@ -36,6 +38,7 @@ export default class Store {
       user: observable,
       organization: observable,
       lease: observable,
+      leaseInstance: observable,
       rent: observable,
       tenant: observable,
       contractor: observable,
@@ -60,6 +63,9 @@ export default class Store {
         items: []
       },
       lease = {
+        items: []
+      },
+      leaseInstance = {
         items: []
       },
       rent = {
@@ -103,6 +109,9 @@ export default class Store {
 
     this.lease.items = lease.items;
     this.lease.selected = lease.selected;
+
+    this.leaseInstance.items = leaseInstance.items;
+    this.leaseInstance.selected = leaseInstance.selected;
 
     this.rent.items = rent.items;
     this.rent.selected = rent.selected;
