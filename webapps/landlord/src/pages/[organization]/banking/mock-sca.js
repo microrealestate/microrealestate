@@ -48,6 +48,19 @@ function MockScaPage() {
     redirectBack('DENY');
   }, [redirectBack]);
 
+  // router.query is only reliably populated once Next's router has finished
+  // resolving the current route. Right after the client-side navigation
+  // from the "Connect bank account" dialog, isReady can briefly be false
+  // and connectionId/returnUrl would read as undefined even though they
+  // are present in the URL - rendering nothing in that window makes the
+  // page look like it hung blank. Show a loading state instead and only
+  // fall back to a blank render once the router is actually ready but the
+  // params are genuinely missing (e.g. a direct visit without a query
+  // string).
+  if (!router.isReady) {
+    return <Page className="max-w-md" dataCy="mockScaPage" loading />;
+  }
+
   if (!connectionId || !returnUrl) {
     return null;
   }
