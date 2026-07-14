@@ -12,7 +12,7 @@
     "formik": "2.2.9",
     "moment": "2.29.4",
     "next": "15.5.18",
-    "next-translate": "2.6.2",
+    "next-translate": "3.2.0",
     "react": "18.2.0",
     "react-dom": "18.2.0"
   },
@@ -28,7 +28,7 @@
     "eslint-plugin-import": "2.29.1",
     "eslint-plugin-react": "7.33.2",
     "eslint-plugin-react-hooks": "4.6.0",
-    "next-translate-plugin": "2.6.2",
+    "next-translate-plugin": "3.2.0",
     "prop-types": "15.8.1",
     "require-from-string": "2.0.2"
   }
