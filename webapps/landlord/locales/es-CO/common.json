@@ -530,5 +530,6 @@
   "This bank is not supported yet.": "This bank is not supported yet.",
   "This tenant has no open balance": "This tenant has no open balance",
   "This transaction was already matched": "This transaction was already matched",
-  "You declined the connection at your bank.": "You declined the connection at your bank."
+  "You declined the connection at your bank.": "You declined the connection at your bank.",
+  "You'll be redirected to your bank to securely authorize access to your account information.": "Serás redirigido a tu banco para autorizar de forma segura el acceso a la información de tu cuenta."
 }

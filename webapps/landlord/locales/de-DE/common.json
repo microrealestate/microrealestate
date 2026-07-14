@@ -529,6 +529,7 @@
   "This tenant has no open balance": "Dieser Mieter hat keinen offenen Betrag",
   "This transaction was already matched": "Diese Transaktion wurde bereits zugeordnet",
   "You declined the connection at your bank.": "Sie haben die Verbindung bei Ihrer Bank abgelehnt.",
+  "You'll be redirected to your bank to securely authorize access to your account information.": "Sie werden zu Ihrer Bank weitergeleitet, um den Zugriff auf Ihre Kontoinformationen sicher zu autorisieren.",
   "Booking proposals": "Buchungsvorschläge",
   "Check for new matches": "Auf neue Übereinstimmungen prüfen",
   "No bank account is connected yet - connect one from the organization settings to import transactions automatically.": "Es ist noch kein Bankkonto verbunden - verbinden Sie eines in den Organisationseinstellungen, um Transaktionen automatisch zu importieren.",

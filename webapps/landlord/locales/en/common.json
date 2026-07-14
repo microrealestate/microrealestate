@@ -531,6 +531,7 @@
   "This tenant has no open balance": "This tenant has no open balance",
   "This transaction was already matched": "This transaction was already matched",
   "You declined the connection at your bank.": "You declined the connection at your bank.",
+  "You'll be redirected to your bank to securely authorize access to your account information.": "You'll be redirected to your bank to securely authorize access to your account information.",
   "Booking proposals": "Booking proposals",
   "Check for new matches": "Check for new matches",
   "No bank account is connected yet - connect one from the organization settings to import transactions automatically.": "No bank account is connected yet - connect one from the organization settings to import transactions automatically.",
