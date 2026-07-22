@@ -96,25 +96,10 @@ function TenantLeasePage() {
     async (tenantPart) => {
       const existing = toJS(store.tenant.selected);
 
-      // Build updated properties list: if a propertyId is specified, ensure it's
-      // recorded on the tenant (preserving any existing rent/expense data).
-      let properties = (existing.properties || []).map(
-        ({ propertyId, entryDate, exitDate, rent, expenses }) => ({
-          propertyId,
-          entryDate,
-          exitDate,
-          rent,
-          expenses
-        })
-      );
-      if (tenantPart.propertyId) {
-        const alreadyAssigned = properties.some(
-          (p) => String(p.propertyId) === String(tenantPart.propertyId)
-        );
-        if (!alreadyAssigned) {
-          properties = [{ propertyId: tenantPart.propertyId, rent: 0, expenses: [] }];
-        }
-      }
+      // Build updated properties list from submitted propertyIds array,
+      // preserving existing rent/expense data for already-assigned properties.
+      let properties = [];
+      const submittedIds = tenantPart.propertyIds || [];\n      if (submittedIds.length > 0) {\n        const existingMap = Object.fromEntries(\n          (existing.properties || []).map((p) => [\n            String(p.propertyId),\n            { propertyId: p.propertyId, entryDate: p.entryDate, exitDate: p.exitDate, rent: p.rent, expenses: p.expenses }\n          ])\n        );\n        properties = submittedIds.map((id) => existingMap[String(id)] || { propertyId: id, rent: 0, expenses: [] });\n      }
 
       const tenant = {
         ...existing,

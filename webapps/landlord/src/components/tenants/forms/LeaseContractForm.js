@@ -31,7 +31,9 @@ const initValues = (tenant) => ({
     tenant?.leaseId?._id ||
     (typeof tenant?.leaseId === 'string' && tenant.leaseId ? tenant.leaseId : null) ||
     CUSTOM_LEASE_VALUE,
-  propertyId: tenant?.properties?.[0]?.propertyId || tenant?.properties?.[0]?.property?._id || '',
+  propertyIds: (tenant?.properties || []).map(
+    (p) => p.propertyId || p.property?._id || ''
+  ).filter(Boolean),
   beginDate: tenant?.beginDate
     ? moment(tenant.beginDate, 'DD/MM/YYYY').startOf('day').toDate()
     : null,
@@ -90,15 +92,9 @@ function LeaseContractForm({ readOnly, onSubmit }) {
   );
 
   const availableProperties = useMemo(
-    () => [
-      { id: '', value: '', label: t('No property assigned') },
-      ...store.property.items.map(({ _id, name }) => ({
-        id: _id,
-        value: _id,
-        label: name
-      }))
-    ],
-    [store.property.items, t]
+    () =>
+      store.property.items.map(({ _id, name }) => ({ _id, name })),
+    [store.property.items]
   );
 
   const _onSubmit = useCallback(
@@ -115,7 +111,7 @@ function LeaseContractForm({ readOnly, onSubmit }) {
         endDate: values.endDate
           ? moment(values.endDate).format('DD/MM/YYYY')
           : '',
-        propertyId: values.propertyId || null
+        propertyIds: values.propertyIds || []
       });
     },
     [onSubmit, store.lease.items]
@@ -202,7 +198,7 @@ function LeaseContractForm({ readOnly, onSubmit }) {
         onSubmit={_onSubmit}
         enableReinitialize
       >
-        {({ values, isSubmitting }) => (
+        {({ values, isSubmitting, setFieldValue }) => (
           <Form autoComplete="off">
             <Section
               label={t('Lease')}
@@ -214,12 +210,61 @@ function LeaseContractForm({ readOnly, onSubmit }) {
                 values={availableLeases}
                 disabled={readOnly}
               />
-              <SelectField
-                label={t('Property')}
-                name="propertyId"
-                values={availableProperties}
-                disabled={readOnly}
-              />
+
+              {/* Multi-property selector: dropdown adds, tag removes */}
+              <div className="mt-2 mb-2">
+                <div className="text-sm text-muted-foreground mb-1">{t('Properties')}</div>
+                {values.propertyIds.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {values.propertyIds.map((id) => {
+                      const prop = availableProperties.find((p) => p._id === id);
+                      return (
+                        <span
+                          key={id}
+                          className="inline-flex items-center gap-1 rounded-full border px-3 py-1 text-sm bg-muted"
+                        >
+                          {prop?.name || id}
+                          {!readOnly && (
+                            <button
+                              type="button"
+                              className="ml-1 text-muted-foreground hover:text-foreground leading-none"
+                              onClick={() =>
+                                setFieldValue(
+                                  'propertyIds',
+                                  values.propertyIds.filter((pid) => pid !== id)
+                                )
+                              }
+                            >
+                              ×
+                            </button>
+                          )}
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
+                {!readOnly && (
+                  <select
+                    className="w-full border rounded px-3 py-2 text-sm bg-background"
+                    value=""
+                    onChange={(e) => {
+                      const id = e.target.value;
+                      if (id && !values.propertyIds.includes(id)) {
+                        setFieldValue('propertyIds', [...values.propertyIds, id]);
+                      }
+                    }}
+                  >
+                    <option value="">{t('Add a property...')}</option>
+                    {availableProperties
+                      .filter((p) => !values.propertyIds.includes(p._id))
+                      .map((p) => (
+                        <option key={p._id} value={p._id}>
+                          {p.name}
+                        </option>
+                      ))}
+                  </select>
+                )}
+              </div>
               <DateField
                 label={t('Start date')}
                 name="beginDate"
