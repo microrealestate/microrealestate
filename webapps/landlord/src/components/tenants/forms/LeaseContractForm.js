@@ -99,6 +99,10 @@ function LeaseContractForm({ readOnly, onSubmit }) {
 
   const _onSubmit = useCallback(
     async (values) => {
+      if (!values.propertyIds || values.propertyIds.length === 0) {
+        toast.error(t('Please assign at least one property before saving'));
+        return;
+      }
       const submittedLeaseId =
         values.leaseId === CUSTOM_LEASE_VALUE ? null : values.leaseId;
       await onSubmit({
@@ -114,7 +118,7 @@ function LeaseContractForm({ readOnly, onSubmit }) {
         propertyIds: values.propertyIds || []
       });
     },
-    [onSubmit, store.lease.items]
+    [onSubmit, store.lease.items, t]
   );
 
   const handleUploadContractPdf = useCallback(
@@ -263,6 +267,11 @@ function LeaseContractForm({ readOnly, onSubmit }) {
                         </option>
                       ))}
                   </select>
+                )}
+                {!readOnly && values.propertyIds.length === 0 && (
+                  <div className="text-xs text-red-500 mt-1">
+                    {t('At least one property is required')}
+                  </div>
                 )}
               </div>
               <DateField

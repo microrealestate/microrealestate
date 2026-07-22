@@ -77,11 +77,24 @@ function LeaseWorkflowPanel({ propertyId, tenantId }) {
       setPendingActionId('');
 
       if (status !== 200) {
-        const msg = data?.message || t('Unable to activate lease');
-        toast.error(msg);
+        if (status === 409 && data?.conflictingPeriod) {
+          const { startDate, endDate } = data.conflictingPeriod;
+          const start = startDate ? moment(startDate).format('L') : '?';
+          const end = endDate ? moment(endDate).format('L') : '?';
+          toast.error(
+            t('This property already has an active lease from {{start}} to {{end}}. Terminate or expire it first.', { start, end })
+          );
+        } else if (status === 422 && data?.errors?.length) {
+          toast.error(data.errors.join(' '));
+        } else {
+          toast.error(data?.message || t('Unable to activate lease'));
+        }
+      } else {
+        toast.success(t('Lease activated'));
+        await refresh();
       }
     },
-    [store, t]
+    [store, t, refresh]
   );
 
   const onDelete = useCallback(

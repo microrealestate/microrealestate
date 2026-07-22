@@ -3,6 +3,7 @@ import { LuArrowLeft } from 'react-icons/lu';
 import { useCallback, useContext } from 'react';
 import { Card } from '../../../../components/ui/card';
 import ContractOverviewCard from '../../../../components/tenants/ContractOverviewCard';
+import HistoricalLeasesPanel from '../../../../components/leaseinstances/HistoricalLeasesPanel';
 import LeaseContractForm from '../../../../components/tenants/forms/LeaseContractForm';
 import LeaseWorkflowPanel from '../../../../components/leaseinstances/LeaseWorkflowPanel';
 import Page from '../../../../components/Page';
@@ -176,6 +177,7 @@ function TenantLeasePage() {
             <LeaseContractForm onSubmit={onSubmitLease} readOnly={false} />
           </Card>
           <LeaseWorkflowPanel tenantId={store.tenant.selected?._id} />
+          <HistoricalLeasesPanel />
         </div>
         <div className="hidden md:grid grid-cols-1 gap-4 h-fit">
           <ContractOverviewCard />
