@@ -6,7 +6,6 @@ import ContractOverviewCard from '../../../../components/tenants/ContractOvervie
 import LeaseContractForm from '../../../../components/tenants/forms/LeaseContractForm';
 import LeaseWorkflowPanel from '../../../../components/leaseinstances/LeaseWorkflowPanel';
 import Page from '../../../../components/Page';
-import RentOverviewCard from '../../../../components/tenants/RentOverviewCard';
 import ShortcutButton from '../../../../components/ShortcutButton';
 import { StoreContext } from '../../../../store';
 import { observer } from 'mobx-react-lite';
@@ -173,7 +172,6 @@ function TenantLeasePage() {
         </div>
         <div className="hidden md:grid grid-cols-1 gap-4 h-fit">
           <ContractOverviewCard />
-          <RentOverviewCard />
         </div>
       </div>
     </Page>

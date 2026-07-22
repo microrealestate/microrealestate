@@ -94,9 +94,6 @@ function _validateForActivation(lease) {
   if (!lease.propertyId) {
     errors.push('a property or unit must be assigned before activating a lease');
   }
-  if (!lease.signedDocumentId) {
-    errors.push('a signed document (signedDocumentId) must be attached before activating a lease');
-  }
 
   return errors;
 }

@@ -380,18 +380,20 @@ describe('activate', () => {
     );
   });
 
-  it('returns 422 when signed document is missing', async () => {
+  it('activates successfully without a signed document (optional)', async () => {
     const draft = fakeDraftLease({ signedDocumentId: null });
     mockFindOneOnce(draft);
+    mockLeaseInstance.findOneAndUpdate.mockReturnValueOnce({
+      lean: () => Promise.resolve({ ...draft, status: 'active', activatedAt: new Date() })
+    });
 
     const req = makeReq({ params: { id: 'lease-001' }, body: {} });
     const res = makeRes();
 
     await activate(req, res);
 
-    expect(res.status).toHaveBeenCalledWith(422);
     expect(res.json).toHaveBeenCalledWith(
-      expect.objectContaining({ errors: expect.arrayContaining([expect.stringContaining('signed document')]) })
+      expect.objectContaining({ status: 'active' })
     );
   });
 
@@ -412,7 +414,7 @@ describe('activate', () => {
 
     expect(res.status).toHaveBeenCalledWith(422);
     const { errors } = res.json.mock.calls[0][0];
-    expect(errors.length).toBeGreaterThanOrEqual(4);
+    expect(errors.length).toBeGreaterThanOrEqual(3);
   });
 
   it('returns 409 when trying to activate an already-active lease', async () => {
