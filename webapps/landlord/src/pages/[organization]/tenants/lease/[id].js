@@ -98,8 +98,30 @@ function TenantLeasePage() {
 
       // Build updated properties list from submitted propertyIds array,
       // preserving existing rent/expense data for already-assigned properties.
-      let properties = [];
-      const submittedIds = tenantPart.propertyIds || [];\n      if (submittedIds.length > 0) {\n        const existingMap = Object.fromEntries(\n          (existing.properties || []).map((p) => [\n            String(p.propertyId),\n            { propertyId: p.propertyId, entryDate: p.entryDate, exitDate: p.exitDate, rent: p.rent, expenses: p.expenses }\n          ])\n        );\n        properties = submittedIds.map((id) => existingMap[String(id)] || { propertyId: id, rent: 0, expenses: [] });\n      }
+      const submittedIds = tenantPart.propertyIds || [];
+      const existingMap = Object.fromEntries(
+        (existing.properties || []).map((p) => [
+          String(p.propertyId),
+          {
+            propertyId: p.propertyId,
+            entryDate: p.entryDate,
+            exitDate: p.exitDate,
+            rent: p.rent || 0,
+            expenses: p.expenses || []
+          }
+        ])
+      );
+      const properties =
+        submittedIds.length > 0
+          ? submittedIds.map(
+              (id) =>
+                existingMap[String(id)] || {
+                  propertyId: id,
+                  rent: 0,
+                  expenses: []
+                }
+            )
+          : existing.properties || [];
 
       const tenant = {
         ...existing,
