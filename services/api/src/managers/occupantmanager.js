@@ -140,6 +140,17 @@ async function _fetchTenants(realmId, tenantId) {
     { $sort: { name: 1 } }
   ]);
 
+  // Keep backward compatibility with records that were saved with empty leaseId.
+  tenants.forEach((tenant) => {
+    if (!tenant.leaseId || String(tenant.leaseId).trim() === '') {
+      delete tenant.leaseId;
+    }
+
+    tenant.properties = (tenant.properties || []).filter(
+      ({ propertyId }) => propertyId && String(propertyId).trim() !== ''
+    );
+  });
+
   await Collections.Tenant.populate(tenants, [
     {
       path: 'leaseId'

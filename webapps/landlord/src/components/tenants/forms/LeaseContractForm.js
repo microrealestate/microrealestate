@@ -247,7 +247,7 @@ function LeaseContractForm({ readOnly, onSubmit }) {
         lease.leaseId === CUSTOM_LEASE_VALUE ? '' : lease.leaseId;
 
       await onSubmit({
-        leaseId: submittedLeaseId || '',
+        leaseId: submittedLeaseId || null,
         frequency: store.lease.items.find(({ _id }) => _id === submittedLeaseId)
           ?.timeRange,
         beginDate: lease.beginDate?.format('DD/MM/YYYY') || '',
