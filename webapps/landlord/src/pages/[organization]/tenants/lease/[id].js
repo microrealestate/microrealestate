@@ -95,9 +95,31 @@ function TenantLeasePage() {
 
   const onSubmitLease = useCallback(
     async (tenantPart) => {
+      const existing = toJS(store.tenant.selected);
+
+      // Build updated properties list: if a propertyId is specified, ensure it's
+      // recorded on the tenant (preserving any existing rent/expense data).
+      let properties = (existing.properties || []).map(
+        ({ propertyId, entryDate, exitDate, rent, expenses }) => ({
+          propertyId,
+          entryDate,
+          exitDate,
+          rent,
+          expenses
+        })
+      );
+      if (tenantPart.propertyId) {
+        const alreadyAssigned = properties.some(
+          (p) => String(p.propertyId) === String(tenantPart.propertyId)
+        );
+        if (!alreadyAssigned) {
+          properties = [{ propertyId: tenantPart.propertyId, rent: 0, expenses: [] }];
+        }
+      }
+
       const tenant = {
-        ...toJS(store.tenant.selected),
-        // Only update lease-specific fields; do not touch properties/rent
+        ...existing,
+        properties,
         ...(tenantPart.leaseId !== undefined ? { leaseId: tenantPart.leaseId } : {}),
         ...(tenantPart.frequency !== undefined ? { frequency: tenantPart.frequency } : {}),
         ...(tenantPart.beginDate !== undefined ? { beginDate: tenantPart.beginDate } : {}),
@@ -121,6 +143,7 @@ function TenantLeasePage() {
       }
 
       store.tenant.setSelected(data);
+      await store.document.fetch();
       await syncTenantLeaseInstance(store, data);
       toast.success(t('Lease saved'));
     },

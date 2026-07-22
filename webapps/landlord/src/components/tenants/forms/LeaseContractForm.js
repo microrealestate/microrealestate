@@ -31,6 +31,7 @@ const initValues = (tenant) => ({
     tenant?.leaseId?._id ||
     (typeof tenant?.leaseId === 'string' && tenant.leaseId ? tenant.leaseId : null) ||
     CUSTOM_LEASE_VALUE,
+  propertyId: tenant?.properties?.[0]?.propertyId || tenant?.properties?.[0]?.property?._id || '',
   beginDate: tenant?.beginDate
     ? moment(tenant.beginDate, 'DD/MM/YYYY').startOf('day').toDate()
     : null,
@@ -88,6 +89,18 @@ function LeaseContractForm({ readOnly, onSubmit }) {
     [store.document.items, store.tenant.selected?._id]
   );
 
+  const availableProperties = useMemo(
+    () => [
+      { id: '', value: '', label: t('No property assigned') },
+      ...store.property.items.map(({ _id, name }) => ({
+        id: _id,
+        value: _id,
+        label: name
+      }))
+    ],
+    [store.property.items, t]
+  );
+
   const _onSubmit = useCallback(
     async (values) => {
       const submittedLeaseId =
@@ -101,7 +114,8 @@ function LeaseContractForm({ readOnly, onSubmit }) {
           : '',
         endDate: values.endDate
           ? moment(values.endDate).format('DD/MM/YYYY')
-          : ''
+          : '',
+        propertyId: values.propertyId || null
       });
     },
     [onSubmit, store.lease.items]
@@ -156,6 +170,8 @@ function LeaseContractForm({ readOnly, onSubmit }) {
           toast.error(t('Cannot save document'));
           return;
         }
+        // Refresh document store so the list shows immediately
+        await store.document.fetch();
         toast.success(t('Contract PDF uploaded'));
       } catch {
         toast.error(t('Cannot upload document'));
@@ -196,6 +212,12 @@ function LeaseContractForm({ readOnly, onSubmit }) {
                 label={t('Lease type')}
                 name="leaseId"
                 values={availableLeases}
+                disabled={readOnly}
+              />
+              <SelectField
+                label={t('Property')}
+                name="propertyId"
+                values={availableProperties}
                 disabled={readOnly}
               />
               <DateField
