@@ -95,20 +95,13 @@ function TenantLeasePage() {
 
   const onSubmitLease = useCallback(
     async (tenantPart) => {
-      let tenant = toJS(store.tenant.selected);
-      tenant.properties = tenant.properties || [];
-      tenant = {
-        ...tenant,
-        properties: tenant.properties.map(
-          ({ propertyId, entryDate, exitDate, rent, expenses }) => ({
-            propertyId,
-            entryDate,
-            exitDate,
-            rent,
-            expenses
-          })
-        ),
-        ...tenantPart
+      const tenant = {
+        ...toJS(store.tenant.selected),
+        // Only update lease-specific fields; do not touch properties/rent
+        ...(tenantPart.leaseId !== undefined ? { leaseId: tenantPart.leaseId } : {}),
+        ...(tenantPart.frequency !== undefined ? { frequency: tenantPart.frequency } : {}),
+        ...(tenantPart.beginDate !== undefined ? { beginDate: tenantPart.beginDate } : {}),
+        ...(tenantPart.endDate !== undefined ? { endDate: tenantPart.endDate } : {})
       };
 
       const { status, data } = await store.tenant.update(tenant);

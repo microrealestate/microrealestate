@@ -2,6 +2,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import BillingForm from './forms/BillingForm';
 import { Card } from '../ui/card';
 import DocumentsForm from './forms/DocumentsForm';
+import LeaseContractForm from './forms/LeaseContractForm';
 import { LuAlertTriangle } from 'react-icons/lu';
 import NotesPanel from '../NotesPanel';
 import { observer } from 'mobx-react-lite';
@@ -26,6 +27,9 @@ function TenantTabs({ onSubmit /*, setError*/, readOnly }) {
         <TabsTrigger value="billing" className="min-w-48 sm:w-full">
           {t('Billing')}
         </TabsTrigger>
+        <TabsTrigger value="lease" className="min-w-48 sm:w-full">
+          {t('Lease')}
+        </TabsTrigger>
         <TabsTrigger value="documents" className="min-w-48 sm:w-full">
           <div className="flex justify-center items-center gap-1">
             {hasMissingCompulsaryDocuments ? (
@@ -46,6 +50,11 @@ function TenantTabs({ onSubmit /*, setError*/, readOnly }) {
       <TabsContent value="billing">
         <Card className="p-6">
           <BillingForm onSubmit={onSubmit} readOnly={readOnly} />
+        </Card>
+      </TabsContent>
+      <TabsContent value="lease">
+        <Card className="p-6">
+          <LeaseContractForm onSubmit={onSubmit} readOnly={readOnly} />
         </Card>
       </TabsContent>
       <TabsContent value="documents">

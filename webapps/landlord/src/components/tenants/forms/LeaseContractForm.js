@@ -1,26 +1,13 @@
 /* eslint-disable sort-imports */
-import * as Yup from 'yup';
 import {
   DateField,
-  NumberField,
-  RangeDateField,
   SelectField,
-  SubmitButton,
-  TextField
+  SubmitButton
 } from '@microrealestate/commonui/components';
-import {
-  Fragment,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState
-} from 'react';
-import { Form, Formik, validateYupSchema, yupToFormErrors } from 'formik';
-
-import { ArrayField } from '../../formfields/ArrayField';
+import { useCallback, useContext, useMemo, useState } from 'react';
+import { Form, Formik } from 'formik';
+import * as Yup from 'yup';
 import moment from 'moment';
-import { nanoid } from 'nanoid';
 import { observer } from 'mobx-react-lite';
 import PdfViewer from '../../PdfViewer/PdfViewer';
 import { Section } from '../../formfields/Section';
@@ -35,165 +22,46 @@ const CUSTOM_LEASE_VALUE = '__custom__';
 
 const validationSchema = Yup.object().shape({
   leaseId: Yup.string().nullable(),
-  beginDate: Yup.date().required(),
-  endDate: Yup.date().required(),
-  terminationDate: Yup.date()
-    .min(Yup.ref('beginDate'))
-    .max(Yup.ref('endDate'))
-    .nullable(),
-  properties: Yup.array()
-    .of(
-      Yup.object().shape({
-        _id: Yup.string().required(),
-        rent: Yup.number().moreThan(0).required(),
-        expenses: Yup.array().of(
-          Yup.object().shape({
-            title: Yup.mixed().when('amount', {
-              is: (val) => val > 0,
-              then: Yup.string().required()
-            }),
-            amount: Yup.number().min(0),
-            beginDate: Yup.date().required(),
-            endDate: Yup.date().required()
-          })
-        ),
-        entryDate: Yup.date()
-          .required()
-          .test(
-            'entryDate',
-            'Date not included in the contract date range',
-            (value, context) => {
-              const beginDate = context.options.context.beginDate;
-              if (value && beginDate) {
-                return moment(value).isSameOrAfter(beginDate);
-              }
-              return true;
-            }
-          ),
-        exitDate: Yup.date()
-          .min(Yup.ref('entryDate'))
-          .required()
-          .test(
-            'exitDate',
-            'Date not included in the contract date range',
-            (value, context) => {
-              const endDate = context.options.context.endDate;
-              if (value && endDate) {
-                return moment(value).isSameOrBefore(endDate);
-              }
-              return true;
-            }
-          )
-      })
-    )
-    .min(1),
-  guaranty: Yup.number().min(0).required(),
-  guarantyPayback: Yup.number().min(0)
+  beginDate: Yup.date().nullable(),
+  endDate: Yup.date().nullable()
 });
 
-const emptyExpense = () => ({
-  key: nanoid(),
-  title: '',
-  amount: 0,
-  beginDate: null,
-  endDate: null
+const initValues = (tenant) => ({
+  leaseId:
+    tenant?.leaseId?._id ||
+    (typeof tenant?.leaseId === 'string' && tenant.leaseId ? tenant.leaseId : null) ||
+    CUSTOM_LEASE_VALUE,
+  beginDate: tenant?.beginDate
+    ? moment(tenant.beginDate, 'DD/MM/YYYY').startOf('day').toDate()
+    : null,
+  endDate: tenant?.endDate
+    ? moment(tenant.endDate, 'DD/MM/YYYY').endOf('day').toDate()
+    : null
 });
 
-const emptyProperty = () => ({
-  key: nanoid(),
-  _id: '',
-  rent: 0,
-  expenses: [{ ...emptyExpense() }]
-});
-
-const initValues = (tenant) => {
-  const beginDate = tenant?.beginDate
-    ? moment(tenant.beginDate, 'DD/MM/YYYY').startOf('day')
-    : null;
-  const endDate = tenant?.endDate
-    ? moment(tenant.endDate, 'DD/MM/YYYY').endOf('day')
-    : null;
-
-  return {
-    leaseId:
-      tenant?.leaseId?._id ||
-      tenant?.leaseId ||
-      CUSTOM_LEASE_VALUE,
-    beginDate,
-    endDate,
-    terminated: !!tenant?.terminationDate,
-    terminationDate: tenant?.terminationDate
-      ? moment(tenant.terminationDate, 'DD/MM/YYYY').endOf('day')
-      : null,
-    properties: tenant?.properties?.length
-      ? tenant.properties.map((property) => {
-          return {
-            key: property.property._id,
-            _id: property.property._id,
-            rent: property.rent || '',
-            expenses: property.expenses.map((expense) => ({
-              ...expense,
-              beginDate: moment(expense.beginDate, 'DD/MM/YYYY'),
-              endDate: moment(expense.endDate, 'DD/MM/YYYY')
-            })) || [...emptyExpense(), beginDate, endDate],
-            entryDate: property.entryDate
-              ? moment(property.entryDate, 'DD/MM/YYYY')
-              : moment(beginDate),
-            exitDate: property.exitDate
-              ? moment(property.exitDate, 'DD/MM/YYYY')
-              : moment(endDate)
-          };
-        })
-      : [
-          {
-            ...emptyProperty(),
-            expenses: [{ ...emptyExpense(), beginDate, endDate }],
-            entryDate: beginDate,
-            exitDate: endDate
-          }
-        ],
-    guaranty: tenant?.guaranty || 0,
-    guarantyPayback: tenant?.guarantyPayback || 0
-  };
-};
-
-export const validate = (tenant) => {
-  const values = initValues(tenant);
-  return validationSchema.validate(values, {
-    context: {
-      beginDate: values.beginDate,
-      endDate: values.endDate
-    }
-  });
-};
+export const validate = (tenant) =>
+  validationSchema.validate(initValues(tenant));
 
 function LeaseContractForm({ readOnly, onSubmit }) {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
-  const [contractDuration, setContractDuration] = useState();
   const [uploadingContractPdf, setUploadingContractPdf] = useState(false);
   const [pdfDoc, setPdfDoc] = useState();
   const [openPdfViewer, setOpenPdfViewer] = useState(false);
 
-  useEffect(() => {
-    const lease = store.tenant.selected?.lease;
-    if (lease) {
-      setContractDuration(
-        moment.duration(lease.numberOfTerms, lease.timeRange)
-      );
-    } else {
-      setContractDuration();
-    }
-  }, [store.tenant.selected?.lease]);
+  const initialValues = useMemo(
+    () => initValues(store.tenant?.selected),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [
+      store.tenant.selected?._id,
+      store.tenant.selected?.beginDate,
+      store.tenant.selected?.endDate,
+      store.tenant.selected?.leaseId
+    ]
+  );
 
-  const initialValues = useMemo(() => {
-    const initialValues = initValues(store.tenant?.selected);
-
-    return initialValues;
-  }, [store.tenant.selected]);
-
-  const availableLeases = useMemo(() => {
-    return [
+  const availableLeases = useMemo(
+    () => [
       {
         id: CUSTOM_LEASE_VALUE,
         value: CUSTOM_LEASE_VALUE,
@@ -205,121 +73,69 @@ function LeaseContractForm({ readOnly, onSubmit }) {
         label: name,
         disabled: !active
       }))
-    ];
-  }, [store.lease.items, t]);
+    ],
+    [store.lease.items, t]
+  );
 
-  const availableProperties = useMemo(() => {
-    const currentProperties = store.tenant.selected?.properties
-      ? store.tenant.selected.properties.map(({ propertyId }) => propertyId)
-      : [];
-    return [
-      { id: '', label: '', value: '' },
-      ...store.property.items.map(({ _id, name, status, occupantLabel }) => ({
-        id: _id,
-        value: _id,
-        label: t('{{name}} - {{status}}', {
-          name,
-          status:
-            status === 'occupied'
-              ? !currentProperties.includes(_id)
-                ? t('occupied by {{tenantName}}', {
-                    tenantName: occupantLabel
-                  })
-                : t('occupied by current tenant')
-              : t('vacant')
-        })
-      }))
-    ];
-  }, [t, store.tenant.selected.properties, store.property.items]);
-
-  const uploadedContractPdfs = useMemo(() => {
-    return (store.document.items || []).filter(
-      ({ tenantId, type, description }) =>
-        String(tenantId) === String(store.tenant.selected?._id) &&
-        type === 'file' &&
-        description === CONTRACT_PDF_DESCRIPTION
-    );
-  }, [store.document.items, store.tenant.selected?._id]);
+  const uploadedContractPdfs = useMemo(
+    () =>
+      (store.document.items || []).filter(
+        ({ tenantId, type, description }) =>
+          String(tenantId) === String(store.tenant.selected?._id) &&
+          type === 'file' &&
+          description === CONTRACT_PDF_DESCRIPTION
+      ),
+    [store.document.items, store.tenant.selected?._id]
+  );
 
   const _onSubmit = useCallback(
-    async (lease) => {
+    async (values) => {
       const submittedLeaseId =
-        lease.leaseId === CUSTOM_LEASE_VALUE ? '' : lease.leaseId;
-
+        values.leaseId === CUSTOM_LEASE_VALUE ? null : values.leaseId;
       await onSubmit({
         leaseId: submittedLeaseId || null,
         frequency: store.lease.items.find(({ _id }) => _id === submittedLeaseId)
           ?.timeRange,
-        beginDate: lease.beginDate?.format('DD/MM/YYYY') || '',
-        endDate: lease.endDate?.format('DD/MM/YYYY') || '',
-        terminationDate: lease.terminationDate?.format('DD/MM/YYYY') || '',
-        guaranty: lease.guaranty || 0,
-        guarantyPayback: lease.guarantyPayback || 0,
-        properties: lease.properties
-          .filter((property) => !!property._id)
-          .map((property) => {
-            return {
-              propertyId: property._id,
-              rent: property.rent,
-              expenses: property.expenses.length
-                ? property.expenses.map((expense) => ({
-                    ...expense,
-                    beginDate: expense.beginDate.format('DD/MM/YYYY'),
-                    endDate: expense.endDate.format('DD/MM/YYYY')
-                  }))
-                : [],
-              entryDate: property.entryDate?.format('DD/MM/YYYY'),
-              exitDate: property.exitDate?.format('DD/MM/YYYY')
-            };
-          })
+        beginDate: values.beginDate
+          ? moment(values.beginDate).format('DD/MM/YYYY')
+          : '',
+        endDate: values.endDate
+          ? moment(values.endDate).format('DD/MM/YYYY')
+          : ''
       });
     },
     [onSubmit, store.lease.items]
   );
 
-  const handleFormValidation = useCallback((value) => {
-    try {
-      validateYupSchema(value, validationSchema, true, value);
-    } catch (err) {
-      return yupToFormErrors(err); //for rendering validation errors
-    }
-    return {};
-  }, []);
-
   const handleUploadContractPdf = useCallback(
     async (event, leaseId) => {
       const file = event?.target?.files?.[0];
       event.target.value = '';
-
-      if (!file) {
-        return;
-      }
-
+      if (!file) return;
       if (file.type !== 'application/pdf') {
         toast.error(t('Only PDF files are allowed'));
         return;
       }
-
       if (!store.tenant.selected?._id) {
         toast.error(t('Tenant must be saved before uploading a contract'));
         return;
       }
-
-      const selectedLeaseId =
-        leaseId === CUSTOM_LEASE_VALUE ? '' : leaseId;
+      const selectedLeaseId = leaseId === CUSTOM_LEASE_VALUE ? null : leaseId;
       const fallbackLeaseId =
-        store.tenant.selected?.leaseId?._id || store.tenant.selected?.leaseId;
+        store.tenant.selected?.leaseId?._id ||
+        (typeof store.tenant.selected?.leaseId === 'string'
+          ? store.tenant.selected.leaseId
+          : null);
       const leaseIdToUse = selectedLeaseId || fallbackLeaseId || null;
 
       try {
         setUploadingContractPdf(true);
-
         const uploadResponse = await uploadDocument({
           endpoint: '/documents/upload',
           documentName: file.name,
           file,
           folder: [
-            store.tenant.selected.name?.replace(/[/\\]/g, '_') ||
+            store.tenant.selected.name?.replace(/[\/\\]/g, '_') ||
               'tenant-documents',
             'lease_contracts'
           ].join('/')
@@ -340,9 +156,8 @@ function LeaseContractForm({ readOnly, onSubmit }) {
           toast.error(t('Cannot save document'));
           return;
         }
-
         toast.success(t('Contract PDF uploaded'));
-      } catch (error) {
+      } catch {
         toast.error(t('Cannot upload document'));
       } finally {
         setUploadingContractPdf(false);
@@ -367,287 +182,117 @@ function LeaseContractForm({ readOnly, onSubmit }) {
     <>
       <Formik
         initialValues={initialValues}
-        validate={handleFormValidation}
+        validationSchema={validationSchema}
         onSubmit={_onSubmit}
+        enableReinitialize
       >
-        {({ values, isSubmitting, handleChange }) => {
-          const onLeaseChange = (evt) => {
-            const lease = store.lease.items.find(
-              ({ _id }) => _id === evt.target.value
-            );
-            if (lease) {
-              setContractDuration(
-                moment.duration(lease.numberOfTerms, lease.timeRange)
-              );
-            } else {
-              setContractDuration();
-            }
-            handleChange(evt);
-          };
-          const onPropertyChange = (evt, previousProperty) => {
-            const property = store.property.items.find(
-              ({ _id }) => _id === evt.target.value
-            );
-            if (previousProperty) {
-              previousProperty._id = property?._id;
-              previousProperty.rent = property?.price || '';
-              previousProperty.expenses = [
-                {
-                  title: t('General expenses'),
-                  // TODO: find another way to have expenses configurable
-                  amount: Math.round(property.price * 100 * 0.1) / 100,
-                  beginDate: values.beginDate,
-                  endDate: values.endDate
-                }
-              ];
-              previousProperty.entryDate = values.beginDate;
-              previousProperty.exitDate = values.endDate;
-            }
-            handleChange(evt);
-          };
+        {({ values, isSubmitting }) => (
+          <Form autoComplete="off">
+            <Section
+              label={t('Lease')}
+              visible={!store.tenant.selected.stepperMode}
+            >
+              <SelectField
+                label={t('Lease type')}
+                name="leaseId"
+                values={availableLeases}
+                disabled={readOnly}
+              />
+              <DateField
+                label={t('Start date')}
+                name="beginDate"
+                disabled={readOnly}
+              />
+              <DateField
+                label={t('End date')}
+                name="endDate"
+                disabled={readOnly}
+              />
 
-          return (
-            <Form autoComplete="off">
-              {values.terminated && (
-                <Section label={t('Termination')}>
-                  <DateField
-                    label={t('Termination date')}
-                    name="terminationDate"
-                    minDate={values.beginDate.toISOString()}
-                    maxDate={values.endDate.toISOString()}
-                    disabled={readOnly}
-                  />
-                  <NumberField
-                    label={t('Amount of the deposit refund')}
-                    name="guarantyPayback"
-                    disabled={readOnly}
-                  />
-                </Section>
-              )}
-              <Section
-                label={t('Lease')}
-                visible={!store.tenant.selected.stepperMode}
-              >
-                <SelectField
-                  label={t('Lease')}
-                  name="leaseId"
-                  values={availableLeases}
-                  onChange={onLeaseChange}
-                  disabled={readOnly}
-                />
-                <RangeDateField
-                  beginLabel={t('Start date')}
-                  beginName="beginDate"
-                  endLabel={t('End date')}
-                  endName="endDate"
-                  duration={contractDuration}
-                  disabled={readOnly}
-                />
-                <NumberField
-                  label={t('Deposit')}
-                  name="guaranty"
-                  disabled={readOnly}
-                />
-
-                <div className="mt-4 rounded border p-3 space-y-2">
-                  <div className="text-sm font-medium">
-                    {t('Uploaded contract PDF')}
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    {t(
-                      'Optional: upload the signed lease contract PDF if you do not use generated text contracts.'
-                    )}
-                  </div>
-
-                  {!readOnly && (
-                    <label className="inline-flex items-center px-3 py-1.5 border rounded text-sm cursor-pointer hover:bg-muted">
-                      {uploadingContractPdf
-                        ? t('Uploading...')
-                        : t('Upload PDF')}
-                      <input
-                        type="file"
-                        accept="application/pdf"
-                        className="hidden"
-                        disabled={uploadingContractPdf}
-                        onChange={(event) =>
-                          handleUploadContractPdf(event, values.leaseId)
-                        }
-                      />
-                    </label>
-                  )}
-
-                  {uploadedContractPdfs.length ? (
-                    <div className="space-y-2">
-                      {uploadedContractPdfs.map((doc) => (
-                        <div
-                          key={doc._id}
-                          className="flex flex-col gap-2 rounded border p-2 sm:flex-row sm:items-center sm:justify-between"
-                        >
-                          <div className="text-sm">{doc.name}</div>
-                          <div className="flex items-center gap-2">
-                            <button
-                              type="button"
-                              className="text-xs text-blue-600 hover:text-blue-800"
-                              onClick={() => {
-                                setPdfDoc({
-                                  url: `/documents/${doc._id}`,
-                                  title: doc.name
-                                });
-                                setOpenPdfViewer(true);
-                              }}
-                            >
-                              {t('View')}
-                            </button>
-                            <button
-                              type="button"
-                              className="text-xs text-blue-600 hover:text-blue-800"
-                              onClick={() =>
-                                downloadDocument({
-                                  endpoint: `/documents/${doc._id}`,
-                                  documentName: doc.name
-                                })
-                              }
-                            >
-                              {t('Download')}
-                            </button>
-                            {!readOnly && (
-                              <button
-                                type="button"
-                                className="text-xs text-red-600 hover:text-red-700"
-                                onClick={() => handleDeleteContractPdf(doc._id)}
-                              >
-                                {t('Delete')}
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-xs text-muted-foreground">
-                      {t('No contract PDF uploaded yet')}
-                    </div>
-                  )}
+              <div className="mt-4 rounded border p-3 space-y-2">
+                <div className="text-sm font-medium">{t('Contract PDF')}</div>
+                <div className="text-xs text-muted-foreground">
+                  {t('Upload the signed lease contract PDF.')}
                 </div>
-              </Section>
-              <Section label={t('Properties')}>
-                <ArrayField
-                  name="properties"
-                  addLabel={t('Add a property')}
-                  emptyItem={{
-                    ...emptyProperty(),
-                    expenses: [
-                      {
-                        ...emptyExpense(),
-                        beginDate: values.beginDate,
-                        endDate: values.endDate
+
+                {!readOnly && (
+                  <label className="inline-flex items-center px-3 py-1.5 border rounded text-sm cursor-pointer hover:bg-muted">
+                    {uploadingContractPdf ? t('Uploading...') : t('Upload PDF')}
+                    <input
+                      type="file"
+                      accept="application/pdf"
+                      className="hidden"
+                      disabled={uploadingContractPdf}
+                      onChange={(event) =>
+                        handleUploadContractPdf(event, values.leaseId)
                       }
-                    ],
-                    entryDate: values.beginDate,
-                    endDate: values.endDate
-                  }}
-                  items={values.properties}
-                  renderTitle={(property, index) =>
-                    t('Property #{{count}}', { count: index + 1 })
-                  }
-                  renderContent={(property, index) => (
-                    <Fragment key={property.key}>
-                      <div className="sm:flex sm:gap-2">
-                        <div className="md:w-3/4">
-                          <SelectField
-                            label={t('Property')}
-                            name={`properties[${index}]._id`}
-                            values={availableProperties}
-                            onChange={(evt) => onPropertyChange(evt, property)}
-                            disabled={readOnly}
-                          />
-                        </div>
-                        <div className="md:w-1/4">
-                          <NumberField
-                            label={t('Rent')}
-                            name={`properties[${index}].rent`}
-                            disabled={
-                              !values.properties[index]?._id || readOnly
+                    />
+                  </label>
+                )}
+
+                {uploadedContractPdfs.length ? (
+                  <div className="space-y-2">
+                    {uploadedContractPdfs.map((doc) => (
+                      <div
+                        key={doc._id}
+                        className="flex flex-col gap-2 rounded border p-2 sm:flex-row sm:items-center sm:justify-between"
+                      >
+                        <div className="text-sm">{doc.name}</div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            className="text-xs text-blue-600 hover:text-blue-800"
+                            onClick={() => {
+                              setPdfDoc({
+                                url: `/documents/${doc._id}`,
+                                title: doc.name
+                              });
+                              setOpenPdfViewer(true);
+                            }}
+                          >
+                            {t('View')}
+                          </button>
+                          <button
+                            type="button"
+                            className="text-xs text-blue-600 hover:text-blue-800"
+                            onClick={() =>
+                              downloadDocument({
+                                endpoint: `/documents/${doc._id}`,
+                                documentName: doc.name
+                              })
                             }
-                          />
+                          >
+                            {t('Download')}
+                          </button>
+                          {!readOnly && (
+                            <button
+                              type="button"
+                              className="text-xs text-red-600 hover:text-red-700"
+                              onClick={() => handleDeleteContractPdf(doc._id)}
+                            >
+                              {t('Delete')}
+                            </button>
+                          )}
                         </div>
                       </div>
-                      <ArrayField
-                        name={`properties[${index}].expenses`}
-                        addLabel={t('Add a expense')}
-                        emptyItem={{
-                          ...emptyExpense(),
-                          beginDate: values.beginDate,
-                          endDate: values.endDate
-                        }}
-                        items={values.properties[index]?.expenses}
-                        renderTitle={(expense, index_expense) =>
-                          t('Expense #{{count}}', { count: index_expense + 1 })
-                        }
-                        renderContent={(expense, index_expense) => (
-                          <Fragment key={expense.key}>
-                            <div className="sm:flex sm:gap-2">
-                              <div className="md:w-1/2">
-                                <TextField
-                                  label={t('Expense')}
-                                  name={`properties[${index}].expenses[${index_expense}].title`}
-                                  disabled={
-                                    !values.properties[index]?._id || readOnly
-                                  }
-                                />
-                              </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-xs text-muted-foreground">
+                    {t('No contract PDF uploaded yet')}
+                  </div>
+                )}
+              </div>
+            </Section>
 
-                              <div className="md:w-1/6">
-                                <NumberField
-                                  label={t('Amount')}
-                                  name={`properties[${index}].expenses[${index_expense}].amount`}
-                                  disabled={
-                                    !values.properties[index]?._id || readOnly
-                                  }
-                                />
-                              </div>
-
-                              <div>
-                                <RangeDateField
-                                  beginLabel={t('Start date')}
-                                  beginName={`properties[${index}].expenses[${index_expense}].beginDate`}
-                                  endLabel={t('End date')}
-                                  endName={`properties[${index}].expenses[${index_expense}].endDate`}
-                                  minDate={values?.beginDate}
-                                  maxDate={values?.endDate}
-                                  disabled={
-                                    !values.properties[index]?._id || readOnly
-                                  }
-                                />
-                              </div>
-                            </div>
-                          </Fragment>
-                        )}
-                        readOnly={readOnly}
-                      />
-                      <RangeDateField
-                        beginLabel={t('Entry date')}
-                        beginName={`properties[${index}].entryDate`}
-                        endLabel={t('Exit date')}
-                        endName={`properties[${index}].exitDate`}
-                        minDate={values?.beginDate}
-                        maxDate={values?.endDate}
-                        disabled={!property?._id || readOnly}
-                      />
-                    </Fragment>
-                  )}
-                  readOnly={readOnly}
-                />
-              </Section>
-              {!readOnly && (
-                <SubmitButton
-                  size="large"
-                  label={!isSubmitting ? t('Save') : t('Saving')}
-                />
-              )}
-            </Form>
-          );
-        }}
+            {!readOnly && (
+              <SubmitButton
+                size="large"
+                label={!isSubmitting ? t('Save') : t('Saving')}
+              />
+            )}
+          </Form>
+        )}
       </Formik>
 
       <PdfViewer
