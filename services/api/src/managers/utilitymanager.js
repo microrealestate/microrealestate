@@ -1,3 +1,4 @@
+/* eslint-disable sort-imports */
 import { createLog, diffObjects } from './auditlogmanager.js';
 import {
   Collections,
@@ -5,11 +6,12 @@ import {
   logger,
   ServiceError
 } from '@microrealestate/common';
+import { getUploadsDirectory } from '../utils/storage.js';
 import axios from 'axios';
 import fs from 'fs-extra';
 import { nanoid } from 'nanoid';
-import pdfParse from 'pdf-parse/lib/pdf-parse.js';
 import path from 'path';
+import pdfParse from 'pdf-parse/lib/pdf-parse.js';
 
 const SECRET_PLACEHOLDER = '**********';
 
@@ -1168,7 +1170,7 @@ function accountNumbersMatchWithMask(savedAccountNumber, parsedAccountNumber) {
 }
 
 async function saveRawEmailAttachment({ realmId, utilityId, reqUser, rawText, provider }) {
-  const uploadDir = path.resolve(process.cwd(), 'data', 'uploads', 'attachments');
+  const uploadDir = getUploadsDirectory('attachments');
   await fs.ensureDir(uploadDir);
 
   const storageKey = `utility_${utilityId}_${nanoid(16)}`;
@@ -1536,13 +1538,7 @@ async function deleteUtilityAttachments(utility = {}) {
   }).lean();
 
   for (const attachment of attachments) {
-    const filePath = path.resolve(
-      process.cwd(),
-      'data',
-      'uploads',
-      'attachments',
-      attachment.storageKey
-    );
+    const filePath = getUploadsDirectory('attachments', attachment.storageKey);
 
     try {
       const exists = await fs.pathExists(filePath);

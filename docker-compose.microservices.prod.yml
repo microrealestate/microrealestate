@@ -101,7 +101,9 @@ services:
       context: .
       dockerfile: services/api/Dockerfile
     volumes:
-      - ./data/uploads:/usr/app/data/uploads
+      - /srv/file-storage:/srv/file-storage
+    environment:
+      - UPLOADS_DIRECTORY=/srv/file-storage
     # logging:
     #   driver: syslog
     #   options:

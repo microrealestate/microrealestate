@@ -1,4 +1,6 @@
+/* eslint-disable sort-imports */
 import { Collections } from '@microrealestate/common';
+import { getUploadsDirectory } from '../utils/storage.js';
 import fs from 'fs-extra';
 import { nanoid } from 'nanoid';
 import path from 'path';
@@ -117,12 +119,7 @@ export async function upload(req, res) {
   }
 
   // Ensure upload directory exists
-  const uploadDir = path.resolve(
-    process.cwd(),
-    'data',
-    'uploads',
-    'attachments'
-  );
+  const uploadDir = getUploadsDirectory('attachments');
   await fs.ensureDir(uploadDir);
 
   // Generate unique storage key
@@ -191,13 +188,7 @@ export async function download(req, res) {
   }
 
   // Build file path
-  const filePath = path.resolve(
-    process.cwd(),
-    'data',
-    'uploads',
-    'attachments',
-    attachment.storageKey
-  );
+  const filePath = getUploadsDirectory('attachments', attachment.storageKey);
 
   const exists = await fs.pathExists(filePath);
   if (!exists) {

@@ -22,7 +22,8 @@ const baseEnvironmentValues = {
   APPCREDZ_TOKEN_SECRET: process.env.APPCREDZ_TOKEN_SECRET,
   RESET_TOKEN_SECRET: process.env.RESET_TOKEN_SECRET,
   CIPHER_KEY: process.env.CIPHER_KEY,
-  CIPHER_IV_KEY: process.env.CIPHER_IV_KEY
+  CIPHER_IV_KEY: process.env.CIPHER_IV_KEY,
+  UPLOADS_DIRECTORY: process.env.UPLOADS_DIRECTORY
 } as const;
 
 const keysToEscape: string[] = [

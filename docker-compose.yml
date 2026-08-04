@@ -207,7 +207,7 @@ services:
     image: 'ghcr.io/microrealestate/microrealestate/api:${MRE_VERSION:-latest}'
     volumes:
       - ./backup:/usr/app/backup
-      - ./data/uploads:/usr/app/data/uploads
+      - /srv/file-storage:/srv/file-storage
     environment:
       NODE_ENV: production
       PORT: 8200
@@ -217,6 +217,7 @@ services:
       LANDLORD_APP_URL: ${LANDLORD_APP_URL:-${APP_PROTOCOL:-http}://${APP_DOMAIN:-localhost}${APP_PORT:+:}${APP_PORT}/landlord}
       PDFGENERATOR_URL: http://pdfgenerator:8300/pdfgenerator
       RESTORE_DB: 'false'
+      UPLOADS_DIRECTORY: /srv/file-storage
       ACCESS_TOKEN_SECRET: ${AUTHENTICATOR_ACCESS_TOKEN_SECRET:-access_token_secret} # Change secret in production
       CIPHER_KEY: ${CIPHER_KEY:-cipher_key} # Change key in production
       CIPHER_IV_KEY: ${CIPHER_IV_KEY:-cipher_iv_key} # Change key in production

@@ -65,6 +65,7 @@ async function Main() {
           process.env.LANDLORD_APP_URL || 'http://localhost:8080/landlord',
         PDFGENERATOR_URL:
           process.env.PDFGENERATOR_URL || 'http://localhost:8082/pdfgenerator',
+        UPLOADS_DIRECTORY: process.env.UPLOADS_DIRECTORY,
         ONEDRIVE_ENABLED: process.env.ONEDRIVE_ENABLED
           ? process.env.ONEDRIVE_ENABLED.toLowerCase() === 'true'
           : false,

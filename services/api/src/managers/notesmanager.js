@@ -1,4 +1,6 @@
+/* eslint-disable sort-imports */
 import { Collections } from '@microrealestate/common';
+import { getUploadsDirectory } from '../utils/storage.js';
 import fs from 'fs-extra';
 import { nanoid } from 'nanoid';
 import path from 'path';
@@ -404,7 +406,7 @@ export async function uploadAttachment(req, res) {
   }
 
   // Ensure upload directory exists
-  const uploadDir = path.resolve(process.cwd(), 'data', 'uploads', 'notes');
+  const uploadDir = getUploadsDirectory('notes');
   await fs.ensureDir(uploadDir);
 
   // Build a storage key and write file to disk
@@ -455,13 +457,7 @@ export async function downloadAttachment(req, res) {
     return res.status(404).json({ message: 'Attachment not found' });
   }
 
-  const filePath = path.resolve(
-    process.cwd(),
-    'data',
-    'uploads',
-    'notes',
-    attachment.storageKey
-  );
+  const filePath = getUploadsDirectory('notes', attachment.storageKey);
 
   const exists = await fs.pathExists(filePath);
   if (!exists)
