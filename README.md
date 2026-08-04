@@ -94,7 +94,7 @@ The application will be available on https://app.example.com/landlord and https:
 
 Uploaded files are stored on the path configured by `UPLOADS_DIRECTORY`.
 For the host setup in this branch, mount `/srv/file-storage` on the Docker host
-and set `UPLOADS_DIRECTORY=/srv/file-storage` for the API container.
+and set `UPLOADS_DIRECTORY=/srv/file-storage` for both the API and PDFGenerator containers.
 
 The backup and restore commands can be executed when the application is running to allow connecting to MongoDB.
 

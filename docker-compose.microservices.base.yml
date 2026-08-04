@@ -90,6 +90,8 @@ services:
   ###############################################################################
   pdfgenerator:
     image: 'ghcr.io/microrealestate/microrealestate/pdfgenerator:${MRE_VERSION:-latest}'
+    volumes:
+      - /srv/file-storage:/srv/file-storage
     environment:
       - NODE_ENV
       - PORT=$PDFGENERATOR_PORT
@@ -99,6 +101,7 @@ services:
       - CIPHER_KEY
       - CIPHER_IV_KEY
       - UPLOAD_MAX_SIZE
+      - UPLOADS_DIRECTORY=/srv/file-storage
     expose:
       - '$PDFGENERATOR_PORT'
     networks:
@@ -149,6 +152,7 @@ services:
     image: 'ghcr.io/microrealestate/microrealestate/api:${MRE_VERSION:-latest}'
     volumes:
       - ./backup:/usr/app/backup
+      - /srv/file-storage:/srv/file-storage
     environment:
       - NODE_ENV
       - PORT=$API_PORT
@@ -159,6 +163,7 @@ services:
       - LANDLORD_APP_URL
       - PDFGENERATOR_URL
       - RESTORE_DB
+      - UPLOADS_DIRECTORY=/srv/file-storage
       - ACCESS_TOKEN_SECRET=$AUTHENTICATOR_ACCESS_TOKEN_SECRET
       - CIPHER_KEY
       - CIPHER_IV_KEY

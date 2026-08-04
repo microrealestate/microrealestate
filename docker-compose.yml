@@ -131,6 +131,8 @@ services:
   pdfgenerator:
     restart: unless-stopped
     image: 'ghcr.io/microrealestate/microrealestate/pdfgenerator:${MRE_VERSION:-latest}'
+    volumes:
+      - /srv/file-storage:/srv/file-storage
     environment:
       NODE_ENV: production
       PORT: 8300
@@ -140,6 +142,7 @@ services:
       CIPHER_KEY: ${CIPHER_KEY:-cipher_key} # Change key in production
       CIPHER_IV_KEY: ${CIPHER_IV_KEY:-cipher_iv_key} # Change key in production
       UPLOAD_MAX_SIZE: 2000000000 # ~2Gb
+      UPLOADS_DIRECTORY: /srv/file-storage
     expose:
       - '8300'
     networks:
