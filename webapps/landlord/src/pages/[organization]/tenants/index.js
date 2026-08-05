@@ -96,6 +96,7 @@ function Tenants() {
     <Page loading={isLoading} dataCy="tenantsPage">
       <List
         data={data}
+        pageSize={20}
         filters={[
           { id: 'inprogress', label: t('Lease running') },
           { id: 'stopped', label: t('Lease ended') }

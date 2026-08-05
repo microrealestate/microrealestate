@@ -1,3 +1,4 @@
+/* eslint-disable sort-imports */
 import { fetchProperties, QueryKeys } from '../../../utils/restcalls';
 import { useCallback, useContext, useMemo, useState } from 'react';
 import { Button } from '../../../components/ui/button';
@@ -151,7 +152,7 @@ function Properties() {
   });
 
   const [openNewPropertyDialog, setOpenNewPropertyDialog] = useState(false);
-  const [pageSize, setPageSize] = useState(5);
+  const [pageSize, setPageSize] = useState(20);
 
   // Group properties into hierarchy groups (parent + children as units)
   const groupedData = useMemo(
