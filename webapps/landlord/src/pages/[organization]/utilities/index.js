@@ -492,7 +492,7 @@ export function UtilitiesPage({ view = 'all' }) {
   const [customCategories, setCustomCategories] = useState([]);
   const [hiddenCategories, setHiddenCategories] = useState([]);
   const [utilitiesTab, setUtilitiesTab] = useState(
-    isTaxOnly ? 'tax-saved' : 'bills'
+    isTaxOnly ? 'tax-saved' : 'list'
   );
   const [savingTaxStatement, setSavingTaxStatement] = useState(false);
   const [parsingTaxUpload, setParsingTaxUpload] = useState(false);
@@ -3481,18 +3481,6 @@ export function UtilitiesPage({ view = 'all' }) {
           {!isTaxOnly ? (
             <>
               <Button
-                variant={utilitiesTab === 'accounts' ? 'default' : 'outline'}
-                onClick={() => setUtilitiesTab('accounts')}
-              >
-                {t('Utility account setup')}
-              </Button>
-              <Button
-                variant={utilitiesTab === 'bills' ? 'default' : 'outline'}
-                onClick={() => setUtilitiesTab('bills')}
-              >
-                {t('Add utility bill')}
-              </Button>
-              <Button
                 variant={utilitiesTab === 'list' ? 'default' : 'outline'}
                 onClick={() => setUtilitiesTab('list')}
               >
@@ -3505,6 +3493,18 @@ export function UtilitiesPage({ view = 'all' }) {
                 onClick={() => setUtilitiesTab('pending-email')}
               >
                 {t('Pending confirmations')}
+              </Button>
+              <Button
+                variant={utilitiesTab === 'bills' ? 'default' : 'outline'}
+                onClick={() => setUtilitiesTab('bills')}
+              >
+                {t('Add utility bill')}
+              </Button>
+              <Button
+                variant={utilitiesTab === 'accounts' ? 'default' : 'outline'}
+                onClick={() => setUtilitiesTab('accounts')}
+              >
+                {t('Utility account setup')}
               </Button>
               <Button
                 variant="outline"

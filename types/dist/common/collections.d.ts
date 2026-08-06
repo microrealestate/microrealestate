@@ -471,6 +471,8 @@ export declare namespace CollectionTypes {
         sourceUtilityId?: string;
         invoicedAt?: Date | null;
         invoicedBy?: string;
+        qbPostedAt?: Date | null;
+        qbPostedBy?: string;
         billEnteredAt?: Date;
         billEnteredBy?: string;
         lastUpdatedBy?: string;
