@@ -243,7 +243,7 @@ describe('AttachmentsList', () => {
       <SavedBills {...defaultProps({ filteredUtilities: [utility], onPreviewAttachment })} />
     );
     fireEvent.click(getByTitle('View'));
-    expect(onPreviewAttachment).toHaveBeenCalledWith('att-001', 'bill.pdf');
+    expect(onPreviewAttachment).toHaveBeenCalledWith('att-001', 'bill.pdf', 'application/pdf');
   });
 
   it('shows "Attach file" button for any bill (always visible when onUploadBill provided)', () => {
