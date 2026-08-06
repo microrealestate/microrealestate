@@ -293,19 +293,13 @@ export async function remove(req, res) {
     });
   }
 
-  // Delete file from disk
-  const filePath = path.resolve(
-    process.cwd(),
-    'data',
-    'uploads',
-    'attachments',
-    attachment.storageKey
-  );
+  // Delete file from disk using the same path resolution as download
+  const filePath = getUploadsDirectory('attachments', attachment.storageKey);
 
   try {
     await fs.remove(filePath);
   } catch (err) {
-    // File might not exist, log but continue
+    // File might not exist; continue so the DB record is always cleaned up
     console.warn(`Failed to delete file ${filePath}:`, err.message);
   }
 

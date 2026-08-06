@@ -3167,6 +3167,67 @@ export function UtilitiesPage({ view = 'all' }) {
     [t]
   );
 
+  const [removingAttachmentId, setRemovingAttachmentId] = useState('');
+  const [deletingUtilityId, setDeletingUtilityId] = useState('');
+  const [togglingPaidUtilityId, setTogglingPaidUtilityId] = useState('');
+
+  const handleRemoveAttachment = useCallback(
+    async (utility, attachmentId) => {
+      setRemovingAttachmentId(attachmentId);
+      try {
+        await apiFetcher().delete(`/attachments/${attachmentId}`);
+        const remaining = (utility.attachmentIds || []).filter(
+          (id) => String(id) !== String(attachmentId)
+        );
+        await apiFetcher().patch(`/utilities/${utility._id}`, {
+          attachmentIds: remaining
+        });
+        queryClient.invalidateQueries(['utilities-all']);
+      } catch (error) {
+        toast.error(error?.response?.data?.message || t('Failed to remove file'));
+      } finally {
+        setRemovingAttachmentId('');
+      }
+    },
+    [queryClient, t]
+  );
+
+  const handleTogglePaidStatus = useCallback(
+    async (utility) => {
+      setTogglingPaidUtilityId(String(utility._id));
+      try {
+        const newPaidDate = utility.paidDate
+          ? null
+          : new Date().toISOString().slice(0, 10);
+        await apiFetcher().patch(`/utilities/${utility._id}`, {
+          paidDate: newPaidDate
+        });
+        queryClient.invalidateQueries(['utilities-all']);
+      } catch (error) {
+        toast.error(error?.response?.data?.message || t('Failed to update paid status'));
+      } finally {
+        setTogglingPaidUtilityId('');
+      }
+    },
+    [queryClient, t]
+  );
+
+  const handleDeleteUtility = useCallback(
+    async (utilityId) => {
+      setDeletingUtilityId(String(utilityId));
+      try {
+        await apiFetcher().delete(`/utilities/${utilityId}`);
+        queryClient.invalidateQueries(['utilities-all']);
+        toast.success(t('Utility record deleted'));
+      } catch (error) {
+        toast.error(error?.response?.data?.message || t('Failed to delete record'));
+      } finally {
+        setDeletingUtilityId('');
+      }
+    },
+    [queryClient, t]
+  );
+
   const handleDownloadUtilityBillAttachment = async (utility) => {
     const attachmentId = getFirstUtilityAttachmentId(utility);
     if (!attachmentId) {
@@ -6091,8 +6152,14 @@ export function UtilitiesPage({ view = 'all' }) {
             onReuploadBill={handleReuploadBill}
             onPreviewAttachment={handlePreviewAttachment}
             onDownloadAttachment={handleDownloadAttachment}
+            onRemoveAttachment={handleRemoveAttachment}
+            onTogglePaid={handleTogglePaidStatus}
+            onDeleteUtility={handleDeleteUtility}
             recapturingUtilityId={recapturingUtilityId}
             reuploadUtilityId={reuploadUtilityId}
+            removingAttachmentId={removingAttachmentId}
+            togglingPaidUtilityId={togglingPaidUtilityId}
+            deletingUtilityId={deletingUtilityId}
           />
         ) : null}
 

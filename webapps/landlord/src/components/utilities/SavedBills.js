@@ -3,7 +3,6 @@ import {
   LuArrowUp,
   LuBookmark,
   LuCheck,
-  LuDownload,
   LuExternalLink,
   LuFileText,
   LuLock,
@@ -12,7 +11,9 @@ import {
   LuRefreshCw,
   LuSearch,
   LuSend,
-  LuUpload
+  LuTrash2,
+  LuUpload,
+  LuX
 } from 'react-icons/lu';
 import { useMemo, useState } from 'react';
 import { Button } from '../ui/button';
@@ -34,9 +35,11 @@ function AttachmentsList({
   onDownload,
   onUploadBill,
   onRecapture,
+  onRemove,
   workingAttachmentId,
   recapturingId,
   reuploadUtilityId,
+  removingAttachmentId,
   fileInputRef,
   t
 }) {
@@ -90,6 +93,18 @@ function AttachmentsList({
                     >
                       {t('Download')}
                     </Button>
+                    {onRemove ? (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-5 px-1 text-xs text-red-500 hover:text-red-700"
+                        disabled={removingAttachmentId === String(att._id)}
+                        onClick={() => onRemove(utility, String(att._id))}
+                        title={t('Remove file')}
+                      >
+                        <LuX className="size-3" />
+                      </Button>
+                    ) : null}
                   </div>
                 </td>
               </tr>
@@ -104,9 +119,9 @@ function AttachmentsList({
           )}
         </tbody>
       </table>
-      {(!hasPdf && onUploadBill) || (!hasPdf && utility.source === 'email' && onRecapture) ? (
+      {onUploadBill || (!hasPdf && utility.source === 'email' && onRecapture) ? (
         <div className="flex items-center gap-1 px-2 py-1 border-t">
-          {!hasPdf && onUploadBill ? (
+          {onUploadBill ? (
             <Button
               variant="ghost"
               size="sm"
@@ -123,7 +138,7 @@ function AttachmentsList({
               }}
             >
               <LuUpload className="size-3" />
-              {t('Attach PDF bill')}
+              {t('Attach file')}
             </Button>
           ) : null}
           {!hasPdf && utility.source === 'email' && onRecapture ? (
@@ -239,8 +254,14 @@ function SavedBills({
   onReuploadBill,
   onPreviewAttachment,
   onDownloadAttachment,
+  onRemoveAttachment,
+  onTogglePaid,
+  onDeleteUtility,
   recapturingUtilityId,
-  reuploadUtilityId
+  reuploadUtilityId,
+  removingAttachmentId,
+  togglingPaidUtilityId,
+  deletingUtilityId
 }) {
   const [activeTab, setActiveTab] = useState('all');
   const [sortBy, setSortBy] = useState('billingMonth');
@@ -443,10 +464,25 @@ function SavedBills({
                         </tr>
                         <tr className="border-t">
                           <td className="px-2 py-1 text-muted-foreground whitespace-nowrap font-medium bg-muted/50">{t('Status')}</td>
-                          <td className={`px-2 py-1 ${utility.paidDate ? 'text-green-700' : 'text-amber-600'}`}>
-                            {utility.paidDate
-                              ? `${t('Paid')} ${String(utility.paidDate).slice(0, 10)}`
-                              : t('Not paid yet')}
+                          <td className="px-2 py-1">
+                            <div className="flex items-center gap-2">
+                              <span className={utility.paidDate ? 'text-green-700' : 'text-amber-600'}>
+                                {utility.paidDate
+                                  ? `${t('Paid')} ${String(utility.paidDate).slice(0, 10)}`
+                                  : t('Not paid yet')}
+                              </span>
+                              {onTogglePaid ? (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-4 px-1 text-xs text-muted-foreground"
+                                  disabled={togglingPaidUtilityId === utility._id}
+                                  onClick={() => onTogglePaid(utility)}
+                                >
+                                  {utility.paidDate ? t('Mark unpaid') : t('Mark paid')}
+                                </Button>
+                              ) : null}
+                            </div>
                           </td>
                         </tr>
                       </tbody>
@@ -460,9 +496,11 @@ function SavedBills({
                     onDownload={onDownloadAttachment}
                     onUploadBill={onReuploadBill}
                     onRecapture={onRecaptureEmailBill}
+                    onRemove={onRemoveAttachment}
                     workingAttachmentId={workingUtilityAttachmentId}
                     recapturingId={recapturingUtilityId}
                     reuploadUtilityId={reuploadUtilityId}
+                    removingAttachmentId={removingAttachmentId}
                     fileInputRef={fileInputRef}
                     t={t}
                   />
@@ -476,23 +514,17 @@ function SavedBills({
                   />
                 </div>
 
-                {/* Bottom bar: updated-by left, amount box + action buttons right */}
+                {/* Bottom bar: updated-by/date left, action buttons right */}
                 <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t text-xs">
-                  <div className="text-muted-foreground">
+                  <div className="text-muted-foreground space-y-0.5">
                     {utility.lastUpdatedBy ? (
-                      <>{t('Updated by')}: <span className="font-medium">{utility.lastUpdatedBy}</span></>
+                      <div>{t('Updated by')}: <span className="font-medium">{utility.lastUpdatedBy}</span></div>
+                    ) : null}
+                    {utility.updatedAt ? (
+                      <div>{String(utility.updatedAt).slice(0, 10)}</div>
                     ) : null}
                   </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    {/* Amount box inline with buttons */}
-                    <div className="border rounded px-3 py-1 font-semibold text-sm bg-muted/20">
-                      {toCurrency(utility.amount)}
-                      {utility.invoicedAt ? (
-                        <span className="ml-2 text-amber-600 font-medium text-xs">
-                          <LuLock className="size-3 inline mr-0.5" />{t('Invoiced')}
-                        </span>
-                      ) : null}
-                    </div>
+                  <div className="flex flex-wrap items-center justify-center gap-2">
                     <Button
                       variant="outline"
                       size="sm"
@@ -519,6 +551,7 @@ function SavedBills({
                       >
                         <LuFileText className="size-3.5" />
                         {t('View invoices')}
+                        <LuLock className="size-3 text-amber-600" />
                       </Button>
                     ) : (
                       <Button
@@ -588,6 +621,19 @@ function SavedBills({
                           {t('Not Entered QuickBooks')}
                         </Button>
                       )
+                    ) : null}
+                    {onDeleteUtility ? (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="gap-1 text-red-500 hover:text-red-700 hover:bg-red-50"
+                        disabled={deletingUtilityId === utility._id}
+                        onClick={() => onDeleteUtility(utility._id)}
+                        title={t('Delete this bill record')}
+                      >
+                        <LuTrash2 className="size-3.5" />
+                        {t('Delete')}
+                      </Button>
                     ) : null}
                   </div>
                 </div>

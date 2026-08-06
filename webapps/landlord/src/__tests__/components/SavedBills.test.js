@@ -246,20 +246,20 @@ describe('AttachmentsList', () => {
     expect(onPreviewAttachment).toHaveBeenCalledWith('att-001', 'bill.pdf');
   });
 
-  it('shows "Attach PDF bill" when utility has no PDF attachment', () => {
+  it('shows "Attach file" button for any bill (always visible when onUploadBill provided)', () => {
     const utility = makeUtility({
       attachments: [{ _id: 'att-txt', filename: 'utility-email.txt', mimeType: 'text/plain' }]
     });
     const { getByText } = render(<SavedBills {...defaultProps({ filteredUtilities: [utility] })} />);
-    expect(getByText('Attach PDF bill')).toBeInTheDocument();
+    expect(getByText('Attach file')).toBeInTheDocument();
   });
 
-  it('does NOT show "Attach PDF bill" when a PDF already exists', () => {
+  it('also shows "Attach file" when a PDF already exists', () => {
     const utility = makeUtility({
       attachments: [{ _id: 'att-pdf', filename: 'bill.pdf', mimeType: 'application/pdf' }]
     });
-    const { queryByText } = render(<SavedBills {...defaultProps({ filteredUtilities: [utility] })} />);
-    expect(queryByText('Attach PDF bill')).toBeNull();
+    const { getByText } = render(<SavedBills {...defaultProps({ filteredUtilities: [utility] })} />);
+    expect(getByText('Attach file')).toBeInTheDocument();
   });
 
   it('shows "No source bill attached" when attachments array is empty', () => {
