@@ -3118,8 +3118,8 @@ export function UtilitiesPage({ view = 'all' }) {
   const handlePreviewAttachment = useCallback(
     async (attachmentId, fallbackName = 'bill') => {
       setWorkingUtilityAttachmentId(attachmentId);
-      // Open a blank window before the async fetch to preserve the user-gesture association
-      const win = window.open('', '_blank', 'noopener,noreferrer');
+      // Open popup synchronously to preserve the user-gesture so browsers allow it
+      const win = window.open('', '_blank', 'width=1000,height=800,scrollbars=yes,resizable=yes');
       try {
         const response = await apiFetcher().get(
           `/attachments/${attachmentId}/download`,
@@ -3129,7 +3129,7 @@ export function UtilitiesPage({ view = 'all' }) {
         if (win && !win.closed) {
           win.location.href = blobUrl;
         } else {
-          window.open(blobUrl, '_blank', 'noopener,noreferrer');
+          window.open(blobUrl, '_blank', 'width=1000,height=800,scrollbars=yes,resizable=yes');
         }
       } catch (error) {
         if (win && !win.closed) win.close();
@@ -3267,7 +3267,7 @@ export function UtilitiesPage({ view = 'all' }) {
       return;
     }
 
-    const win = window.open('', '_blank', 'noopener,noreferrer');
+    const win = window.open('', '_blank', 'width=1000,height=800,scrollbars=yes,resizable=yes');
     setWorkingUtilityAttachmentId(attachmentId);
     try {
       const response = await apiFetcher().get(
@@ -3278,7 +3278,7 @@ export function UtilitiesPage({ view = 'all' }) {
       if (win && !win.closed) {
         win.location.href = blobUrl;
       } else {
-        window.open(blobUrl, '_blank', 'noopener,noreferrer');
+        window.open(blobUrl, '_blank', 'width=1000,height=800,scrollbars=yes,resizable=yes');
       }
     } catch (error) {
       if (win && !win.closed) win.close();
@@ -3296,7 +3296,7 @@ export function UtilitiesPage({ view = 'all' }) {
       return;
     }
     const blobUrl = window.URL.createObjectURL(item.file);
-    window.open(blobUrl, '_blank', 'noopener,noreferrer');
+    window.open(blobUrl, '_blank', 'width=1000,height=800,scrollbars=yes,resizable=yes');
   };
 
   const handleDownloadBatchReviewFile = (item) => {
