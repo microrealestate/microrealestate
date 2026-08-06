@@ -3,7 +3,9 @@ import {
   LuArrowUp,
   LuBookmark,
   LuCheck,
+  LuDownload,
   LuExternalLink,
+  LuEye,
   LuFileText,
   LuLock,
   LuMail,
@@ -60,7 +62,7 @@ function AttachmentsList({
           <tr className="bg-muted/50 text-muted-foreground">
             <th className="px-2 py-1 font-medium">{t('Attached Files')}</th>
             <th className="px-2 py-1 font-medium">{t('Type')}</th>
-            <th className="px-2 py-1" />
+            <th className="px-2 py-1 w-20" />
           </tr>
         </thead>
         <tbody>
@@ -79,25 +81,27 @@ function AttachmentsList({
                 </td>
                 <td className="px-2 py-1 text-muted-foreground whitespace-nowrap">{typeLabel}</td>
                 <td className="px-2 py-1">
-                  <div className="flex items-center gap-1 flex-wrap">
-                    <Button variant="outline" size="sm" className="h-6 px-2 text-xs" disabled={isWorking}
+                  <div className="flex items-center gap-0.5">
+                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0" disabled={isWorking}
+                      title={t('View')}
                       onClick={() => onPreview && onPreview(String(att._id), att.filename)}>
-                      {t('View')}
+                      <LuEye className="size-3.5" />
                     </Button>
-                    <Button variant="outline" size="sm" className="h-6 px-2 text-xs" disabled={isWorking}
+                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0" disabled={isWorking}
+                      title={t('Download')}
                       onClick={() => onDownload && onDownload(String(att._id), att.filename)}>
-                      {t('Download')}
+                      <LuDownload className="size-3.5" />
                     </Button>
                     {onRemove ? (
-                      <Button variant="outline" size="sm"
-                        className="h-6 px-2 text-xs text-red-600 border-red-300 hover:bg-red-50"
+                      <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
                         disabled={removingAttachmentId === String(att._id)}
+                        title={t('Remove file')}
                         onClick={() => onRequestConfirm({
                           type: 'remove-attachment',
                           label: att.filename,
                           onConfirm: () => onRemove(utility, String(att._id))
                         })}>
-                        <LuX className="size-3 mr-1" />{t('Remove')}
+                        <LuX className="size-3.5" />
                       </Button>
                     ) : null}
                   </div>
@@ -504,7 +508,7 @@ function SavedBills({
                   />
                 </div>
 
-                {/* Bottom bar: updated-by/date left, action buttons right */}
+                {/* Bottom bar: updated-by left | action buttons center | delete isolated right */}
                 <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t text-xs">
                   <div className="text-muted-foreground space-y-0.5">
                     {utility.lastUpdatedBy ? (
@@ -514,7 +518,7 @@ function SavedBills({
                       <div>{String(utility.updatedAt).slice(0, 10)}</div>
                     ) : null}
                   </div>
-                  <div className="flex flex-wrap items-center justify-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <Button
                       variant="outline"
                       size="sm"
@@ -612,22 +616,23 @@ function SavedBills({
                         </Button>
                       )
                     ) : null}
-                    {onDeleteUtility ? (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="gap-1 text-red-600 border-red-300 hover:bg-red-50"
-                        disabled={deletingUtilityId === utility._id}
-                        onClick={() => setConfirmModal({
-                          label: t('Delete this bill record? This cannot be undone.'),
-                          onConfirm: () => onDeleteUtility(utility._id)
-                        })}
-                      >
-                        <LuTrash2 className="size-3.5" />
-                        {t('Delete')}
-                      </Button>
-                    ) : null}
                   </div>
+                  {/* Delete isolated on the far right with a visual separator */}
+                  {onDeleteUtility ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-1 text-red-600 border-red-300 hover:bg-red-50 ml-auto"
+                      disabled={deletingUtilityId === utility._id}
+                      onClick={() => setConfirmModal({
+                        label: t('Delete this bill record? This cannot be undone.'),
+                        onConfirm: () => onDeleteUtility(utility._id)
+                      })}
+                    >
+                      <LuTrash2 className="size-3.5" />
+                      {t('Delete record')}
+                    </Button>
+                  ) : null}
                 </div>
               </div>
             );
