@@ -6590,19 +6590,12 @@ export function UtilitiesPage({ view = 'all' }) {
                     sandbox="allow-same-origin"
                   />
                 ) : (
-                  <object
-                    data={modalPreviewUrl}
+                  <iframe
+                    src={modalPreviewUrl}
                     type="application/pdf"
                     className="w-full h-full"
                     title={modalPreviewName}
-                  >
-                    <div className="h-full flex flex-col items-center justify-center gap-3 text-muted-foreground text-sm p-4">
-                      <p>{t('PDF preview not supported in this browser.')}</p>
-                      <Button onClick={() => downloadBlobAsFile(null, modalPreviewName)}>
-                        {t('Download instead')}
-                      </Button>
-                    </div>
-                  </object>
+                  />
                 )
               ) : (
                 <div className="h-full flex flex-col items-center justify-center gap-3 text-muted-foreground text-sm">
