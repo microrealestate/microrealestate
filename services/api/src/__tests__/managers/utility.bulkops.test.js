@@ -11,6 +11,7 @@ const mockUtility = {
 // Attachment must be callable as a constructor (new Collections.Attachment(...))
 const mockAttachmentSaveInstance = { _id: 'att-new', save: jest.fn().mockResolvedValue(undefined) };
 const MockAttachmentCtor = jest.fn().mockImplementation(() => mockAttachmentSaveInstance);
+MockAttachmentCtor.find = jest.fn();
 MockAttachmentCtor.findOne = jest.fn();
 MockAttachmentCtor.deleteMany = jest.fn();
 MockAttachmentCtor.create = jest.fn();
@@ -223,6 +224,10 @@ describe('attachBillScan', () => {
     });
     MockAttachmentCtor.deleteMany.mockResolvedValue({});
     mockUtility.updateOne.mockResolvedValue({});
+    // No existing PDFs for this utility
+    MockAttachmentCtor.find.mockReturnValue({
+      select: jest.fn().mockReturnValue({ lean: jest.fn().mockResolvedValue([]) })
+    });
 
     const req = makeReq({
       file: {
@@ -251,7 +256,7 @@ describe('attachBillScan', () => {
     );
   });
 
-  it('skips utilities that already have a file (without overwrite)', async () => {
+  it('skips utilities that already have a PDF (without overwrite)', async () => {
     mockUtilityAccount.find.mockReturnValue({
       select: jest.fn().mockReturnValue({
         lean: jest.fn().mockResolvedValue([
@@ -261,8 +266,14 @@ describe('attachBillScan', () => {
     });
     mockUtility.find.mockReturnValue({
       lean: jest.fn().mockResolvedValue([
-        { _id: 'util-1', realmId: 'realm-001', accountNumber: '07-709600-03', billingMonth: '2026-08', attachmentIds: ['existing-att'] }
+        { _id: 'util-1', realmId: 'realm-001', accountNumber: '07-709600-03', billingMonth: '2026-08', attachmentIds: ['existing-pdf-att'] }
       ])
+    });
+    // existing-pdf-att is a PDF — so should be skipped
+    MockAttachmentCtor.find.mockReturnValue({
+      select: jest.fn().mockReturnValue({
+        lean: jest.fn().mockResolvedValue([{ _id: 'existing-pdf-att' }])
+      })
     });
 
     const req = makeReq({
@@ -280,7 +291,55 @@ describe('attachBillScan', () => {
     expect(res.json).toHaveBeenCalledWith(
       expect.objectContaining({
         results: expect.arrayContaining([
-          expect.objectContaining({ status: 'skipped_has_file' })
+          expect.objectContaining({ status: 'skipped_has_pdf' })
+        ])
+      })
+    );
+  });
+
+  it('appends PDF to utility that only has email text attachment', async () => {
+    mockUtilityAccount.find.mockReturnValue({
+      select: jest.fn().mockReturnValue({
+        lean: jest.fn().mockResolvedValue([
+          { _id: 'ua-1', accountNumber: '07-709600-03', type: 'water' }
+        ])
+      })
+    });
+    mockUtility.find.mockReturnValue({
+      lean: jest.fn().mockResolvedValue([
+        { _id: 'util-1', realmId: 'realm-001', accountNumber: '07-709600-03', billingMonth: '2026-08', attachmentIds: ['email-txt-att'] }
+      ])
+    });
+    // No PDFs found — only email text exists
+    MockAttachmentCtor.find.mockReturnValue({
+      select: jest.fn().mockReturnValue({ lean: jest.fn().mockResolvedValue([]) })
+    });
+    MockAttachmentCtor.deleteMany.mockResolvedValue({});
+    mockUtility.updateOne.mockResolvedValue({});
+
+    const req = makeReq({
+      file: {
+        originalname: 'water-aug.pdf',
+        mimetype: 'application/pdf',
+        size: 2048,
+        buffer: Buffer.from('Water bill 07-709600-03 2026-08 $75.46')
+      }
+    });
+    const res = makeRes();
+    await attachBillScan(req, res);
+
+    expect(fsMock.writeFile).toHaveBeenCalled();
+    // Should keep 'email-txt-att' and add new PDF id
+    expect(mockUtility.updateOne).toHaveBeenCalledWith(
+      expect.objectContaining({ _id: 'util-1' }),
+      expect.objectContaining({
+        attachmentIds: expect.arrayContaining(['email-txt-att'])
+      })
+    );
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        results: expect.arrayContaining([
+          expect.objectContaining({ status: 'attached' })
         ])
       })
     );

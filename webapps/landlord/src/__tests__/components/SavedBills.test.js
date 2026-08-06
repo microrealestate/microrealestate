@@ -68,6 +68,7 @@ function makeUtility(overrides = {}) {
     originalAmount: 75.46,
     paidDate: '2026-08-03',
     attachmentIds: ['att-001'],
+    attachments: [],
     source: 'manual',
     splitItems: [],
     lastUpdatedBy: 'matthew@butlerbaker.com',
@@ -105,7 +106,10 @@ function defaultProps(overrides = {}) {
     onLogQbPosted: jest.fn(),
     onRecaptureEmailBill: jest.fn(),
     onReuploadBill: jest.fn(),
+    onPreviewAttachment: jest.fn(),
+    onDownloadAttachment: jest.fn(),
     recapturingUtilityId: '',
+    reuploadUtilityId: '',
     ...overrides
   };
 }
@@ -215,43 +219,90 @@ describe('QuickBooks badge', () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-describe('Recapture / re-upload buttons', () => {
-  it('shows Recapture button only for email-source utilities', () => {
-    const emailUtility = makeUtility({ source: 'email', attachmentIds: ['att-001'] });
-    const manualUtility = makeUtility({ _id: 'util-002', source: 'manual', attachmentIds: ['att-002'] });
-
-    const { getAllByText } = render(
-      <SavedBills {...defaultProps({ filteredUtilities: [emailUtility, manualUtility] })} />
-    );
-    // Only one recapture button (for the email utility)
-    expect(getAllByText('Recapture').length).toBe(1);
+describe('AttachmentsList', () => {
+  it('shows a row with View and Download for each attachment', () => {
+    const utility = makeUtility({
+      attachments: [
+        { _id: 'att-pdf', filename: 'water-aug-2026.pdf', mimeType: 'application/pdf' },
+        { _id: 'att-txt', filename: 'utility-email-import.txt', mimeType: 'text/plain' }
+      ]
+    });
+    const { getAllByText } = render(<SavedBills {...defaultProps({ filteredUtilities: [utility] })} />);
+    expect(getAllByText('View').length).toBe(2);
+    expect(getAllByText('Download').length).toBe(2);
   });
 
-  it('shows "Upload bill" only when attachmentIds is empty', () => {
-    const noAttachment = makeUtility({ attachmentIds: [] });
-    const withAttachment = makeUtility({ _id: 'util-002', attachmentIds: ['att-001'] });
-
-    const { getAllByText } = render(
-      <SavedBills {...defaultProps({ filteredUtilities: [noAttachment, withAttachment] })} />
+  it('calls onPreviewAttachment with correct attachmentId', () => {
+    const onPreviewAttachment = jest.fn();
+    const utility = makeUtility({
+      attachments: [{ _id: 'att-001', filename: 'bill.pdf', mimeType: 'application/pdf' }]
+    });
+    const { getByText } = render(
+      <SavedBills {...defaultProps({ filteredUtilities: [utility], onPreviewAttachment })} />
     );
-    expect(getAllByText('Upload bill').length).toBe(1);
+    fireEvent.click(getByText('View'));
+    expect(onPreviewAttachment).toHaveBeenCalledWith('att-001', 'bill.pdf');
   });
 
+  it('shows "Attach PDF bill" when utility has no PDF attachment', () => {
+    const utility = makeUtility({
+      attachments: [{ _id: 'att-txt', filename: 'utility-email.txt', mimeType: 'text/plain' }]
+    });
+    const { getByText } = render(<SavedBills {...defaultProps({ filteredUtilities: [utility] })} />);
+    expect(getByText('Attach PDF bill')).toBeInTheDocument();
+  });
+
+  it('does NOT show "Attach PDF bill" when a PDF already exists', () => {
+    const utility = makeUtility({
+      attachments: [{ _id: 'att-pdf', filename: 'bill.pdf', mimeType: 'application/pdf' }]
+    });
+    const { queryByText } = render(<SavedBills {...defaultProps({ filteredUtilities: [utility] })} />);
+    expect(queryByText('Attach PDF bill')).toBeNull();
+  });
+
+  it('shows "No source bill attached" when attachments array is empty', () => {
+    const utility = makeUtility({ attachments: [], attachmentIds: [] });
+    const { getByText } = render(<SavedBills {...defaultProps({ filteredUtilities: [utility] })} />);
+    expect(getByText('No source bill attached')).toBeInTheDocument();
+  });
+
+  it('shows Recapture email button only for email-source utilities without PDF', () => {
+    const emailNoPdf = makeUtility({
+      source: 'email',
+      attachments: [{ _id: 'att-txt', filename: 'email.txt', mimeType: 'text/plain' }]
+    });
+    const manualNoPdf = makeUtility({ _id: 'util-002', source: 'manual', attachments: [] });
+    const { getAllByText } = render(
+      <SavedBills {...defaultProps({ filteredUtilities: [emailNoPdf, manualNoPdf] })} />
+    );
+    // Only email-source bill without PDF gets Recapture email
+    expect(getAllByText('Recapture email').length).toBe(1);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+describe('Recapture / re-upload buttons (legacy suite — now in AttachmentsList)', () => {
   it('calls onRecaptureEmailBill with utilityId', () => {
     const onRecaptureEmailBill = jest.fn();
-    const utility = makeUtility({ source: 'email' });
+    const utility = makeUtility({
+      source: 'email',
+      attachments: [{ _id: 'att-txt', filename: 'email.txt', mimeType: 'text/plain' }]
+    });
     const { getByText } = render(
       <SavedBills {...defaultProps({ filteredUtilities: [utility], onRecaptureEmailBill })} />
     );
-    fireEvent.click(getByText('Recapture'));
+    fireEvent.click(getByText('Recapture email'));
     expect(onRecaptureEmailBill).toHaveBeenCalledWith('util-001');
   });
 
-  it('disables Recapture button while recapturing', () => {
-    const utility = makeUtility({ source: 'email' });
+  it('disables Recapture email button while recapturing', () => {
+    const utility = makeUtility({
+      source: 'email',
+      attachments: [{ _id: 'att-txt', filename: 'email.txt', mimeType: 'text/plain' }]
+    });
     const { getByText } = render(
       <SavedBills {...defaultProps({ filteredUtilities: [utility], recapturingUtilityId: 'util-001' })} />
     );
-    expect(getByText('Recapture').closest('button')).toBeDisabled();
+    expect(getByText('Recapture email').closest('button')).toBeDisabled();
   });
 });
