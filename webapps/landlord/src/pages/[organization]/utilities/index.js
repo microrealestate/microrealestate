@@ -454,12 +454,6 @@ export function UtilitiesPage({ view = 'all' }) {
   const [hardCopyFiles, setHardCopyFiles] = useState([]);
   const [hardCopyAttaching, setHardCopyAttaching] = useState(false);
   const [hardCopyResults, setHardCopyResults] = useState(null);
-  const [previewUtilityAttachmentOpen, setPreviewUtilityAttachmentOpen] =
-    useState(false);
-  const [previewUtilityAttachmentUrl, setPreviewUtilityAttachmentUrl] =
-    useState('');
-  const [previewUtilityAttachmentName, setPreviewUtilityAttachmentName] =
-    useState('');
   const [workingUtilityAttachmentId, setWorkingUtilityAttachmentId] =
     useState('');
   const [workingPendingActionId, setWorkingPendingActionId] = useState('');
@@ -516,14 +510,6 @@ export function UtilitiesPage({ view = 'all' }) {
   useEffect(() => {
     taxDraftRef.current = taxDraft;
   }, [taxDraft]);
-
-  useEffect(() => {
-    return () => {
-      if (previewUtilityAttachmentUrl) {
-        window.URL.revokeObjectURL(previewUtilityAttachmentUrl);
-      }
-    };
-  }, [previewUtilityAttachmentUrl]);
 
   const { data: properties = [], isLoading: loadingProperties } = useQuery({
     queryKey: ['utilities-properties'],
@@ -2989,15 +2975,6 @@ export function UtilitiesPage({ view = 'all' }) {
     }
   };
 
-  const closeUtilityAttachmentPreview = () => {
-    if (previewUtilityAttachmentUrl) {
-      window.URL.revokeObjectURL(previewUtilityAttachmentUrl);
-    }
-    setPreviewUtilityAttachmentOpen(false);
-    setPreviewUtilityAttachmentUrl('');
-    setPreviewUtilityAttachmentName('');
-  };
-
   const downloadBlobAsFile = (blob, fileName) => {
     const blobUrl = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -3141,23 +3118,21 @@ export function UtilitiesPage({ view = 'all' }) {
   const handlePreviewAttachment = useCallback(
     async (attachmentId, fallbackName = 'bill') => {
       setWorkingUtilityAttachmentId(attachmentId);
+      // Open a blank window before the async fetch to preserve the user-gesture association
+      const win = window.open('', '_blank', 'noopener,noreferrer');
       try {
         const response = await apiFetcher().get(
           `/attachments/${attachmentId}/download`,
           { responseType: 'blob' }
         );
-        const fileName = getFilenameFromDisposition(
-          response.headers?.['content-disposition'],
-          fallbackName
-        );
-        if (previewUtilityAttachmentUrl) {
-          window.URL.revokeObjectURL(previewUtilityAttachmentUrl);
-        }
         const blobUrl = window.URL.createObjectURL(response.data);
-        setPreviewUtilityAttachmentUrl(blobUrl);
-        setPreviewUtilityAttachmentName(fileName);
-        setPreviewUtilityAttachmentOpen(true);
+        if (win && !win.closed) {
+          win.location.href = blobUrl;
+        } else {
+          window.open(blobUrl, '_blank', 'noopener,noreferrer');
+        }
       } catch (error) {
+        if (win && !win.closed) win.close();
         toast.error(
           error?.response?.data?.message || t('Failed to open bill preview')
         );
@@ -3165,7 +3140,7 @@ export function UtilitiesPage({ view = 'all' }) {
         setWorkingUtilityAttachmentId('');
       }
     },
-    [previewUtilityAttachmentUrl, t]
+    [t]
   );
 
   const handleDownloadAttachment = useCallback(
@@ -3231,30 +3206,21 @@ export function UtilitiesPage({ view = 'all' }) {
       return;
     }
 
+    const win = window.open('', '_blank', 'noopener,noreferrer');
     setWorkingUtilityAttachmentId(attachmentId);
     try {
       const response = await apiFetcher().get(
         `/attachments/${attachmentId}/download`,
-        {
-          responseType: 'blob'
-        }
+        { responseType: 'blob' }
       );
-
-      const fallbackName = `utility-bill-${utility.billingMonth || 'record'}.pdf`;
-      const fileName = getFilenameFromDisposition(
-        response.headers?.['content-disposition'],
-        fallbackName
-      );
-
-      if (previewUtilityAttachmentUrl) {
-        window.URL.revokeObjectURL(previewUtilityAttachmentUrl);
-      }
-
       const blobUrl = window.URL.createObjectURL(response.data);
-      setPreviewUtilityAttachmentUrl(blobUrl);
-      setPreviewUtilityAttachmentName(fileName);
-      setPreviewUtilityAttachmentOpen(true);
+      if (win && !win.closed) {
+        win.location.href = blobUrl;
+      } else {
+        window.open(blobUrl, '_blank', 'noopener,noreferrer');
+      }
     } catch (error) {
+      if (win && !win.closed) win.close();
       toast.error(
         error?.response?.data?.message || t('Failed to open bill preview')
       );
@@ -3268,17 +3234,8 @@ export function UtilitiesPage({ view = 'all' }) {
       toast.error(t('No PDF file available for preview'));
       return;
     }
-
-    setWorkingBatchReviewItemId(String(item.id || ''));
-    if (previewUtilityAttachmentUrl) {
-      window.URL.revokeObjectURL(previewUtilityAttachmentUrl);
-    }
-
     const blobUrl = window.URL.createObjectURL(item.file);
-    setPreviewUtilityAttachmentUrl(blobUrl);
-    setPreviewUtilityAttachmentName(item.fileName || t('Utility bill record'));
-    setPreviewUtilityAttachmentOpen(true);
-    setWorkingBatchReviewItemId('');
+    window.open(blobUrl, '_blank', 'noopener,noreferrer');
   };
 
   const handleDownloadBatchReviewFile = (item) => {
@@ -6440,67 +6397,6 @@ export function UtilitiesPage({ view = 'all' }) {
                 {batchUploadingBills
                   ? t('Posting batch...')
                   : t('Confirm and post ready items')}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
-        <Dialog
-          open={previewUtilityAttachmentOpen}
-          onOpenChange={(open) => {
-            if (open) {
-              setPreviewUtilityAttachmentOpen(true);
-              return;
-            }
-
-            closeUtilityAttachmentPreview();
-          }}
-        >
-          <DialogContent className="max-w-5xl">
-            <DialogHeader>
-              <DialogTitle>{t('Utility bill record')}</DialogTitle>
-              <DialogDescription>
-                {previewUtilityAttachmentName || t('Source bill attachment')}
-              </DialogDescription>
-            </DialogHeader>
-
-            <div className="rounded-md border overflow-hidden h-[70vh] bg-muted/20">
-              {previewUtilityAttachmentUrl ? (
-                <iframe
-                  src={previewUtilityAttachmentUrl}
-                  title={previewUtilityAttachmentName || t('Utility bill')}
-                  className="w-full h-full"
-                />
-              ) : (
-                <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
-                  {t('No preview available')}
-                </div>
-              )}
-            </div>
-
-            <DialogFooter>
-              <Button variant="outline" onClick={closeUtilityAttachmentPreview}>
-                {t('Close')}
-              </Button>
-              <Button
-                onClick={() => {
-                  if (
-                    !previewUtilityAttachmentUrl ||
-                    !previewUtilityAttachmentName
-                  ) {
-                    return;
-                  }
-
-                  fetch(previewUtilityAttachmentUrl)
-                    .then((response) => response.blob())
-                    .then((blob) => {
-                      downloadBlobAsFile(blob, previewUtilityAttachmentName);
-                    });
-                }}
-                disabled={!previewUtilityAttachmentUrl}
-              >
-                <LuDownload className="size-4 mr-2" />
-                {t('Download')}
               </Button>
             </DialogFooter>
           </DialogContent>
