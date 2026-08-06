@@ -13,6 +13,7 @@ jest.mock('react-icons/lu', () => ({
   LuBookmark: () => null,
   LuCheck: () => null,
   LuDownload: () => null,
+  LuEye: () => null,
   LuExternalLink: () => null,
   LuFileSearch: () => null,
   LuFileText: () => null,
@@ -21,7 +22,9 @@ jest.mock('react-icons/lu', () => ({
   LuRefreshCw: () => null,
   LuSearch: () => null,
   LuSend: () => null,
-  LuUpload: () => null
+  LuTrash2: () => null,
+  LuUpload: () => null,
+  LuX: () => null
 }));
 
 // Stub UI primitives
@@ -37,6 +40,14 @@ jest.mock('../../components/ui/card', () => ({
 }));
 jest.mock('../../components/ui/input', () => ({
   Input: (props) => <input {...props} />
+}));
+jest.mock('../../components/ui/dialog', () => ({
+  Dialog: ({ children, open }) => (open ? <div role="dialog">{children}</div> : null),
+  DialogContent: ({ children }) => <div>{children}</div>,
+  DialogHeader: ({ children }) => <div>{children}</div>,
+  DialogTitle: ({ children }) => <div>{children}</div>,
+  DialogDescription: ({ children }) => <div>{children}</div>,
+  DialogFooter: ({ children }) => <div>{children}</div>
 }));
 
 const SavedBills = require('../../components/utilities/SavedBills').default;
@@ -222,16 +233,16 @@ describe('QuickBooks badge', () => {
 
 // ─────────────────────────────────────────────────────────────────────────────
 describe('AttachmentsList', () => {
-  it('shows a row with View and Download for each attachment', () => {
+  it('shows icon buttons (View/Download titles) per attachment', () => {
     const utility = makeUtility({
       attachments: [
         { _id: 'att-pdf', filename: 'water-aug-2026.pdf', mimeType: 'application/pdf' },
         { _id: 'att-txt', filename: 'utility-email-import.txt', mimeType: 'text/plain' }
       ]
     });
-    const { getAllByText } = render(<SavedBills {...defaultProps({ filteredUtilities: [utility] })} />);
-    expect(getAllByText('View').length).toBe(2);
-    expect(getAllByText('Download').length).toBe(2);
+    const { getAllByTitle } = render(<SavedBills {...defaultProps({ filteredUtilities: [utility] })} />);
+    expect(getAllByTitle('View').length).toBe(2);
+    expect(getAllByTitle('Download').length).toBe(2);
   });
 
   it('calls onPreviewAttachment with correct attachmentId', () => {
