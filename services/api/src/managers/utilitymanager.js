@@ -1008,6 +1008,18 @@ async function listGraphInboxMessages(config, { top = 25 } = {}) {
   return Array.isArray(response.data?.value) ? response.data.value : [];
 }
 
+async function fetchGraphMessageById(config, graphMessageId) {
+  const token = await getGraphAccessToken(config);
+  const response = await axios.get(
+    `https://graph.microsoft.com/v1.0/users/${encodeURIComponent(config.mailboxEmail)}/messages/${encodeURIComponent(graphMessageId)}`,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+      params: { $select: 'id,internetMessageId,subject,receivedDateTime,from,body,bodyPreview' }
+    }
+  );
+  return response.data || null;
+}
+
 function htmlToPlainText(html = '') {
   return String(html || '')
     .replace(/<style[\s\S]*?<\/style>/gi, ' ')
@@ -1757,6 +1769,92 @@ export async function rejectPendingConfirmation(req, res) {
   );
 
   return res.sendStatus(204);
+}
+
+export async function recaptureEmailBill(req, res) {
+  const realmId = req.realm._id;
+  const utilityId = req.params.id;
+
+  const utility = await Collections.Utility.findOne({ _id: utilityId, realmId }).lean();
+  if (!utility) {
+    return res.status(404).json({ message: 'Utility entry not found' });
+  }
+
+  if (utility.source !== 'email' || !utility.emailMessageId) {
+    return res.status(400).json({
+      message: 'Manual re-upload required — this bill was not imported from email'
+    });
+  }
+
+  // Check if the existing attachment file is already on disk (idempotent)
+  if ((utility.attachmentIds || []).length) {
+    const existingAttachment = await Collections.Attachment.findOne({
+      _id: utility.attachmentIds[0],
+      realmId
+    }).lean();
+    if (existingAttachment) {
+      const filePath = getUploadsDirectory('attachments', existingAttachment.storageKey);
+      const alreadyExists = await fs.pathExists(filePath);
+      if (alreadyExists) {
+        return res.json({ message: 'Bill file already present', restored: false });
+      }
+    }
+  }
+
+  const realm = await Collections.Realm.findOne({ _id: realmId }).lean();
+  const graphConfig = getUtilitiesInboxGraphConfigForImport(realm);
+
+  if (!graphConfig.selected || !graphConfig.clientSecret) {
+    return res.status(400).json({
+      message: 'Email inbox not configured — re-upload the bill manually'
+    });
+  }
+
+  let message;
+  try {
+    message = await fetchGraphMessageById(graphConfig, utility.emailMessageId);
+  } catch {
+    return res.status(502).json({
+      message: 'Could not fetch email from inbox — re-upload the bill manually'
+    });
+  }
+
+  if (!message) {
+    return res.status(404).json({
+      message: 'Original email not found in inbox — re-upload the bill manually'
+    });
+  }
+
+  const bodyContent = message.body?.content || message.bodyPreview || '';
+  const rawText =
+    message.body?.contentType === 'html'
+      ? htmlToPlainText(bodyContent)
+      : bodyContent;
+
+  // Remove broken attachment records before creating a fresh one
+  if ((utility.attachmentIds || []).length) {
+    await Collections.Attachment.deleteMany({
+      _id: { $in: utility.attachmentIds },
+      realmId
+    });
+  }
+
+  const newAttachmentId = await saveRawEmailAttachment({
+    realmId,
+    utilityId: utility._id,
+    reqUser: req.user,
+    rawText,
+    provider: utility.provider,
+    accountNumber: utility.accountNumber,
+    billingMonth: utility.billingMonth
+  });
+
+  await Collections.Utility.updateOne(
+    { _id: utilityId, realmId },
+    { attachmentIds: [newAttachmentId] }
+  );
+
+  return res.json({ message: 'Bill restored from email', restored: true, attachmentId: newAttachmentId });
 }
 
 let utilityImportSchedulerHandle = null;

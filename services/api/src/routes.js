@@ -362,6 +362,10 @@ export default function routes() {
     '/:id/qb-posted',
     Middlewares.asyncWrapper(utilityInvoiceManager.logQbPosted)
   );
+  utilitiesRouter.post(
+    '/:id/recapture-bill-from-email',
+    Middlewares.asyncWrapper(utilityManager.recaptureEmailBill)
+  );
 
   const propertyTaxStatementsRouter = express.Router();
   propertyTaxStatementsRouter.get(
