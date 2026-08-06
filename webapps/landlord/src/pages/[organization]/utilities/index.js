@@ -3145,9 +3145,24 @@ export function UtilitiesPage({ view = 'all' }) {
     async (attachmentId, fallbackName = 'bill', knownMimeType = '') => {
       setWorkingUtilityAttachmentId(attachmentId);
       const usePopup = previewMode === 'popup';
-      const win = usePopup
-        ? window.open('', '_blank', 'width=1000,height=800,scrollbars=yes,resizable=yes')
-        : null;
+      let win = null;
+      if (usePopup) {
+        win = window.open('', '_blank', 'width=1000,height=800,scrollbars=yes,resizable=yes');
+        // Show loading page immediately so the popup doesn't appear frozen
+        if (win) {
+          win.document.write(
+            '<html><body style="margin:0;display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;color:#666;background:#f5f5f5">' +
+            '<div style="text-align:center"><div style="font-size:2rem;margin-bottom:1rem">⏳</div>' +
+            '<div>Loading ' + (fallbackName || 'file') + '…</div></div></body></html>'
+          );
+          win.document.close();
+        }
+      } else {
+        // Open the modal right away with a loading state
+        setModalPreviewUrl('');
+        setModalPreviewName(fallbackName);
+        setModalPreviewOpen(true);
+      }
       try {
         const response = await apiFetcher().get(
           `/attachments/${attachmentId}/download`,
@@ -3169,10 +3184,10 @@ export function UtilitiesPage({ view = 'all' }) {
           if (modalPreviewUrl) window.URL.revokeObjectURL(modalPreviewUrl);
           setModalPreviewUrl(blobUrl);
           setModalPreviewName(fileName);
-          setModalPreviewOpen(true);
         }
       } catch (error) {
         if (win && !win.closed) win.close();
+        setModalPreviewOpen(false);
         let message = t('Failed to open bill preview');
         if (error?.response?.data instanceof Blob) {
           try {
@@ -6599,7 +6614,12 @@ export function UtilitiesPage({ view = 'all' }) {
                     className="w-full h-full"
                   />
                 )
-              ) : null}
+              ) : (
+                <div className="h-full flex flex-col items-center justify-center gap-3 text-muted-foreground text-sm">
+                  <div className="size-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                  <div>{t('Loading')}…</div>
+                </div>
+              )}
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={closeModalPreview}>
