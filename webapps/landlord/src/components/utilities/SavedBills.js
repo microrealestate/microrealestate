@@ -183,14 +183,21 @@ function SplitBreakdownTable({ utility, propertyById, toCurrency, t }) {
           ))}
           {/* Sibling properties from the same bill (e.g. other allocations on email-imported records) */}
           {!items.length && (utility.siblingProperties || []).map((sib, i) => {
-            const pct = utility.originalAmount
-              ? Math.round((sib.amount / utility.originalAmount) * 100)
+            const siblings = utility.siblingProperties || [];
+            // Derive sibling amount if missing: for 2-way splits, it's total minus this property
+            const sibAmount = (sib.amount > 0)
+              ? sib.amount
+              : (siblings.length === 1 && utility.originalAmount > 0)
+                ? Number((utility.originalAmount - utility.amount).toFixed(2))
+                : 0;
+            const pct = (utility.originalAmount > 0 && sibAmount > 0)
+              ? Math.round((sibAmount / utility.originalAmount) * 100)
               : null;
             return (
               <tr key={`sib-${i}`} className="border-t text-muted-foreground italic">
                 <td className="px-2 py-1">({sib.name})</td>
                 <td className="px-2 py-1 text-right">{pct != null ? `${pct}%` : ''}</td>
-                <td className="px-2 py-1 text-right">{toCurrency(sib.amount)}</td>
+                <td className="px-2 py-1 text-right">{sibAmount > 0 ? toCurrency(sibAmount) : ''}</td>
               </tr>
             );
           })}
