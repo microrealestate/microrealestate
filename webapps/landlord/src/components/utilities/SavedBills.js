@@ -94,16 +94,41 @@ function AttachmentsList({
                       {t('Download')}
                     </Button>
                     {onRemove ? (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-5 px-1 text-xs text-red-500 hover:text-red-700"
-                        disabled={removingAttachmentId === String(att._id)}
-                        onClick={() => onRemove(utility, String(att._id))}
-                        title={t('Remove file')}
-                      >
-                        <LuX className="size-3" />
-                      </Button>
+                      confirmPendingId === `remove-${att._id}` ? (
+                        <div className="flex items-center gap-0.5">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-5 px-1.5 text-xs text-red-600 hover:bg-red-50"
+                            disabled={removingAttachmentId === String(att._id)}
+                            onClick={() => {
+                              setConfirmPendingId(null);
+                              onRemove(utility, String(att._id));
+                            }}
+                          >
+                            {t('Yes, remove')}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-5 px-1 text-xs"
+                            onClick={() => setConfirmPendingId(null)}
+                          >
+                            {t('Cancel')}
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-5 px-1 text-xs text-red-500 hover:text-red-700 hover:bg-red-50"
+                          disabled={removingAttachmentId === String(att._id)}
+                          onClick={() => setConfirmPendingId(`remove-${att._id}`)}
+                          title={t('Remove file')}
+                        >
+                          <LuX className="size-3" />
+                        </Button>
+                      )
                     ) : null}
                   </div>
                 </td>
@@ -270,6 +295,8 @@ function SavedBills({
   const [sortOrder, setSortOrder] = useState('desc');
   const [qbUtilityId, setQbUtilityId] = useState(null);
   const [qbRef, setQbRef] = useState('');
+  // tracks the id of a pending destructive action awaiting confirmation
+  const [confirmPendingId, setConfirmPendingId] = useState(null);
   const [reuploadTargetId, setReuploadTargetId] = useState(null);
   const fileInputRef = useState(() => {
     if (typeof document !== 'undefined') {
@@ -637,17 +664,43 @@ function SavedBills({
                       )
                     ) : null}
                     {onDeleteUtility ? (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="gap-1 text-red-500 hover:text-red-700 hover:bg-red-50"
-                        disabled={deletingUtilityId === utility._id}
-                        onClick={() => onDeleteUtility(utility._id)}
-                        title={t('Delete this bill record')}
-                      >
-                        <LuTrash2 className="size-3.5" />
-                        {t('Delete')}
-                      </Button>
+                      confirmPendingId === `delete-${utility._id}` ? (
+                        <div className="flex items-center gap-1 border border-red-300 rounded px-2 py-1 bg-red-50">
+                          <span className="text-xs text-red-700 mr-1">{t('Delete this record?')}</span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-5 px-2 text-xs text-red-600 hover:bg-red-100"
+                            disabled={deletingUtilityId === utility._id}
+                            onClick={() => {
+                              setConfirmPendingId(null);
+                              onDeleteUtility(utility._id);
+                            }}
+                          >
+                            {t('Yes, delete')}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-5 px-2 text-xs"
+                            onClick={() => setConfirmPendingId(null)}
+                          >
+                            {t('Cancel')}
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="gap-1 text-red-500 border-red-300 hover:text-red-700 hover:bg-red-50"
+                          disabled={deletingUtilityId === utility._id}
+                          onClick={() => setConfirmPendingId(`delete-${utility._id}`)}
+                          title={t('Delete this bill record')}
+                        >
+                          <LuTrash2 className="size-3.5" />
+                          {t('Delete')}
+                        </Button>
+                      )
                     ) : null}
                   </div>
                 </div>
