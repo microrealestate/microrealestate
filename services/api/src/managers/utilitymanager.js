@@ -601,16 +601,14 @@ async function validatePayload(realmId, payload, utilityId = null) {
   }
 
   if (payload.attachmentIds.length) {
+    // Accept any realm attachment regardless of targetType (PDF, email text, etc.)
     const attachmentCount = await Collections.Attachment.countDocuments({
       _id: { $in: payload.attachmentIds },
-      realmId,
-      targetType: 'property',
-      targetId: payload.propertyId,
-      category: 'utility_bill'
+      realmId
     });
 
     if (attachmentCount !== payload.attachmentIds.length) {
-      return 'All attachmentIds must be utility_bill files for this property';
+      return 'All attachmentIds must be valid attachments in this organization';
     }
   }
 
@@ -678,7 +676,27 @@ export async function all(req, res) {
     .sort({ billingMonth: -1, createdAt: -1 })
     .lean();
 
-  return res.json(utilities);
+  // Embed attachment metadata so the UI can render file lists without extra round-trips
+  const allAttachmentIds = utilities.flatMap((u) => u.attachmentIds || []);
+  let attachmentMap = new Map();
+  if (allAttachmentIds.length) {
+    const attachments = await Collections.Attachment.find({
+      _id: { $in: allAttachmentIds },
+      realmId: realm._id
+    })
+      .select('_id filename mimeType category size uploadedByName createdAt')
+      .lean();
+    attachmentMap = new Map(attachments.map((a) => [String(a._id), a]));
+  }
+
+  return res.json(
+    utilities.map((utility) => ({
+      ...utility,
+      attachments: (utility.attachmentIds || [])
+        .map((id) => attachmentMap.get(String(id)))
+        .filter(Boolean)
+    }))
+  );
 }
 
 export async function one(req, res) {
