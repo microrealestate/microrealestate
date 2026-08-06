@@ -59,6 +59,8 @@ const UtilitySchema = new mongoose.Schema<CollectionTypes.Utility>(
     sourceUtilityId: { type: String, default: '' },
     invoicedAt: { type: Date, default: null },
     invoicedBy: { type: String, default: '' },
+    qbPostedAt: { type: Date, default: null },
+    qbPostedBy: { type: String, default: '' },
     billEnteredAt: { type: Date, default: Date.now },
     billEnteredBy: { type: String, default: '' },
     lastUpdatedBy: { type: String, default: '' }

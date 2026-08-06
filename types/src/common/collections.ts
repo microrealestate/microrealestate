@@ -554,6 +554,8 @@ export namespace CollectionTypes {
     sourceUtilityId?: string; // Parent bill if resplit
     invoicedAt?: Date | null; // Set when first invoice is created
     invoicedBy?: string; // User who triggered invoicing
+    qbPostedAt?: Date | null;
+    qbPostedBy?: string;
     billEnteredAt?: Date; // When bill was first entered
     billEnteredBy?: string; // User who entered it
     lastUpdatedBy?: string;
