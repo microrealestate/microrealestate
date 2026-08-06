@@ -3146,49 +3146,56 @@ export function UtilitiesPage({ view = 'all' }) {
     async (attachmentId, fallbackName = 'bill', knownMimeType = '') => {
       setWorkingUtilityAttachmentId(attachmentId);
       const usePopup = previewMode === 'popup';
-      const win = usePopup
-        ? window.open('', '_blank', 'width=1000,height=800,scrollbars=yes,resizable=yes')
-        : null;
-      if (win) {
-        win.document.write(
-          '<html><body style="margin:0;display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;color:#666;background:#f5f5f5">' +
-          '<div style="text-align:center"><div style="font-size:2rem;margin-bottom:1rem">⏳</div><div>Loading…</div></div></body></html>'
-        );
-        win.document.close();
+
+      if (usePopup) {
+        // Get a signed token URL and navigate the popup directly to it.
+        // Adobe/external viewers will open it; that is the desired behaviour for popup mode.
+        const win = window.open('', '_blank', 'width=1000,height=800,scrollbars=yes,resizable=yes');
+        if (win) {
+          win.document.write('<html><body style="margin:0;display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;color:#666;background:#f5f5f5"><div style="text-align:center"><div style="font-size:2rem;margin-bottom:1rem">⏳</div><div>Loading…</div></div></body></html>');
+          win.document.close();
+        }
+        try {
+          const { data } = await apiFetcher().get(`/attachments/${attachmentId}/view-token`);
+          const baseURL = apiFetcher().defaults.baseURL || '';
+          const fileUrl = `${baseURL}/attachments/${attachmentId}/view?token=${encodeURIComponent(data.token)}&raw=1`;
+          if (win && !win.closed) win.location.href = fileUrl;
+          else window.open(fileUrl, '_blank', 'width=1000,height=800,scrollbars=yes,resizable=yes');
+        } catch (error) {
+          if (win && !win.closed) win.close();
+          toast.error(error?.response?.data?.message || t('Failed to open bill preview'));
+        } finally {
+          setWorkingUtilityAttachmentId('');
+        }
       } else {
+        // Modal: fetch blob so the iframe can embed it without auth headers
         setModalPreviewUrl('');
         setModalPreviewName(fallbackName);
         setModalPreviewOpen(true);
-      }
-      try {
-        const response = await apiFetcher().get(
-          `/attachments/${attachmentId}/download`,
-          { responseType: 'blob' }
-        );
-        const blobUrl = window.URL.createObjectURL(response.data);
-        const fileName = getFilenameFromDisposition(
-          response.headers?.['content-disposition'],
-          fallbackName
-        );
-        if (usePopup) {
-          if (win && !win.closed) win.location.href = blobUrl;
-          else window.open(blobUrl, '_blank', 'width=1000,height=800,scrollbars=yes,resizable=yes');
-        } else {
+        try {
+          const response = await apiFetcher().get(
+            `/attachments/${attachmentId}/download`,
+            { responseType: 'blob' }
+          );
+          const blobUrl = window.URL.createObjectURL(response.data);
+          const fileName = getFilenameFromDisposition(
+            response.headers?.['content-disposition'],
+            fallbackName
+          );
           setModalPreviewUrl(blobUrl);
           setModalPreviewName(fileName);
+        } catch (error) {
+          setModalPreviewOpen(false);
+          let message = t('Failed to open bill preview');
+          if (error?.response?.data instanceof Blob) {
+            try { message = JSON.parse(await error.response.data.text()).message || message; } catch {}
+          } else if (error?.response?.data?.message) {
+            message = error.response.data.message;
+          }
+          toast.error(message);
+        } finally {
+          setWorkingUtilityAttachmentId('');
         }
-      } catch (error) {
-        if (win && !win.closed) win.close();
-        setModalPreviewOpen(false);
-        let message = t('Failed to open bill preview');
-        if (error?.response?.data instanceof Blob) {
-          try { message = JSON.parse(await error.response.data.text()).message || message; } catch {}
-        } else if (error?.response?.data?.message) {
-          message = error.response.data.message;
-        }
-        toast.error(message);
-      } finally {
-        setWorkingUtilityAttachmentId('');
       }
     },
     [previewMode, t]
