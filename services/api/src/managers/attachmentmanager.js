@@ -323,22 +323,19 @@ export async function viewWithToken(req, res) {
     );
   }
 
-  // Fetch raw file inside the popup's own JS context → create blob URL → set on iframe.
-  // This keeps the parent page fast while the popup handles its own download+render.
-  // The iframe src is a blob: URL so no extension can intercept the final render.
+  // Fetch raw file inside the popup's own JS context → navigate top-level to blob URL.
+  // Top-level blob: navigation renders PDFs in Chrome's native viewer (extension-proof).
+  // Parent page is instant; only the popup buffers the file.
   return res.type('html').send(
     `<html><head><title>${attachment.filename}</title>` +
-    '<style>html,body,iframe{width:100%;height:100%;margin:0;padding:0;border:0}' +
-    '#msg{display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;color:#666;font-size:1.1rem}</style></head>' +
-    '<body><div id="msg">⏳ Loading…</div><script>' +
+    '<style>body{margin:0;display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;color:#666;background:#f5f5f5}' +
+    '#msg{text-align:center}</style></head>' +
+    '<body><div id="msg"><div style="font-size:2rem;margin-bottom:1rem">⏳</div><div>Loading ' + attachment.filename + '…</div></div><script>' +
     `fetch(${JSON.stringify(rawUrl)})` +
-    '.then(function(r){if(!r.ok)throw new Error(r.status);return r.blob()})' +
-    '.then(function(b){' +
-    'var u=URL.createObjectURL(b);' +
-    'var f=document.createElement("iframe");' +
-    'f.src=u;f.style="position:fixed;inset:0;width:100%;height:100%;border:0";' +
-    'document.body.innerHTML="";document.body.appendChild(f);}' +
-    ').catch(function(e){document.getElementById("msg").textContent="Failed to load: "+e.message})' +
+    '.then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);return r.blob()})' +
+    '.then(function(b){window.location.href=URL.createObjectURL(b)})' +
+    '.catch(function(e){document.getElementById("msg").innerHTML=' +
+    '"<h2 style=\'color:#c00\'>Failed to load</h2><p>"+e.message+"</p>"})' +
     '</script></body></html>'
   );
 }
