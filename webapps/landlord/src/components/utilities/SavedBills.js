@@ -257,6 +257,8 @@ function SavedBills({
   onRemoveAttachment,
   onTogglePaid,
   onDeleteUtility,
+  previewMode,
+  onTogglePreviewMode,
   recapturingUtilityId,
   reuploadUtilityId,
   removingAttachmentId,
@@ -400,17 +402,29 @@ function SavedBills({
           </select>
         </div>
       </div>
-      <div className="flex justify-end items-center gap-4 mb-4">
-        <div className="text-sm text-muted-foreground">{t('Sort by')}:</div>
-        <Button variant="ghost" onClick={() => handleSort('billingMonth')}>
-          {t('Billing Month')} {renderSortArrow('billingMonth')}
-        </Button>
-        <Button variant="ghost" onClick={() => handleSort('amount')}>
-          {t('Amount')} {renderSortArrow('amount')}
-        </Button>
-        <Button variant="ghost" onClick={() => handleSort('paidDate')}>
-          {t('Paid Date')} {renderSortArrow('paidDate')}
-        </Button>
+      <div className="flex justify-between items-center gap-4 mb-4">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <span>{t('Bill preview')}:</span>
+          <button
+            className={`px-2 py-0.5 rounded border text-xs ${previewMode === 'popup' ? 'bg-primary text-primary-foreground' : 'bg-background'}`}
+            onClick={() => onTogglePreviewMode && onTogglePreviewMode()}
+            title={previewMode === 'popup' ? t('Switch to modal (in-page)') : t('Switch to popup window')}
+          >
+            {previewMode === 'popup' ? t('Popup window') : t('Modal (in-page)')}
+          </button>
+        </div>
+        <div className="flex items-center gap-4">
+          <div className="text-sm text-muted-foreground">{t('Sort by')}:</div>
+          <Button variant="ghost" onClick={() => handleSort('billingMonth')}>
+            {t('Billing Month')} {renderSortArrow('billingMonth')}
+          </Button>
+          <Button variant="ghost" onClick={() => handleSort('amount')}>
+            {t('Amount')} {renderSortArrow('amount')}
+          </Button>
+          <Button variant="ghost" onClick={() => handleSort('paidDate')}>
+            {t('Paid Date')} {renderSortArrow('paidDate')}
+          </Button>
+        </div>
       </div>
 
       {isError ? (

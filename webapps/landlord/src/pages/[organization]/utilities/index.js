@@ -458,6 +458,31 @@ export function UtilitiesPage({ view = 'all' }) {
     useState('');
   const [workingPendingActionId, setWorkingPendingActionId] = useState('');
   const [workingBatchReviewItemId, setWorkingBatchReviewItemId] = useState('');
+  // 'popup' or 'modal' — persisted in localStorage
+  const [previewMode, setPreviewModeState] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('utility-bill-preview-mode') || 'popup';
+    }
+    return 'popup';
+  });
+  const [modalPreviewUrl, setModalPreviewUrl] = useState('');
+  const [modalPreviewName, setModalPreviewName] = useState('');
+  const [modalPreviewOpen, setModalPreviewOpen] = useState(false);
+
+  const setPreviewMode = (mode) => {
+    setPreviewModeState(mode);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('utility-bill-preview-mode', mode);
+    }
+  };
+
+  const closeModalPreview = () => {
+    if (modalPreviewUrl) window.URL.revokeObjectURL(modalPreviewUrl);
+    setModalPreviewOpen(false);
+    setModalPreviewUrl('');
+    setModalPreviewName('');
+  };
+
   const [
     expandedAllocationHistoryAccountId,
     setExpandedAllocationHistoryAccountId
@@ -3119,17 +3144,30 @@ export function UtilitiesPage({ view = 'all' }) {
     async (attachmentId, fallbackName = 'bill') => {
       setWorkingUtilityAttachmentId(attachmentId);
       // Open popup synchronously to preserve the user-gesture so browsers allow it
-      const win = window.open('', '_blank', 'width=1000,height=800,scrollbars=yes,resizable=yes');
+      const win = previewMode === 'popup'
+        ? window.open('', '_blank', 'width=1000,height=800,scrollbars=yes,resizable=yes')
+        : null;
       try {
         const response = await apiFetcher().get(
           `/attachments/${attachmentId}/download`,
           { responseType: 'blob' }
         );
         const blobUrl = window.URL.createObjectURL(response.data);
-        if (win && !win.closed) {
-          win.location.href = blobUrl;
+        if (previewMode === 'popup') {
+          if (win && !win.closed) {
+            win.location.href = blobUrl;
+          } else {
+            window.open(blobUrl, '_blank', 'width=1000,height=800,scrollbars=yes,resizable=yes');
+          }
         } else {
-          window.open(blobUrl, '_blank', 'width=1000,height=800,scrollbars=yes,resizable=yes');
+          if (modalPreviewUrl) window.URL.revokeObjectURL(modalPreviewUrl);
+          const fileName = getFilenameFromDisposition(
+            response.headers?.['content-disposition'],
+            fallbackName
+          );
+          setModalPreviewUrl(blobUrl);
+          setModalPreviewName(fileName);
+          setModalPreviewOpen(true);
         }
       } catch (error) {
         if (win && !win.closed) win.close();
@@ -3140,7 +3178,7 @@ export function UtilitiesPage({ view = 'all' }) {
         setWorkingUtilityAttachmentId('');
       }
     },
-    [t]
+    [previewMode, modalPreviewUrl, t]
   );
 
   const handleDownloadAttachment = useCallback(
@@ -3267,7 +3305,9 @@ export function UtilitiesPage({ view = 'all' }) {
       return;
     }
 
-    const win = window.open('', '_blank', 'width=1000,height=800,scrollbars=yes,resizable=yes');
+    const win = previewMode === 'popup'
+      ? window.open('', '_blank', 'width=1000,height=800,scrollbars=yes,resizable=yes')
+      : null;
     setWorkingUtilityAttachmentId(attachmentId);
     try {
       const response = await apiFetcher().get(
@@ -3275,10 +3315,22 @@ export function UtilitiesPage({ view = 'all' }) {
         { responseType: 'blob' }
       );
       const blobUrl = window.URL.createObjectURL(response.data);
-      if (win && !win.closed) {
-        win.location.href = blobUrl;
+      if (previewMode === 'popup') {
+        if (win && !win.closed) {
+          win.location.href = blobUrl;
+        } else {
+          window.open(blobUrl, '_blank', 'width=1000,height=800,scrollbars=yes,resizable=yes');
+        }
       } else {
-        window.open(blobUrl, '_blank', 'width=1000,height=800,scrollbars=yes,resizable=yes');
+        const fallbackName = `utility-bill-${utility.billingMonth || 'record'}.pdf`;
+        const fileName = getFilenameFromDisposition(
+          response.headers?.['content-disposition'],
+          fallbackName
+        );
+        if (modalPreviewUrl) window.URL.revokeObjectURL(modalPreviewUrl);
+        setModalPreviewUrl(blobUrl);
+        setModalPreviewName(fileName);
+        setModalPreviewOpen(true);
       }
     } catch (error) {
       if (win && !win.closed) win.close();
@@ -6155,6 +6207,10 @@ export function UtilitiesPage({ view = 'all' }) {
             onRemoveAttachment={handleRemoveAttachment}
             onTogglePaid={handleTogglePaidStatus}
             onDeleteUtility={handleDeleteUtility}
+            previewMode={previewMode}
+            onTogglePreviewMode={() =>
+              setPreviewMode(previewMode === 'popup' ? 'modal' : 'popup')
+            }
             recapturingUtilityId={recapturingUtilityId}
             reuploadUtilityId={reuploadUtilityId}
             removingAttachmentId={removingAttachmentId}
@@ -6464,6 +6520,40 @@ export function UtilitiesPage({ view = 'all' }) {
                 {batchUploadingBills
                   ? t('Posting batch...')
                   : t('Confirm and post ready items')}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={modalPreviewOpen} onOpenChange={(open) => { if (!open) closeModalPreview(); }}>
+          <DialogContent className="max-w-5xl">
+            <DialogHeader>
+              <DialogTitle>{t('Bill preview')}</DialogTitle>
+              <DialogDescription>{modalPreviewName}</DialogDescription>
+            </DialogHeader>
+            <div className="rounded-md border overflow-hidden h-[70vh] bg-muted/20">
+              {modalPreviewUrl ? (
+                <iframe
+                  src={modalPreviewUrl}
+                  title={modalPreviewName}
+                  className="w-full h-full"
+                />
+              ) : null}
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={closeModalPreview}>
+                {t('Close')}
+              </Button>
+              <Button
+                disabled={!modalPreviewUrl}
+                onClick={() => {
+                  fetch(modalPreviewUrl)
+                    .then((r) => r.blob())
+                    .then((blob) => downloadBlobAsFile(blob, modalPreviewName));
+                }}
+              >
+                <LuDownload className="size-4 mr-2" />
+                {t('Download')}
               </Button>
             </DialogFooter>
           </DialogContent>
