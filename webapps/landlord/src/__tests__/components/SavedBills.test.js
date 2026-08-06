@@ -181,12 +181,14 @@ describe('QuickBooks badge', () => {
     expect(getByText('Not Entered QuickBooks')).toBeInTheDocument();
   });
 
-  it('shows "Added to QuickBooks" when qbPostedAt is set', () => {
+  it('shows QB badge with date and poster when qbPostedAt is set', () => {
     const utility = makeUtility({ qbPostedAt: '2026-08-01T10:00:00Z', qbPostedBy: 'alice@test.com' });
     const { getByText } = render(
       <SavedBills {...defaultProps({ filteredUtilities: [utility] })} />
     );
-    expect(getByText('Added to QuickBooks')).toBeInTheDocument();
+    expect(getByText('QuickBooks')).toBeInTheDocument();
+    expect(getByText('2026-08-01')).toBeInTheDocument();
+    expect(getByText('alice@test.com')).toBeInTheDocument();
   });
 
   it('opens QB input dialog on clicking "Not Entered QuickBooks"', () => {
@@ -207,13 +209,13 @@ describe('QuickBooks badge', () => {
     expect(onLogQbPosted).toHaveBeenCalledWith('util-001', 'QB-123');
   });
 
-  it('opens re-log dialog when clicking "Added to QuickBooks"', () => {
+  it('opens re-log dialog when clicking the QB badge', () => {
     const utility = makeUtility({ qbPostedAt: '2026-08-01T10:00:00Z' });
     const { getByText, queryByPlaceholderText } = render(
       <SavedBills {...defaultProps({ filteredUtilities: [utility] })} />
     );
     expect(queryByPlaceholderText('QB ref # (optional)')).toBeNull();
-    fireEvent.click(getByText('Added to QuickBooks'));
+    fireEvent.click(getByText('QuickBooks'));
     expect(queryByPlaceholderText('QB ref # (optional)')).toBeInTheDocument();
   });
 });
