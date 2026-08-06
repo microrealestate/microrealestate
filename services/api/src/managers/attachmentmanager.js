@@ -310,8 +310,6 @@ export async function viewWithToken(req, res) {
   // Default: HTML wrapper — the browser "navigates" to HTML, not to a PDF/txt, so extensions can't intercept.
   // The <embed> then loads the actual file as an embedded resource (not a navigation).
   const rawUrl = `/api/v2/attachments/${payload.sub}/view?token=${encodeURIComponent(req.query.token)}&raw=1`;
-  const title = encodeURIComponent(attachment.filename || 'Bill preview');
-  const isText = (attachment.mimeType || '').includes('text');
 
   if (isText) {
     const content = await fs.readFile(filePath, 'utf8');
@@ -324,10 +322,23 @@ export async function viewWithToken(req, res) {
     );
   }
 
+  // Fetch raw file inside the popup's own JS context → create blob URL → set on iframe.
+  // This keeps the parent page fast while the popup handles its own download+render.
+  // The iframe src is a blob: URL so no extension can intercept the final render.
   return res.type('html').send(
     `<html><head><title>${attachment.filename}</title>` +
-    '<style>html,body,embed{width:100%;height:100%;margin:0;padding:0;border:0;display:block}</style></head>' +
-    `<body><embed src="${rawUrl}" type="${attachment.mimeType || 'application/pdf'}" width="100%" height="100%"></body></html>`
+    '<style>html,body,iframe{width:100%;height:100%;margin:0;padding:0;border:0}' +
+    '#msg{display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;color:#666;font-size:1.1rem}</style></head>' +
+    '<body><div id="msg">⏳ Loading…</div><script>' +
+    `fetch(${JSON.stringify(rawUrl)})` +
+    '.then(function(r){if(!r.ok)throw new Error(r.status);return r.blob()})' +
+    '.then(function(b){' +
+    'var u=URL.createObjectURL(b);' +
+    'var f=document.createElement("iframe");' +
+    'f.src=u;f.style="position:fixed;inset:0;width:100%;height:100%;border:0";' +
+    'document.body.innerHTML="";document.body.appendChild(f);}' +
+    ').catch(function(e){document.getElementById("msg").textContent="Failed to load: "+e.message})' +
+    '</script></body></html>'
   );
 }
 
