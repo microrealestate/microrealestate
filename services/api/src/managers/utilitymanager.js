@@ -1169,12 +1169,14 @@ function accountNumbersMatchWithMask(savedAccountNumber, parsedAccountNumber) {
   return false;
 }
 
-async function saveRawEmailAttachment({ realmId, utilityId, reqUser, rawText, provider }) {
+async function saveRawEmailAttachment({ realmId, utilityId, reqUser, rawText, provider, accountNumber, billingMonth }) {
   const uploadDir = getUploadsDirectory('attachments');
-  await fs.ensureDir(uploadDir);
 
-  const storageKey = `utility_${utilityId}_${nanoid(16)}`;
+  const safeAccount = String(accountNumber || utilityId).replace(/[^a-zA-Z0-9-]/g, '_');
+  const safeMonth = String(billingMonth || 'unknown').replace(/[^0-9-]/g, '_');
+  const storageKey = `utility_bills/${safeAccount}/${safeMonth}/${nanoid(16)}`;
   const filePath = path.join(uploadDir, storageKey);
+  await fs.ensureDir(path.dirname(filePath));
   const fileContent = String(rawText || '');
   await fs.writeFile(filePath, fileContent, 'utf8');
 
@@ -1343,7 +1345,9 @@ async function importParsedMessage({ realmId, reqUser, parsedMessage, utilityAcc
       utilityId: utility._id,
       reqUser,
       rawText: parsedMessage.rawText,
-      provider: parsedMessage.provider
+      provider: parsedMessage.provider,
+      accountNumber: utility.accountNumber,
+      billingMonth: utility.billingMonth
     });
 
     utility.attachmentIds = [emailAttachmentId];

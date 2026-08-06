@@ -97,7 +97,7 @@ export async function upload(req, res) {
     });
   }
 
-  const { targetType, targetId, category, albumName } = req.body;
+  const { targetType, targetId, category, albumName, accountNumber, billingMonth } = req.body;
 
   if (!targetType || !targetId) {
     return res.status(400).json({
@@ -122,11 +122,16 @@ export async function upload(req, res) {
   const uploadDir = getUploadsDirectory('attachments');
   await fs.ensureDir(uploadDir);
 
-  // Generate unique storage key
-  const storageKey = `${targetType}_${targetId}_${nanoid(16)}`;
+  // Organize utility bills by account+month; all other types by targetType/targetId
+  const storageKey =
+    category === 'utility_bill' && accountNumber && billingMonth
+      ? `utility_bills/${String(accountNumber).replace(/[^a-zA-Z0-9-]/g, '_')}/${String(billingMonth).replace(/[^0-9-]/g, '_')}/${nanoid(16)}`
+      : `${targetType}/${targetId}/${nanoid(16)}`;
+
   const filePath = path.join(uploadDir, storageKey);
 
-  // Write file to disk
+  // Write file to disk (ensureDir handles subdirectory creation)
+  await fs.ensureDir(path.dirname(filePath));
   await fs.writeFile(filePath, req.file.buffer);
 
   // Determine who uploaded
@@ -192,7 +197,12 @@ export async function download(req, res) {
 
   const exists = await fs.pathExists(filePath);
   if (!exists) {
-    return res.status(404).json({ message: 'File missing on server' });
+    return res.status(404).json({
+      message:
+        attachment.category === 'utility_bill'
+          ? 'Bill file not found on disk. Use recapture or re-upload to restore.'
+          : 'File missing on server'
+    });
   }
 
   // Set headers and stream file

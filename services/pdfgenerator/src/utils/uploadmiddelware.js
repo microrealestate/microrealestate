@@ -1,4 +1,5 @@
 import { sanitize, sanitizePath } from './index.js';
+import { nanoid } from 'nanoid';
 import fs from 'fs-extra';
 import multer from 'multer';
 import os from 'os';
@@ -47,9 +48,8 @@ export default function () {
         return cb(new Error('file not supported'));
       }
       const fileNameNoExt = req.body.fileName || 'noname';
-      const suffix = Math.round(Math.random() * 1e9);
       const extension = SUPPORTED_FILE_EXTENSIONS[file.mimetype];
-      const fileName = sanitize(`${fileNameNoExt}-${suffix}.${extension}`);
+      const fileName = sanitize(`${fileNameNoExt}-${nanoid(16)}.${extension}`);
       req.body.fileName = fileName;
       cb(null, fileName);
     }

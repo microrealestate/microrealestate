@@ -1251,6 +1251,12 @@ export function UtilitiesPage({ view = 'all' }) {
           formData.append('targetType', 'utility_account');
           formData.append('targetId', billDraft.utilityAccountId);
           formData.append('category', 'utility_bill');
+          if (selectedUtilityAccount?.accountNumber) {
+            formData.append('accountNumber', selectedUtilityAccount.accountNumber);
+          }
+          if (billDraft.billingMonth) {
+            formData.append('billingMonth', billDraft.billingMonth);
+          }
 
           const uploadResponse = await apiFetcher().post(
             '/attachments',
@@ -1301,6 +1307,12 @@ export function UtilitiesPage({ view = 'all' }) {
           formData.append('targetType', 'property');
           formData.append('targetId', billDraft.propertyId);
           formData.append('category', 'utility_bill');
+          if (billDraft.accountNumber) {
+            formData.append('accountNumber', billDraft.accountNumber);
+          }
+          if (billDraft.billingMonth) {
+            formData.append('billingMonth', billDraft.billingMonth);
+          }
 
           const uploadResponse = await apiFetcher().post(
             '/attachments',
@@ -1485,6 +1497,12 @@ export function UtilitiesPage({ view = 'all' }) {
       uploadFormData.append('targetType', 'utility_account');
       uploadFormData.append('targetId', String(matchedAccount._id));
       uploadFormData.append('category', 'utility_bill');
+      if (matchedAccount.accountNumber) {
+        uploadFormData.append('accountNumber', matchedAccount.accountNumber);
+      }
+      if (billingMonth) {
+        uploadFormData.append('billingMonth', billingMonth);
+      }
 
       const uploadResponse = await apiFetcher().post(
         '/attachments',
@@ -1653,6 +1671,13 @@ export function UtilitiesPage({ view = 'all' }) {
           uploadFormData.append('targetType', 'utility_account');
           uploadFormData.append('targetId', String(item.accountId));
           uploadFormData.append('category', 'utility_bill');
+          const batchAccount = utilityAccountById[String(item.accountId)];
+          if (batchAccount?.accountNumber) {
+            uploadFormData.append('accountNumber', batchAccount.accountNumber);
+          }
+          if (item.billingMonth) {
+            uploadFormData.append('billingMonth', item.billingMonth);
+          }
 
           const uploadResponse = await apiFetcher().post(
             '/attachments',
