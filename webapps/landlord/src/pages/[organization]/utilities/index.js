@@ -3116,8 +3116,13 @@ export function UtilitiesPage({ view = 'all' }) {
         const newAttachmentId = uploadRes.data?._id;
         if (!newAttachmentId) throw new Error('Upload failed');
 
+        // Keep non-PDF attachments (email text) and append the new PDF
+        const nonPdfIds = (utility.attachments || [])
+          .filter((a) => !a.mimeType?.includes('pdf'))
+          .map((a) => String(a._id));
+
         await apiFetcher().patch(`/utilities/${utility._id}`, {
-          attachmentIds: [newAttachmentId]
+          attachmentIds: [...nonPdfIds, newAttachmentId]
         });
 
         toast.success(t('Bill file uploaded'));
@@ -3131,6 +3136,60 @@ export function UtilitiesPage({ view = 'all' }) {
       }
     },
     [queryClient, t]
+  );
+
+  const handlePreviewAttachment = useCallback(
+    async (attachmentId, fallbackName = 'bill') => {
+      setWorkingUtilityAttachmentId(attachmentId);
+      try {
+        const response = await apiFetcher().get(
+          `/attachments/${attachmentId}/download`,
+          { responseType: 'blob' }
+        );
+        const fileName = getFilenameFromDisposition(
+          response.headers?.['content-disposition'],
+          fallbackName
+        );
+        if (previewUtilityAttachmentUrl) {
+          window.URL.revokeObjectURL(previewUtilityAttachmentUrl);
+        }
+        const blobUrl = window.URL.createObjectURL(response.data);
+        setPreviewUtilityAttachmentUrl(blobUrl);
+        setPreviewUtilityAttachmentName(fileName);
+        setPreviewUtilityAttachmentOpen(true);
+      } catch (error) {
+        toast.error(
+          error?.response?.data?.message || t('Failed to open bill preview')
+        );
+      } finally {
+        setWorkingUtilityAttachmentId('');
+      }
+    },
+    [previewUtilityAttachmentUrl, t]
+  );
+
+  const handleDownloadAttachment = useCallback(
+    async (attachmentId, fallbackName = 'bill') => {
+      setWorkingUtilityAttachmentId(attachmentId);
+      try {
+        const response = await apiFetcher().get(
+          `/attachments/${attachmentId}/download`,
+          { responseType: 'blob' }
+        );
+        const fileName = getFilenameFromDisposition(
+          response.headers?.['content-disposition'],
+          fallbackName
+        );
+        downloadBlobAsFile(response.data, fileName);
+      } catch (error) {
+        toast.error(
+          error?.response?.data?.message || t('Failed to download bill file')
+        );
+      } finally {
+        setWorkingUtilityAttachmentId('');
+      }
+    },
+    [t]
   );
 
   const handleDownloadUtilityBillAttachment = async (utility) => {
@@ -6073,7 +6132,10 @@ export function UtilitiesPage({ view = 'all' }) {
             onLogQbPosted={handleLogQbPosted}
             onRecaptureEmailBill={handleRecaptureEmailBill}
             onReuploadBill={handleReuploadBill}
+            onPreviewAttachment={handlePreviewAttachment}
+            onDownloadAttachment={handleDownloadAttachment}
             recapturingUtilityId={recapturingUtilityId}
+            reuploadUtilityId={reuploadUtilityId}
           />
         ) : null}
 
