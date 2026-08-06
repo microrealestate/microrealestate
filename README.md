@@ -16,6 +16,12 @@ MicroRealEstate is an open-source application designed to assist landlords in ma
 
 - Collaboration: Whether you are an independent landlord or manage a real estate business with multiple collaborators, MRE supports collaboration and facilitates task coordination within teams.
 
+- **Utility Bill Management**: Track water, gas, and electric bills per property. Bills are split automatically across tenants based on configured allocations. Each bill shows a full before/after split breakdown, supports attaching the PDF bill alongside the email confirmation, and tracks QuickBooks posting status.
+
+- **Multi-Attachment Utility Bills**: Each utility bill entry holds multiple files — the PDF bill and the original email confirmation text — stored side by side. Files are organized on disk by account number and billing month for easy auditing.
+
+- **Utility Invoice Generation**: Generate and email utility invoices to tenants directly from a bill entry, with invoice locking to prevent changes after invoicing.
+
 ## Screenshots
 
 |                                                                                                                           |                                                                                                                                   |                                                                                                                                       |
@@ -92,9 +98,11 @@ The application will be available on https://app.example.com/landlord and https:
 
 ### Backup and restore the data
 
-Uploaded files are stored on the path configured by `UPLOADS_DIRECTORY`.
+Uploaded files (lease documents, utility bills, attachments) are stored on the path configured by `UPLOADS_DIRECTORY`.
 For the host setup in this branch, mount `/srv/file-storage` on the Docker host
 and set `UPLOADS_DIRECTORY=/srv/file-storage` for both the API and PDFGenerator containers.
+
+Utility bill PDFs are stored under `attachments/utility_bills/{account-number}/{YYYY-MM}/` so they can be located and audited by account and month.
 
 The backup and restore commands can be executed when the application is running to allow connecting to MongoDB.
 
@@ -103,26 +111,32 @@ The backup and restore commands can be executed when the application is running 
 In the mre directory run:
 
 ``` shell
-docker compose run mongo /usr/bin/mongodump --uri=mongodb://mongo/mredb --gzip --archive=./backup/mredb-$(date +%F_%T).dump
+docker exec <mongo-container> mongodump --uri=mongodb://localhost/mre --gzip --archive > backup/mre-$(date +%F_%H-%M-%S).dump
 ```
 
-Replace "mredb" with the name of your database (see .env file). By default, the database name is "mredb".
-
-The archive file will be placed in the "backup" folder.
+The database name for this fork is `mre` (not `mredb`). The archive file will be placed in the `backup/` folder.
 
 #### Restore
 
-In the mre/backup directory, select an archive file you want to restore. 
+In the mre/backup directory, select an archive file you want to restore.
 
 Then run the restore command:
 
 ``` shell
-docker compose run mongo /usr/bin/mongorestore --uri=mongodb://mongo/mredb --drop --gzip --archive=./backup/mredb-XXXX.dump 
+docker exec <mongo-container> mongorestore --uri=mongodb://localhost/mre --drop --gzip --archive < backup/mre-XXXX.dump
 ```
 
-Where mredb-XXXX.dump is the archive file you selected.
+Where `mre-XXXX.dump` is the archive file you selected.
 
-Again, replace "mredb" with the name of your database (see .env file). By default, the database name is "mredb".
+### Utility bill workflows
+
+| Workflow | Where | What it does |
+|---|---|---|
+| **Batch upload bills** | Utilities → Add/manage → "Batch upload bills" | Upload multiple PDFs → review popup → creates new bill records with splits applied |
+| **Attach hard copies to existing bills** | Utilities → Add/manage → "Attach hard copies to existing bills" | Upload PDFs → matches to existing bill records by account number + billing month → attaches without creating new records. Supports batch (select many files at once) |
+| **Attach PDF bill (per card)** | Each bill card → file list → "Attach PDF bill" | Upload one PDF to a specific existing bill that has no PDF yet |
+| **Recapture from email** | Each bill card (email-imported bills) → "Recapture email" | Re-fetches the original email from the Outlook inbox via Microsoft Graph and re-attaches it |
+| **Recapture all** | Settings → Utilities email connection → "Recapture all email bills" | Scans all email-imported bill records and re-fetches any that are missing their saved file |
 
 
 ## Developers
