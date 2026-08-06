@@ -3144,7 +3144,6 @@ export function UtilitiesPage({ view = 'all' }) {
   const handlePreviewAttachment = useCallback(
     async (attachmentId, fallbackName = 'bill') => {
       setWorkingUtilityAttachmentId(attachmentId);
-      // Open popup synchronously to preserve the user-gesture so browsers allow it
       const win = previewMode === 'popup'
         ? window.open('', '_blank', 'width=1000,height=800,scrollbars=yes,resizable=yes')
         : null;
@@ -3153,28 +3152,41 @@ export function UtilitiesPage({ view = 'all' }) {
           `/attachments/${attachmentId}/download`,
           { responseType: 'blob' }
         );
+        const mimeType = response.data?.type || '';
+        const isText = mimeType.includes('text') || fallbackName.endsWith('.txt');
         const blobUrl = window.URL.createObjectURL(response.data);
-        if (previewMode === 'popup') {
+        const fileName = getFilenameFromDisposition(
+          response.headers?.['content-disposition'],
+          fallbackName
+        );
+
+        // Text files always open in modal (plain text renders poorly in a bare popup)
+        if (previewMode === 'popup' && !isText) {
           if (win && !win.closed) {
             win.location.href = blobUrl;
           } else {
             window.open(blobUrl, '_blank', 'width=1000,height=800,scrollbars=yes,resizable=yes');
           }
         } else {
+          if (win && !win.closed) win.close();
           if (modalPreviewUrl) window.URL.revokeObjectURL(modalPreviewUrl);
-          const fileName = getFilenameFromDisposition(
-            response.headers?.['content-disposition'],
-            fallbackName
-          );
           setModalPreviewUrl(blobUrl);
           setModalPreviewName(fileName);
           setModalPreviewOpen(true);
         }
       } catch (error) {
         if (win && !win.closed) win.close();
-        toast.error(
-          error?.response?.data?.message || t('Failed to open bill preview')
-        );
+        // responseType:'blob' wraps error JSON as a Blob — read it back as text
+        let message = t('Failed to open bill preview');
+        if (error?.response?.data instanceof Blob) {
+          try {
+            const text = await error.response.data.text();
+            message = JSON.parse(text).message || message;
+          } catch {}
+        } else if (error?.response?.data?.message) {
+          message = error.response.data.message;
+        }
+        toast.error(message);
       } finally {
         setWorkingUtilityAttachmentId('');
       }
@@ -3196,9 +3208,16 @@ export function UtilitiesPage({ view = 'all' }) {
         );
         downloadBlobAsFile(response.data, fileName);
       } catch (error) {
-        toast.error(
-          error?.response?.data?.message || t('Failed to download bill file')
-        );
+        let message = t('Failed to download bill file');
+        if (error?.response?.data instanceof Blob) {
+          try {
+            const text = await error.response.data.text();
+            message = JSON.parse(text).message || message;
+          } catch {}
+        } else if (error?.response?.data?.message) {
+          message = error.response.data.message;
+        }
+        toast.error(message);
       } finally {
         setWorkingUtilityAttachmentId('');
       }
@@ -6570,11 +6589,20 @@ export function UtilitiesPage({ view = 'all' }) {
             </DialogHeader>
             <div className="rounded-md border overflow-hidden h-[70vh] bg-muted/20">
               {modalPreviewUrl ? (
-                <iframe
-                  src={modalPreviewUrl}
-                  title={modalPreviewName}
-                  className="w-full h-full"
-                />
+                modalPreviewName?.endsWith('.txt') ? (
+                  <iframe
+                    src={modalPreviewUrl}
+                    title={modalPreviewName}
+                    className="w-full h-full bg-white font-mono text-xs"
+                    sandbox="allow-same-origin"
+                  />
+                ) : (
+                  <iframe
+                    src={modalPreviewUrl}
+                    title={modalPreviewName}
+                    className="w-full h-full"
+                  />
+                )
               ) : null}
             </div>
             <DialogFooter>
