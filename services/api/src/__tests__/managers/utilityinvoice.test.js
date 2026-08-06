@@ -529,6 +529,7 @@ describe('logQbPosted', () => {
         lean: jest.fn().mockResolvedValue({ _id: 'util-001' })
       })
     });
+    mockUtility.findByIdAndUpdate = jest.fn().mockReturnValue({ lean: jest.fn().mockResolvedValue({ _id: 'util-001', qbPostedAt: new Date() }) });
     const activity = { _id: 'act-001', toObject: () => ({ eventType: 'qb_posted' }) };
     mockUtilityActivity.create.mockResolvedValue(activity);
 
@@ -546,6 +547,12 @@ describe('logQbPosted', () => {
         notes: 'Posted to Q2 ledger'
       })
     );
+    // QB status must also be written back to the Utility record
+    expect(mockUtility.findByIdAndUpdate).toHaveBeenCalledWith(
+      'util-001',
+      expect.objectContaining({ qbPostedAt: expect.any(Date), qbPostedBy: expect.any(String) }),
+      expect.objectContaining({ new: true })
+    );
     expect(res.status).toHaveBeenCalledWith(201);
   });
 
@@ -555,6 +562,7 @@ describe('logQbPosted', () => {
         lean: jest.fn().mockResolvedValue({ _id: 'util-001' })
       })
     });
+    mockUtility.findByIdAndUpdate = jest.fn().mockReturnValue({ lean: jest.fn().mockResolvedValue({}) });
     const activity = { _id: 'act-001', toObject: () => ({}) };
     mockUtilityActivity.create.mockResolvedValue(activity);
 
