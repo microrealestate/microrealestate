@@ -294,7 +294,14 @@ export async function logQbPosted(req, res) {
     notes: String(notes || '')
   });
 
-  return res.status(201).json(activity.toObject());
+  // Persist QB status directly on the Utility so the UI can reflect state without querying activity log
+  const updated = await Collections.Utility.findByIdAndUpdate(
+    utilityId,
+    { qbPostedAt: now, qbPostedBy: actor },
+    { new: true }
+  ).lean();
+
+  return res.status(201).json({ activity: activity.toObject(), utility: updated });
 }
 
 // ─── Outstanding Summary ─────────────────────────────────────────────────────

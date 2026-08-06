@@ -2984,6 +2984,7 @@ export function UtilitiesPage({ view = 'all' }) {
       return response.data;
     },
     onSuccess: () => {
+      queryClient.invalidateQueries(['utilities-all']);
       toast.success(t('QuickBooks posting logged'));
     },
     onError: (error) => {
