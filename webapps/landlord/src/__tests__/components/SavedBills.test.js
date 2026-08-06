@@ -250,10 +250,10 @@ describe('AttachmentsList', () => {
     const utility = makeUtility({
       attachments: [{ _id: 'att-001', filename: 'bill.pdf', mimeType: 'application/pdf' }]
     });
-    const { getByText } = render(
+    const { getByTitle } = render(
       <SavedBills {...defaultProps({ filteredUtilities: [utility], onPreviewAttachment })} />
     );
-    fireEvent.click(getByText('View'));
+    fireEvent.click(getByTitle('View'));
     expect(onPreviewAttachment).toHaveBeenCalledWith('att-001', 'bill.pdf');
   });
 
