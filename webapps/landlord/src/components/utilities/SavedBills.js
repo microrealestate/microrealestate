@@ -409,15 +409,17 @@ function SavedBills({
             return (
               <div
                 key={utility._id}
-                className="rounded-lg border p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+                className="rounded-lg border p-4 flex flex-col gap-3"
               >
-                <div className="space-y-1.5">
+                {/* Top: three equal columns — info | attachments | meter split */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-start">
+                  {/* Col 1: bill details — Type and Provider first for scannability */}
                   <div className="border rounded text-xs overflow-x-auto">
                     <table className="w-full text-left">
                       <tbody>
                         <tr>
-                          <td className="px-2 py-1 text-muted-foreground whitespace-nowrap font-medium bg-muted/50 w-24">{t('Property')}</td>
-                          <td className="px-2 py-1 font-semibold">{propertyName}</td>
+                          <td className="px-2 py-1 text-muted-foreground whitespace-nowrap font-medium bg-muted/50 w-20">{t('Type')}</td>
+                          <td className="px-2 py-1 font-semibold">{formatCategoryLabel(utility.type)}</td>
                         </tr>
                         {utility.provider ? (
                           <tr className="border-t">
@@ -425,16 +427,16 @@ function SavedBills({
                             <td className="px-2 py-1">{utility.provider}</td>
                           </tr>
                         ) : null}
+                        <tr className="border-t">
+                          <td className="px-2 py-1 text-muted-foreground whitespace-nowrap font-medium bg-muted/50">{t('Property')}</td>
+                          <td className="px-2 py-1">{propertyName}</td>
+                        </tr>
                         {utility.accountNumber ? (
                           <tr className="border-t">
                             <td className="px-2 py-1 text-muted-foreground whitespace-nowrap font-medium bg-muted/50">{t('Account')}</td>
                             <td className="px-2 py-1">{utility.accountNumber}</td>
                           </tr>
                         ) : null}
-                        <tr className="border-t">
-                          <td className="px-2 py-1 text-muted-foreground whitespace-nowrap font-medium bg-muted/50">{t('Type')}</td>
-                          <td className="px-2 py-1">{formatCategoryLabel(utility.type)}</td>
-                        </tr>
                         <tr className="border-t">
                           <td className="px-2 py-1 text-muted-foreground whitespace-nowrap font-medium bg-muted/50">{t('Billing')}</td>
                           <td className="px-2 py-1">{utility.billingMonth}</td>
@@ -450,6 +452,8 @@ function SavedBills({
                       </tbody>
                     </table>
                   </div>
+
+                  {/* Col 2: attached files */}
                   <AttachmentsList
                     utility={utility}
                     onPreview={onPreviewAttachment}
@@ -462,126 +466,130 @@ function SavedBills({
                     fileInputRef={fileInputRef}
                     t={t}
                   />
+
+                  {/* Col 3: meter / split breakdown */}
                   <SplitBreakdownTable
                     utility={utility}
                     propertyById={propertyById}
                     toCurrency={toCurrency}
                     t={t}
                   />
-                  {utility.lastUpdatedBy ? (
-                    <div className="text-xs text-muted-foreground">
-                      {t('Updated by')}:{' '}
-                      <span className="font-medium">
-                        {utility.lastUpdatedBy}
-                      </span>
-                    </div>
-                  ) : null}
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2 sm:gap-3 sm:justify-end">
-                  <div className="text-right">
-                    <div className="text-sm font-semibold">
-                      {toCurrency(utility.amount)}
-                    </div>
+                {/* Bottom bar: updated-by left, amount box + action buttons right */}
+                <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t text-xs">
+                  <div className="text-muted-foreground">
+                    {utility.lastUpdatedBy ? (
+                      <>{t('Updated by')}: <span className="font-medium">{utility.lastUpdatedBy}</span></>
+                    ) : null}
                   </div>
-                  {utility.invoicedAt ? (
-                    <div className="flex items-center gap-1 text-xs text-amber-600 font-medium">
-                      <LuLock className="size-3" />
-                      {t('Invoiced')}
+                  <div className="flex flex-wrap items-center gap-2">
+                    {/* Amount box inline with buttons */}
+                    <div className="border rounded px-3 py-1 font-semibold text-sm bg-muted/20">
+                      {toCurrency(utility.amount)}
+                      {utility.invoicedAt ? (
+                        <span className="ml-2 text-amber-600 font-medium text-xs">
+                          <LuLock className="size-3 inline mr-0.5" />{t('Invoiced')}
+                        </span>
+                      ) : null}
                     </div>
-                  ) : null}
-                  <Button
-                    variant="outline"
-                    className="gap-2"
-                    onClick={() =>
-                      router.push(
-                        `/${router.query.organization}/properties/${utility.propertyId}`
-                      )
-                    }
-                  >
-                    <LuExternalLink className="size-4" />
-                    {t('Open property')}
-                  </Button>
-                  {utility.invoicedAt ? (
                     <Button
                       variant="outline"
-                      className="gap-2"
+                      size="sm"
+                      className="gap-1.5"
                       onClick={() =>
                         router.push(
-                          `/${router.query.organization}/accounting/utility-invoices`
+                          `/${router.query.organization}/properties/${utility.propertyId}`
                         )
                       }
                     >
-                      <LuFileText className="size-4" />
-                      {t('View invoices')}
+                      <LuExternalLink className="size-3.5" />
+                      {t('Open property')}
                     </Button>
-                  ) : (
-                    <Button
-                      variant="outline"
-                      className="gap-2"
-                      onClick={() => onGenerateInvoices && onGenerateInvoices(utility._id)}
-                    >
-                      <LuSend className="size-4" />
-                      {t('Generate invoices')}
-                    </Button>
-                  )}
-                  {onLogQbPosted ? (
-                    qbUtilityId === utility._id ? (
-                      <div className="flex items-center gap-1">
-                        <input
-                          className="border rounded px-2 py-1 text-xs w-32"
-                          placeholder={t('QB ref # (optional)')}
-                          value={qbRef}
-                          onChange={(e) => setQbRef(e.target.value)}
-                        />
-                        <Button
-                          size="sm"
-                          className="gap-1"
-                          onClick={() => {
-                            onLogQbPosted(utility._id, qbRef);
-                            setQbUtilityId(null);
-                            setQbRef('');
-                          }}
-                        >
-                          {t('Log')}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => { setQbUtilityId(null); setQbRef(''); }}
-                        >
-                          ✕
-                        </Button>
-                      </div>
-                    ) : utility.qbPostedAt ? (
-                      <button
-                        className="text-left border border-green-400 rounded px-2 py-1 text-xs text-green-700 hover:bg-green-50 cursor-pointer"
-                        onClick={() => setQbUtilityId(utility._id)}
+                    {utility.invoicedAt ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-1.5"
+                        onClick={() =>
+                          router.push(
+                            `/${router.query.organization}/accounting/utility-invoices`
+                          )
+                        }
                       >
-                        <div className="flex items-center gap-1 font-medium">
-                          <LuCheck className="size-3 shrink-0" />
-                          {t('QuickBooks')}
-                        </div>
-                        <div className="text-green-600 mt-0.5">
-                          {String(utility.qbPostedAt).slice(0, 10)}
-                        </div>
-                        {utility.qbPostedBy ? (
-                          <div className="text-green-600 truncate max-w-[120px]">
-                            {utility.qbPostedBy}
-                          </div>
-                        ) : null}
-                      </button>
+                        <LuFileText className="size-3.5" />
+                        {t('View invoices')}
+                      </Button>
                     ) : (
                       <Button
                         variant="outline"
-                        className="gap-2 text-xs text-muted-foreground"
-                        onClick={() => setQbUtilityId(utility._id)}
+                        size="sm"
+                        className="gap-1.5"
+                        onClick={() => onGenerateInvoices && onGenerateInvoices(utility._id)}
                       >
-                        <LuBookmark className="size-3" />
-                        {t('Not Entered QuickBooks')}
+                        <LuSend className="size-3.5" />
+                        {t('Generate invoices')}
                       </Button>
-                    )
-                  ) : null}
+                    )}
+                    {onLogQbPosted ? (
+                      qbUtilityId === utility._id ? (
+                        <div className="flex items-center gap-1">
+                          <input
+                            className="border rounded px-2 py-1 text-xs w-32"
+                            placeholder={t('QB ref # (optional)')}
+                            value={qbRef}
+                            onChange={(e) => setQbRef(e.target.value)}
+                          />
+                          <Button
+                            size="sm"
+                            className="gap-1"
+                            onClick={() => {
+                              onLogQbPosted(utility._id, qbRef);
+                              setQbUtilityId(null);
+                              setQbRef('');
+                            }}
+                          >
+                            {t('Log')}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => { setQbUtilityId(null); setQbRef(''); }}
+                          >
+                            ✕
+                          </Button>
+                        </div>
+                      ) : utility.qbPostedAt ? (
+                        <button
+                          className="text-left border border-green-400 rounded px-2 py-1 text-xs text-green-700 hover:bg-green-50 cursor-pointer"
+                          onClick={() => setQbUtilityId(utility._id)}
+                        >
+                          <div className="flex items-center gap-1 font-medium">
+                            <LuCheck className="size-3 shrink-0" />
+                            {t('QuickBooks')}
+                          </div>
+                          <div className="text-green-600 mt-0.5">
+                            {String(utility.qbPostedAt).slice(0, 10)}
+                          </div>
+                          {utility.qbPostedBy ? (
+                            <div className="text-green-600 truncate max-w-[120px]">
+                              {utility.qbPostedBy}
+                            </div>
+                          ) : null}
+                        </button>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="gap-1.5 text-muted-foreground"
+                          onClick={() => setQbUtilityId(utility._id)}
+                        >
+                          <LuBookmark className="size-3.5" />
+                          {t('Not Entered QuickBooks')}
+                        </Button>
+                      )
+                    ) : null}
+                  </div>
                 </div>
               </div>
             );
