@@ -3375,13 +3375,15 @@ export function UtilitiesPage({ view = 'all' }) {
       if (deleted > 0) {
         queryClient.invalidateQueries(['utilities-all']);
         toast.success(
-          t('Removed {{n}} duplicate record(s) across {{g}} bill(s)', {
+          t('Removed {{n}} duplicate email-imported record(s) across {{g}} bill(s)', {
             n: deleted,
             g: groups
           })
         );
       } else {
-        toast.info(t('No duplicate records found'));
+        toast.info(
+          t('No duplicates found — email records without a matching manual entry are kept')
+        );
       }
     } catch (error) {
       toast.error(
