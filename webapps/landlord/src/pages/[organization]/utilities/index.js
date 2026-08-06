@@ -3144,12 +3144,7 @@ export function UtilitiesPage({ view = 'all' }) {
   const handlePreviewAttachment = useCallback(
     async (attachmentId, fallbackName = 'bill', knownMimeType = '') => {
       setWorkingUtilityAttachmentId(attachmentId);
-      // Decide before the fetch — text files always go to modal, never popup
-      const isLikelyText =
-        knownMimeType.includes('text') ||
-        fallbackName.endsWith('.txt') ||
-        fallbackName.endsWith('.csv');
-      const usePopup = previewMode === 'popup' && !isLikelyText;
+      const usePopup = previewMode === 'popup';
       const win = usePopup
         ? window.open('', '_blank', 'width=1000,height=800,scrollbars=yes,resizable=yes')
         : null;
