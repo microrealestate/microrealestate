@@ -3147,44 +3147,57 @@ export function UtilitiesPage({ view = 'all' }) {
       setWorkingUtilityAttachmentId(attachmentId);
       const usePopup = previewMode === 'popup';
 
-      // Open target immediately so browser preserves the user-gesture for popup permission
-      let win = null;
       if (usePopup) {
-        win = window.open('', '_blank', 'width=1000,height=800,scrollbars=yes,resizable=yes');
+        // Fetch blob in parent, navigate popup to blob: URL immediately.
+        // blob: URLs are invisible to browser extensions; the parent keeps the blob alive.
+        const win = window.open('', '_blank', 'width=1000,height=800,scrollbars=yes,resizable=yes');
         if (win) {
           win.document.write(
             '<html><body style="margin:0;display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;color:#666;background:#f5f5f5">' +
             '<div style="text-align:center"><div style="font-size:2rem;margin-bottom:1rem">⏳</div>' +
-            '<div>Loading ' + (fallbackName || 'file') + '…</div></div></body></html>'
+            '<div>Loading…</div></div></body></html>'
           );
           win.document.close();
         }
+        try {
+          const response = await apiFetcher().get(
+            `/attachments/${attachmentId}/download`,
+            { responseType: 'blob' }
+          );
+          const blobUrl = window.URL.createObjectURL(response.data);
+          if (win && !win.closed) {
+            win.location.href = blobUrl;
+          } else {
+            window.open(blobUrl, '_blank', 'width=1000,height=800,scrollbars=yes,resizable=yes');
+          }
+        } catch (error) {
+          if (win && !win.closed) win.close();
+          let message = t('Failed to open bill preview');
+          if (error?.response?.data instanceof Blob) {
+            try { message = JSON.parse(await error.response.data.text()).message || message; } catch {}
+          } else if (error?.response?.data?.message) {
+            message = error.response.data.message;
+          }
+          toast.error(message);
+        } finally {
+          setWorkingUtilityAttachmentId('');
+        }
       } else {
+        // Modal: signed token URL streams directly into the iframe — no extension interference
         setModalPreviewUrl('');
         setModalPreviewName(fallbackName);
         setModalPreviewOpen(true);
-      }
-
-      try {
-        const { data } = await apiFetcher().get(`/attachments/${attachmentId}/view-token`);
-        const baseURL = apiFetcher().defaults.baseURL || '';
-        // Token URL returns an HTML wrapper — extensions intercept navigations to PDF/txt,
-        // not navigations to HTML pages that happen to embed a PDF/txt inside.
-        const fileUrl = `${baseURL}${data.path}`;
-
-        if (usePopup) {
-          if (win && !win.closed) win.location.href = fileUrl;
-          else window.open(fileUrl, '_blank', 'width=1000,height=800,scrollbars=yes,resizable=yes');
-        } else {
-          setModalPreviewUrl(fileUrl);
+        try {
+          const { data } = await apiFetcher().get(`/attachments/${attachmentId}/view-token`);
+          const baseURL = apiFetcher().defaults.baseURL || '';
+          setModalPreviewUrl(`${baseURL}${data.path}`);
           setModalPreviewName(fallbackName);
+        } catch (error) {
+          setModalPreviewOpen(false);
+          toast.error(error?.response?.data?.message || t('Failed to open bill preview'));
+        } finally {
+          setWorkingUtilityAttachmentId('');
         }
-      } catch (error) {
-        if (win && !win.closed) win.close();
-        setModalPreviewOpen(false);
-        toast.error(error?.response?.data?.message || t('Failed to open bill preview'));
-      } finally {
-        setWorkingUtilityAttachmentId('');
       }
     },
     [previewMode, t]
