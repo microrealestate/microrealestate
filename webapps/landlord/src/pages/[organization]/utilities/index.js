@@ -451,6 +451,9 @@ export function UtilitiesPage({ view = 'all' }) {
   const [batchWorkflowOpen, setBatchWorkflowOpen] = useState(false);
   const [batchPreparingReview, setBatchPreparingReview] = useState(false);
   const [batchReviewItems, setBatchReviewItems] = useState([]);
+  const [hardCopyFiles, setHardCopyFiles] = useState([]);
+  const [hardCopyAttaching, setHardCopyAttaching] = useState(false);
+  const [hardCopyResults, setHardCopyResults] = useState(null);
   const [previewUtilityAttachmentOpen, setPreviewUtilityAttachmentOpen] =
     useState(false);
   const [previewUtilityAttachmentUrl, setPreviewUtilityAttachmentUrl] =
@@ -1726,6 +1729,49 @@ export function UtilitiesPage({ view = 'all' }) {
       setBatchBillFiles([]);
     } finally {
       setBatchUploadingBills(false);
+    }
+  };
+
+  const handleAttachHardCopies = async () => {
+    if (!hardCopyFiles.length) {
+      toast.error(t('Choose one or more PDF files first'));
+      return;
+    }
+    setHardCopyAttaching(true);
+    setHardCopyResults(null);
+    const allResults = [];
+    for (const file of hardCopyFiles) {
+      const formData = new FormData();
+      formData.append('file', file);
+      try {
+        const response = await apiFetcher().post('/utilities/attach-bill-scan', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        const { extracted, matchedAccount, results, noMatch } = response.data || {};
+        allResults.push({
+          fileName: file.name,
+          extracted,
+          matchedAccount,
+          results: results || [],
+          noMatch: noMatch || false
+        });
+      } catch (error) {
+        allResults.push({
+          fileName: file.name,
+          error: error?.response?.data?.message || t('Failed to process file')
+        });
+      }
+    }
+    setHardCopyResults(allResults);
+    setHardCopyAttaching(false);
+    const attached = allResults.reduce((sum, r) => sum + (r.results || []).filter((x) => x.status === 'attached').length, 0);
+    const noMatch = allResults.filter((r) => r.noMatch).length;
+    if (attached > 0) {
+      queryClient.invalidateQueries(['utilities-all']);
+      toast.success(t('{{n}} bill(s) attached to existing records', { n: attached }));
+    }
+    if (noMatch > 0) {
+      toast.warning(t('{{n}} file(s) could not be matched to any existing bill', { n: noMatch }));
     }
   };
 
@@ -3769,6 +3815,79 @@ export function UtilitiesPage({ view = 'all' }) {
                     : t('Upload PDF to matched account')}
                 </Button>
               </div>
+            </div>
+
+            <div className="rounded-md border bg-muted/20 p-3 space-y-2">
+              <div className="text-sm font-medium">
+                {t('Attach hard copies to existing bills')}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {t(
+                  'Upload scanned PDFs of physical bills. Each file is matched to an existing bill record by account number and billing month. Bills that already have a file attached are skipped.'
+                )}
+              </p>
+              <Input
+                type="file"
+                accept="application/pdf,image/*"
+                multiple
+                onChange={(event) =>
+                  setHardCopyFiles(Array.from(event.target.files || []))
+                }
+              />
+              <div className="text-xs text-muted-foreground">
+                {hardCopyFiles.length
+                  ? t('{{count}} file(s) selected', { count: hardCopyFiles.length })
+                  : t('No files selected')}
+              </div>
+              <div className="flex justify-end">
+                <Button
+                  variant="outline"
+                  onClick={handleAttachHardCopies}
+                  disabled={!hardCopyFiles.length || hardCopyAttaching}
+                >
+                  {hardCopyAttaching ? t('Attaching...') : t('Attach to existing bills')}
+                </Button>
+              </div>
+              {hardCopyResults ? (
+                <div className="mt-2 border rounded text-xs overflow-x-auto">
+                  <table className="w-full text-left">
+                    <thead>
+                      <tr className="bg-muted/50 text-muted-foreground">
+                        <th className="px-2 py-1">{t('File')}</th>
+                        <th className="px-2 py-1">{t('Matched account')}</th>
+                        <th className="px-2 py-1">{t('Billing month')}</th>
+                        <th className="px-2 py-1">{t('Result')}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {hardCopyResults.map((r, i) => (
+                        <tr key={i} className="border-t">
+                          <td className="px-2 py-1 max-w-[160px] truncate" title={r.fileName}>{r.fileName}</td>
+                          <td className="px-2 py-1">{r.matchedAccount?.accountNumber || (r.extracted?.accountNumber ? `${r.extracted.accountNumber} (unmatched)` : '—')}</td>
+                          <td className="px-2 py-1">{r.extracted?.billingMonth || '—'}</td>
+                          <td className="px-2 py-1">
+                            {r.error ? (
+                              <span className="text-red-600">{r.error}</span>
+                            ) : r.noMatch ? (
+                              <span className="text-amber-600">{t('No matching bill found')}</span>
+                            ) : (
+                              (r.results || []).map((res, j) => (
+                                <div key={j}>
+                                  {res.status === 'attached' ? (
+                                    <span className="text-green-700">{t('Attached')}</span>
+                                  ) : res.status === 'skipped_has_file' ? (
+                                    <span className="text-muted-foreground">{t('Already has file')}</span>
+                                  ) : res.status}
+                                </div>
+                              ))
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : null}
             </div>
 
             <div className="rounded-md border bg-muted/20 p-3 space-y-2">

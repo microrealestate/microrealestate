@@ -39,6 +39,7 @@ function UtilitiesEmailConnectionSettings() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
+  const [recapturingAll, setRecapturingAll] = useState(false);
   const [form, setForm] = useState(getInitialForm());
   const [clientSecretChanged, setClientSecretChanged] = useState(false);
 
@@ -118,6 +119,31 @@ function UtilitiesEmailConnectionSettings() {
       toast.error(error?.response?.data?.message || t('Connection test failed'));
     } finally {
       setTesting(false);
+    }
+  };
+
+  const handleRecaptureAll = async () => {
+    setRecapturingAll(true);
+    try {
+      const response = await apiFetcher().post('/utilities/recapture-all-from-email');
+      const { restored = 0, alreadyPresent = 0, failed = 0 } = response.data || {};
+      if (restored > 0) {
+        toast.success(
+          t('Recaptured {{n}} bill(s). {{p}} already present. {{f}} failed.', {
+            n: restored, p: alreadyPresent, f: failed
+          })
+        );
+      } else {
+        toast.info(
+          t('No bills restored. {{p}} already present, {{f}} failed.', {
+            p: alreadyPresent, f: failed
+          })
+        );
+      }
+    } catch (error) {
+      toast.error(error?.response?.data?.message || t('Recapture failed'));
+    } finally {
+      setRecapturingAll(false);
     }
   };
 
@@ -290,7 +316,15 @@ function UtilitiesEmailConnectionSettings() {
           </div>
 
           <div className="flex flex-wrap gap-2 justify-end">
-            <Button variant="outline" onClick={handleTest} disabled={testing}>
+            <Button
+              variant="outline"
+              onClick={handleRecaptureAll}
+              disabled={recapturingAll || saving || testing}
+              title={t('Re-fetch email content for all email-imported bills that are missing their saved file')}
+            >
+              {recapturingAll ? t('Recapturing...') : t('Recapture all email bills')}
+            </Button>
+            <Button variant="outline" onClick={handleTest} disabled={testing || recapturingAll}>
               {testing ? t('Testing...') : t('Test connection')}
             </Button>
             <Button onClick={handleSave} disabled={saving}>

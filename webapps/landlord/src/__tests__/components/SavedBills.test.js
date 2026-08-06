@@ -112,10 +112,16 @@ function defaultProps(overrides = {}) {
 
 // ─────────────────────────────────────────────────────────────────────────────
 describe('SplitBreakdownTable', () => {
-  it('does NOT render when originalAmount equals amount and no splitItems', () => {
+  it('renders a property row even for bills with no split (always visible)', () => {
+    const { getByText } = render(<SavedBills {...defaultProps()} />);
+    // Amount is always shown in the table
+    expect(getByText('720 McLoughlin Blvd')).toBeInTheDocument();
+    expect(getByText('Meter / Unit')).toBeInTheDocument();
+  });
+
+  it('does NOT show "Full bill (before split)" footer when originalAmount equals amount', () => {
     const { queryByText } = render(<SavedBills {...defaultProps()} />);
     expect(queryByText('Full bill (before split)')).toBeNull();
-    expect(queryByText('Meter / Unit')).toBeNull();
   });
 
   it('renders split table when originalAmount differs from amount', () => {

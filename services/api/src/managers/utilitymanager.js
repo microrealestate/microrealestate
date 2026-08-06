@@ -1857,6 +1857,195 @@ export async function recaptureEmailBill(req, res) {
   return res.json({ message: 'Bill restored from email', restored: true, attachmentId: newAttachmentId });
 }
 
+export async function recaptureAllEmailBills(req, res) {
+  const realmId = req.realm._id;
+
+  const emailUtilities = await Collections.Utility.find({
+    realmId,
+    source: 'email',
+    emailMessageId: { $ne: '' }
+  }).lean();
+
+  if (!emailUtilities.length) {
+    return res.json({ restored: 0, alreadyPresent: 0, skipped: 0, failed: 0 });
+  }
+
+  const realm = await Collections.Realm.findOne({ _id: realmId }).lean();
+  const graphConfig = getUtilitiesInboxGraphConfigForImport(realm);
+
+  if (!graphConfig.selected || !graphConfig.clientSecret) {
+    return res.status(400).json({
+      message: 'Email inbox not configured — recapture requires a working email connection'
+    });
+  }
+
+  const summary = { restored: 0, alreadyPresent: 0, skipped: 0, failed: 0 };
+
+  for (const utility of emailUtilities) {
+    try {
+      // Check if the existing file is already on disk
+      if ((utility.attachmentIds || []).length) {
+        const existingAttachment = await Collections.Attachment.findOne({
+          _id: utility.attachmentIds[0],
+          realmId
+        }).lean();
+        if (existingAttachment) {
+          const filePath = getUploadsDirectory('attachments', existingAttachment.storageKey);
+          const alreadyExists = await fs.pathExists(filePath);
+          if (alreadyExists) {
+            summary.alreadyPresent++;
+            continue;
+          }
+        }
+      }
+
+      let message;
+      try {
+        message = await fetchGraphMessageById(graphConfig, utility.emailMessageId);
+      } catch {
+        summary.failed++;
+        continue;
+      }
+
+      if (!message) {
+        summary.failed++;
+        continue;
+      }
+
+      const bodyContent = message.body?.content || message.bodyPreview || '';
+      const rawText =
+        message.body?.contentType === 'html'
+          ? htmlToPlainText(bodyContent)
+          : bodyContent;
+
+      if ((utility.attachmentIds || []).length) {
+        await Collections.Attachment.deleteMany({
+          _id: { $in: utility.attachmentIds },
+          realmId
+        });
+      }
+
+      const newAttachmentId = await saveRawEmailAttachment({
+        realmId,
+        utilityId: utility._id,
+        reqUser: req.user,
+        rawText,
+        provider: utility.provider,
+        accountNumber: utility.accountNumber,
+        billingMonth: utility.billingMonth
+      });
+
+      await Collections.Utility.updateOne(
+        { _id: utility._id, realmId },
+        { attachmentIds: [newAttachmentId] }
+      );
+
+      summary.restored++;
+    } catch {
+      summary.failed++;
+    }
+  }
+
+  return res.json(summary);
+}
+
+export async function attachBillScan(req, res) {
+  const realmId = req.realm._id;
+
+  if (!req.file) {
+    return res.status(400).json({ message: 'Missing file' });
+  }
+
+  // Parse the PDF to extract account number and billing month
+  const text = await extractTextFromBuffer(
+    Buffer.from(req.file.buffer || ''),
+    req.file.mimetype,
+    req.file.originalname
+  );
+  const extracted = parseUtilityBillFields(text, req.file.originalname || '');
+
+  const utilityAccounts = await Collections.UtilityAccount.find({ realmId })
+    .select('_id accountNumber type provider')
+    .lean();
+
+  const normalizedExtracted = normalizeAccountNumber(extracted.accountNumber);
+  const matchedAccount = normalizedExtracted
+    ? utilityAccounts.find((ua) =>
+        accountNumbersLikelyMatch(ua.accountNumber, normalizedExtracted)
+      )
+    : null;
+
+  const billingMonth = extracted.billingMonth || String(req.body.billingMonth || '').trim();
+  const accountNumber = extracted.accountNumber || String(req.body.accountNumber || '').trim();
+
+  // Find existing utility records that match and are missing a file
+  const query = { realmId };
+  if (billingMonth) query.billingMonth = billingMonth;
+  if (matchedAccount) {
+    query.accountNumber = matchedAccount.accountNumber;
+  } else if (accountNumber) {
+    query.accountNumber = { $regex: accountNumber.replace(/\*/g, ''), $options: 'i' };
+  }
+
+  const candidates = await Collections.Utility.find(query).lean();
+  const overwrite = req.body.overwrite === 'true' || req.body.overwrite === true;
+
+  const results = [];
+  for (const utility of candidates) {
+    const hasFile = (utility.attachmentIds || []).length > 0;
+    if (hasFile && !overwrite) {
+      results.push({ utilityId: String(utility._id), status: 'skipped_has_file' });
+      continue;
+    }
+
+    const uploadDir = getUploadsDirectory('attachments');
+    const safeAccount = String(utility.accountNumber || utility._id).replace(/[^a-zA-Z0-9-]/g, '_');
+    const safeMonth = String(utility.billingMonth || 'unknown').replace(/[^0-9-]/g, '_');
+    const storageKey = `utility_bills/${safeAccount}/${safeMonth}/${nanoid(16)}`;
+    const filePath = path.join(uploadDir, storageKey);
+    await fs.ensureDir(path.dirname(filePath));
+    await fs.writeFile(filePath, req.file.buffer);
+
+    const uploadedById = req.user?._id || req.user?.email || 'manual-scan-upload';
+    const uploadedByName = req.user?.firstname
+      ? `${req.user.firstname} ${req.user.lastname || ''}`.trim()
+      : req.user?.email || 'Manual Scan Upload';
+
+    if (hasFile && overwrite) {
+      await Collections.Attachment.deleteMany({ _id: { $in: utility.attachmentIds }, realmId });
+    }
+
+    const attachment = new Collections.Attachment({
+      realmId,
+      targetType: 'utility',
+      targetId: String(utility._id),
+      storageKey,
+      filename: req.file.originalname,
+      mimeType: req.file.mimetype || 'application/pdf',
+      size: req.file.size || req.file.buffer?.length || 0,
+      category: 'utility_bill',
+      uploadedById,
+      uploadedByName,
+      backupStatus: 'pending'
+    });
+    await attachment.save();
+
+    await Collections.Utility.updateOne(
+      { _id: utility._id, realmId },
+      { attachmentIds: [String(attachment._id)], lastUpdatedBy: uploadedByName }
+    );
+
+    results.push({ utilityId: String(utility._id), status: 'attached', attachmentId: String(attachment._id) });
+  }
+
+  return res.json({
+    extracted,
+    matchedAccount: matchedAccount ? { _id: String(matchedAccount._id), accountNumber: matchedAccount.accountNumber } : null,
+    results,
+    noMatch: candidates.length === 0
+  });
+}
+
 let utilityImportSchedulerHandle = null;
 
 export function startUtilityImportScheduler() {

@@ -287,6 +287,15 @@ export default function routes() {
     upload.single('file'),
     Middlewares.asyncWrapper(utilityManager.parseUpload)
   );
+  utilitiesRouter.post(
+    '/recapture-all-from-email',
+    Middlewares.asyncWrapper(utilityManager.recaptureAllEmailBills)
+  );
+  utilitiesRouter.post(
+    '/attach-bill-scan',
+    upload.single('file'),
+    Middlewares.asyncWrapper(utilityManager.attachBillScan)
+  );
   utilitiesRouter.get('/:id', Middlewares.asyncWrapper(utilityManager.one));
   utilitiesRouter.post('/', Middlewares.asyncWrapper(utilityManager.add));
   utilitiesRouter.patch(

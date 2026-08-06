@@ -32,8 +32,8 @@ function SplitBreakdownTable({ utility, propertyById, toCurrency, t }) {
   const items = Array.isArray(utility.splitItems) ? utility.splitItems : [];
   const isSplit =
     utility.originalAmount != null && utility.originalAmount !== utility.amount;
-
-  if (!isSplit && !items.length) return null;
+  const property = propertyById[String(utility.propertyId)];
+  const propertyName = property?.name || t('This property');
 
   const subRows = items.map((item) => {
     const subProp = propertyById[String(item.subPropertyId)];
@@ -67,8 +67,9 @@ function SplitBreakdownTable({ utility, propertyById, toCurrency, t }) {
               <td className="px-2 py-1 text-right">{toCurrency(row.amount)}</td>
             </tr>
           ))}
-          <tr className="border-t font-semibold">
-            <td className="px-2 py-1">{t('This property share')}</td>
+          {/* Always show a totals row so every bill has a visible amount summary */}
+          <tr className={`border-t ${isSplit || items.length ? 'font-semibold' : ''}`}>
+            <td className="px-2 py-1">{items.length ? t('This property share') : propertyName}</td>
             <td />
             <td className="px-2 py-1 text-right">{toCurrency(utility.amount)}</td>
           </tr>
