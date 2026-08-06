@@ -1369,6 +1369,9 @@ async function importParsedMessage({ realmId, reqUser, parsedMessage, utilityAcc
       accountNumber: matchedAccount.accountNumber || parsedMessage.accountNumber,
       billingMonth,
       amount,
+      // Store the full bill total so the split table can show "Full bill: $X"
+      originalAmount: totalAmount,
+      splitTotal: totalAmount,
       dueDate: dueDate ? new Date(`${dueDate}T00:00:00.000Z`) : null,
       paidDate: paidDate ? new Date(`${paidDate}T00:00:00.000Z`) : null,
       notes: `Imported from mailbox: ${parsedMessage.subject}`,
@@ -1980,6 +1983,45 @@ export async function recaptureAllEmailBills(req, res) {
   }
 
   return res.json(summary);
+}
+
+export async function backfillOriginalAmount(req, res) {
+  const realmId = req.realm._id;
+
+  // Fix existing email-imported records where originalAmount was never set.
+  // Groups by accountNumber+type+billingMonth and uses the sum of amounts as the total.
+  const emailRecords = await Collections.Utility.find({
+    realmId,
+    source: 'email',
+    originalAmount: null
+  }).lean();
+
+  if (!emailRecords.length) {
+    return res.json({ updated: 0 });
+  }
+
+  // Group siblings by account+type+month to sum the total
+  const groups = new Map();
+  for (const u of emailRecords) {
+    const key = `${u.accountNumber}|${u.type}|${u.billingMonth}`;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(u);
+  }
+
+  let updated = 0;
+  for (const records of groups.values()) {
+    const total = records.reduce((sum, u) => sum + (u.amount || 0), 0);
+    const roundedTotal = Number(total.toFixed(2));
+    for (const u of records) {
+      await Collections.Utility.updateOne(
+        { _id: u._id, realmId },
+        { originalAmount: roundedTotal, splitTotal: roundedTotal }
+      );
+      updated++;
+    }
+  }
+
+  return res.json({ updated });
 }
 
 export async function deduplicateUtilities(req, res) {

@@ -449,6 +449,7 @@ export function UtilitiesPage({ view = 'all' }) {
   const [batchUploadingBills, setBatchUploadingBills] = useState(false);
   const [checkingEmailInbox, setCheckingEmailInbox] = useState(false);
   const [deduplicating, setDeduplicating] = useState(false);
+  const [backfillingAmounts, setBackfillingAmounts] = useState(false);
   const [batchWorkflowOpen, setBatchWorkflowOpen] = useState(false);
   const [batchPreparingReview, setBatchPreparingReview] = useState(false);
   const [batchReviewItems, setBatchReviewItems] = useState([]);
@@ -3424,6 +3425,24 @@ export function UtilitiesPage({ view = 'all' }) {
     }
   };
 
+  const handleBackfillAmounts = async () => {
+    setBackfillingAmounts(true);
+    try {
+      const response = await apiFetcher().post('/utilities/backfill-original-amount');
+      const { updated = 0 } = response.data || {};
+      if (updated > 0) {
+        queryClient.invalidateQueries(['utilities-all']);
+        toast.success(t('Updated {{n}} bill record(s) with full bill total', { n: updated }));
+      } else {
+        toast.info(t('All email-imported bills already have correct totals'));
+      }
+    } catch (error) {
+      toast.error(error?.response?.data?.message || t('Failed to update bill totals'));
+    } finally {
+      setBackfillingAmounts(false);
+    }
+  };
+
   const handleImportEmailConfirmations = async () => {
     setCheckingEmailInbox(true);
     try {
@@ -3551,6 +3570,15 @@ export function UtilitiesPage({ view = 'all' }) {
               >
                 <LuRefreshCw className={`size-4 mr-2 ${deduplicating ? 'animate-spin' : ''}`} />
                 {deduplicating ? t('Deduplicating...') : t('Resolve duplicates')}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleBackfillAmounts}
+                disabled={backfillingAmounts}
+                title={t('Set the full bill total on email-imported records that are missing it')}
+              >
+                <LuRefreshCw className={`size-4 mr-2 ${backfillingAmounts ? 'animate-spin' : ''}`} />
+                {backfillingAmounts ? t('Fixing...') : t('Fix bill totals')}
               </Button>
             </>
           ) : null}

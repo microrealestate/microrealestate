@@ -296,6 +296,10 @@ export default function routes() {
     Middlewares.asyncWrapper(utilityManager.deduplicateUtilities)
   );
   utilitiesRouter.post(
+    '/backfill-original-amount',
+    Middlewares.asyncWrapper(utilityManager.backfillOriginalAmount)
+  );
+  utilitiesRouter.post(
     '/attach-bill-scan',
     upload.single('file'),
     Middlewares.asyncWrapper(utilityManager.attachBillScan)
