@@ -310,6 +310,7 @@ export async function viewWithToken(req, res) {
   // Default: HTML wrapper — the browser "navigates" to HTML, not to a PDF/txt, so extensions can't intercept.
   // The <embed> then loads the actual file as an embedded resource (not a navigation).
   const rawUrl = `/api/v2/attachments/${payload.sub}/view?token=${encodeURIComponent(req.query.token)}&raw=1`;
+  const isText = (attachment.mimeType || '').includes('text');
 
   if (isText) {
     const content = await fs.readFile(filePath, 'utf8');
