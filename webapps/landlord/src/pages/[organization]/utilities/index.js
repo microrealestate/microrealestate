@@ -3025,6 +3025,68 @@ export function UtilitiesPage({ view = 'all' }) {
     [logQbPostedMutation]
   );
 
+  const [recapturingUtilityId, setRecapturingUtilityId] = useState('');
+  const [reuploadUtilityId, setReuploadUtilityId] = useState('');
+
+  const handleRecaptureEmailBill = useCallback(
+    async (utilityId) => {
+      setRecapturingUtilityId(utilityId);
+      try {
+        const response = await apiFetcher().post(`/utilities/${utilityId}/recapture-bill-from-email`);
+        const msg = response.data?.message || t('Bill restored from email');
+        if (response.data?.restored === false) {
+          toast.info(msg);
+        } else {
+          toast.success(msg);
+          queryClient.invalidateQueries(['utilities-all']);
+        }
+      } catch (error) {
+        toast.error(
+          error?.response?.data?.message || t('Failed to recapture bill from email')
+        );
+      } finally {
+        setRecapturingUtilityId('');
+      }
+    },
+    [queryClient, t]
+  );
+
+  const handleReuploadBill = useCallback(
+    async (utility, file) => {
+      if (!file) return;
+      setReuploadUtilityId(String(utility._id));
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('targetType', 'utility');
+        formData.append('targetId', String(utility._id));
+        formData.append('category', 'utility_bill');
+        if (utility.accountNumber) formData.append('accountNumber', utility.accountNumber);
+        if (utility.billingMonth) formData.append('billingMonth', utility.billingMonth);
+
+        const uploadRes = await apiFetcher().post('/attachments', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        const newAttachmentId = uploadRes.data?._id;
+        if (!newAttachmentId) throw new Error('Upload failed');
+
+        await apiFetcher().patch(`/utilities/${utility._id}`, {
+          attachmentIds: [newAttachmentId]
+        });
+
+        toast.success(t('Bill file uploaded'));
+        queryClient.invalidateQueries(['utilities-all']);
+      } catch (error) {
+        toast.error(
+          error?.response?.data?.message || t('Failed to upload bill file')
+        );
+      } finally {
+        setReuploadUtilityId('');
+      }
+    },
+    [queryClient, t]
+  );
+
   const handleDownloadUtilityBillAttachment = async (utility) => {
     const attachmentId = getFirstUtilityAttachmentId(utility);
     if (!attachmentId) {
@@ -5890,6 +5952,9 @@ export function UtilitiesPage({ view = 'all' }) {
             propertyOptions={propertyOptions}
             onGenerateInvoices={handleGenerateInvoices}
             onLogQbPosted={handleLogQbPosted}
+            onRecaptureEmailBill={handleRecaptureEmailBill}
+            onReuploadBill={handleReuploadBill}
+            recapturingUtilityId={recapturingUtilityId}
           />
         ) : null}
 

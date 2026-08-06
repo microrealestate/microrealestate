@@ -2,13 +2,17 @@ import {
   LuArrowDown,
   LuArrowUp,
   LuBookmark,
+  LuCheck,
   LuDownload,
   LuExternalLink,
   LuFileSearch,
   LuFileText,
   LuLock,
+  LuMail,
+  LuRefreshCw,
   LuSearch,
-  LuSend
+  LuSend,
+  LuUpload
 } from 'react-icons/lu';
 import { useMemo, useState } from 'react';
 import { Button } from '../ui/button';
@@ -22,6 +26,66 @@ function getPropertyLabel(property, propertyById) {
   return parent
     ? `${parent.name || ''} / ${property.name || ''}`
     : property?.name || '';
+}
+
+function SplitBreakdownTable({ utility, propertyById, toCurrency, t }) {
+  const items = Array.isArray(utility.splitItems) ? utility.splitItems : [];
+  const isSplit =
+    utility.originalAmount != null && utility.originalAmount !== utility.amount;
+
+  if (!isSplit && !items.length) return null;
+
+  const subRows = items.map((item) => {
+    const subProp = propertyById[String(item.subPropertyId)];
+    const name = subProp?.name || t('Unit');
+    const amount =
+      item.splitType === 'percentage' && item.percentage != null
+        ? (item.percentage / 100) * (utility.amount || 0)
+        : items.length > 0
+          ? (utility.amount || 0) / items.length
+          : utility.amount || 0;
+    const splitLabel =
+      item.splitType === 'percentage' ? `${item.percentage}%` : t('equal');
+    return { name, amount, splitLabel };
+  });
+
+  return (
+    <div className="mt-2 border rounded text-xs overflow-x-auto">
+      <table className="w-full text-left">
+        <thead>
+          <tr className="bg-muted/50 text-muted-foreground">
+            <th className="px-2 py-1 font-medium">{t('Meter / Unit')}</th>
+            <th className="px-2 py-1 font-medium text-right">{t('Split')}</th>
+            <th className="px-2 py-1 font-medium text-right">{t('Amount')}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {subRows.map((row, i) => (
+            <tr key={i} className="border-t">
+              <td className="px-2 py-1">{row.name}</td>
+              <td className="px-2 py-1 text-right text-muted-foreground">{row.splitLabel}</td>
+              <td className="px-2 py-1 text-right">{toCurrency(row.amount)}</td>
+            </tr>
+          ))}
+          <tr className="border-t font-semibold">
+            <td className="px-2 py-1">{t('This property share')}</td>
+            <td />
+            <td className="px-2 py-1 text-right">{toCurrency(utility.amount)}</td>
+          </tr>
+        </tbody>
+        {isSplit ? (
+          <tfoot>
+            <tr className="border-t bg-muted/30 text-muted-foreground">
+              <td className="px-2 py-1" colSpan={2}>
+                {t('Full bill (before split)')}
+              </td>
+              <td className="px-2 py-1 text-right">{toCurrency(utility.originalAmount)}</td>
+            </tr>
+          </tfoot>
+        ) : null}
+      </table>
+    </div>
+  );
 }
 
 function SavedBills({
@@ -50,13 +114,26 @@ function SavedBills({
   handlePreviewUtilityBillAttachment,
   handleDownloadUtilityBillAttachment,
   onGenerateInvoices,
-  onLogQbPosted
+  onLogQbPosted,
+  onRecaptureEmailBill,
+  onReuploadBill,
+  recapturingUtilityId
 }) {
   const [activeTab, setActiveTab] = useState('all');
   const [sortBy, setSortBy] = useState('billingMonth');
   const [sortOrder, setSortOrder] = useState('desc');
   const [qbUtilityId, setQbUtilityId] = useState(null);
   const [qbRef, setQbRef] = useState('');
+  const [reuploadTargetId, setReuploadTargetId] = useState(null);
+  const fileInputRef = useState(() => {
+    if (typeof document !== 'undefined') {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'application/pdf,image/*';
+      return input;
+    }
+    return null;
+  })[0];
 
   const sortedUtilities = useMemo(() => {
     return [...filteredUtilities].sort((a, b) => {
@@ -238,6 +315,12 @@ function SavedBills({
                       </span>
                     </div>
                   ) : null}
+                  <SplitBreakdownTable
+                    utility={utility}
+                    propertyById={propertyById}
+                    toCurrency={toCurrency}
+                    t={t}
+                  />
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2 sm:gap-3 sm:justify-end">
@@ -245,12 +328,6 @@ function SavedBills({
                     <div className="text-sm font-semibold">
                       {toCurrency(utility.amount)}
                     </div>
-                    {utility.originalAmount != null &&
-                    utility.originalAmount !== utility.amount ? (
-                      <div className="text-xs text-muted-foreground">
-                        {t('Full bill')}: {toCurrency(utility.originalAmount)}
-                      </div>
-                    ) : null}
                   </div>
                   {utility.invoicedAt ? (
                     <div className="flex items-center gap-1 text-xs text-amber-600 font-medium">
@@ -353,16 +430,60 @@ function SavedBills({
                           ✕
                         </Button>
                       </div>
+                    ) : utility.qbPostedAt ? (
+                      <Button
+                        variant="outline"
+                        className="gap-2 text-xs border-green-400 text-green-700 hover:bg-green-50"
+                        onClick={() => setQbUtilityId(utility._id)}
+                        title={`${t('Posted by')} ${utility.qbPostedBy || ''} ${t('on')} ${String(utility.qbPostedAt).slice(0, 10)}`}
+                      >
+                        <LuCheck className="size-3" />
+                        {t('Added to QuickBooks')}
+                      </Button>
                     ) : (
                       <Button
                         variant="outline"
-                        className="gap-2 text-xs"
+                        className="gap-2 text-xs text-muted-foreground"
                         onClick={() => setQbUtilityId(utility._id)}
                       >
                         <LuBookmark className="size-3" />
-                        {t('Log QB posted')}
+                        {t('Not Entered QuickBooks')}
                       </Button>
                     )
+                  ) : null}
+                  {(utility.attachmentIds || []).length === 0 && onReuploadBill ? (
+                    <Button
+                      variant="outline"
+                      className="gap-2 text-xs"
+                      onClick={() => {
+                        if (!fileInputRef) return;
+                        setReuploadTargetId(utility._id);
+                        fileInputRef.onchange = (e) => {
+                          const file = e.target.files?.[0];
+                          if (file) onReuploadBill(utility, file);
+                          fileInputRef.value = '';
+                        };
+                        fileInputRef.click();
+                      }}
+                    >
+                      <LuUpload className="size-3" />
+                      {t('Upload bill')}
+                    </Button>
+                  ) : null}
+                  {(utility.attachmentIds || []).length > 0 &&
+                  utility.source === 'email' &&
+                  onRecaptureEmailBill ? (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="gap-1 text-xs text-muted-foreground"
+                      disabled={recapturingUtilityId === utility._id}
+                      onClick={() => onRecaptureEmailBill(utility._id)}
+                      title={t('Re-fetch email content from inbox')}
+                    >
+                      <LuRefreshCw className={`size-3 ${recapturingUtilityId === utility._id ? 'animate-spin' : ''}`} />
+                      {t('Recapture')}
+                    </Button>
                   ) : null}
                 </div>
               </div>
