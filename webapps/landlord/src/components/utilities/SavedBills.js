@@ -7,7 +7,6 @@ import {
   LuFileText,
   LuLock,
   LuMail,
-  LuPaperclip,
   LuRefreshCw,
   LuSearch,
   LuSend,
@@ -18,6 +17,14 @@ import {
 import { useMemo, useState } from 'react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from '../ui/dialog';
 import { Input } from '../ui/input';
 
 function getPropertyLabel(property, propertyById) {
@@ -36,6 +43,7 @@ function AttachmentsList({
   onUploadBill,
   onRecapture,
   onRemove,
+  onRequestConfirm,
   workingAttachmentId,
   recapturingId,
   reuploadUtilityId,
@@ -44,10 +52,9 @@ function AttachmentsList({
   t
 }) {
   const attachments = utility.attachments || [];
-  const hasPdf = attachments.some((a) => a.mimeType?.includes('pdf'));
 
   return (
-    <div className="mt-2 border rounded text-xs overflow-x-auto">
+    <div className="border rounded text-xs overflow-x-auto">
       <table className="w-full text-left">
         <thead>
           <tr className="bg-muted/50 text-muted-foreground">
@@ -67,68 +74,31 @@ function AttachmentsList({
                 <td className="px-2 py-1">
                   <div className="flex items-center gap-1.5">
                     <Icon className="size-3 shrink-0 text-muted-foreground" />
-                    <span className="truncate max-w-[180px]" title={att.filename}>
-                      {att.filename}
-                    </span>
+                    <span className="truncate max-w-[160px]" title={att.filename}>{att.filename}</span>
                   </div>
                 </td>
                 <td className="px-2 py-1 text-muted-foreground whitespace-nowrap">{typeLabel}</td>
                 <td className="px-2 py-1">
-                  <div className="flex items-center gap-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-5 px-1.5 text-xs"
-                      disabled={isWorking}
-                      onClick={() => onPreview && onPreview(String(att._id), att.filename)}
-                    >
+                  <div className="flex items-center gap-1 flex-wrap">
+                    <Button variant="outline" size="sm" className="h-6 px-2 text-xs" disabled={isWorking}
+                      onClick={() => onPreview && onPreview(String(att._id), att.filename)}>
                       {t('View')}
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-5 px-1.5 text-xs"
-                      disabled={isWorking}
-                      onClick={() => onDownload && onDownload(String(att._id), att.filename)}
-                    >
+                    <Button variant="outline" size="sm" className="h-6 px-2 text-xs" disabled={isWorking}
+                      onClick={() => onDownload && onDownload(String(att._id), att.filename)}>
                       {t('Download')}
                     </Button>
                     {onRemove ? (
-                      confirmPendingId === `remove-${att._id}` ? (
-                        <div className="flex items-center gap-0.5">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-5 px-1.5 text-xs text-red-600 hover:bg-red-50"
-                            disabled={removingAttachmentId === String(att._id)}
-                            onClick={() => {
-                              setConfirmPendingId(null);
-                              onRemove(utility, String(att._id));
-                            }}
-                          >
-                            {t('Yes, remove')}
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-5 px-1 text-xs"
-                            onClick={() => setConfirmPendingId(null)}
-                          >
-                            {t('Cancel')}
-                          </Button>
-                        </div>
-                      ) : (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-5 px-1 text-xs text-red-500 hover:text-red-700 hover:bg-red-50"
-                          disabled={removingAttachmentId === String(att._id)}
-                          onClick={() => setConfirmPendingId(`remove-${att._id}`)}
-                          title={t('Remove file')}
-                        >
-                          <LuX className="size-3" />
-                        </Button>
-                      )
+                      <Button variant="outline" size="sm"
+                        className="h-6 px-2 text-xs text-red-600 border-red-300 hover:bg-red-50"
+                        disabled={removingAttachmentId === String(att._id)}
+                        onClick={() => onRequestConfirm({
+                          type: 'remove-attachment',
+                          label: att.filename,
+                          onConfirm: () => onRemove(utility, String(att._id))
+                        })}>
+                        <LuX className="size-3 mr-1" />{t('Remove')}
+                      </Button>
                     ) : null}
                   </div>
                 </td>
@@ -137,60 +107,44 @@ function AttachmentsList({
           })}
           {attachments.length === 0 && (
             <tr>
-              <td className="px-2 py-1 text-muted-foreground" colSpan={3}>
-                {t('No source bill attached')}
-              </td>
+              <td className="px-2 py-1 text-muted-foreground" colSpan={3}>{t('No source bill attached')}</td>
             </tr>
           )}
         </tbody>
       </table>
-      {onUploadBill || (!hasPdf && utility.source === 'email' && onRecapture) ? (
-        <div className="flex items-center gap-1 px-2 py-1 border-t">
-          {onUploadBill ? (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="gap-1 h-5 px-1.5 text-xs"
-              disabled={reuploadUtilityId === utility._id}
-              onClick={() => {
-                if (!fileInputRef) return;
-                fileInputRef.onchange = (e) => {
-                  const file = e.target.files?.[0];
-                  if (file) onUploadBill(utility, file);
-                  fileInputRef.value = '';
-                };
-                fileInputRef.click();
-              }}
-            >
-              <LuUpload className="size-3" />
-              {t('Attach file')}
-            </Button>
-          ) : null}
-          {!hasPdf && utility.source === 'email' && onRecapture ? (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="gap-1 h-5 px-1.5 text-xs text-muted-foreground"
-              disabled={recapturingId === utility._id}
-              onClick={() => onRecapture(utility._id)}
-              title={t('Re-fetch email content from inbox')}
-            >
-              <LuRefreshCw
-                className={`size-3 ${recapturingId === utility._id ? 'animate-spin' : ''}`}
-              />
-              {t('Recapture email')}
-            </Button>
-          ) : null}
-        </div>
-      ) : null}
+      <div className="flex items-center gap-1 px-2 py-1 border-t flex-wrap">
+        {onUploadBill ? (
+          <Button variant="outline" size="sm" className="gap-1 h-6 px-2 text-xs"
+            disabled={reuploadUtilityId === utility._id}
+            onClick={() => {
+              if (!fileInputRef) return;
+              fileInputRef.onchange = (e) => {
+                const file = e.target.files?.[0];
+                if (file) onUploadBill(utility, file);
+                fileInputRef.value = '';
+              };
+              fileInputRef.click();
+            }}>
+            <LuUpload className="size-3" />{t('Attach file')}
+          </Button>
+        ) : null}
+        {utility.source === 'email' && onRecapture ? (
+          <Button variant="outline" size="sm" className="gap-1 h-6 px-2 text-xs"
+            disabled={recapturingId === utility._id}
+            onClick={() => onRecapture(utility._id)}
+            title={t('Re-fetch email content from inbox')}>
+            <LuRefreshCw className={`size-3 ${recapturingId === utility._id ? 'animate-spin' : ''}`} />
+            {t('Recapture email')}
+          </Button>
+        ) : null}
+      </div>
     </div>
   );
 }
 
 function SplitBreakdownTable({ utility, propertyById, toCurrency, t }) {
   const items = Array.isArray(utility.splitItems) ? utility.splitItems : [];
-  const isSplit =
-    utility.originalAmount != null && utility.originalAmount !== utility.amount;
+  const isSplit = utility.originalAmount != null && utility.originalAmount !== utility.amount;
   const property = propertyById[String(utility.propertyId)];
   const propertyName = property?.name || t('This property');
 
@@ -200,16 +154,13 @@ function SplitBreakdownTable({ utility, propertyById, toCurrency, t }) {
     const amount =
       item.splitType === 'percentage' && item.percentage != null
         ? (item.percentage / 100) * (utility.amount || 0)
-        : items.length > 0
-          ? (utility.amount || 0) / items.length
-          : utility.amount || 0;
-    const splitLabel =
-      item.splitType === 'percentage' ? `${item.percentage}%` : t('equal');
+        : items.length > 0 ? (utility.amount || 0) / items.length : utility.amount || 0;
+    const splitLabel = item.splitType === 'percentage' ? `${item.percentage}%` : t('equal');
     return { name, amount, splitLabel };
   });
 
   return (
-    <div className="mt-2 border rounded text-xs overflow-x-auto">
+    <div className="border rounded text-xs overflow-x-auto">
       <table className="w-full text-left">
         <thead>
           <tr className="bg-muted/50 text-muted-foreground">
@@ -226,7 +177,6 @@ function SplitBreakdownTable({ utility, propertyById, toCurrency, t }) {
               <td className="px-2 py-1 text-right">{toCurrency(row.amount)}</td>
             </tr>
           ))}
-          {/* Always show a totals row so every bill has a visible amount summary */}
           <tr className={`border-t ${isSplit || items.length ? 'font-semibold' : ''}`}>
             <td className="px-2 py-1">{items.length ? t('This property share') : propertyName}</td>
             <td />
@@ -236,9 +186,7 @@ function SplitBreakdownTable({ utility, propertyById, toCurrency, t }) {
         {isSplit ? (
           <tfoot>
             <tr className="border-t bg-muted/30 text-muted-foreground">
-              <td className="px-2 py-1" colSpan={2}>
-                {t('Full bill (before split)')}
-              </td>
+              <td className="px-2 py-1" colSpan={2}>{t('Full bill (before split)')}</td>
               <td className="px-2 py-1 text-right">{toCurrency(utility.originalAmount)}</td>
             </tr>
           </tfoot>
@@ -295,8 +243,8 @@ function SavedBills({
   const [sortOrder, setSortOrder] = useState('desc');
   const [qbUtilityId, setQbUtilityId] = useState(null);
   const [qbRef, setQbRef] = useState('');
-  // tracks the id of a pending destructive action awaiting confirmation
-  const [confirmPendingId, setConfirmPendingId] = useState(null);
+  // { label, onConfirm } — set when a destructive action awaits modal confirmation
+  const [confirmModal, setConfirmModal] = useState(null);
   const [reuploadTargetId, setReuploadTargetId] = useState(null);
   const fileInputRef = useState(() => {
     if (typeof document !== 'undefined') {
@@ -538,6 +486,7 @@ function SavedBills({
                     onUploadBill={onReuploadBill}
                     onRecapture={onRecaptureEmailBill}
                     onRemove={onRemoveAttachment}
+                    onRequestConfirm={setConfirmModal}
                     workingAttachmentId={workingUtilityAttachmentId}
                     recapturingId={recapturingUtilityId}
                     reuploadUtilityId={reuploadUtilityId}
@@ -664,43 +613,19 @@ function SavedBills({
                       )
                     ) : null}
                     {onDeleteUtility ? (
-                      confirmPendingId === `delete-${utility._id}` ? (
-                        <div className="flex items-center gap-1 border border-red-300 rounded px-2 py-1 bg-red-50">
-                          <span className="text-xs text-red-700 mr-1">{t('Delete this record?')}</span>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-5 px-2 text-xs text-red-600 hover:bg-red-100"
-                            disabled={deletingUtilityId === utility._id}
-                            onClick={() => {
-                              setConfirmPendingId(null);
-                              onDeleteUtility(utility._id);
-                            }}
-                          >
-                            {t('Yes, delete')}
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-5 px-2 text-xs"
-                            onClick={() => setConfirmPendingId(null)}
-                          >
-                            {t('Cancel')}
-                          </Button>
-                        </div>
-                      ) : (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="gap-1 text-red-500 border-red-300 hover:text-red-700 hover:bg-red-50"
-                          disabled={deletingUtilityId === utility._id}
-                          onClick={() => setConfirmPendingId(`delete-${utility._id}`)}
-                          title={t('Delete this bill record')}
-                        >
-                          <LuTrash2 className="size-3.5" />
-                          {t('Delete')}
-                        </Button>
-                      )
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-1 text-red-600 border-red-300 hover:bg-red-50"
+                        disabled={deletingUtilityId === utility._id}
+                        onClick={() => setConfirmModal({
+                          label: t('Delete this bill record? This cannot be undone.'),
+                          onConfirm: () => onDeleteUtility(utility._id)
+                        })}
+                      >
+                        <LuTrash2 className="size-3.5" />
+                        {t('Delete')}
+                      </Button>
                     ) : null}
                   </div>
                 </div>
@@ -709,6 +634,30 @@ function SavedBills({
           })}
         </div>
       )}
+      <Dialog open={!!confirmModal} onOpenChange={(open) => { if (!open) setConfirmModal(null); }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>{t('Confirm')}</DialogTitle>
+            <DialogDescription className="break-all">
+              {confirmModal?.label}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setConfirmModal(null)}>
+              {t('Cancel')}
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                confirmModal?.onConfirm?.();
+                setConfirmModal(null);
+              }}
+            >
+              {t('Confirm')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }
