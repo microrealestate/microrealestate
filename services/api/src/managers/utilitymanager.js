@@ -2010,9 +2010,21 @@ export async function attachBillScan(req, res) {
 
   const results = [];
   for (const utility of candidates) {
-    const hasFile = (utility.attachmentIds || []).length > 0;
-    if (hasFile && !overwrite) {
-      results.push({ utilityId: String(utility._id), status: 'skipped_has_file' });
+    const existingIds = utility.attachmentIds || [];
+
+    // Identify only existing PDF attachments — email text files are always kept
+    const existingPdfs = existingIds.length
+      ? await Collections.Attachment.find({
+          _id: { $in: existingIds },
+          realmId,
+          mimeType: { $regex: 'pdf', $options: 'i' }
+        })
+          .select('_id')
+          .lean()
+      : [];
+
+    if (existingPdfs.length && !overwrite) {
+      results.push({ utilityId: String(utility._id), status: 'skipped_has_pdf' });
       continue;
     }
 
@@ -2029,9 +2041,12 @@ export async function attachBillScan(req, res) {
       ? `${req.user.firstname} ${req.user.lastname || ''}`.trim()
       : req.user?.email || 'Manual Scan Upload';
 
-    if (hasFile && overwrite) {
-      await Collections.Attachment.deleteMany({ _id: { $in: utility.attachmentIds }, realmId });
+    // When overwriting, remove only old PDFs — preserve email text files
+    const existingPdfIds = new Set(existingPdfs.map((a) => String(a._id)));
+    if (existingPdfIds.size) {
+      await Collections.Attachment.deleteMany({ _id: { $in: [...existingPdfIds] }, realmId });
     }
+    const keptIds = existingIds.filter((id) => !existingPdfIds.has(String(id)));
 
     const attachment = new Collections.Attachment({
       realmId,
@@ -2050,7 +2065,7 @@ export async function attachBillScan(req, res) {
 
     await Collections.Utility.updateOne(
       { _id: utility._id, realmId },
-      { attachmentIds: [String(attachment._id)], lastUpdatedBy: uploadedByName }
+      { attachmentIds: [...keptIds, String(attachment._id)], lastUpdatedBy: uploadedByName }
     );
 
     results.push({ utilityId: String(utility._id), status: 'attached', attachmentId: String(attachment._id) });
