@@ -44,79 +44,105 @@ function AttachmentsList({
   const hasPdf = attachments.some((a) => a.mimeType?.includes('pdf'));
 
   return (
-    <div className="mt-1 space-y-1">
-      {attachments.map((att) => {
-        const isPdf = att.mimeType?.includes('pdf');
-        const Icon = isPdf ? LuFileText : LuMail;
-        const isWorking = workingAttachmentId === String(att._id);
-        return (
-          <div key={att._id} className="flex items-center gap-1.5 text-xs">
-            <Icon className="size-3 shrink-0 text-muted-foreground" />
-            <span
-              className="truncate max-w-[200px] text-muted-foreground"
-              title={att.filename}
-            >
-              {att.filename}
-            </span>
+    <div className="mt-2 border rounded text-xs overflow-x-auto">
+      <table className="w-full text-left">
+        <thead>
+          <tr className="bg-muted/50 text-muted-foreground">
+            <th className="px-2 py-1 font-medium">{t('Attached Files')}</th>
+            <th className="px-2 py-1 font-medium">{t('Type')}</th>
+            <th className="px-2 py-1" />
+          </tr>
+        </thead>
+        <tbody>
+          {attachments.map((att) => {
+            const isPdf = att.mimeType?.includes('pdf');
+            const Icon = isPdf ? LuFileText : LuMail;
+            const typeLabel = isPdf ? t('PDF') : t('Email');
+            const isWorking = workingAttachmentId === String(att._id);
+            return (
+              <tr key={att._id} className="border-t">
+                <td className="px-2 py-1">
+                  <div className="flex items-center gap-1.5">
+                    <Icon className="size-3 shrink-0 text-muted-foreground" />
+                    <span className="truncate max-w-[180px]" title={att.filename}>
+                      {att.filename}
+                    </span>
+                  </div>
+                </td>
+                <td className="px-2 py-1 text-muted-foreground whitespace-nowrap">{typeLabel}</td>
+                <td className="px-2 py-1">
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-5 px-1.5 text-xs"
+                      disabled={isWorking}
+                      onClick={() => onPreview && onPreview(String(att._id), att.filename)}
+                    >
+                      {t('View')}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-5 px-1.5 text-xs"
+                      disabled={isWorking}
+                      onClick={() => onDownload && onDownload(String(att._id), att.filename)}
+                    >
+                      {t('Download')}
+                    </Button>
+                  </div>
+                </td>
+              </tr>
+            );
+          })}
+          {attachments.length === 0 && (
+            <tr>
+              <td className="px-2 py-1 text-muted-foreground" colSpan={3}>
+                {t('No source bill attached')}
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+      {(!hasPdf && onUploadBill) || (!hasPdf && utility.source === 'email' && onRecapture) ? (
+        <div className="flex items-center gap-1 px-2 py-1 border-t">
+          {!hasPdf && onUploadBill ? (
             <Button
               variant="ghost"
               size="sm"
-              className="h-5 px-1.5 text-xs"
-              disabled={isWorking}
-              onClick={() => onPreview && onPreview(String(att._id), att.filename)}
+              className="gap-1 h-5 px-1.5 text-xs"
+              disabled={reuploadUtilityId === utility._id}
+              onClick={() => {
+                if (!fileInputRef) return;
+                fileInputRef.onchange = (e) => {
+                  const file = e.target.files?.[0];
+                  if (file) onUploadBill(utility, file);
+                  fileInputRef.value = '';
+                };
+                fileInputRef.click();
+              }}
             >
-              {t('View')}
+              <LuUpload className="size-3" />
+              {t('Attach PDF bill')}
             </Button>
+          ) : null}
+          {!hasPdf && utility.source === 'email' && onRecapture ? (
             <Button
               variant="ghost"
               size="sm"
-              className="h-5 px-1.5 text-xs"
-              disabled={isWorking}
-              onClick={() => onDownload && onDownload(String(att._id), att.filename)}
+              className="gap-1 h-5 px-1.5 text-xs text-muted-foreground"
+              disabled={recapturingId === utility._id}
+              onClick={() => onRecapture(utility._id)}
+              title={t('Re-fetch email content from inbox')}
             >
-              {t('Download')}
+              <LuRefreshCw
+                className={`size-3 ${recapturingId === utility._id ? 'animate-spin' : ''}`}
+              />
+              {t('Recapture email')}
             </Button>
-          </div>
-        );
-      })}
-      {attachments.length === 0 && (
-        <div className="text-xs text-muted-foreground">{t('No source bill attached')}</div>
-      )}
-      {!hasPdf && onUploadBill && (
-        <Button
-          variant="outline"
-          size="sm"
-          className="gap-1 h-6 px-2 text-xs mt-0.5"
-          disabled={reuploadUtilityId === utility._id}
-          onClick={() => {
-            if (!fileInputRef) return;
-            fileInputRef.onchange = (e) => {
-              const file = e.target.files?.[0];
-              if (file) onUploadBill(utility, file);
-              fileInputRef.value = '';
-            };
-            fileInputRef.click();
-          }}
-        >
-          <LuUpload className="size-3" />
-          {t('Attach PDF bill')}
-        </Button>
-      )}
-      {!hasPdf && utility.source === 'email' && onRecapture && (
-        <Button
-          variant="ghost"
-          size="sm"
-          className="gap-1 h-6 px-2 text-xs text-muted-foreground"
-          disabled={recapturingId === utility._id}
-          onClick={() => onRecapture(utility._id)}
-          title={t('Re-fetch email content from inbox')}
-        >
-          <LuRefreshCw
-            className={`size-3 ${recapturingId === utility._id ? 'animate-spin' : ''}`}
-          />
-          {t('Recapture email')}
-        </Button>
-      )}
+          ) : null}
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -411,6 +437,12 @@ function SavedBills({
                     fileInputRef={fileInputRef}
                     t={t}
                   />
+                  <SplitBreakdownTable
+                    utility={utility}
+                    propertyById={propertyById}
+                    toCurrency={toCurrency}
+                    t={t}
+                  />
                   {utility.lastUpdatedBy ? (
                     <div className="text-xs text-muted-foreground">
                       {t('Updated by')}:{' '}
@@ -419,12 +451,6 @@ function SavedBills({
                       </span>
                     </div>
                   ) : null}
-                  <SplitBreakdownTable
-                    utility={utility}
-                    propertyById={propertyById}
-                    toCurrency={toCurrency}
-                    t={t}
-                  />
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2 sm:gap-3 sm:justify-end">
