@@ -1,4 +1,6 @@
 import { Collections } from '@microrealestate/common';
+import { getUploadsDirectory } from '../utils/storage.js';
+import fs from 'fs-extra';
 
 function normalizeMonth(value) {
   if (!value || typeof value !== 'string') {
@@ -522,6 +524,33 @@ export async function addBill(req, res) {
       ordered: true
     }
   );
+
+  // Auto-clean any pending email-imported records that are now superseded by
+  // these confirmed entries for the same account + type + billing month.
+  const pendingEmailDuplicates = await Collections.Utility.find({
+    realmId,
+    accountNumber: utilityAccount.accountNumber,
+    type: utilityAccount.type,
+    billingMonth: payload.billingMonth,
+    status: 'pending',
+    source: 'email'
+  }).lean();
+
+  for (const dup of pendingEmailDuplicates) {
+    const attachments = await Collections.Attachment.find({
+      _id: { $in: dup.attachmentIds || [] },
+      realmId
+    }).lean();
+    for (const att of attachments) {
+      const filePath = getUploadsDirectory('attachments', att.storageKey);
+      await fs.remove(filePath).catch(() => {});
+    }
+    await Collections.Attachment.deleteMany({
+      _id: { $in: dup.attachmentIds || [] },
+      realmId
+    });
+    await Collections.Utility.deleteOne({ _id: dup._id, realmId });
+  }
 
   return res
     .status(201)

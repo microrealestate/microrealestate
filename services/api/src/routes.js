@@ -292,6 +292,10 @@ export default function routes() {
     Middlewares.asyncWrapper(utilityManager.recaptureAllEmailBills)
   );
   utilitiesRouter.post(
+    '/deduplicate',
+    Middlewares.asyncWrapper(utilityManager.deduplicateUtilities)
+  );
+  utilitiesRouter.post(
     '/attach-bill-scan',
     upload.single('file'),
     Middlewares.asyncWrapper(utilityManager.attachBillScan)

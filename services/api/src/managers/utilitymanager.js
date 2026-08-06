@@ -1982,6 +1982,59 @@ export async function recaptureAllEmailBills(req, res) {
   return res.json(summary);
 }
 
+export async function deduplicateUtilities(req, res) {
+  const realmId = req.realm._id;
+
+  const confirmed = await Collections.Utility.find({ realmId, status: 'confirmed' })
+    .select('accountNumber type billingMonth')
+    .lean();
+
+  if (!confirmed.length) {
+    return res.json({ deleted: 0, groups: 0 });
+  }
+
+  const confirmedKeys = new Set(
+    confirmed
+      .filter((u) => u.accountNumber)
+      .map((u) => `${u.accountNumber}|${u.type}|${u.billingMonth}`)
+  );
+
+  const pendingEmail = await Collections.Utility.find({
+    realmId,
+    status: 'pending',
+    source: 'email',
+    accountNumber: { $ne: '' }
+  }).lean();
+
+  const toDelete = pendingEmail.filter((u) =>
+    confirmedKeys.has(`${u.accountNumber}|${u.type}|${u.billingMonth}`)
+  );
+
+  let deleted = 0;
+  for (const dup of toDelete) {
+    const attachments = await Collections.Attachment.find({
+      _id: { $in: dup.attachmentIds || [] },
+      realmId
+    }).lean();
+    for (const att of attachments) {
+      const filePath = getUploadsDirectory('attachments', att.storageKey);
+      await fs.remove(filePath).catch(() => {});
+    }
+    await Collections.Attachment.deleteMany({
+      _id: { $in: dup.attachmentIds || [] },
+      realmId
+    });
+    await Collections.Utility.deleteOne({ _id: dup._id, realmId });
+    deleted++;
+  }
+
+  const groupsAffected = new Set(
+    toDelete.map((u) => `${u.accountNumber}|${u.type}|${u.billingMonth}`)
+  ).size;
+
+  return res.json({ deleted, groups: groupsAffected });
+}
+
 export async function attachBillScan(req, res) {
   const realmId = req.realm._id;
 

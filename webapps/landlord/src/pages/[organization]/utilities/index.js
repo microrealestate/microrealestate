@@ -448,6 +448,7 @@ export function UtilitiesPage({ view = 'all' }) {
   const [parsingUtilityUpload, setParsingUtilityUpload] = useState(false);
   const [batchUploadingBills, setBatchUploadingBills] = useState(false);
   const [checkingEmailInbox, setCheckingEmailInbox] = useState(false);
+  const [deduplicating, setDeduplicating] = useState(false);
   const [batchWorkflowOpen, setBatchWorkflowOpen] = useState(false);
   const [batchPreparingReview, setBatchPreparingReview] = useState(false);
   const [batchReviewItems, setBatchReviewItems] = useState([]);
@@ -3366,6 +3367,31 @@ export function UtilitiesPage({ view = 'all' }) {
     router.push(`/${organizationSlug}/settings/utilities-email-connection`);
   };
 
+  const handleDeduplicateUtilities = async () => {
+    setDeduplicating(true);
+    try {
+      const response = await apiFetcher().post('/utilities/deduplicate');
+      const { deleted = 0, groups = 0 } = response.data || {};
+      if (deleted > 0) {
+        queryClient.invalidateQueries(['utilities-all']);
+        toast.success(
+          t('Removed {{n}} duplicate record(s) across {{g}} bill(s)', {
+            n: deleted,
+            g: groups
+          })
+        );
+      } else {
+        toast.info(t('No duplicate records found'));
+      }
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message || t('Failed to deduplicate bills')
+      );
+    } finally {
+      setDeduplicating(false);
+    }
+  };
+
   const handleImportEmailConfirmations = async () => {
     setCheckingEmailInbox(true);
     try {
@@ -3484,6 +3510,15 @@ export function UtilitiesPage({ view = 'all' }) {
               >
                 <LuSettings2 className="size-4 mr-2" />
                 {t('Email connection settings')}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleDeduplicateUtilities}
+                disabled={deduplicating}
+                title={t('Remove pending email-imported records that duplicate a confirmed bill')}
+              >
+                <LuRefreshCw className={`size-4 mr-2 ${deduplicating ? 'animate-spin' : ''}`} />
+                {deduplicating ? t('Deduplicating...') : t('Resolve duplicates')}
               </Button>
             </>
           ) : null}
