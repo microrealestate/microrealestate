@@ -202,32 +202,21 @@ describe('QuickBooks badge', () => {
     expect(getByText('alice@test.com')).toBeInTheDocument();
   });
 
-  it('opens QB input dialog on clicking "Not Entered QuickBooks"', () => {
-    const { getByText, queryByPlaceholderText } = render(<SavedBills {...defaultProps()} />);
-    expect(queryByPlaceholderText('QB ref # (optional)')).toBeNull();
-    fireEvent.click(getByText('Not Entered QuickBooks'));
-    expect(queryByPlaceholderText('QB ref # (optional)')).toBeInTheDocument();
-  });
-
-  it('calls onLogQbPosted with utilityId and ref on Log click', () => {
+  it('calls onLogQbPosted immediately on clicking "Not Entered QuickBooks"', () => {
     const onLogQbPosted = jest.fn();
-    const { getByText, getByPlaceholderText } = render(
-      <SavedBills {...defaultProps({ onLogQbPosted })} />
-    );
+    const { getByText } = render(<SavedBills {...defaultProps({ onLogQbPosted })} />);
     fireEvent.click(getByText('Not Entered QuickBooks'));
-    fireEvent.change(getByPlaceholderText('QB ref # (optional)'), { target: { value: 'QB-123' } });
-    fireEvent.click(getByText('Log'));
-    expect(onLogQbPosted).toHaveBeenCalledWith('util-001', 'QB-123');
+    expect(onLogQbPosted).toHaveBeenCalledWith('util-001', '');
   });
 
-  it('opens re-log dialog when clicking the QB badge', () => {
+  it('calls onLogQbPosted immediately when clicking the green QB badge', () => {
+    const onLogQbPosted = jest.fn();
     const utility = makeUtility({ qbPostedAt: '2026-08-01T10:00:00Z' });
-    const { getByText, queryByPlaceholderText } = render(
-      <SavedBills {...defaultProps({ filteredUtilities: [utility] })} />
+    const { getByText } = render(
+      <SavedBills {...defaultProps({ filteredUtilities: [utility], onLogQbPosted })} />
     );
-    expect(queryByPlaceholderText('QB ref # (optional)')).toBeNull();
     fireEvent.click(getByText('QuickBooks'));
-    expect(queryByPlaceholderText('QB ref # (optional)')).toBeInTheDocument();
+    expect(onLogQbPosted).toHaveBeenCalledWith('util-001', '');
   });
 });
 

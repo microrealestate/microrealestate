@@ -253,9 +253,6 @@ function SavedBills({
   const [activeTab, setActiveTab] = useState('all');
   const [sortBy, setSortBy] = useState('billingMonth');
   const [sortOrder, setSortOrder] = useState('desc');
-  const [qbUtilityId, setQbUtilityId] = useState(null);
-  const [qbRef, setQbRef] = useState('');
-  // { label, onConfirm } — set when a destructive action awaits modal confirmation
   const [confirmModal, setConfirmModal] = useState(null);
   const [reuploadTargetId, setReuploadTargetId] = useState(null);
   const fileInputRef = useState(() => {
@@ -559,37 +556,11 @@ function SavedBills({
                       </Button>
                     )}
                     {onLogQbPosted ? (
-                      qbUtilityId === utility._id ? (
-                        <div className="flex items-center gap-1">
-                          <input
-                            className="border rounded px-2 py-1 text-xs w-32"
-                            placeholder={t('QB ref # (optional)')}
-                            value={qbRef}
-                            onChange={(e) => setQbRef(e.target.value)}
-                          />
-                          <Button
-                            size="sm"
-                            className="gap-1"
-                            onClick={() => {
-                              onLogQbPosted(utility._id, qbRef);
-                              setQbUtilityId(null);
-                              setQbRef('');
-                            }}
-                          >
-                            {t('Log')}
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => { setQbUtilityId(null); setQbRef(''); }}
-                          >
-                            ✕
-                          </Button>
-                        </div>
-                      ) : utility.qbPostedAt ? (
+                      utility.qbPostedAt ? (
                         <button
                           className="text-left border border-green-400 rounded px-2 py-1 text-xs text-green-700 hover:bg-green-50 cursor-pointer"
-                          onClick={() => setQbUtilityId(utility._id)}
+                          onClick={() => onLogQbPosted(utility._id, '')}
+                          title={t('Click to re-log')}
                         >
                           <div className="flex items-center gap-1 font-medium">
                             <LuCheck className="size-3 shrink-0" />
@@ -609,7 +580,7 @@ function SavedBills({
                           variant="outline"
                           size="sm"
                           className="gap-1.5 text-muted-foreground"
-                          onClick={() => setQbUtilityId(utility._id)}
+                          onClick={() => onLogQbPosted(utility._id, '')}
                         >
                           <LuBookmark className="size-3.5" />
                           {t('Not Entered QuickBooks')}
