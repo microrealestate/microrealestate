@@ -745,6 +745,26 @@ export async function one(req, res) {
   return res.json(utility);
 }
 
+export async function updatePaidStatus(req, res) {
+  const realm = req.realm;
+  const utilityId = req.params.id;
+  const { paidDate } = req.body;
+
+  const normalized = paidDate ? String(paidDate).slice(0, 10) : null;
+
+  const utility = await Collections.Utility.findOneAndUpdate(
+    { _id: utilityId, realmId: realm._id },
+    { paidDate: normalized ? new Date(`${normalized}T00:00:00.000Z`) : null, lastUpdatedBy: _getUserFullName(req) },
+    { new: true }
+  ).lean();
+
+  if (!utility) {
+    return res.status(404).json({ message: 'Utility entry not found' });
+  }
+
+  return res.json(utility);
+}
+
 export async function add(req, res) {
   const realm = req.realm;
   const payload = normalizePayload(req.body || {});

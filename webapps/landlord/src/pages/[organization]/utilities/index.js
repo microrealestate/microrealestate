@@ -3257,7 +3257,7 @@ export function UtilitiesPage({ view = 'all' }) {
         const newPaidDate = utility.paidDate
           ? null
           : new Date().toISOString().slice(0, 10);
-        await apiFetcher().patch(`/utilities/${utility._id}`, {
+        await apiFetcher().patch(`/utilities/${utility._id}/paid`, {
           paidDate: newPaidDate
         });
         queryClient.invalidateQueries(['utilities-all']);

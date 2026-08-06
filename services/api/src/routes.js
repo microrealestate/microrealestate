@@ -314,6 +314,10 @@ export default function routes() {
   utilitiesRouter.get('/:id', Middlewares.asyncWrapper(utilityManager.one));
   utilitiesRouter.post('/', Middlewares.asyncWrapper(utilityManager.add));
   utilitiesRouter.patch(
+    '/:id/paid',
+    Middlewares.asyncWrapper(utilityManager.updatePaidStatus)
+  );
+  utilitiesRouter.patch(
     '/:id',
     Middlewares.asyncWrapper(utilityManager.update)
   );
