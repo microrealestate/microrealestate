@@ -411,19 +411,44 @@ function SavedBills({
                 key={utility._id}
                 className="rounded-lg border p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
               >
-                <div className="space-y-1">
-                  <div className="text-sm font-semibold">
-                    {formatCategoryLabel(utility.type)} • {utility.billingMonth}
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    {propertyName}
-                    {utility.provider ? ` • ${utility.provider}` : ''}
-                    {utility.accountNumber ? ` • ${utility.accountNumber}` : ''}
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    {utility.paidDate
-                      ? `${t('Paid')} ${String(utility.paidDate).slice(0, 10)}`
-                      : t('Not paid yet')}
+                <div className="space-y-1.5">
+                  <div className="border rounded text-xs overflow-x-auto">
+                    <table className="w-full text-left">
+                      <tbody>
+                        <tr>
+                          <td className="px-2 py-1 text-muted-foreground whitespace-nowrap font-medium bg-muted/50 w-24">{t('Property')}</td>
+                          <td className="px-2 py-1 font-semibold">{propertyName}</td>
+                        </tr>
+                        {utility.provider ? (
+                          <tr className="border-t">
+                            <td className="px-2 py-1 text-muted-foreground whitespace-nowrap font-medium bg-muted/50">{t('Provider')}</td>
+                            <td className="px-2 py-1">{utility.provider}</td>
+                          </tr>
+                        ) : null}
+                        {utility.accountNumber ? (
+                          <tr className="border-t">
+                            <td className="px-2 py-1 text-muted-foreground whitespace-nowrap font-medium bg-muted/50">{t('Account')}</td>
+                            <td className="px-2 py-1">{utility.accountNumber}</td>
+                          </tr>
+                        ) : null}
+                        <tr className="border-t">
+                          <td className="px-2 py-1 text-muted-foreground whitespace-nowrap font-medium bg-muted/50">{t('Type')}</td>
+                          <td className="px-2 py-1">{formatCategoryLabel(utility.type)}</td>
+                        </tr>
+                        <tr className="border-t">
+                          <td className="px-2 py-1 text-muted-foreground whitespace-nowrap font-medium bg-muted/50">{t('Billing')}</td>
+                          <td className="px-2 py-1">{utility.billingMonth}</td>
+                        </tr>
+                        <tr className="border-t">
+                          <td className="px-2 py-1 text-muted-foreground whitespace-nowrap font-medium bg-muted/50">{t('Status')}</td>
+                          <td className={`px-2 py-1 ${utility.paidDate ? 'text-green-700' : 'text-amber-600'}`}>
+                            {utility.paidDate
+                              ? `${t('Paid')} ${String(utility.paidDate).slice(0, 10)}`
+                              : t('Not paid yet')}
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
                   </div>
                   <AttachmentsList
                     utility={utility}
@@ -529,15 +554,23 @@ function SavedBills({
                         </Button>
                       </div>
                     ) : utility.qbPostedAt ? (
-                      <Button
-                        variant="outline"
-                        className="gap-2 text-xs border-green-400 text-green-700 hover:bg-green-50"
+                      <button
+                        className="text-left border border-green-400 rounded px-2 py-1 text-xs text-green-700 hover:bg-green-50 cursor-pointer"
                         onClick={() => setQbUtilityId(utility._id)}
-                        title={`${t('Posted by')} ${utility.qbPostedBy || ''} ${t('on')} ${String(utility.qbPostedAt).slice(0, 10)}`}
                       >
-                        <LuCheck className="size-3" />
-                        {t('Added to QuickBooks')}
-                      </Button>
+                        <div className="flex items-center gap-1 font-medium">
+                          <LuCheck className="size-3 shrink-0" />
+                          {t('QuickBooks')}
+                        </div>
+                        <div className="text-green-600 mt-0.5">
+                          {String(utility.qbPostedAt).slice(0, 10)}
+                        </div>
+                        {utility.qbPostedBy ? (
+                          <div className="text-green-600 truncate max-w-[120px]">
+                            {utility.qbPostedBy}
+                          </div>
+                        ) : null}
+                      </button>
                     ) : (
                       <Button
                         variant="outline"
