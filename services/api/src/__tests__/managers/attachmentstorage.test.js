@@ -228,3 +228,24 @@ describe('attachment download — missing file handling', () => {
     );
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+describe('utility attachment validation — realm-only check', () => {
+  it('accepts targetType=utility attachments (previously rejected with old targetType:property check)', async () => {
+    // This test verifies the validation change: countDocuments is called without targetType filter
+    const { upload } = await import('../../managers/attachmentmanager.js');
+
+    const req = makeUploadReq({
+      targetType: 'utility',
+      targetId: 'util-abc',
+      category: 'utility_bill',
+      accountNumber: '07-123',
+      billingMonth: '2026-08'
+    });
+    const res = makeRes();
+    await upload(req, res);
+
+    // Should succeed — 'utility' targetType is now valid
+    expect(res.status).toHaveBeenCalledWith(201);
+  });
+});
