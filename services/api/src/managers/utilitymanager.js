@@ -707,7 +707,14 @@ export async function all(req, res) {
   return res.json(
     utilities.map((utility) => {
       const siblings = (billGroups.get(billKey(utility)) || [])
-        .filter((s) => String(s._id) !== String(utility._id))
+        .filter((s) => {
+          if (String(s._id) === String(utility._id)) return false;
+          // Exclude parent-level records that already contain sub-unit splitItems
+          // (they represent the full allocation, not a peer share)
+          const sHasSubSplit = (s.splitItems || []).length > 0;
+          const thisHasSubSplit = (utility.splitItems || []).length > 0;
+          return sHasSubSplit === thisHasSubSplit;
+        })
         .map((s) => ({
           propertyId: String(s.propertyId),
           name: propertyNameById.get(String(s.propertyId)) || '',
