@@ -5,10 +5,10 @@ import {
   LuCheck,
   LuDownload,
   LuExternalLink,
-  LuFileSearch,
   LuFileText,
   LuLock,
   LuMail,
+  LuPaperclip,
   LuRefreshCw,
   LuSearch,
   LuSend,
@@ -26,6 +26,99 @@ function getPropertyLabel(property, propertyById) {
   return parent
     ? `${parent.name || ''} / ${property.name || ''}`
     : property?.name || '';
+}
+
+function AttachmentsList({
+  utility,
+  onPreview,
+  onDownload,
+  onUploadBill,
+  onRecapture,
+  workingAttachmentId,
+  recapturingId,
+  reuploadUtilityId,
+  fileInputRef,
+  t
+}) {
+  const attachments = utility.attachments || [];
+  const hasPdf = attachments.some((a) => a.mimeType?.includes('pdf'));
+
+  return (
+    <div className="mt-1 space-y-1">
+      {attachments.map((att) => {
+        const isPdf = att.mimeType?.includes('pdf');
+        const Icon = isPdf ? LuFileText : LuMail;
+        const isWorking = workingAttachmentId === String(att._id);
+        return (
+          <div key={att._id} className="flex items-center gap-1.5 text-xs">
+            <Icon className="size-3 shrink-0 text-muted-foreground" />
+            <span
+              className="truncate max-w-[200px] text-muted-foreground"
+              title={att.filename}
+            >
+              {att.filename}
+            </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-5 px-1.5 text-xs"
+              disabled={isWorking}
+              onClick={() => onPreview && onPreview(String(att._id), att.filename)}
+            >
+              {t('View')}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-5 px-1.5 text-xs"
+              disabled={isWorking}
+              onClick={() => onDownload && onDownload(String(att._id), att.filename)}
+            >
+              {t('Download')}
+            </Button>
+          </div>
+        );
+      })}
+      {attachments.length === 0 && (
+        <div className="text-xs text-muted-foreground">{t('No source bill attached')}</div>
+      )}
+      {!hasPdf && onUploadBill && (
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-1 h-6 px-2 text-xs mt-0.5"
+          disabled={reuploadUtilityId === utility._id}
+          onClick={() => {
+            if (!fileInputRef) return;
+            fileInputRef.onchange = (e) => {
+              const file = e.target.files?.[0];
+              if (file) onUploadBill(utility, file);
+              fileInputRef.value = '';
+            };
+            fileInputRef.click();
+          }}
+        >
+          <LuUpload className="size-3" />
+          {t('Attach PDF bill')}
+        </Button>
+      )}
+      {!hasPdf && utility.source === 'email' && onRecapture && (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="gap-1 h-6 px-2 text-xs text-muted-foreground"
+          disabled={recapturingId === utility._id}
+          onClick={() => onRecapture(utility._id)}
+          title={t('Re-fetch email content from inbox')}
+        >
+          <LuRefreshCw
+            className={`size-3 ${recapturingId === utility._id ? 'animate-spin' : ''}`}
+          />
+          {t('Recapture email')}
+        </Button>
+      )}
+    </div>
+  );
 }
 
 function SplitBreakdownTable({ utility, propertyById, toCurrency, t }) {
@@ -118,7 +211,10 @@ function SavedBills({
   onLogQbPosted,
   onRecaptureEmailBill,
   onReuploadBill,
-  recapturingUtilityId
+  onPreviewAttachment,
+  onDownloadAttachment,
+  recapturingUtilityId,
+  reuploadUtilityId
 }) {
   const [activeTab, setActiveTab] = useState('all');
   const [sortBy, setSortBy] = useState('billingMonth');
@@ -303,11 +399,18 @@ function SavedBills({
                       ? `${t('Paid')} ${String(utility.paidDate).slice(0, 10)}`
                       : t('Not paid yet')}
                   </div>
-                  <div className="text-xs text-muted-foreground">
-                    {(utility.attachmentIds || []).length
-                      ? t('Source bill on file')
-                      : t('No source bill attached')}
-                  </div>
+                  <AttachmentsList
+                    utility={utility}
+                    onPreview={onPreviewAttachment}
+                    onDownload={onDownloadAttachment}
+                    onUploadBill={onReuploadBill}
+                    onRecapture={onRecaptureEmailBill}
+                    workingAttachmentId={workingUtilityAttachmentId}
+                    recapturingId={recapturingUtilityId}
+                    reuploadUtilityId={reuploadUtilityId}
+                    fileInputRef={fileInputRef}
+                    t={t}
+                  />
                   {utility.lastUpdatedBy ? (
                     <div className="text-xs text-muted-foreground">
                       {t('Updated by')}:{' '}
@@ -335,38 +438,6 @@ function SavedBills({
                       <LuLock className="size-3" />
                       {t('Invoiced')}
                     </div>
-                  ) : null}
-                  {(utility.attachmentIds || []).length ? (
-                    <>
-                      <Button
-                        variant="outline"
-                        className="gap-2"
-                        onClick={() =>
-                          handlePreviewUtilityBillAttachment(utility)
-                        }
-                        disabled={
-                          workingUtilityAttachmentId ===
-                          String(utility.attachmentIds?.[0] || '')
-                        }
-                      >
-                        <LuFileSearch className="size-4" />
-                        {t('View bill')}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        className="gap-2"
-                        onClick={() =>
-                          handleDownloadUtilityBillAttachment(utility)
-                        }
-                        disabled={
-                          workingUtilityAttachmentId ===
-                          String(utility.attachmentIds?.[0] || '')
-                        }
-                      >
-                        <LuDownload className="size-4" />
-                        {t('Download bill')}
-                      </Button>
-                    </>
                   ) : null}
                   <Button
                     variant="outline"
@@ -451,40 +522,6 @@ function SavedBills({
                         {t('Not Entered QuickBooks')}
                       </Button>
                     )
-                  ) : null}
-                  {(utility.attachmentIds || []).length === 0 && onReuploadBill ? (
-                    <Button
-                      variant="outline"
-                      className="gap-2 text-xs"
-                      onClick={() => {
-                        if (!fileInputRef) return;
-                        setReuploadTargetId(utility._id);
-                        fileInputRef.onchange = (e) => {
-                          const file = e.target.files?.[0];
-                          if (file) onReuploadBill(utility, file);
-                          fileInputRef.value = '';
-                        };
-                        fileInputRef.click();
-                      }}
-                    >
-                      <LuUpload className="size-3" />
-                      {t('Upload bill')}
-                    </Button>
-                  ) : null}
-                  {(utility.attachmentIds || []).length > 0 &&
-                  utility.source === 'email' &&
-                  onRecaptureEmailBill ? (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="gap-1 text-xs text-muted-foreground"
-                      disabled={recapturingUtilityId === utility._id}
-                      onClick={() => onRecaptureEmailBill(utility._id)}
-                      title={t('Re-fetch email content from inbox')}
-                    >
-                      <LuRefreshCw className={`size-3 ${recapturingUtilityId === utility._id ? 'animate-spin' : ''}`} />
-                      {t('Recapture')}
-                    </Button>
                   ) : null}
                 </div>
               </div>
