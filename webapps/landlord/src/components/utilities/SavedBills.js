@@ -508,17 +508,9 @@ function SavedBills({
                   />
                 </div>
 
-                {/* Bottom bar: updated-by left | action buttons center | delete isolated right */}
-                <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t text-xs">
-                  <div className="text-muted-foreground space-y-0.5">
-                    {utility.lastUpdatedBy ? (
-                      <div>{t('Updated by')}: <span className="font-medium">{utility.lastUpdatedBy}</span></div>
-                    ) : null}
-                    {utility.updatedAt ? (
-                      <div>{String(utility.updatedAt).slice(0, 10)}</div>
-                    ) : null}
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2">
+                {/* Bottom bar: action buttons | updated-by | delete isolated right */}
+                <div className="flex flex-wrap items-center gap-2 pt-2 border-t text-xs">
+                  <div className="flex flex-wrap items-center gap-2 flex-1">
                     <Button
                       variant="outline"
                       size="sm"
@@ -617,7 +609,16 @@ function SavedBills({
                       )
                     ) : null}
                   </div>
-                  {/* Delete isolated on the far right with a visual separator */}
+                  {/* Updated by between action buttons and delete */}
+                  <div className="text-muted-foreground space-y-0.5 px-2">
+                    {utility.lastUpdatedBy ? (
+                      <div>{t('Updated by')}: <span className="font-medium">{utility.lastUpdatedBy}</span></div>
+                    ) : null}
+                    {utility.updatedAt ? (
+                      <div>{String(utility.updatedAt).slice(0, 10)}</div>
+                    ) : null}
+                  </div>
+                  {/* Delete isolated on the far right */}
                   {onDeleteUtility ? (
                     <Button
                       variant="outline"
