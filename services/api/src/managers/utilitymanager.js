@@ -689,13 +689,34 @@ export async function all(req, res) {
     attachmentMap = new Map(attachments.map((a) => [String(a._id), a]));
   }
 
+  // Build sibling map: records sharing accountNumber+type+billingMonth show each other's property
+  const allPropertyIds = [...new Set(utilities.map((u) => String(u.propertyId)))];
+  const properties = await Collections.Property.find({ _id: { $in: allPropertyIds }, realmId: realm._id })
+    .select('_id name')
+    .lean();
+  const propertyNameById = new Map(properties.map((p) => [String(p._id), p.name || '']));
+
+  const billKey = (u) => `${u.accountNumber}|${u.type}|${u.billingMonth}`;
+  const billGroups = new Map();
+  for (const u of utilities) {
+    const k = billKey(u);
+    if (!billGroups.has(k)) billGroups.set(k, []);
+    billGroups.get(k).push(u);
+  }
+
   return res.json(
-    utilities.map((utility) => ({
-      ...utility,
-      attachments: (utility.attachmentIds || [])
-        .map((id) => attachmentMap.get(String(id)))
-        .filter(Boolean)
-    }))
+    utilities.map((utility) => {
+      const siblings = (billGroups.get(billKey(utility)) || [])
+        .filter((s) => String(s._id) !== String(utility._id))
+        .map((s) => ({ propertyId: String(s.propertyId), name: propertyNameById.get(String(s.propertyId)) || '' }));
+      return {
+        ...utility,
+        attachments: (utility.attachmentIds || [])
+          .map((id) => attachmentMap.get(String(id)))
+          .filter(Boolean),
+        siblingProperties: siblings
+      };
+    })
   );
 }
 

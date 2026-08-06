@@ -181,6 +181,14 @@ function SplitBreakdownTable({ utility, propertyById, toCurrency, t }) {
               <td className="px-2 py-1 text-right">{toCurrency(row.amount)}</td>
             </tr>
           ))}
+          {/* Sibling properties from the same bill (e.g. other allocations on email-imported records) */}
+          {!items.length && (utility.siblingProperties || []).map((sib, i) => (
+            <tr key={`sib-${i}`} className="border-t text-muted-foreground">
+              <td className="px-2 py-1 italic">({sib.name})</td>
+              <td />
+              <td />
+            </tr>
+          ))}
           <tr className={`border-t ${isSplit || items.length ? 'font-semibold' : ''}`}>
             <td className="px-2 py-1">{items.length ? t('This property share') : propertyName}</td>
             <td />
