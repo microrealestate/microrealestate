@@ -206,7 +206,9 @@ function SplitBreakdownTable({ utility, propertyById, toCurrency, t }) {
             <td className="px-2 py-1 text-right">
               {!items.length && utility.originalAmount && (utility.siblingProperties || []).length
                 ? `${Math.round((utility.amount / utility.originalAmount) * 100)}%`
-                : null}
+                : !items.length && !(utility.siblingProperties || []).length
+                  ? '100%'
+                  : null}
             </td>
             <td className="px-2 py-1 text-right">{toCurrency(utility.amount)}</td>
           </tr>
