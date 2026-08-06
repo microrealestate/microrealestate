@@ -253,7 +253,9 @@ export async function issueViewToken(req, res) {
 }
 
 /**
- * GET /attachments/:id/view?token=  (no auth middleware — token carries the claim)
+ * GET /attachments/:id/view?token=           → HTML wrapper (popup navigation target)
+ * GET /attachments/:id/view?token=&raw=1     → raw file stream (for embed/iframe inside wrapper)
+ * Extensions intercept navigations, not embedded resources — so we serve HTML and embed inside it.
  */
 export async function viewWithToken(req, res) {
   const { ACCESS_TOKEN_SECRET } = Service.getInstance().envConfig.getValues();
@@ -261,18 +263,18 @@ export async function viewWithToken(req, res) {
   try {
     payload = jwt.verify(req.query.token, ACCESS_TOKEN_SECRET);
   } catch {
-    return res.status(401).send('View token expired or invalid — please retry.');
+    return res.status(401).type('html').send(
+      '<html><body style="font-family:sans-serif;text-align:center;padding:3rem;color:#555">' +
+      '<h2>View token expired</h2><p>Close this window and click View again.</p></body></html>'
+    );
   }
 
-  if (
-    payload.purpose !== 'view' ||
-    String(payload.sub) !== String(req.params.id)
-  ) {
-    return res.status(403).send('Token does not match this attachment.');
+  if (payload.purpose !== 'view' || String(payload.sub) !== String(req.params.id)) {
+    return res.status(403).type('html').send(
+      '<html><body style="font-family:sans-serif;text-align:center;padding:3rem;color:#555">' +
+      '<h2>Token mismatch</h2></body></html>'
+    );
   }
-
-  // Synthesise the realm object then stream — but render HTML errors so the browser shows them properly
-  req.realm = { _id: payload.realmId };
 
   const attachment = await Collections.Attachment.findOne({
     _id: payload.sub,
@@ -298,9 +300,35 @@ export async function viewWithToken(req, res) {
     );
   }
 
-  res.setHeader('Content-Type', attachment.mimeType || 'application/octet-stream');
-  res.setHeader('Content-Disposition', `inline; filename="${encodeURIComponent(attachment.filename)}"`);
-  fs.createReadStream(filePath).pipe(res);
+  // raw=1 → serve the file directly (called by the <embed> inside the wrapper below)
+  if (req.query.raw === '1') {
+    res.setHeader('Content-Type', attachment.mimeType || 'application/octet-stream');
+    res.setHeader('Content-Disposition', `inline; filename="${encodeURIComponent(attachment.filename)}"`);
+    return fs.createReadStream(filePath).pipe(res);
+  }
+
+  // Default: HTML wrapper — the browser "navigates" to HTML, not to a PDF/txt, so extensions can't intercept.
+  // The <embed> then loads the actual file as an embedded resource (not a navigation).
+  const rawUrl = `/api/v2/attachments/${payload.sub}/view?token=${encodeURIComponent(req.query.token)}&raw=1`;
+  const title = encodeURIComponent(attachment.filename || 'Bill preview');
+  const isText = (attachment.mimeType || '').includes('text');
+
+  if (isText) {
+    const content = await fs.readFile(filePath, 'utf8');
+    const escaped = content
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return res.type('html').send(
+      `<html><head><title>${attachment.filename}</title>` +
+      '<style>body{margin:0;padding:1rem;font-family:monospace;font-size:13px;background:#1e1e1e;color:#d4d4d4;white-space:pre-wrap;word-break:break-word}</style></head>' +
+      `<body>${escaped}</body></html>`
+    );
+  }
+
+  return res.type('html').send(
+    `<html><head><title>${attachment.filename}</title>` +
+    '<style>html,body,embed{width:100%;height:100%;margin:0;padding:0;border:0;display:block}</style></head>' +
+    `<body><embed src="${rawUrl}" type="${attachment.mimeType || 'application/pdf'}" width="100%" height="100%"></body></html>`
+  );
 }
 
 /**
