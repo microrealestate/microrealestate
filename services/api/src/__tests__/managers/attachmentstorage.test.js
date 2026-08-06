@@ -36,7 +36,12 @@ const mockCollections = {
 };
 
 jest.unstable_mockModule('@microrealestate/common', () => ({
-  Collections: mockCollections
+  Collections: mockCollections,
+  Service: {
+    getInstance: jest.fn().mockReturnValue({
+      envConfig: { getValues: jest.fn().mockReturnValue({ ACCESS_TOKEN_SECRET: 'test-secret' }) }
+    })
+  }
 }));
 
 jest.unstable_mockModule('../../utils/storage.js', () => ({

@@ -26,6 +26,12 @@ import { upload } from './utils/upload.js';
 export default function routes() {
   const { ACCESS_TOKEN_SECRET } = Service.getInstance().envConfig.getValues();
   const router = express.Router();
+  // Unprotected — token carries auth; must be before needAccessToken middleware
+  router.get(
+    '/attachments/:id/view',
+    Middlewares.asyncWrapper(attachmentManager.viewWithToken)
+  );
+
   router.use(
     // protect the api access by checking the access token
     Middlewares.needAccessToken(ACCESS_TOKEN_SECRET),
@@ -234,6 +240,7 @@ export default function routes() {
     upload.single('file'),
     Middlewares.asyncWrapper(attachmentManager.upload)
   );
+  attachmentsRouter.get('/:id/view-token', Middlewares.asyncWrapper(attachmentManager.issueViewToken));
   attachmentsRouter.get('/', Middlewares.asyncWrapper(attachmentManager.list));
   attachmentsRouter.get(
     '/:id/download',

@@ -3149,7 +3149,6 @@ export function UtilitiesPage({ view = 'all' }) {
       let win = null;
       if (usePopup) {
         win = window.open('', '_blank', 'width=1000,height=800,scrollbars=yes,resizable=yes');
-        // Show loading page immediately so the popup doesn't appear frozen
         if (win) {
           win.document.write(
             '<html><body style="margin:0;display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;color:#666;background:#f5f5f5">' +
@@ -3159,51 +3158,35 @@ export function UtilitiesPage({ view = 'all' }) {
           win.document.close();
         }
       } else {
-        // Open the modal right away with a loading state
         setModalPreviewUrl('');
         setModalPreviewName(fallbackName);
         setModalPreviewOpen(true);
       }
       try {
-        const response = await apiFetcher().get(
-          `/attachments/${attachmentId}/download`,
-          { responseType: 'blob' }
-        );
-        const blobUrl = window.URL.createObjectURL(response.data);
-        const fileName = getFilenameFromDisposition(
-          response.headers?.['content-disposition'],
-          fallbackName
-        );
+        // Fetch only a tiny signed token — the browser streams the file directly from the server
+        const { data } = await apiFetcher().get(`/attachments/${attachmentId}/view-token`);
+        const baseURL = apiFetcher().defaults.baseURL || '';
+        const fileUrl = `${baseURL}${data.path}`;
 
         if (usePopup) {
           if (win && !win.closed) {
-            win.location.href = blobUrl;
+            win.location.href = fileUrl;
           } else {
-            window.open(blobUrl, '_blank', 'width=1000,height=800,scrollbars=yes,resizable=yes');
+            window.open(fileUrl, '_blank', 'width=1000,height=800,scrollbars=yes,resizable=yes');
           }
         } else {
-          if (modalPreviewUrl) window.URL.revokeObjectURL(modalPreviewUrl);
-          setModalPreviewUrl(blobUrl);
-          setModalPreviewName(fileName);
+          setModalPreviewUrl(fileUrl);
+          setModalPreviewName(data.filename || fallbackName);
         }
       } catch (error) {
         if (win && !win.closed) win.close();
         setModalPreviewOpen(false);
-        let message = t('Failed to open bill preview');
-        if (error?.response?.data instanceof Blob) {
-          try {
-            const text = await error.response.data.text();
-            message = JSON.parse(text).message || message;
-          } catch {}
-        } else if (error?.response?.data?.message) {
-          message = error.response.data.message;
-        }
-        toast.error(message);
+        toast.error(error?.response?.data?.message || t('Failed to open bill preview'));
       } finally {
         setWorkingUtilityAttachmentId('');
       }
     },
-    [previewMode, modalPreviewUrl, t]
+    [previewMode, t]
   );
 
   const handleDownloadAttachment = useCallback(
@@ -3336,42 +3319,8 @@ export function UtilitiesPage({ view = 'all' }) {
       toast.error(t('No source bill attachment found'));
       return;
     }
-
-    const win = previewMode === 'popup'
-      ? window.open('', '_blank', 'width=1000,height=800,scrollbars=yes,resizable=yes')
-      : null;
-    setWorkingUtilityAttachmentId(attachmentId);
-    try {
-      const response = await apiFetcher().get(
-        `/attachments/${attachmentId}/download`,
-        { responseType: 'blob' }
-      );
-      const blobUrl = window.URL.createObjectURL(response.data);
-      if (previewMode === 'popup') {
-        if (win && !win.closed) {
-          win.location.href = blobUrl;
-        } else {
-          window.open(blobUrl, '_blank', 'width=1000,height=800,scrollbars=yes,resizable=yes');
-        }
-      } else {
-        const fallbackName = `utility-bill-${utility.billingMonth || 'record'}.pdf`;
-        const fileName = getFilenameFromDisposition(
-          response.headers?.['content-disposition'],
-          fallbackName
-        );
-        if (modalPreviewUrl) window.URL.revokeObjectURL(modalPreviewUrl);
-        setModalPreviewUrl(blobUrl);
-        setModalPreviewName(fileName);
-        setModalPreviewOpen(true);
-      }
-    } catch (error) {
-      if (win && !win.closed) win.close();
-      toast.error(
-        error?.response?.data?.message || t('Failed to open bill preview')
-      );
-    } finally {
-      setWorkingUtilityAttachmentId('');
-    }
+    const fallbackName = `utility-bill-${utility.billingMonth || 'record'}.pdf`;
+    return handlePreviewAttachment(attachmentId, fallbackName, '');
   };
 
   const handlePreviewBatchReviewFile = (item) => {

@@ -1,7 +1,8 @@
 /* eslint-disable sort-imports */
-import { Collections } from '@microrealestate/common';
+import { Collections, Service } from '@microrealestate/common';
 import { getUploadsDirectory } from '../utils/storage.js';
 import fs from 'fs-extra';
+import jwt from 'jsonwebtoken';
 import { nanoid } from 'nanoid';
 import path from 'path';
 
@@ -205,18 +206,74 @@ export async function download(req, res) {
     });
   }
 
-  // Set headers and stream file
+  // inline disposition so popup/iframe renders instead of triggering a download
   res.setHeader(
     'Content-Type',
     attachment.mimeType || 'application/octet-stream'
   );
   res.setHeader(
     'Content-Disposition',
-    `attachment; filename="${encodeURIComponent(attachment.filename)}"`
+    `inline; filename="${encodeURIComponent(attachment.filename)}"`
   );
 
   const stream = fs.createReadStream(filePath);
   stream.pipe(res);
+}
+
+/**
+ * GET /attachments/:id/view-token
+ * Issues a 60-second signed JWT so the browser can navigate directly to the file.
+ */
+export async function issueViewToken(req, res) {
+  const realm = req.realm;
+  const attachmentId = req.params.id;
+
+  const attachment = await Collections.Attachment.findOne({
+    _id: attachmentId,
+    realmId: realm._id
+  })
+    .select('_id')
+    .lean();
+
+  if (!attachment) {
+    return res.status(404).json({ message: 'Attachment not found' });
+  }
+
+  const { ACCESS_TOKEN_SECRET } = Service.getInstance().envConfig.getValues();
+  const token = jwt.sign(
+    { sub: String(attachmentId), realmId: String(realm._id), purpose: 'view' },
+    ACCESS_TOKEN_SECRET,
+    { expiresIn: '60s' }
+  );
+
+  return res.json({
+    token,
+    path: `/attachments/${attachmentId}/view?token=${encodeURIComponent(token)}`
+  });
+}
+
+/**
+ * GET /attachments/:id/view?token=  (no auth middleware — token carries the claim)
+ */
+export async function viewWithToken(req, res) {
+  const { ACCESS_TOKEN_SECRET } = Service.getInstance().envConfig.getValues();
+  let payload;
+  try {
+    payload = jwt.verify(req.query.token, ACCESS_TOKEN_SECRET);
+  } catch {
+    return res.status(401).send('View token expired or invalid — please retry.');
+  }
+
+  if (
+    payload.purpose !== 'view' ||
+    String(payload.sub) !== String(req.params.id)
+  ) {
+    return res.status(403).send('Token does not match this attachment.');
+  }
+
+  // Synthesise the realm object so download() can reuse its logic
+  req.realm = { _id: payload.realmId };
+  return download(req, res);
 }
 
 /**
