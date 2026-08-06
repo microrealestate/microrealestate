@@ -271,9 +271,36 @@ export async function viewWithToken(req, res) {
     return res.status(403).send('Token does not match this attachment.');
   }
 
-  // Synthesise the realm object so download() can reuse its logic
+  // Synthesise the realm object then stream — but render HTML errors so the browser shows them properly
   req.realm = { _id: payload.realmId };
-  return download(req, res);
+
+  const attachment = await Collections.Attachment.findOne({
+    _id: payload.sub,
+    realmId: payload.realmId
+  }).lean();
+
+  if (!attachment) {
+    return res.status(404).type('html').send(
+      '<html><body style="font-family:sans-serif;text-align:center;padding:3rem;color:#555">' +
+      '<h2>Attachment not found</h2></body></html>'
+    );
+  }
+
+  const filePath = getUploadsDirectory('attachments', attachment.storageKey);
+  const exists = await fs.pathExists(filePath);
+  if (!exists) {
+    const msg = attachment.category === 'utility_bill'
+      ? 'Bill file not found on disk — use <strong>Recapture email</strong> or <strong>Attach file</strong> on the bill card to restore it.'
+      : 'File missing on server.';
+    return res.status(404).type('html').send(
+      '<html><body style="font-family:sans-serif;text-align:center;padding:3rem;color:#555">' +
+      `<h2>File not found</h2><p>${msg}</p></body></html>`
+    );
+  }
+
+  res.setHeader('Content-Type', attachment.mimeType || 'application/octet-stream');
+  res.setHeader('Content-Disposition', `inline; filename="${encodeURIComponent(attachment.filename)}"`);
+  fs.createReadStream(filePath).pipe(res);
 }
 
 /**
