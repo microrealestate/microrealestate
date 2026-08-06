@@ -708,7 +708,11 @@ export async function all(req, res) {
     utilities.map((utility) => {
       const siblings = (billGroups.get(billKey(utility)) || [])
         .filter((s) => String(s._id) !== String(utility._id))
-        .map((s) => ({ propertyId: String(s.propertyId), name: propertyNameById.get(String(s.propertyId)) || '' }));
+        .map((s) => ({
+          propertyId: String(s.propertyId),
+          name: propertyNameById.get(String(s.propertyId)) || '',
+          amount: s.amount || 0
+        }));
       return {
         ...utility,
         attachments: (utility.attachmentIds || [])

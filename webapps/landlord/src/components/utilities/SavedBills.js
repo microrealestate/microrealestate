@@ -182,24 +182,33 @@ function SplitBreakdownTable({ utility, propertyById, toCurrency, t }) {
             </tr>
           ))}
           {/* Sibling properties from the same bill (e.g. other allocations on email-imported records) */}
-          {!items.length && (utility.siblingProperties || []).map((sib, i) => (
-            <tr key={`sib-${i}`} className="border-t text-muted-foreground">
-              <td className="px-2 py-1 italic">({sib.name})</td>
-              <td />
-              <td />
-            </tr>
-          ))}
-          <tr className={`border-t ${isSplit || items.length ? 'font-semibold' : ''}`}>
+          {!items.length && (utility.siblingProperties || []).map((sib, i) => {
+            const pct = utility.originalAmount
+              ? Math.round((sib.amount / utility.originalAmount) * 100)
+              : null;
+            return (
+              <tr key={`sib-${i}`} className="border-t text-muted-foreground italic">
+                <td className="px-2 py-1">({sib.name})</td>
+                <td className="px-2 py-1 text-right">{pct != null ? `${pct}%` : ''}</td>
+                <td className="px-2 py-1 text-right">{toCurrency(sib.amount)}</td>
+              </tr>
+            );
+          })}
+          <tr className={`border-t ${isSplit || items.length || (utility.siblingProperties || []).length ? 'font-semibold' : ''}`}>
             <td className="px-2 py-1">{items.length ? t('This property share') : propertyName}</td>
-            <td />
+            <td className="px-2 py-1 text-right">
+              {!items.length && utility.originalAmount && (utility.siblingProperties || []).length
+                ? `${Math.round((utility.amount / utility.originalAmount) * 100)}%`
+                : null}
+            </td>
             <td className="px-2 py-1 text-right">{toCurrency(utility.amount)}</td>
           </tr>
         </tbody>
-        {isSplit ? (
+        {isSplit || (!items.length && (utility.siblingProperties || []).length && utility.originalAmount) ? (
           <tfoot>
             <tr className="border-t bg-muted/30 text-muted-foreground">
               <td className="px-2 py-1" colSpan={2}>{t('Full bill (before split)')}</td>
-              <td className="px-2 py-1 text-right">{toCurrency(utility.originalAmount)}</td>
+              <td className="px-2 py-1 text-right font-semibold">{toCurrency(utility.originalAmount)}</td>
             </tr>
           </tfoot>
         ) : null}
