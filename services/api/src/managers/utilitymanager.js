@@ -1346,6 +1346,21 @@ async function importParsedMessage({ realmId, reqUser, parsedMessage, utilityAcc
       continue;
     }
 
+    // Skip if this bill was already manually confirmed for any property sharing the same account
+    const existingConfirmed = await Collections.Utility.findOne({
+      realmId,
+      accountNumber: matchedAccount.accountNumber,
+      type: normalizeType(matchedAccount.type),
+      billingMonth,
+      status: 'confirmed'
+    })
+      .select('_id')
+      .lean();
+
+    if (existingConfirmed) {
+      continue;
+    }
+
     const utility = new Collections.Utility({
       realmId,
       propertyId: String(allocation.propertyId),
