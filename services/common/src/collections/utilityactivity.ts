@@ -5,7 +5,7 @@ import Utility from './utility.js';
 
 const UtilityActivityDetailsSchema = new mongoose.Schema(
   {
-    splitMethod: { type: String, enum: ['equal', 'percentage'], default: null },
+    splitMethod: { type: String, enum: ['equal', 'percentage', null], default: null },
     splitCount: { type: Number, default: null },
     qbPostedAt: { type: Date, default: null },
     qbReference: { type: String, default: '' },
