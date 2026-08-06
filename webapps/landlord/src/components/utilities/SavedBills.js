@@ -84,7 +84,7 @@ function AttachmentsList({
                   <div className="flex items-center gap-0.5">
                     <Button variant="ghost" size="sm" className="h-6 w-6 p-0" disabled={isWorking}
                       title={t('View')}
-                      onClick={() => onPreview && onPreview(String(att._id), att.filename)}>
+                      onClick={() => onPreview && onPreview(String(att._id), att.filename, att.mimeType || '')}>
                       <LuEye className="size-3.5" />
                     </Button>
                     <Button variant="ghost" size="sm" className="h-6 w-6 p-0" disabled={isWorking}

@@ -3142,9 +3142,15 @@ export function UtilitiesPage({ view = 'all' }) {
   );
 
   const handlePreviewAttachment = useCallback(
-    async (attachmentId, fallbackName = 'bill') => {
+    async (attachmentId, fallbackName = 'bill', knownMimeType = '') => {
       setWorkingUtilityAttachmentId(attachmentId);
-      const win = previewMode === 'popup'
+      // Decide before the fetch — text files always go to modal, never popup
+      const isLikelyText =
+        knownMimeType.includes('text') ||
+        fallbackName.endsWith('.txt') ||
+        fallbackName.endsWith('.csv');
+      const usePopup = previewMode === 'popup' && !isLikelyText;
+      const win = usePopup
         ? window.open('', '_blank', 'width=1000,height=800,scrollbars=yes,resizable=yes')
         : null;
       try {
@@ -3152,23 +3158,19 @@ export function UtilitiesPage({ view = 'all' }) {
           `/attachments/${attachmentId}/download`,
           { responseType: 'blob' }
         );
-        const mimeType = response.data?.type || '';
-        const isText = mimeType.includes('text') || fallbackName.endsWith('.txt');
         const blobUrl = window.URL.createObjectURL(response.data);
         const fileName = getFilenameFromDisposition(
           response.headers?.['content-disposition'],
           fallbackName
         );
 
-        // Text files always open in modal (plain text renders poorly in a bare popup)
-        if (previewMode === 'popup' && !isText) {
+        if (usePopup) {
           if (win && !win.closed) {
             win.location.href = blobUrl;
           } else {
             window.open(blobUrl, '_blank', 'width=1000,height=800,scrollbars=yes,resizable=yes');
           }
         } else {
-          if (win && !win.closed) win.close();
           if (modalPreviewUrl) window.URL.revokeObjectURL(modalPreviewUrl);
           setModalPreviewUrl(blobUrl);
           setModalPreviewName(fileName);
@@ -3176,7 +3178,6 @@ export function UtilitiesPage({ view = 'all' }) {
         }
       } catch (error) {
         if (win && !win.closed) win.close();
-        // responseType:'blob' wraps error JSON as a Blob — read it back as text
         let message = t('Failed to open bill preview');
         if (error?.response?.data instanceof Blob) {
           try {
