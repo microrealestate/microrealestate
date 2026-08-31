@@ -1,0 +1,7 @@
+<div class="today">
+  <span contenteditable="true">
+    <% if (landlord.hasAddress) { %> <%= _.t('{{ city }}, {{ date }}', {
+    city:landlord.addresses[0].city, date: _.formatDate(rent.documentDate, 'LL'
+    )}) %> <% } else { %> <%= _.formatDate(rent.documentDate, 'LL' ) %> <% } %>
+  </span>
+</div>

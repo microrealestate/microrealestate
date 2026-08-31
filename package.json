@@ -1,0 +1,79 @@
+{
+  "name": "microrealestate",
+  "author": "Camel Aissani",
+  "license": "SEE LICENSE IN LICENSE.md",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/microrealestate/microrealestate.git"
+  },
+  "homepage": "https://microrealestate.app",
+  "bugs": {
+    "url": "https://github.com/microrealestate/microrealestate/issues"
+  },
+  "private": true,
+  "type": "module",
+  "workspaces": {
+    "packages": [
+      "cli",
+      "e2e",
+      "services/*",
+      "webapps/*",
+      "shared"
+    ]
+  },
+  "scripts": {
+    "ci": "yarn generate:version && cross-env DOCKER_BUILDKIT=1 docker compose --env-file .env -f docker/docker-compose.yml -f docker/docker-compose.ci.yml up -d --build --remove-orphans",
+    "dev": "yarn generate:version && cross-env DOCKER_BUILDKIT=1 MRE_VERSION=dev docker compose --env-file .env -f docker/docker-compose.yml -f docker/docker-compose.dev.yml up --build --remove-orphans",
+    "build": "yarn generate:version && cross-env DOCKER_BUILDKIT=1 docker compose --env-file .env -f docker/docker-compose.yml build --no-cache",
+    "start": "yarn generate:version && cross-env DOCKER_BUILDKIT=1 docker compose --env-file .env -f docker/docker-compose.yml up -d --remove-orphans --force-recreate",
+    "stop": "docker compose --env-file .env -f docker/docker-compose.yml -f docker/docker-compose.ci.yml stop",
+    "seeddemo": "tsx cli/src/index.ts seeddemo",
+    "seeddev": "tsx cli/src/index.ts seeddev",
+    "resetdata": "tsx cli/src/index.ts resetdata",
+    "lint": "biome check --write",
+    "e2e:ci": "yarn workspace @microrealestate/e2e run cypress:ci",
+    "e2e:run": "yarn workspace @microrealestate/e2e run cypress:run",
+    "e2e:open": "yarn workspace @microrealestate/e2e run cypress:open",
+    "generate:dockerfiles": "tsx docker/scripts/generate-dockerfiles.ts",
+    "generate:version": "node scripts/generate-version.mjs",
+    "validate:dockerfiles": "tsx docker/scripts/generate-dockerfiles.ts --validate-only",
+    "clean:all": "yarn workspaces foreach -A dlx rimraf node_modules .next",
+    "tsc": "yarn workspaces foreach -A -ptv --exclude microrealestate run tsc"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.3.5",
+    "cross-env": "10.1.0",
+    "handlebars": "catalog:",
+    "lefthook": "2.0.4",
+    "tsx": "catalog:",
+    "typescript": "catalog:"
+  },
+  "trustedDependencies": [
+    "@tailwindcss/oxide"
+  ],
+  "resolutions": {
+    "@babel/core": "7.29.6",
+    "@isaacs/brace-expansion": "5.0.1",
+    "axios": "1.18.1",
+    "basic-ftp": "5.3.1",
+    "brace-expansion": "1.1.13",
+    "express-rate-limit": "8.3.0",
+    "fast-xml-parser": "5.7.0",
+    "form-data": "4.0.6",
+    "follow-redirects": "1.16.0",
+    "ip-address": "10.1.1",
+    "jws": "3.2.3",
+    "lodash": "4.18.0",
+    "lodash-es": "4.18.0",
+    "markdown-it": "14.2.0",
+    "minimatch": "3.1.4",
+    "picomatch": "4.0.4",
+    "postcss": "8.5.10",
+    "qs": "6.15.2",
+    "systeminformation": "5.31.6",
+    "tar": "7.5.16",
+    "tmp": "0.2.7",
+    "ws": "8.21.0"
+  },
+  "packageManager": "yarn@4.12.0"
+}

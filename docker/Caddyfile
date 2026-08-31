@@ -1,0 +1,9 @@
+# Bootstrap only: the api pushes the stored configuration through the admin
+# API on every start. Set the domain in Settings > Web server, not here.
+{
+  admin 0.0.0.0:2019
+}
+
+:80 {
+  reverse_proxy gateway:8080
+}

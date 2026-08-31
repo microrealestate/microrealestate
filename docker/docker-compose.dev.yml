@@ -1,0 +1,363 @@
+services:
+  ###############################################################################
+  # Redis
+  ###############################################################################
+  redis:
+    mem_limit: !reset null
+    memswap_limit: !reset null
+    ports:
+      - '6379:6379'
+    networks:
+      - net
+      - egress
+  ###############################################################################
+  # Mongo
+  ###############################################################################
+  mongo:
+    mem_limit: !reset null
+    memswap_limit: !reset null
+    ports:
+      - '27017:27017'
+    networks:
+      - net
+      - egress
+  ###############################################################################
+  # Reverse Proxy
+  ###############################################################################
+  reverse-proxy:
+    ports: !override
+      - '8080:80'
+  ###############################################################################
+  # ResetService
+  ###############################################################################
+  resetservice:
+    build:
+      context: ..
+      dockerfile: services/resetservice/dev.Dockerfile
+    environment:
+      NODE_ENV: development
+      NODE_OPTIONS: --trace-warnings
+      LOGGER_LEVEL: debug
+      PORT: 8900
+      REDIS_URL: redis://redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-redis_password}
+      MONGO_URL: ${MONGO_URL:-mongodb://mongo/mredb}
+      CHOKIDAR_USEPOLLING: 'true'
+    volumes:
+      - ../yarn.lock:/usr/app/yarn.lock
+      - ../package.json:/usr/app/package.json
+      - ../tsconfig.json:/usr/app/tsconfig.json
+      - ../shared/src:/usr/app/shared/src
+      - ../shared/package.json:/usr/app/shared/package.json
+      - ../shared/tsconfig.json:/usr/app/shared/tsconfig.json
+      - ../services/common/src:/usr/app/services/common/src
+      - ../services/common/package.json:/usr/app/services/common/package.json
+      - ../services/common/tsconfig.json:/usr/app/services/common/tsconfig.json
+      - ../services/resetservice/src:/usr/app/services/resetservice/src
+      - ../services/resetservice/package.json:/usr/app/services/resetservice/package.json
+      - ../services/resetservice/tsconfig.json:/usr/app/services/resetservice/tsconfig.json
+    expose:
+      - '8900'
+    ports:
+      - '9230:9230'
+    depends_on:
+      redis:
+        condition: service_started
+      mongo:
+        condition: service_started
+    networks:
+      - net
+      - egress
+  ###############################################################################
+  # Gateway
+  ###############################################################################
+  gateway:
+    image: !reset null
+    mem_limit: !reset null
+    memswap_limit: !reset null
+    build:
+      context: ..
+      dockerfile: services/gateway/dev.Dockerfile
+    environment:
+      NODE_ENV: development
+      NODE_OPTIONS: --trace-warnings
+      LOGGER_LEVEL: debug
+      RESETSERVICE_URL: http://resetservice:8900
+      CHOKIDAR_USEPOLLING: 'true'
+    volumes:
+      - ../yarn.lock:/usr/app/yarn.lock
+      - ../package.json:/usr/app/package.json
+      - ../tsconfig.json:/usr/app/tsconfig.json
+      - ../shared/src:/usr/app/shared/src
+      - ../shared/package.json:/usr/app/shared/package.json
+      - ../shared/tsconfig.json:/usr/app/shared/tsconfig.json
+      - ../services/common/src:/usr/app/services/common/src
+      - ../services/common/package.json:/usr/app/services/common/package.json
+      - ../services/common/tsconfig.json:/usr/app/services/common/tsconfig.json
+      - ../services/gateway/src:/usr/app/services/gateway/src
+      - ../services/gateway/package.json:/usr/app/services/gateway/package.json
+      - ../services/gateway/tsconfig.json:/usr/app/services/gateway/tsconfig.json
+    ports: !override
+      - '9225:9225'
+    networks:
+      - net
+      - egress
+  ###############################################################################
+  # Authenticator
+  ###############################################################################
+  authenticator:
+    image: !reset null
+    mem_limit: !reset null
+    memswap_limit: !reset null
+    build:
+      context: ..
+      dockerfile: services/authenticator/dev.Dockerfile
+    environment:
+      NODE_ENV: development
+      NODE_OPTIONS: --trace-warnings
+      LOGGER_LEVEL: debug
+      CHOKIDAR_USEPOLLING: 'true'
+    volumes:
+      - ../yarn.lock:/usr/app/yarn.lock
+      - ../package.json:/usr/app/package.json
+      - ../tsconfig.json:/usr/app/tsconfig.json
+      - ../shared/src:/usr/app/shared/src
+      - ../shared/package.json:/usr/app/shared/package.json
+      - ../shared/tsconfig.json:/usr/app/shared/tsconfig.json
+      - ../services/common/src:/usr/app/services/common/src
+      - ../services/common/package.json:/usr/app/services/common/package.json
+      - ../services/common/tsconfig.json:/usr/app/services/common/tsconfig.json
+      - ../services/authenticator/src:/usr/app/services/authenticator/src
+      - ../services/authenticator/package.json:/usr/app/services/authenticator/package.json
+      - ../services/authenticator/tsconfig.json:/usr/app/services/authenticator/tsconfig.json
+    ports:
+      - '9226:9226'
+    networks:
+      - net
+      - egress
+  ###############################################################################
+  # PDFGenerator
+  ###############################################################################
+  pdfgenerator:
+    image: !reset null
+    mem_limit: !reset null
+    memswap_limit: !reset null
+    build: !override
+      context: ..
+      dockerfile: services/pdfgenerator/dev.Dockerfile
+    environment:
+      NODE_ENV: development
+      NODE_OPTIONS: --trace-warnings
+      LOGGER_LEVEL: debug
+      CHOKIDAR_USEPOLLING: 'true'
+    volumes:
+      - ../yarn.lock:/usr/app/yarn.lock
+      - ../package.json:/usr/app/package.json
+      - ../tsconfig.json:/usr/app/tsconfig.json
+      - ../shared/src:/usr/app/shared/src
+      - ../shared/package.json:/usr/app/shared/package.json
+      - ../shared/tsconfig.json:/usr/app/shared/tsconfig.json
+      - ../services/common/src:/usr/app/services/common/src
+      - ../services/common/package.json:/usr/app/services/common/package.json
+      - ../services/common/tsconfig.json:/usr/app/services/common/tsconfig.json
+      - ../services/pdfgenerator/data:/usr/app/services/pdfgenerator/data
+      - ../services/pdfgenerator/src:/usr/app/services/pdfgenerator/src
+      - ../services/pdfgenerator/templates:/usr/app/services/pdfgenerator/templates
+      - ../services/pdfgenerator/package.json:/usr/app/services/pdfgenerator/package.json
+      - ../services/pdfgenerator/tsconfig.json:/usr/app/services/pdfgenerator/tsconfig.json
+    ports:
+      - '9227:9227'
+    networks:
+      - net
+      - egress
+  ###############################################################################
+  # Emailer
+  ###############################################################################
+  emailer:
+    image: !reset null
+    mem_limit: !reset null
+    memswap_limit: !reset null
+    build:
+      context: ..
+      dockerfile: services/emailer/dev.Dockerfile
+    environment:
+      NODE_ENV: development
+      NODE_OPTIONS: --trace-warnings
+      LOGGER_LEVEL: debug
+      CHOKIDAR_USEPOLLING: 'true'
+    volumes:
+      - ../yarn.lock:/usr/app/yarn.lock
+      - ../package.json:/usr/app/package.json
+      - ../tsconfig.json:/usr/app/tsconfig.json
+      - ../shared/src:/usr/app/shared/src
+      - ../shared/package.json:/usr/app/shared/package.json
+      - ../shared/tsconfig.json:/usr/app/shared/tsconfig.json
+      - ../services/common/src:/usr/app/services/common/src
+      - ../services/common/package.json:/usr/app/services/common/package.json
+      - ../services/common/tsconfig.json:/usr/app/services/common/tsconfig.json
+      - ../services/emailer/src:/usr/app/services/emailer/src
+      - ../services/emailer/package.json:/usr/app/services/emailer/package.json
+      - ../services/emailer/tsconfig.json:/usr/app/services/emailer/tsconfig.json
+    ports:
+      - '9228:9228'
+    depends_on:
+      smtp4dev:
+        condition: service_started
+  ###############################################################################
+  # smtp4dev
+  # Local SMTP sink, catches all emails sent in DEV. Web UI on http://localhost:5080
+  ###############################################################################
+  smtp4dev:
+    image: rnwood/smtp4dev:v3
+    environment:
+      ServerOptions__HostName: smtp4dev
+      ServerOptions__TlsMode: None
+      ServerOptions__AuthenticationRequired: 'false'
+      ServerOptions__NumberOfMessagesToKeep: '200'
+      RelayOptions__SmtpServer: ''
+    expose:
+      - '25'
+    ports:
+      - '5080:80'
+    networks:
+      - net
+      - egress # the net network is internal, published ports need egress
+  ###############################################################################
+  # api
+  ###############################################################################
+  api:
+    image: !reset null
+    mem_limit: !reset null
+    memswap_limit: !reset null
+    build:
+      context: ..
+      dockerfile: services/api/dev.Dockerfile
+    environment:
+      NODE_ENV: development
+      NODE_OPTIONS: --trace-warnings
+      LOGGER_LEVEL: debug
+      CHOKIDAR_USEPOLLING: 'true'
+    volumes:
+      - ../yarn.lock:/usr/app/yarn.lock
+      - ../package.json:/usr/app/package.json
+      - ../tsconfig.json:/usr/app/tsconfig.json
+      - ../shared/src:/usr/app/shared/src
+      - ../shared/package.json:/usr/app/shared/package.json
+      - ../shared/tsconfig.json:/usr/app/shared/tsconfig.json
+      - ../services/common/src:/usr/app/services/common/src
+      - ../services/common/package.json:/usr/app/services/common/package.json
+      - ../services/common/tsconfig.json:/usr/app/services/common/tsconfig.json
+      - ../services/api/scripts:/usr/app/services/api/scripts
+      - ../services/api/src:/usr/app/services/api/src
+      - ../services/api/package.json:/usr/app/services/api/package.json
+      - ../services/api/tsconfig.json:/usr/app/services/api/tsconfig.json
+    ports:
+      - '9229:9229'
+    networks:
+      - net
+      - egress
+  ###############################################################################
+  # tenant api
+  ###############################################################################
+  tenantapi:
+    image: !reset null
+    mem_limit: !reset null
+    memswap_limit: !reset null
+    build:
+      context: ..
+      dockerfile: services/tenantapi/dev.Dockerfile
+    environment:
+      NODE_ENV: development
+      NODE_OPTIONS: --trace-warnings
+      LOGGER_LEVEL: debug
+      CHOKIDAR_USEPOLLING: 'true'
+    volumes:
+      - ../yarn.lock:/usr/app/yarn.lock
+      - ../package.json:/usr/app/package.json
+      - ../tsconfig.json:/usr/app/tsconfig.json
+      - ../shared/src:/usr/app/shared/src
+      - ../shared/package.json:/usr/app/shared/package.json
+      - ../shared/tsconfig.json:/usr/app/shared/tsconfig.json
+      - ../services/common/src:/usr/app/services/common/src
+      - ../services/common/package.json:/usr/app/services/common/package.json
+      - ../services/common/tsconfig.json:/usr/app/services/common/tsconfig.json
+      - ../services/tenantapi/src:/usr/app/services/tenantapi/src
+      - ../services/tenantapi/package.json:/usr/app/services/tenantapi/package.json
+      - ../services/tenantapi/tsconfig.json:/usr/app/services/tenantapi/tsconfig.json
+    ports:
+      - '9240:9240'
+    networks:
+      - net
+      - egress
+  ###############################################################################
+  # Landlord frontend
+  ###############################################################################
+  landlord-frontend:
+    image: !reset null
+    mem_limit: !reset null
+    memswap_limit: !reset null
+    build:
+      dockerfile: webapps/landlord/dev.Dockerfile
+    environment:
+      NODE_ENV: development
+      NODE_OPTIONS: --trace-warnings
+      WATCHPACK_POLLING: 'true'
+    volumes:
+      - ../yarn.lock:/usr/app/yarn.lock
+      - ../package.json:/usr/app/package.json
+      - ../tsconfig.json:/usr/app/tsconfig.json
+      - ../shared/src:/usr/app/shared/src
+      - ../shared/package.json:/usr/app/shared/package.json
+      - ../shared/tsconfig.json:/usr/app/shared/tsconfig.json
+      - ../webapps/commonui/scripts:/usr/app/webapps/commonui/scripts
+      - ../webapps/commonui/src:/usr/app/webapps/commonui/src
+      - ../webapps/commonui/package.json:/usr/app/webapps/commonui/package.json
+      - ../webapps/commonui/postcss.config.mjs:/usr/app/webapps/commonui/postcss.config.mjs
+      - ../webapps/commonui/tailwind.config.ts:/usr/app/webapps/commonui/tailwind.config.ts
+      - ../webapps/landlord/locales:/usr/app/webapps/landlord/locales
+      - ../webapps/landlord/public:/usr/app/webapps/landlord/public
+      - ../webapps/landlord/scripts:/usr/app/webapps/landlord/scripts
+      - ../webapps/landlord/src:/usr/app/webapps/landlord/src
+      - ../webapps/landlord/next.config.js:/usr/app/webapps/landlord/next.config.js
+      - ../webapps/landlord/package.json:/usr/app/webapps/landlord/package.json
+      - ../webapps/landlord/postcss.config.mjs:/usr/app/webapps/landlord/postcss.config.mjs
+      - ../webapps/landlord/tsconfig.json:/usr/app/webapps/landlord/tsconfig.json
+    networks:
+      - net
+      - egress # next/font/google fetches Inter at compile time
+  ###############################################################################
+  # Tenant frontend
+  ###############################################################################
+  tenant-frontend:
+    image: !reset null
+    mem_limit: !reset null
+    memswap_limit: !reset null
+    build:
+      dockerfile: webapps/tenant/dev.Dockerfile
+    environment:
+      NODE_ENV: development
+      NODE_OPTIONS: --trace-warnings
+      WATCHPACK_POLLING: 'true'
+    volumes:
+      - ../yarn.lock:/usr/app/yarn.lock
+      - ../package.json:/usr/app/package.json
+      - ../tsconfig.json:/usr/app/tsconfig.json
+      - ../shared/src:/usr/app/shared/src
+      - ../shared/package.json:/usr/app/shared/package.json
+      - ../shared/tsconfig.json:/usr/app/shared/tsconfig.json
+      - ../webapps/tsconfig.json:/usr/app/webapps/tsconfig.json
+      - ../webapps/commonui/scripts:/usr/app/webapps/commonui/scripts
+      - ../webapps/commonui/src:/usr/app/webapps/commonui/src
+      - ../webapps/commonui/package.json:/usr/app/webapps/commonui/package.json
+      - ../webapps/commonui/postcss.config.mjs:/usr/app/webapps/commonui/postcss.config.mjs
+      - ../webapps/commonui/tailwind.config.ts:/usr/app/webapps/commonui/tailwind.config.ts
+      - ../webapps/tenant/locales:/usr/app/webapps/tenant/locales
+      - ../webapps/tenant/public:/usr/app/webapps/tenant/public
+      - ../webapps/tenant/src:/usr/app/webapps/tenant/src
+      - ../webapps/tenant/next.config.js:/usr/app/webapps/tenant/next.config.js
+      - ../webapps/tenant/package.json:/usr/app/webapps/tenant/package.json
+      - ../webapps/tenant/postcss.config.mjs:/usr/app/webapps/tenant/postcss.config.mjs
+      - ../webapps/tenant/tsconfig.json:/usr/app/webapps/tenant/tsconfig.json
+    networks:
+      - net
+      - egress # next/font/google fetches Inter at compile time

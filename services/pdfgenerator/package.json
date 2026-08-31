@@ -1,0 +1,32 @@
+{
+  "name": "@microrealestate/pdfgenerator",
+  "version": "1.0.0",
+  "description": "Generates PDF documents (letters, contracts, invoices...)",
+  "author": "Camel Aissani",
+  "type": "module",
+  "main": "src/index.js",
+  "private": true,
+  "scripts": {
+    "dev": "tsx watch --clear-screen=false --include='./data/**' --include='./templates/**' --inspect=0.0.0.0:9227 src/index.js",
+    "start": "tsx src/index.js"
+  },
+  "dependencies": {
+    "@microrealestate/common": "workspace:*",
+    "async-mutex": "0.5.0",
+    "ejs": "catalog:",
+    "express": "catalog:",
+    "file-url": "3.0.0",
+    "fs-extra": "10.1.0",
+    "handlebars": "catalog:",
+    "i18n": "catalog:",
+    "locale": "catalog:",
+    "moment": "catalog:",
+    "puppeteer": "23.2.1",
+    "tsx": "catalog:"
+  },
+  "devDependencies": {
+    "@types/express": "catalog:",
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
+  }
+}

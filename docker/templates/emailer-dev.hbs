@@ -1,0 +1,20 @@
+FROM {{baseImage}} AS base
+RUN apk upgrade --no-cache --available
+ENV COREPACK_HOME=/usr/local/corepack
+RUN npm install -g --force corepack \
+    && corepack install -g yarn@{{yarnVersion}} \
+    && chmod -R a+rX "$COREPACK_HOME"
+
+FROM base AS install
+WORKDIR /usr/app
+COPY package.json .yarnrc.yml yarn.lock .
+COPY shared/package.json shared/
+COPY services/common/package.json services/common/
+COPY services/{{serviceName}}/package.json services/{{serviceName}}/
+RUN --mount=type=cache,id=node_modules,target=/root/.yarn YARN_CACHE_FOLDER=/root/.yarn \
+    yarn workspaces focus @microrealestate/{{serviceName}}
+
+FROM base
+WORKDIR /usr/app
+COPY --from=install /usr/app ./
+ENTRYPOINT ["yarn", "workspace", "@microrealestate/{{serviceName}}", "run", "dev"]

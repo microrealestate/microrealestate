@@ -1,0 +1,24 @@
+{
+  "name": "@microrealestate/resetservice",
+  "version": "1.0.0",
+  "description": "Service which allows to reset the MicroRealEstate databases",
+  "author": "Camel Aissani",
+  "type": "module",
+  "main": "src/index.ts",
+  "private": true,
+  "scripts": {
+    "dev": "tsx watch --clear-screen=false --inspect=0.0.0.0:9230 src/index.ts",
+    "start": "tsx src/index.ts",
+    "tsc": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@microrealestate/common": "workspace:*",
+    "express": "catalog:",
+    "tsx": "catalog:"
+  },
+  "devDependencies": {
+    "@types/express": "catalog:",
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
+  }
+}

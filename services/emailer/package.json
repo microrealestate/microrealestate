@@ -1,0 +1,29 @@
+{
+  "name": "@microrealestate/emailer",
+  "version": "1.0.0",
+  "description": "Generates and sends emails",
+  "author": "Camel Aissani",
+  "type": "module",
+  "main": "src/index.js",
+  "private": true,
+  "scripts": {
+    "dev": "tsx watch --clear-screen=false --include='./src/emailparts/**' --inspect=0.0.0.0:9228 src/index.js",
+    "start": "tsx src/index.js"
+  },
+  "dependencies": {
+    "@microrealestate/common": "workspace:*",
+    "axios": "catalog:",
+    "ejs": "catalog:",
+    "express": "catalog:",
+    "i18n": "catalog:",
+    "locale": "catalog:",
+    "moment": "catalog:",
+    "nodemailer": "9.0.1",
+    "tsx": "catalog:"
+  },
+  "devDependencies": {
+    "@types/express": "catalog:",
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
+  }
+}

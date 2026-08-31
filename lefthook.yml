@@ -1,0 +1,21 @@
+pre-commit:
+  commands:
+    regenerate-dockerfiles:
+      run: |
+        echo "🔄 Regenerating Dockerfiles from templates..."
+        npm run generate:dockerfiles
+        echo "✅ Dockerfiles regenerated. Staging updated files..."
+        git add --update services/*/Dockerfile services/*/dev.Dockerfile webapps/*/Dockerfile webapps/*/dev.Dockerfile
+        echo "📋 Updated Dockerfiles staged for commit"
+    validate-generated-files:
+      run: npm run validate:dockerfiles
+    check:
+      glob: "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}"
+      run: npx @biomejs/biome check --write --no-errors-on-unmatched --files-ignore-unknown=true --colors=off {staged_files}
+      stage_fixed: true
+
+pre-push:
+  commands:
+    check:
+      glob: "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}"
+      run: npx @biomejs/biome check --no-errors-on-unmatched --files-ignore-unknown=true --colors=off {push_files}

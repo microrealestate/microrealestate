@@ -1,0 +1,34 @@
+{
+  "name": "@microrealestate/api",
+  "version": "1.0.0",
+  "description": "Api service",
+  "author": "Camel Aissani",
+  "type": "module",
+  "main": "src/index.ts",
+  "private": true,
+  "scripts": {
+    "dev": "tsx watch --clear-screen=false --inspect=0.0.0.0:9229 src/index.ts",
+    "start": "tsx src/index.ts",
+    "tsc": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@microrealestate/common": "workspace:*",
+    "axios": "catalog:",
+    "cron": "catalog:",
+    "express": "catalog:",
+    "i18n": "catalog:",
+    "json2csv": "5.0.6",
+    "lodash": "catalog:",
+    "moment": "catalog:",
+    "nanoid": "catalog:",
+    "tsx": "catalog:"
+  },
+  "devDependencies": {
+    "@types/cron": "catalog:",
+    "@types/express": "catalog:",
+    "@types/i18n": "catalog:",
+    "@types/json2csv": "catalog:",
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
+  }
+}

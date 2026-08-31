@@ -1,0 +1,139 @@
+name: Prepare release
+
+# Renames changelog/unreleased.md to the version being released and opens a
+# fresh empty one, on a pull request. Merging it produces the commit CI builds
+# and the Release workflow promotes, so the tagged commit carries the entry its
+# release notes are read from.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g. 1.2.3 or v1.2.3)'
+        required: true
+        type: string
+
+concurrency:
+  group: prepare-release
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Validate input
+        id: vars
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          VERSION="$INPUT_VERSION"
+
+          if ! [[ "$VERSION" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::Invalid version '$VERSION' (expected e.g. 1.2.3 or v1.2.3)"
+            exit 1
+          fi
+          VERSION="${VERSION#v}"
+
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "branch=release/$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout main
+        uses: actions/checkout@v6
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Check the changelog is ready
+        env:
+          VERSION: ${{ steps.vars.outputs.version }}
+        run: |
+          if [ ! -f changelog/unreleased.md ]; then
+            echo "::error::changelog/unreleased.md is missing."
+            exit 1
+          fi
+
+          if [ -e "changelog/$VERSION.md" ]; then
+            echo "::error::changelog/$VERSION.md already exists — that version is already prepared."
+            exit 1
+          fi
+
+          if [ -z "$(tr -d '[:space:]' < changelog/unreleased.md)" ]; then
+            echo "::error::Nothing to release: changelog/unreleased.md is empty, so $VERSION would describe no changes."
+            exit 1
+          fi
+
+          if git rev-parse --verify --quiet "refs/tags/v$VERSION" > /dev/null; then
+            echo "::error::Tag v$VERSION already exists — that version has already been released."
+            exit 1
+          fi
+
+      - name: Check no release is already in flight
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: ${{ steps.vars.outputs.branch }}
+        run: |
+          OPEN=$(gh pr list --state open --json number,headRefName \
+            --jq '.[] | select(.headRefName | startswith("release/")) | "#\(.number) (\(.headRefName))"')
+          if [ -n "$OPEN" ]; then
+            echo "::error::A release pull request is still open: $(echo $OPEN | tr '\n' ' '). Merge or close it first."
+            exit 1
+          fi
+
+          if git ls-remote --exit-code --heads origin "$BRANCH" > /dev/null 2>&1; then
+            echo "::error::Branch $BRANCH already exists on the remote."
+            exit 1
+          fi
+
+      - name: Close the entry and open the next one
+        env:
+          VERSION: ${{ steps.vars.outputs.version }}
+        run: |
+          git mv changelog/unreleased.md "changelog/$VERSION.md"
+          : > changelog/unreleased.md
+
+      - name: Commit and open the pull request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.vars.outputs.version }}
+          BRANCH: ${{ steps.vars.outputs.branch }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git switch -c "$BRANCH"
+          git add changelog
+          git commit -m "docs: release $VERSION"
+          git push origin "$BRANCH"
+
+          {
+            echo "Prepared by the Prepare release workflow."
+            echo
+            echo "\`changelog/unreleased.md\` is now \`changelog/$VERSION.md\`, and a fresh empty one is open."
+            echo
+            echo "Next steps:"
+            echo
+            echo "1. Review and merge this pull request"
+            echo "2. Wait for the CI run on the merge commit to publish all 8 \`sha-*\` images"
+            echo "3. Run the **Release** workflow with version \`$VERSION\` and that merge commit's sha — dry run first"
+          } > "$RUNNER_TEMP/pr-body.md"
+
+          gh pr create \
+            --base main \
+            --head "$BRANCH" \
+            --title "docs: release $VERSION" \
+            --body-file "$RUNNER_TEMP/pr-body.md"
+
+      - name: Summary
+        env:
+          VERSION: ${{ steps.vars.outputs.version }}
+          BRANCH: ${{ steps.vars.outputs.branch }}
+        run: |
+          {
+            echo "### Release \`$VERSION\` prepared"
+            echo "Branch \`$BRANCH\` pushed and a pull request opened."
+            echo "Merge it, wait for CI, then run the Release workflow against the merge commit."
+          } >> "$GITHUB_STEP_SUMMARY"

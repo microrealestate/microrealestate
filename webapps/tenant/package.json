@@ -1,0 +1,44 @@
+{
+  "name": "@microrealestate/tenant",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build --no-lint --turbopack",
+    "start": "next start",
+    "generateStrings": "node scripts/extractlocalizedstrings.js",
+    "tsc": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@formatjs/intl-localematcher": "catalog:",
+    "@microrealestate/commonui": "workspace:*",
+    "@microrealestate/shared": "workspace:*",
+    "@tanstack/react-query": "catalog:",
+    "axios": "catalog:",
+    "date-fns": "4.1.0",
+    "formik": "catalog:",
+    "js-file-download": "catalog:",
+    "lucide-react": "0.475.0",
+    "moment": "catalog:",
+    "negotiator": "catalog:",
+    "next": "catalog:",
+    "next-intl": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "react-icons": "catalog:",
+    "sonner": "2.0.7",
+    "yup": "catalog:"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "catalog:",
+    "@types/negotiator": "catalog:",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "postcss": "catalog:",
+    "tailwind-merge": "catalog:",
+    "tailwindcss": "catalog:",
+    "tailwindcss-animate": "catalog:",
+    "typescript": "catalog:"
+  }
+}

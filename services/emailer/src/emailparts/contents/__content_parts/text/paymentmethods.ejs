@@ -1,0 +1,8 @@
+<% if (landlord.hasBankInfo) { -%>
+<%- _.t('Payment by bank transfer') %>
+<%- _.t('Bank details') %>
+<%- landlord.bankInfo.name %>
+<%- _.t('IBAN: {{iban}}', { iban: landlord.bankInfo.iban }) %>
+<% } -%>
+
+<%- _.t('If you have already paid this amount, we thank you and invite you to ignore this message.') %>

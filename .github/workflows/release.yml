@@ -1,0 +1,263 @@
+name: Release
+
+# Promotion model: CI (on push to main) builds and pushes images tagged
+# `sha-<short sha>`. This workflow re-tags an existing, already-published set
+# of images with a release version and `latest` — no rebuild happens here.
+# It also creates the git tag and the GitHub Release at the promoted commit.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g. 1.2.3 or v1.2.3)'
+        required: true
+        type: string
+      sha:
+        description: 'Commit sha of the CI build to promote (7+ hex chars)'
+        required: true
+        type: string
+      dry_run:
+        description: 'Validate only: re-tag nothing, create no tag or release'
+        required: false
+        type: boolean
+        default: false
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  packages: write
+
+env:
+  IMAGE_PREFIX: ghcr.io/microrealestate/microrealestate
+  SERVICES: 'gateway authenticator api tenantapi pdfgenerator emailer landlord-frontend tenant-frontend'
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      version: ${{ steps.vars.outputs.version }}
+      sha: ${{ steps.commit.outputs.full }}
+      short_sha: ${{ steps.commit.outputs.short }}
+      is_prerelease: ${{ steps.vars.outputs.is_prerelease }}
+      changelog_path: ${{ steps.prepared.outputs.path }}
+    steps:
+      - name: Validate inputs
+        id: vars
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+          INPUT_SHA: ${{ inputs.sha }}
+        run: |
+          VERSION="$INPUT_VERSION"
+          SHA="$INPUT_SHA"
+
+          if ! [[ "$VERSION" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::Invalid version '$VERSION' (expected e.g. 1.2.3 or v1.2.3)"
+            exit 1
+          fi
+          VERSION="${VERSION#v}"
+
+          if ! [[ "$SHA" =~ ^[0-9a-fA-F]{7,40}$ ]]; then
+            echo "::error::Invalid commit sha '$SHA'"
+            exit 1
+          fi
+          SHA="${SHA,,}"
+
+          if [[ "$VERSION" == *-* ]]; then
+            IS_PRERELEASE=true
+          else
+            IS_PRERELEASE=false
+          fi
+
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+          echo "is_prerelease=$IS_PRERELEASE" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout history
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Resolve the commit
+        id: commit
+        env:
+          SHA: ${{ steps.commit.outputs.full }}
+        run: |
+          # Both forms are needed: images are tagged with exactly 7 characters,
+          # while the release API wants a full sha.
+          if ! FULL=$(git rev-parse --verify --quiet "${SHA}^{commit}"); then
+            echo "::error::Commit $SHA not found in repository history"
+            exit 1
+          fi
+
+          echo "full=$FULL" >> "$GITHUB_OUTPUT"
+          echo "short=${FULL:0:7}" >> "$GITHUB_OUTPUT"
+
+      - name: Refuse to re-release a finalised commit
+        env:
+          SHA: ${{ steps.commit.outputs.full }}
+        run: |
+          STABLE=$(git tag --points-at "$SHA" | awk '/^v?[0-9]+\.[0-9]+\.[0-9]+$/')
+          if [ -n "$STABLE" ]; then
+            echo "::error::Commit $SHA is already released as $(echo $STABLE | tr '\n' ' '). A stable release is final for a commit — cut the next release from a new commit."
+            exit 1
+          fi
+
+      - name: Verify the release was prepared
+        id: prepared
+        env:
+          SHA: ${{ steps.commit.outputs.full }}
+          VERSION: ${{ steps.vars.outputs.version }}
+        run: |
+          PATH_IN_TREE=$(git ls-tree --name-only "$SHA" changelog/ \
+            | node scripts/changelog-release.mjs --resolve "$VERSION")
+
+          echo "path=$PATH_IN_TREE" >> "$GITHUB_OUTPUT"
+          echo "Release notes will be read from $PATH_IN_TREE"
+
+      - name: Check whether the tag already exists
+        env:
+          VERSION: ${{ steps.vars.outputs.version }}
+        run: |
+          if git rev-parse --verify --quiet "refs/tags/v${VERSION}" > /dev/null; then
+            echo "::warning::Tag v${VERSION} already exists — the existing GitHub release would be updated, not created."
+            echo "TAG_EXISTS=true" >> "$GITHUB_ENV"
+          fi
+
+      - name: Install crane
+        env:
+          CRANE_VERSION: v0.21.9
+          CRANE_SHA256: 5c16d8ddb971cb1d5e6ed8b1e743da8224414eeba2c2762d8f1a61b2f095699e
+        run: |
+          curl -fsSL -o crane.tgz \
+            "https://github.com/google/go-containerregistry/releases/download/${CRANE_VERSION}/go-containerregistry_Linux_x86_64.tar.gz"
+          echo "${CRANE_SHA256}  crane.tgz" | sha256sum -c -
+          sudo tar xz -C /usr/local/bin -f crane.tgz crane
+          rm crane.tgz
+          crane version
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ secrets.GHCR_USERNAME }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      - name: Verify source images exist
+        env:
+          SHORT_SHA: ${{ steps.commit.outputs.short }}
+        run: |
+          MISSING=0
+          for SVC in $SERVICES; do
+            IMAGE="${IMAGE_PREFIX}/${SVC}:sha-${SHORT_SHA}"
+            if ! crane manifest "$IMAGE" > /dev/null 2>&1; then
+              echo "::error::Source image not found: $IMAGE"
+              MISSING=$((MISSING + 1))
+            fi
+          done
+          if [ "$MISSING" -gt 0 ]; then
+            echo "::error::$MISSING source image(s) missing. Has CI finished on commit ${SHORT_SHA}?"
+            exit 1
+          fi
+          echo "All $SERVICES images found with tag sha-${SHORT_SHA}"
+
+      - name: Plan promotion (dry run)
+        if: inputs.dry_run == true
+        env:
+          VERSION: ${{ steps.vars.outputs.version }}
+          SHA: ${{ steps.commit.outputs.full }}
+          IS_PRERELEASE: ${{ steps.vars.outputs.is_prerelease }}
+          CHANGELOG_PATH: ${{ steps.prepared.outputs.path }}
+          SHORT_SHA: ${{ steps.commit.outputs.short }}
+        run: |
+          {
+            echo "### Dry run — nothing was pushed"
+            if [ "$IS_PRERELEASE" = "true" ]; then
+              echo "\`$VERSION\` is a prerelease: \`latest\` would be left untouched."
+            fi
+            echo "Commands that would be executed:"
+            echo '```'
+            for SVC in $SERVICES; do
+              echo "crane tag ${IMAGE_PREFIX}/${SVC}:sha-${SHORT_SHA} ${VERSION}"
+              if [ "$IS_PRERELEASE" != "true" ]; then
+                echo "crane tag ${IMAGE_PREFIX}/${SVC}:sha-${SHORT_SHA} latest"
+              fi
+            done
+            echo '```'
+            echo "Git tag \`v${VERSION}\` would be created at \`${SHA}\`"
+            echo "### Release body, read from \`${CHANGELOG_PATH}\`"
+            git show "$SHA:$CHANGELOG_PATH"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Promote images
+        if: inputs.dry_run != true
+        env:
+          VERSION: ${{ steps.vars.outputs.version }}
+          SHA: ${{ steps.commit.outputs.full }}
+          IS_PRERELEASE: ${{ steps.vars.outputs.is_prerelease }}
+          SHORT_SHA: ${{ steps.commit.outputs.short }}
+        run: |
+          for SVC in $SERVICES; do
+            SRC="${IMAGE_PREFIX}/${SVC}:sha-${SHORT_SHA}"
+            crane tag "$SRC" "$VERSION"
+            if [ "$IS_PRERELEASE" = "true" ]; then
+              echo "Promoted ${SVC} -> :${VERSION} (prerelease, latest untouched)"
+            else
+              crane tag "$SRC" latest
+              echo "Promoted ${SVC} -> :${VERSION}, :latest"
+            fi
+          done
+
+      - name: Summary
+        if: inputs.dry_run != true
+        env:
+          VERSION: ${{ steps.vars.outputs.version }}
+          SHA: ${{ steps.commit.outputs.full }}
+          IS_PRERELEASE: ${{ steps.vars.outputs.is_prerelease }}
+        run: |
+          {
+            echo "### Images promoted to \`v${VERSION}\`"
+            echo "Commit: ${SHA}"
+            if [ "$IS_PRERELEASE" = "true" ]; then
+              echo "Prerelease — \`latest\` was not moved."
+            fi
+            for SVC in $SERVICES; do
+              echo "- \`${IMAGE_PREFIX}/${SVC}:${VERSION}\`"
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  create-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: promote
+    if: inputs.dry_run != true
+    steps:
+      - name: Checkout history
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Extract the release notes
+        env:
+          SHA: ${{ needs.promote.outputs.sha }}
+          CHANGELOG_PATH: ${{ needs.promote.outputs.changelog_path }}
+        run: |
+          git show "$SHA:$CHANGELOG_PATH" > "$RUNNER_TEMP/release-body.md"
+
+          if [ -z "$(tr -d '[:space:]' < "$RUNNER_TEMP/release-body.md")" ]; then
+            echo "::error::$CHANGELOG_PATH at $SHA is empty — refusing to publish a blank release."
+            exit 1
+          fi
+
+      - name: Create git tag and GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          body_path: ${{ runner.temp }}/release-body.md
+          tag_name: v${{ needs.promote.outputs.version }}
+          target_commitish: ${{ needs.promote.outputs.sha }}
+          name: v${{ needs.promote.outputs.version }}
+          prerelease: ${{ needs.promote.outputs.is_prerelease == 'true' }}
+          generate_release_notes: true

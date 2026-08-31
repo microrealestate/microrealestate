@@ -1,0 +1,24 @@
+export type EnvironmentValues = {
+  LOGGER_LEVEL?: string;
+  PRODUCTION?: boolean;
+  PORT?: number;
+  TRUST_PROXY?: string;
+  MONGO_URL?: string;
+  REDIS_URL?: string;
+  REDIS_PASSWORD?: string;
+  ACCESS_TOKEN_SECRET?: string;
+  REFRESH_TOKEN_SECRET?: string;
+  RESET_TOKEN_SECRET?: string;
+  CIPHER_KEY?: string;
+  CIPHER_IV_KEY?: string;
+  AUTHENTICATOR_URL?: string;
+  API_URL?: string;
+  PDFGENERATOR_URL?: string;
+  RESETSERVICE_URL?: string;
+  LANDLORD_FRONTEND_URL?: string;
+  TENANT_FRONTEND_URL?: string;
+  TENANTAPI_URL?: string;
+  EMAILER_URL?: string;
+  CADDY_ADMIN_URL?: string;
+  CHROMIUM_BIN?: string;
+};

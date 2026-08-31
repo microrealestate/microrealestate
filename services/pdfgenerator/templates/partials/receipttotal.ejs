@@ -1,0 +1,34 @@
+<tr>
+  <td colspan="1" class="blank"> </td>
+  <td colspan="2" class="total-line"><%= _.t('Total before VAT') %></td>
+  <td class="total-value"><div class="subtotal"><%= _.formatNumber(rent.total.subTotal, 'currency')%></div></td>
+</tr>
+<% if (rent.vats.length) { %>
+<tr>
+  <td colspan="1" class="blank"> </td>
+  <td colspan="2" class="total-line"><%= _.t('VAT {{vatPercent}}', { vatPercent: _.formatNumber(rent.vats[0].rate, 'percent') }) %></td>
+  <td class="total-value"><div class="subtotal"><%= _.formatNumber(rent.total.vat, 'currency')%></div></td>
+</tr>
+<% } %>
+<tr>
+  <td colspan="1" class="blank"> </td>
+  <td colspan="2" class="total-line"><%= _.t('Previous balance') %></td>
+  <td class="total-value"><div class="subtotal"><%= _.formatNumber(rent.total.balance, 'currency') %></div></td>
+</tr>
+<tr>
+  <td colspan="1" class="blank"> </td>
+  <td colspan="2" class="total-line"><%= _.t('Total with VAT') %></td>
+  <td class="total-value"><div class="total"><%= _.formatNumber(rent.total.grandTotal, 'currency') %></div></td>
+</tr>
+
+<tr>
+  <td colspan="1" class="blank"> </td>
+  <td colspan="2" class="total-line"><%= _.t('Amount paid') %></td>
+  <td class="total-value"><div class="total"><%= _.formatNumber(rent.total.payment, 'currency') %></div></td>
+</tr>
+
+<tr>
+  <td colspan="1" class="blank"> </td>
+  <td colspan="2" class="total-line balance"><%= _.t(rent.total.newBalance < 0 ? 'Credit balance' : 'Balance remaining payable') %></td>
+  <td class="total-value balance"><div class="due"><%= _.formatNumber(Math.abs(rent.total.newBalance), 'currency') %></div></td>
+</tr>

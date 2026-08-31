@@ -1,0 +1,28 @@
+{
+  "name": "@microrealestate/cli",
+  "version": "1.0.0",
+  "description": "The MicroRealEstate CLI",
+  "author": "Camel Aissani",
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "tsc": "tsc --noEmit"
+  },
+  "private": true,
+  "dependencies": {
+    "@microrealestate/shared": "workspace:*",
+    "axios": "catalog:",
+    "chalk": "5.4.1",
+    "clear": "0.1.0",
+    "figlet": "1.8.1",
+    "minimist": "1.2.8",
+    "moment": "catalog:"
+  },
+  "devDependencies": {
+    "@types/clear": "0.1.4",
+    "@types/figlet": "1.7.0",
+    "@types/minimist": "1.2.5",
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
+  }
+}

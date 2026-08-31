@@ -1,0 +1,9 @@
+.lb-container {
+  z-index: auto;
+  position: unset;
+  background-color: transparent;
+}
+
+.lb-container .lb-header {
+  display: none;
+}

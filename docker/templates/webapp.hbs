@@ -1,0 +1,59 @@
+FROM {{baseImage}} AS base
+RUN apk upgrade --no-cache --available
+ENV COREPACK_HOME=/usr/local/corepack
+RUN npm install -g --force corepack \
+    && corepack install -g yarn@{{yarnVersion}} \
+    && chmod -R a+rX "$COREPACK_HOME"
+
+FROM base AS deps
+WORKDIR /usr/app
+COPY package.json .yarnrc.yml yarn.lock .
+COPY shared/package.json shared/package.json
+COPY webapps/commonui/package.json webapps/commonui/package.json
+COPY webapps/{{appName}}/package.json webapps/{{appName}}/package.json
+RUN --mount=type=cache,id=node_modules,target=/root/.yarn YARN_CACHE_FOLDER=/root/.yarn \
+    yarn workspaces focus @microrealestate/{{appName}}
+
+FROM base AS build
+WORKDIR /usr/app
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_OPTIONS=--max-old-space-size=4096
+COPY --from=deps /usr/app ./
+COPY shared shared
+COPY webapps/commonui/scripts webapps/commonui/scripts
+COPY webapps/commonui/src webapps/commonui/src
+COPY webapps/commonui/postcss.config.mjs webapps/commonui/postcss.config.mjs
+COPY webapps/commonui/tailwind.config.ts webapps/commonui/tailwind.config.ts
+COPY webapps/{{appName}}/locales webapps/{{appName}}/locales
+COPY webapps/{{appName}}/public webapps/{{appName}}/public
+{{#if hasScripts}}
+COPY webapps/{{appName}}/scripts webapps/{{appName}}/scripts
+{{/if}}
+COPY webapps/{{appName}}/next.config.js webapps/{{appName}}
+COPY webapps/{{appName}}/package.json webapps/{{appName}}
+COPY webapps/{{appName}}/postcss.config.mjs webapps/{{appName}}
+COPY webapps/{{appName}}/tsconfig.json webapps/{{appName}}
+COPY webapps/{{appName}}/src webapps/{{appName}}/src
+COPY version.json ./version.json
+RUN  yarn workspace @microrealestate/{{appName}} run build
+RUN chown -R 1000 /usr/app/webapps/{{appName}}/.next && \
+    chown -R 1000 /usr/app/webapps/{{appName}}/public
+
+FROM base
+WORKDIR /usr/app
+ENV NEXT_TELEMETRY_DISABLED=1
+COPY --from=build /usr/app/webapps/{{appName}}/public ./public
+COPY --from=build /usr/app/webapps/{{appName}}/.next/standalone/node_modules ./node_modules
+COPY --from=build /usr/app/webapps/{{appName}}/.next/standalone/webapps/{{appName}} ./
+# Fix for missing modules in Next.js 15 standalone builds
+COPY --from=deps /usr/app/node_modules/async-function/require.mjs ./node_modules/async-function/require.mjs
+COPY --from=deps /usr/app/node_modules/generator-function/require.mjs ./node_modules/generator-function/require.mjs
+COPY --from=deps /usr/app/node_modules/async-generator-function/require.mjs ./node_modules/async-generator-function/require.mjs
+COPY --from=build /usr/app/webapps/{{appName}}/.next/static ./.next/static
+LABEL org.opencontainers.image.title="MicroRealEstate"
+LABEL org.opencontainers.image.url="https://microrealestate.app"
+LABEL org.opencontainers.image.source="https://github.com/microrealestate/microrealestate"
+LABEL org.opencontainers.image.licenses="LicenseRef-SUL-2.0"
+COPY LICENSE.md ./LICENSE.md
+USER 1000
+ENTRYPOINT node ./server.js

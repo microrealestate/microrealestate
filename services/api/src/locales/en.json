@@ -1,0 +1,18 @@
+{
+  "cash": "Cash",
+  "cheque": "Cheque",
+  "Contract begin date": "Contract begin date",
+  "Contract end date": "Contract end date",
+  "Contract termination date": "Contract termination date",
+  "Security deposit": "Security deposit",
+  "Deposit: {{deposit}}": "Deposit: {{deposit}}",
+  "Final balance": "Final balance",
+  "Last rent balance": "Last rent balance",
+  "direct_debit": "Direct debit",
+  "Name": "Name",
+  "Properties": "Properties",
+  "Reference": "Reference",
+  "Refunded security deposit": "Refunded security deposit",
+  "Tenant": "Tenant",
+  "transfer": "Transfer"
+}

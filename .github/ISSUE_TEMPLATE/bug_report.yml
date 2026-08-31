@@ -1,0 +1,87 @@
+name: Bug report
+description: Something in MicroRealEstate does not work as expected
+labels: ['bug']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please do not report security vulnerabilities here — see [SECURITY.md](https://github.com/microrealestate/microrealestate/blob/main/SECURITY.md).
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you saw, and what you expected instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Go to ...
+        2. Click ...
+        3. See ...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Where did you see it
+      description: Pick the surface you were using when the bug appeared, not the underlying service.
+      options:
+        - landlord webapp
+        - tenant webapp
+        - email you received
+        - PDF or document you downloaded
+        - during install or upgrade
+        - somewhere else
+    validations:
+      required: true
+
+  - type: dropdown
+    id: deployment
+    attributes:
+      label: How did you deploy it
+      options:
+        - install.sh installer
+        - docker compose, by hand
+        - development mode (yarn dev)
+        - other (describe in logs or a comment)
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: The image tag or commit you are running.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: known-service
+    attributes:
+      label: Do you know which service caused this
+      description: Most users don't — leave it on "no, I don't know" and we'll figure it out from the logs.
+      options:
+        - 'no, I do not know'
+        - 'yes, I can name it'
+    validations:
+      required: true
+
+  - type: input
+    id: service
+    attributes:
+      label: Which service
+      description: Only fill this in if you picked "yes" above (for example: api, gateway, authenticator). Leave blank otherwise.
+      render: shell
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs
+      description: Output of `docker compose logs <service>`. Remove credentials and tenant data first.
+      render: shell

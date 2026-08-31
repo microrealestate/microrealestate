@@ -1,0 +1,5 @@
+import type { OccupantData } from './types';
+
+export type RequestParams = { id: string };
+export type RequestBody = Record<string, never>;
+export type ResponseBody = OccupantData | null;

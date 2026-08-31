@@ -1,0 +1,29 @@
+{
+  "name": "@microrealestate/authenticator",
+  "version": "1.0.0",
+  "description": "Authenticator service",
+  "author": "Camel Aissani",
+  "type": "module",
+  "main": "src/index.js",
+  "private": true,
+  "scripts": {
+    "dev": "tsx watch --clear-screen=false --inspect=0.0.0.0:9226 src/index.js",
+    "start": "tsx src/index.js"
+  },
+  "dependencies": {
+    "@microrealestate/common": "workspace:*",
+    "@microrealestate/shared": "workspace:*",
+    "axios": "catalog:",
+    "bcryptjs": "catalog:",
+    "express": "catalog:",
+    "jsonwebtoken": "catalog:",
+    "locale": "catalog:",
+    "nanoid": "catalog:",
+    "tsx": "catalog:"
+  },
+  "devDependencies": {
+    "@types/express": "catalog:",
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
+  }
+}

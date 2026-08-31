@@ -1,0 +1,62 @@
+<tr>
+  <th><%= _.t('Description') %></th>
+  <th><%= _.t('Quantity') %></th>
+  <th><%= _.t('Unit price without VAT') %></th>
+  <th><%= _.t('Total without VAT') %></th>
+</tr>
+
+<% rent.preTaxAmounts.forEach(function(preTaxAmount) { %>
+	<tr class="item-row">
+	  <td class="description">
+	  	<%= preTaxAmount.description %>
+	  </td>
+		<td class="txtAlignRight">1</td>
+	  <td class="txtAlignRight"><%= _.formatNumber(preTaxAmount.amount) %></td>
+		<td class="txtAlignRight"><%= _.formatNumber(preTaxAmount.amount) %></td>
+	</tr>
+<% }); %>
+
+<% rent.charges.forEach(function(charge) { %>
+		<tr class="item-row">
+		  <td class="description">
+		  	<%= charge.description %>
+		  </td>
+			<td class="txtAlignRight">1</td>
+			<td class="txtAlignRight"><%= _.formatNumber(charge.amount) %></td>
+			<td class="txtAlignRight"><%= _.formatNumber(charge.amount) %></td>
+		</tr>
+<% }); %>
+
+<% rent.discounts.forEach(function(discount) { %>
+	<tr class="item-row">
+	  <td class="description">
+			<%= discount.description %>
+	  </td>
+	  <td class="txtAlignRight">1</td>
+	  <td class="txtAlignRight">- <%= _.formatNumber(discount.amount) %></td>
+		<td class="txtAlignRight">- <%= _.formatNumber(discount.amount) %></td>
+	</tr>
+<% }); %>
+
+<% rent.debts.forEach(function(debt) { %>
+		<tr class="item-row">
+		  <td class="description">
+		  	<%= debt.description %>
+		  </td>
+			<td class="txtAlignRight">1</td>
+			<td class="txtAlignRight"><%= _.formatNumber(debt.amount) %></td>
+			<td class="txtAlignRight"><%= _.formatNumber(debt.amount) %></td>
+		</tr>
+<% }); %>
+
+<%
+	var emptyRowCount = 9 - rent.preTaxAmounts.length - rent.charges.length - rent.discounts.length - rent.debts.length;
+	for (var idx=0; idx<emptyRowCount; idx++) {
+%>
+	<tr class="item-row">
+		<td class="description">&nbsp;</td>
+		<td class="txtAlignRight">&nbsp;</td>
+		<td class="txtAlignRight">&nbsp;</td>
+		<td class="txtAlignRight">&nbsp;</td>
+	</tr>
+<% } %>

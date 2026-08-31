@@ -1,0 +1,18 @@
+{
+  "cash": "Efectivo",
+  "cheque": "Cheque",
+  "Contract begin date": "Fecha incial del contrato",
+  "Contract end date": "Fecha final del contrato",
+  "Contract termination date": "Fecha de finalización del contrato",
+  "Security deposit": "Depósito",
+  "Deposit: {{deposit}}": "Depósito: {{deposit}}",
+  "Final balance": "Balance final",
+  "Last rent balance": "Saldo de alquileres",
+  "direct_debit": "Débito directo",
+  "Name": "Nombre",
+  "Properties": "Propiedades",
+  "Reference": "Referencia",
+  "Refunded security deposit": "Depósito reembolsado",
+  "Tenant": "Inquilino",
+  "transfer": "Transferencia"
+}

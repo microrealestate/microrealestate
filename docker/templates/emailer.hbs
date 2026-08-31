@@ -1,0 +1,31 @@
+FROM {{baseImage}} AS base
+RUN apk upgrade --no-cache --available
+ENV COREPACK_HOME=/usr/local/corepack
+RUN npm install -g --force corepack \
+    && corepack install -g yarn@{{yarnVersion}} \
+    && chmod -R a+rX "$COREPACK_HOME"
+
+FROM base AS install
+WORKDIR /usr/app
+COPY package.json .yarnrc.yml yarn.lock .
+COPY shared shared
+COPY services/common services/common
+COPY services/{{serviceName}} services/{{serviceName}}
+RUN --mount=type=cache,id=node_modules,target=/root/.yarn YARN_CACHE_FOLDER=/root/.yarn \
+    yarn workspaces focus @microrealestate/{{serviceName}} --production
+
+FROM base
+WORKDIR /usr/app
+COPY --from=install /usr/app ./
+# prepare temp directory
+RUN mkdir -p ./services/emailer/tmp
+RUN chown -R 1000 ./services/emailer/tmp
+LABEL org.opencontainers.image.title="MicroRealEstate"
+LABEL org.opencontainers.image.url="https://microrealestate.app"
+LABEL org.opencontainers.image.source="https://github.com/microrealestate/microrealestate"
+LABEL org.opencontainers.image.licenses="LicenseRef-SUL-2.0"
+COPY LICENSE.md ./LICENSE.md
+# The cache above makes this offline. Fail fast rather than reach the network.
+ENV COREPACK_ENABLE_NETWORK=0
+USER 1000
+ENTRYPOINT ["yarn", "workspace", "@microrealestate/{{serviceName}}", "start"]

@@ -1,0 +1,37 @@
+# package manager
+.yarn
+
+# dependencies
+node_modules
+
+# output
+out
+dist
+*.tgz
+
+# logs
+logs
+_.log
+report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
+
+# dotenv environment variable files
+.env*
+!.env.domain
+!.env.ci
+
+# caches
+.cache
+*.tsbuildinfo
+
+# IDEs
+.vscode
+.idea
+
+# Finder (MacOS) folder config
+.DS_Store
+
+# Project files
+tmp
+/data
+/backup
+/version.json

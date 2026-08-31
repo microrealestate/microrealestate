@@ -1,0 +1,103 @@
+services:
+  ###############################################################################
+  # Redis
+  ###############################################################################
+  redis:
+    image: redis:7.4-bookworm
+    expose:
+      - '6379'
+    ports:
+      - '127.0.0.1:6379:6379'
+    networks:
+      - net
+      - egress
+  ###############################################################################
+  # Mongo
+  ###############################################################################
+  mongo:
+    image: mongo:7
+    command: ["--replSet", "rs0", "--bind_ip_all", "--quiet", "--logpath", "/dev/null"]
+    expose:
+      - '27017'
+    networks:
+      - net
+    healthcheck:
+      test: |
+        mongosh --quiet --eval "try { rs.status().ok } catch (e) { rs.initiate({_id:'rs0',members:[{_id:0,host:'mongo:27017'}]}).ok }"
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+  ###############################################################################
+  # Reverse Proxy
+  ###############################################################################
+  reverse-proxy:
+    profiles: !reset null
+    ports: !override
+      - '8080:80'
+  ###############################################################################
+  # ResetService
+  ###############################################################################
+  resetservice:
+    restart: unless-stopped
+    image: 'ghcr.io/microrealestate/microrealestate/resetservice:${MRE_VERSION:-latest}'
+    build:
+      context: ..
+      dockerfile: services/resetservice/Dockerfile
+    environment:
+      NODE_ENV: ci
+      LOGGER_LEVEL: debug
+      PORT: 8900
+      REDIS_URL: redis://redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?REDIS_PASSWORD is required}
+      MONGO_URL: ${MONGO_URL:-mongodb://mongo:27017/mredb}
+    networks:
+      - net
+    depends_on:
+      redis:
+        condition: service_started
+      mongo:
+        condition: service_healthy
+  ###############################################################################
+  # Gateway
+  ###############################################################################
+  gateway:
+    environment:
+      NODE_ENV: ci
+      LOGGER_LEVEL: debug
+      RESETSERVICE_URL: http://resetservice:8900
+  ###############################################################################
+  # Authenticator
+  ###############################################################################
+  authenticator:
+    environment:
+      NODE_ENV: ci
+      LOGGER_LEVEL: debug
+  ###############################################################################
+  # PDFGenerator
+  ###############################################################################
+  pdfgenerator:
+    environment:
+      NODE_ENV: ci
+      LOGGER_LEVEL: debug
+  ###############################################################################
+  # Emailer
+  ###############################################################################
+  emailer:
+    environment:
+      NODE_ENV: ci
+      LOGGER_LEVEL: debug
+  ###############################################################################
+  # api
+  ###############################################################################
+  api:
+    environment:
+      NODE_ENV: ci
+      LOGGER_LEVEL: debug
+  ###############################################################################
+  # tenant api
+  ###############################################################################
+  tenantapi:
+    environment:
+      NODE_ENV: ci
+      LOGGER_LEVEL: debug
