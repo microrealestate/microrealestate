@@ -85,6 +85,7 @@ PKG_INSTALL=""      # e.g. "apt install", "dnf install"
 DOCKER_DOC_URL="https://docs.docker.com/engine/install"
 CONTAINER_ENGINE=""       # docker | podman
 CONTAINER_CLI="docker"    # binary used for raw ps/run/inspect/info calls
+ROOT_CMD=""               # set to "sudo" by require_root when needed
 declare -a COMPOSE_CMD=(docker compose)
 declare -a COMPOSE_ARGS=()
 declare -A ENV_CURRENT=()
@@ -483,10 +484,16 @@ validate_install_dir() {
 }
 
 require_root() {
-  if [ "$RESOLVED_HTTP_PORT" -lt 1024 ] || [ "$RESOLVED_HTTPS_PORT" -lt 1024 ]; then
-    [ "$(id -u)" -eq 0 ] \
-      || die "Binding ports below 1024 requires root. Re-run with sudo, or pick unprivileged ports via MRE_HTTP_PORT/MRE_HTTPS_PORT."
+  [ "$RESOLVED_HTTP_PORT" -lt 1024 ] || [ "$RESOLVED_HTTPS_PORT" -lt 1024 ] || return 0
+  [ "$(id -u)" -eq 0 ] && return 0
+
+  info "Ports $RESOLVED_HTTP_PORT/$RESOLVED_HTTPS_PORT are below 1024 and need root to bind. Using sudo for the remaining docker/compose steps; you may be prompted for your password."
+  if ! { [ -r /dev/tty ] && [ -t 0 ]; }; then
+    die "No terminal available to prompt for sudo. Re-run with sudo, or pick unprivileged ports via MRE_HTTP_PORT/MRE_HTTPS_PORT."
   fi
+  require_cmd sudo
+  sudo -v || die "sudo authentication failed. Re-run with sudo, or pick unprivileged ports via MRE_HTTP_PORT/MRE_HTTPS_PORT."
+  ROOT_CMD="sudo"
 }
 
 find_running_mre_container() {
@@ -899,7 +906,7 @@ write_env() {
 # --- Docker compose wrapping ----------------------------------------------
 
 compose() {
-  (cd "$INSTALL_DIR" && "${COMPOSE_CMD[@]}" --env-file .env "${COMPOSE_ARGS[@]}" "$@")
+  (cd "$INSTALL_DIR" && $ROOT_CMD "${COMPOSE_CMD[@]}" --env-file .env "${COMPOSE_ARGS[@]}" "$@")
 }
 
 # The compose file lives in docker/ while .env lives in the install dir, so a

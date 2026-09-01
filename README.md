@@ -37,7 +37,7 @@ See the app screen by screen on [microrealestate.app](https://microrealestate.ap
 
 ## 🚀 Getting Started
 
-Run the installer on any Linux machine - your laptop, an old desktop, or the cheapest VPS your host sells. Docker and Compose are installed automatically if missing.
+Run the installer on any Linux machine - your laptop, an old desktop, or the cheapest VPS your host sells. Docker and Compose are installed automatically if missing. Binding the default ports (80/443) needs root, so the installer will prompt for your sudo password.
 
 ```shell
 curl -sSL https://raw.githubusercontent.com/microrealestate/microrealestate/main/install.sh | bash
@@ -57,7 +57,14 @@ Then, on first run:
 3. Add your first property and tenant
 4. Configure a domain from Settings > Web server to serve the app over HTTPS
 
-To update an existing installation, run `./install.sh update`.
+To update an existing installation, run the same one-liner from the install directory
+(the one holding `.env`) with `update` appended:
+
+```shell
+curl -sSL https://raw.githubusercontent.com/microrealestate/microrealestate/main/install.sh | bash -s -- update
+```
+
+(`./install.sh update` works too, if you did keep a local copy.)
 
 `install.sh` also drops an `mre.sh` script next to it for day-to-day operations (start, stop, restart,
 status, logs, backup, restore) - see [documentation/OPERATIONS.md](./documentation/OPERATIONS.md).
