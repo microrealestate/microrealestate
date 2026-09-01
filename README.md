@@ -59,11 +59,8 @@ Then, on first run:
 
 To update an existing installation, run `./install.sh update`.
 
-`install.sh` also drops an `mre.sh` next to it, which runs the installation day to day: `./mre.sh start`,
-`stop`, `restart`, `status` and `logs`, plus `./mre.sh backup` and `./mre.sh restore` - covering the database,
-the uploaded documents and the secrets in `.env` as one timestamped set. See
-[documentation/OPERATIONS.md](./documentation/OPERATIONS.md), which also covers the uploaded documents
-directory.
+`install.sh` also drops an `mre.sh` script next to it for day-to-day operations (start, stop, restart,
+status, logs, backup, restore) - see [documentation/OPERATIONS.md](./documentation/OPERATIONS.md).
 
 How releases are cut and images are promoted is covered in [documentation/RELEASING.md](./documentation/RELEASING.md).
 
