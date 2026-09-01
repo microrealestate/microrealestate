@@ -84,7 +84,7 @@ jobs:
       - name: Resolve the commit
         id: commit
         env:
-          SHA: ${{ steps.commit.outputs.full }}
+          SHA: ${{ steps.vars.outputs.sha }}
         run: |
           # Both forms are needed: images are tagged with exactly 7 characters,
           # while the release API wants a full sha.
