@@ -488,11 +488,17 @@ require_root() {
   [ "$(id -u)" -eq 0 ] && return 0
 
   info "Ports $RESOLVED_HTTP_PORT/$RESOLVED_HTTPS_PORT are below 1024 and need root to bind. Using sudo for the remaining docker/compose steps; you may be prompted for your password."
-  if ! { [ -r /dev/tty ] && [ -t 0 ]; }; then
-    die "No terminal available to prompt for sudo. Re-run with sudo, or pick unprivileged ports via MRE_HTTP_PORT/MRE_HTTPS_PORT."
-  fi
+
+  local resume_cmd="curl -sSL ${MRE_SRC_URL}/install.sh | sudo bash -s -- $SUBCOMMAND"
+  [ "$INSTALL_DIR" = "$PWD" ] || resume_cmd="$resume_cmd --dir \"$INSTALL_DIR\""
+
+  [ -r /dev/tty ] || die "No terminal available to prompt for sudo. Re-run with:
+    $resume_cmd
+    or pick unprivileged ports via MRE_HTTP_PORT/MRE_HTTPS_PORT."
   require_cmd sudo
-  sudo -v || die "sudo authentication failed. Re-run with sudo, or pick unprivileged ports via MRE_HTTP_PORT/MRE_HTTPS_PORT."
+  sudo -v || die "sudo authentication failed. Re-run with:
+    $resume_cmd
+    or pick unprivileged ports via MRE_HTTP_PORT/MRE_HTTPS_PORT."
   ROOT_CMD="sudo"
 }
 
@@ -1299,6 +1305,7 @@ cmd_update() {
   fi
   detect_address
   resolve_ports persisted
+  require_root
 
   # Runs before anything is written or pulled: 'update' always backs up first,
   # not only when it detects a change to make.
