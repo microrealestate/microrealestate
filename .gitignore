@@ -23,6 +23,9 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 .cache
 *.tsbuildinfo
 
+# ejecución local de mre-local.sh (PIDs por servicio)
+.run
+
 # IDEs
 .vscode
 .idea
