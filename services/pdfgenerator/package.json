@@ -15,7 +15,7 @@
     "async-mutex": "0.5.0",
     "ejs": "catalog:",
     "express": "catalog:",
-    "file-url": "3.0.0",
+    "file-url": "4.0.0",
     "fs-extra": "10.1.0",
     "handlebars": "catalog:",
     "i18n": "catalog:",
