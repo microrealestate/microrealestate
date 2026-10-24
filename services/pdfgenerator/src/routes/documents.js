@@ -282,7 +282,7 @@ export default function () {
    * DELETE /documents/:ids
    */
   const documentsApi = express.Router();
-  const uploadMiddleware = Storage.uploadMiddleware({
+  const stageUpload = Storage.stageUploadMiddleware({
     uploadsDir: UPLOADS_DIRECTORY
   });
 
@@ -368,7 +368,7 @@ export default function () {
         }
         res.setHeader(
           'Content-Disposition',
-          Storage.contentDispositionAttachment(documentFound.name)
+          Storage.attachmentHeader(documentFound.name)
         );
         res.setHeader('X-Content-Type-Options', 'nosniff');
 
@@ -395,7 +395,7 @@ export default function () {
 
   documentsApi.post(
     '/upload',
-    uploadMiddleware,
+    stageUpload,
     Middlewares.asyncWrapper(async (req, res) => {
       if (!req.file) {
         throw new ServiceError('missing fields', 422);
@@ -411,7 +411,7 @@ export default function () {
         mimeType: req.file.mimetype
       });
       try {
-        const data = await Storage.persistUpload({
+        const data = await Storage.persistDocument({
           stagedPath: req.file.path,
           key,
           fileName,
@@ -501,7 +501,7 @@ export default function () {
       } catch (error) {
         // Avoid orphaning the already-uploaded file when record creation fails.
         if (documentToCreate.type === 'file' && documentToCreate.url) {
-          await Storage.deleteDocumentFiles([{ url: documentToCreate.url }], {
+          await Storage.deleteDocuments([{ url: documentToCreate.url }], {
             uploadsDir: UPLOADS_DIRECTORY
           }).catch(() => {});
         }
@@ -610,7 +610,7 @@ export default function () {
         (doc) => doc.type === 'file' && doc.url
       );
 
-      await Storage.deleteDocumentFiles(fileDocs, {
+      await Storage.deleteDocuments(fileDocs, {
         uploadsDir: UPLOADS_DIRECTORY
       });
 

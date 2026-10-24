@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+  {{> html/htmlhead}}
+  <body>
+    <div class="email-body">
+      <div class="email-container">
+        <div class="bar"></div>
+        <div class="content">
+          <div class="header">
+            <div class="logo">{{landlord.name}}</div>
+          </div>
+
+          <div class="title">{{t 'Payment notice'}}</div>
+
+          <p>{{> html/greetings}}</p>
+
+          <p>
+            {{t 'Please find in attachment the rent notice of <strong>{{term}}</strong>.' term=(formatTerm period tenant.contract.lease.timeRange)}}
+          </p>
+
+          <p>
+            {{t 'The amount to be paid is <strong>{{amount}}</strong>.' amount=(formatNumber tenant.rents.[0].total.amountDue 'currency')}}
+          </p>
+
+          <p>
+            {{t 'Please send us your payment before <strong>{{date}}</strong>.' date=(formatDate dueDate 'LL')}}
+          </p>
+
+          {{> html/paymentmethods}}         
+          
+          {{> html/signature}}   
+        </div>
+      </div>
+      {{> html/landlordcontact}}   
+    </div>
+  </body>
+</html>

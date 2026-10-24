@@ -1,11 +1,13 @@
 import {
   Collections,
   Cookies,
+  InternalKey,
   logger,
   Middlewares,
   Service,
   ServiceError
 } from '@microrealestate/common';
+import { INTERNAL_KEY_PURPOSES } from '@microrealestate/shared';
 import axios from 'axios';
 import jwt from 'jsonwebtoken';
 import { customAlphabet } from 'nanoid';
@@ -13,7 +15,8 @@ import { customAlphabet } from 'nanoid';
 const nanoid = customAlphabet('0123456789', 6);
 
 export const signIn = Middlewares.asyncWrapper(async (req, res) => {
-  const { EMAILER_URL } = Service.getInstance().envConfig.getValues();
+  const { ACCESS_TOKEN_SECRET, EMAILER_URL } =
+    Service.getInstance().envConfig.getValues();
   let { email } = req.body;
   email = email?.trim().toLowerCase();
   if (!email) {
@@ -61,6 +64,10 @@ export const signIn = Middlewares.asyncWrapper(async (req, res) => {
       },
       {
         headers: {
+          [InternalKey.HEADER]: InternalKey.generate(
+            ACCESS_TOKEN_SECRET,
+            INTERNAL_KEY_PURPOSES.EMAILER_ROUTES
+          ),
           'Accept-Language': req.rawLocale.code
         }
       }

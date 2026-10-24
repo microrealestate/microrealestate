@@ -2,6 +2,15 @@ export * from './environmentvalues';
 
 export type CallerType = 'landlord' | 'tenant';
 
+export const AUTH_TYPES = ['accessToken', 'internalKey'] as const;
+export type AuthType = (typeof AUTH_TYPES)[number];
+
+export const INTERNAL_KEY_PURPOSES = {
+  EMAILER_ROUTES: 'emailer:internal-route'
+} as const;
+export type InternalKeyPurpose =
+  (typeof INTERNAL_KEY_PURPOSES)[keyof typeof INTERNAL_KEY_PURPOSES];
+
 export type Address = {
   street1: string;
   street2?: string;

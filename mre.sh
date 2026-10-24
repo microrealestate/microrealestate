@@ -266,16 +266,26 @@ ensure_backup_dir() {
 # never downloads one: no compose file means no installation here.
 resolve_compose_files() {
   cd "$INSTALL_DIR"
+  local dir=""
   if [ -f "docker/docker-compose.yml" ]; then
-    COMPOSE_ARGS=(-f "docker/docker-compose.yml")
-    return
-  fi
-  if [ -f "docker-compose.yml" ]; then
-    COMPOSE_ARGS=(-f "docker-compose.yml")
-    return
-  fi
-  die "No docker-compose.yml found in ${INSTALL_DIR} (nor in ${INSTALL_DIR}/docker).
+    dir="docker/"
+  elif [ ! -f "docker-compose.yml" ]; then
+    die "No docker-compose.yml found in ${INSTALL_DIR} (nor in ${INSTALL_DIR}/docker).
     Run this from the directory MicroRealEstate is installed in, or pass --dir."
+  fi
+  COMPOSE_ARGS=(-f "${dir}docker-compose.yml")
+
+  # .env only: that is where install.sh persists the mode.
+  case "${ENV_CURRENT[MRE_REVERSE_PROXY]:-bundled}" in
+    bundled) ;;
+    external)
+      [ -f "${dir}docker-compose.external-proxy.yml" ] \
+        || die "MRE_REVERSE_PROXY=external but ${dir}docker-compose.external-proxy.yml is missing.
+    Run './install.sh update' to fetch it."
+      COMPOSE_ARGS+=(-f "${dir}docker-compose.external-proxy.yml")
+      ;;
+    *) die "MRE_REVERSE_PROXY in .env must be 'bundled' or 'external'." ;;
+  esac
 }
 
 require_installation() {

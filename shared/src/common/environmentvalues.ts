@@ -1,3 +1,5 @@
+import type { ReverseProxy } from '../entities/realm';
+
 export type EnvironmentValues = {
   LOGGER_LEVEL?: string;
   PRODUCTION?: boolean;
@@ -20,5 +22,8 @@ export type EnvironmentValues = {
   TENANTAPI_URL?: string;
   EMAILER_URL?: string;
   CADDY_ADMIN_URL?: string;
+  REVERSE_PROXY?: ReverseProxy;
+  APP_URL?: string;
   CHROMIUM_BIN?: string;
+  SMTP_ALLOWED_PORTS?: string;
 };

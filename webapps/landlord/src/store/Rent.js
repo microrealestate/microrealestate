@@ -173,9 +173,12 @@ export default class Rent {
   *sendEmail(payload) {
     try {
       yield apiClient.post('/emails', payload);
-      return 200;
+      return { status: 200 };
     } catch (error) {
-      return error.response.status;
+      return {
+        status: error.response?.status,
+        message: error.response?.data?.message
+      };
     }
   }
 }

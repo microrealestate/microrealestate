@@ -55,21 +55,13 @@ export default function MobileRentRow({
       <div className="flex text-xl px-2 py-4">
         <div
           data-cy="rent-due"
-          data-cy-amount={rentAmounts.absNewBalance}
+          data-cy-amount={rentAmounts.totalAmount}
           className="w-full"
         >
           <RentAmount
-            label={
-              rentAmounts.newBalance === 0 || rentAmounts.isDebitNewBalance
-                ? t('Rent due')
-                : t('Rent overpayment')
-            }
-            amount={rentAmounts.absNewBalance}
+            label={t('Rent due')}
+            amount={rentAmounts.totalAmount}
             withColor={false}
-            debitColor={rentAmounts.isDebitNewBalance}
-            creditColor={
-              !rentAmounts.isDebitNewBalance && rentAmounts.newBalance !== 0
-            }
             className="text-center w-full"
           />
         </div>

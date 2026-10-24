@@ -15,7 +15,7 @@
     "@microrealestate/shared": "workspace:*",
     "@tanstack/react-query": "catalog:",
     "axios": "catalog:",
-    "date-fns": "4.1.0",
+    "date-fns": "catalog:",
     "formik": "catalog:",
     "js-file-download": "catalog:",
     "lucide-react": "0.475.0",
@@ -26,7 +26,7 @@
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-icons": "catalog:",
-    "sonner": "2.0.7",
+    "sonner": "catalog:",
     "yup": "catalog:"
   },
   "devDependencies": {

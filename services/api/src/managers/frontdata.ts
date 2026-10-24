@@ -4,8 +4,10 @@ import type {
   LeaseType,
   PropertyType,
   Rent,
+  RentEmailName,
   TenantType
 } from '@microrealestate/shared';
+import { RENT_EMAIL_NAMES, RENT_NOTICE_NAMES } from '@microrealestate/shared';
 import moment from 'moment';
 
 type RentEmailStatusMap = Record<
@@ -99,42 +101,30 @@ export function toRentData(
   if (inputOccupant) {
     // email status
     if (emailStatus) {
+      const sent = (name: RentEmailName) => emailStatus[name] ?? [];
+      const status = {} as Record<RentEmailName, boolean>;
+      const last: Partial<
+        Record<RentEmailName, API.Landlord.Rent.RentEmailSendRecord>
+      > = {};
+      const count = {} as Record<RentEmailName, number>;
+      for (const name of RENT_EMAIL_NAMES) {
+        const records = sent(name);
+        status[name] = !!records.length;
+        last[name] = records[0];
+        count[name] = records.length;
+      }
+
       const computedEmailStatus: API.Landlord.Rent.RentEmailStatusPayload = {
-        status: {
-          rentnotice: !!emailStatus.rentnotice?.length,
-          rentnotice_reminder: !!emailStatus.rentnotice_reminder?.length,
-          rentnotice_last_reminder:
-            !!emailStatus.rentnotice_last_reminder?.length,
-          receipt: !!emailStatus.receipt?.length
-        },
-        last: {
-          rentnotice:
-            (emailStatus.rentnotice?.length && emailStatus.rentnotice[0]) ||
-            undefined,
-          rentnotice_reminder:
-            (emailStatus.rentnotice_reminder?.length &&
-              emailStatus.rentnotice_reminder[0]) ||
-            undefined,
-          rentnotice_last_reminder:
-            (emailStatus.rentnotice_last_reminder?.length &&
-              emailStatus.rentnotice_last_reminder[0]) ||
-            undefined,
-          receipt:
-            (emailStatus.receipt?.length && emailStatus.receipt[0]) || undefined
-        },
+        status,
+        last,
         count: {
-          rentnotice: emailStatus.rentnotice?.length || 0,
-          rentnotice_reminder: emailStatus.rentnotice_reminder?.length || 0,
-          rentnotice_last_reminder:
-            emailStatus.rentnotice_last_reminder?.length || 0,
+          ...count,
           get allRentnotice() {
-            return (
-              this.rentnotice +
-              this.rentnotice_reminder +
-              this.rentnotice_last_reminder
+            return RENT_NOTICE_NAMES.reduce(
+              (sum, name) => sum + count[name],
+              0
             );
-          },
-          receipt: emailStatus.receipt?.length || 0
+          }
         },
         ...emailStatus
       };

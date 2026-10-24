@@ -1,0 +1,11 @@
+{{#if landlord.hasBankInfo}}
+    <p>{{t 'You can pay:'}}</p>
+    <p>
+        <strong>{{t 'Payment by bank transfer'}}</strong><br />
+        {{landlord.bankInfo.name}}<br />
+        {{t 'IBAN: {{iban}}' iban=landlord.bankInfo.iban}}
+    </p>
+{{/if}}
+<p>
+    {{t 'If you have already paid this amount, we thank you and invite you to ignore this message.'}}
+</p>

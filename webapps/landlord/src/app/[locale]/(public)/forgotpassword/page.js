@@ -86,7 +86,7 @@ export default function ForgotPassword() {
       </div>
     </>
   ) : (
-    <div className="p-5 lg:text-left md:p-0 md:max-w-md w-full space-y-10">
+    <div className="p-5 md:p-0 md:max-w-sm w-full m-auto space-y-6">
       <div className="flex items-center text-success font-semibold">
         <LuCircleCheck />
         <span className="ml-2 text-lg my-4">{t('Check your email')}</span>

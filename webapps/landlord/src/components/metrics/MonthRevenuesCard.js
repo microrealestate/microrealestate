@@ -64,9 +64,9 @@ function MonthRevenuesCard({ variant = 'chart', month, year, className }) {
         return;
       }
 
-      const status = name.toLowerCase();
+      const statuses = name === 'paid' ? 'partiallypaid,paid' : 'notpaid';
       router.push(
-        `/rents?from=${fromIso}&to=${toIso}&filter.statuses=${status}`
+        `/rents?from=${fromIso}&to=${toIso}&filter.statuses=${statuses}`
       );
     };
 
@@ -95,11 +95,11 @@ function MonthRevenuesCard({ variant = 'chart', month, year, className }) {
                   content={() => (
                     <div className="flex justify-center gap-4 text-sm">
                       <div className="flex items-center gap-2 text-warning">
-                        <div className="size-2 bg-[var(--chart-warning)]" />
+                        <div className="size-2 bg-(--chart-warning)" />
                         <span>{t('Not paid')}</span>
                       </div>
                       <div className="flex items-center gap-2 text-success">
-                        <div className="size-2 bg-[var(--chart-success)]" />
+                        <div className="size-2 bg-(--chart-success)" />
                         <span>{t('Paid')}</span>
                       </div>
                     </div>

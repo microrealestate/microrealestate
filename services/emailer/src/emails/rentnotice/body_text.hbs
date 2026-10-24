@@ -1,0 +1,17 @@
+{{> text/header}}
+
+
+
+{{> text/greetings}}
+
+{{t 'Please find in attachment the rent notice of {{term}}.' term=(formatTerm period tenant.contract.lease.timeRange)}}
+
+{{t 'The amount to be paid is {{amount}}.' amount=(formatNumber tenant.rents.[0].total.amountDue 'currency')}}
+
+{{t 'Please send us your payment before {{date}}.' date=(formatDate dueDate 'LL')}}
+
+{{> text/paymentmethods}}
+
+{{> text/signature}}
+
+{{> text/landlordcontact}}

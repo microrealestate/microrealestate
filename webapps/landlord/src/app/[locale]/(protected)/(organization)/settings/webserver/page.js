@@ -22,7 +22,11 @@ function WebServerSettings() {
         <CardHeader>
           <CardTitle>{t('Web server')}</CardTitle>
           <CardDescription>
-            {t('Configure the public domain and HTTPS')}
+            {organization?.reverseProxy === 'external'
+              ? t(
+                  'Set at installation: the application runs behind your own reverse proxy'
+                )
+              : t('Configure the public domain and HTTPS')}
           </CardDescription>
         </CardHeader>
         <CardContent>

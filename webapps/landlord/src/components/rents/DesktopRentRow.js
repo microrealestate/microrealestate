@@ -81,23 +81,10 @@ export default function DesktopRentRow({
         </TableCell>
         <TableCell
           data-cy="rent-due"
-          data-cy-amount={rentAmounts.absNewBalance}
+          data-cy-amount={rentAmounts.totalAmount}
           onClick={() => setExpanded(!expanded)}
         >
-          <RentAmount
-            label={
-              !rentAmounts.isDebitNewBalance && rentAmounts.newBalance !== 0
-                ? t('Rent overpayment')
-                : undefined
-            }
-            labelBelow
-            amount={rentAmounts.absNewBalance}
-            withColor={false}
-            debitColor={rentAmounts.isDebitNewBalance}
-            creditColor={
-              !rentAmounts.isDebitNewBalance && rentAmounts.newBalance !== 0
-            }
-          />
+          <RentAmount amount={rentAmounts.totalAmount} withColor={false} />
         </TableCell>
         <TableCell
           data-cy="rent-payment"

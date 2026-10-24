@@ -33,7 +33,7 @@ services:
         'docker-entrypoint.sh --requirepass ${REDIS_PASSWORD:?REDIS_PASSWORD is required} --loglevel warning --maxmemory 32mb --maxmemory-policy allkeys-lru'
       ]
     networks:
-      - net
+      - data
   ###############################################################################
   # Mongo
   ###############################################################################
@@ -49,7 +49,7 @@ services:
       - ../data/mongodb:/data/db:z
       - ../backup:/backup:z
     networks:
-      - net
+      - data
     healthcheck:
       test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
       interval: 5s
@@ -76,8 +76,9 @@ services:
       - '${MRE_HTTP_PORT:-80}:80'
       - '${MRE_HTTPS_PORT:-443}:443'
     networks:
-      - net
-      - egress # the net network is internal, published ports need egress
+      - edge
+      - egress-edge # for ACME/Let's Encrypt, and to publish 80/443
+      - caddy-admin # api pushes the configured domain to the admin API
   ###############################################################################
   # Gateway
   ###############################################################################
@@ -127,7 +128,10 @@ services:
       tenantapi:
         condition: service_started
     networks:
-      - net
+      - edge
+      - web-landlord
+      - web-tenant
+      - svc
   ###############################################################################
   # Authenticator
   ###############################################################################
@@ -162,7 +166,8 @@ services:
       emailer:
         condition: service_started
     networks:
-      - net
+      - svc
+      - data
   ###############################################################################
   # PDFGenerator
   ###############################################################################
@@ -193,7 +198,8 @@ services:
       mongo:
         condition: service_healthy
     networks:
-      - net
+      - svc
+      - data
   ###############################################################################
   # Emailer
   ###############################################################################
@@ -215,6 +221,7 @@ services:
       CIPHER_KEY: ${CIPHER_KEY:-cipher_key}
       CIPHER_IV_KEY: ${CIPHER_IV_KEY:-cipher_iv_key}
       PDFGENERATOR_URL: http://pdfgenerator:8300/pdfgenerator
+      SMTP_ALLOWED_PORTS: ${SMTP_ALLOWED_PORTS:-}
     expose:
       - '8400'
     extra_hosts:
@@ -225,7 +232,8 @@ services:
       pdfgenerator:
         condition: service_started
     networks:
-      - net
+      - svc
+      - data
       - egress # for SMTP
   ###############################################################################
   # api
@@ -259,7 +267,9 @@ services:
       emailer:
         condition: service_started
     networks:
-      - net
+      - svc
+      - data
+      - caddy-admin # for the reverse proxy admin API
   ###############################################################################
   # tenant api
   ###############################################################################
@@ -286,7 +296,8 @@ services:
       mongo:
         condition: service_healthy
     networks:
-      - net
+      - svc
+      - data
   ###############################################################################
   # Landlord frontend
   ###############################################################################
@@ -313,7 +324,7 @@ services:
       gateway:
         condition: service_started
     networks:
-      - net
+      - web-landlord
   ##############################################################################
   # Tenant frontend
   ###############################################################################
@@ -339,17 +350,46 @@ services:
       gateway:
         condition: service_started
     networks:
-      - net
+      - web-tenant
 ###############################################################################
-# microservices network
+# Networks
+# Each container joins only the networks its own environment variables need.
+# Every network but the egress ones is internal: a container cannot reach a
+# service it shares no network with, and cannot resolve its name either.
 ###############################################################################
 networks:
-  # Not external network access
-  net:
+  # reverse proxy -> gateway
+  edge:
     driver: bridge
     internal: true
-  # Ordinary bridge with external network access
+  # gateway <-> landlord frontend
+  web-landlord:
+    driver: bridge
+    internal: true
+  # gateway <-> tenant frontend
+  web-tenant:
+    driver: bridge
+    internal: true
+  # gateway -> services, and service -> service
+  svc:
+    driver: bridge
+    internal: true
+  # services -> mongo and redis
+  data:
+    driver: bridge
+    internal: true
+  # api -> reverse proxy admin API, to apply the configured domain
+  caddy-admin:
+    driver: bridge
+    internal: true
+  # Ordinary bridge with external network access, shared by the services that
+  # call a third party. They all sit on svc already, so sharing it grants no
+  # reachability they did not have.
   egress:
+    driver: bridge
+  # Outbound access for the reverse proxy alone. It is the only container the
+  # internet can reach, so it gets no lateral path to a service over egress.
+  egress-edge:
     driver: bridge
 ###############################################################################
 # volumes

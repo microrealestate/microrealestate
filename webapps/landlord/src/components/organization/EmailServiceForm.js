@@ -75,10 +75,25 @@ export default function EmailServiceForm({ organization }) {
     toast.error(t('Error updating organization'));
   }
 
+  const rateLimited = t(
+    'Too many connection tests. Try again in a few minutes.'
+  );
+
   const testSmtp = useMutation({
     mutationFn: testSmtpConnection,
     onSuccess: () => toast.success(t('SMTP connection successful')),
-    onError: () => toast.error(t('SMTP connection failed'))
+    onError: (error) => {
+      const status = error?.response?.status;
+      if (status === 429) {
+        return toast.error(rateLimited);
+      }
+      if (status === 422) {
+        return toast.error(
+          t('Enter the password to test a different server or account')
+        );
+      }
+      return toast.error(t('SMTP connection failed'));
+    }
   });
 
   const encryptionOptions = useMemo(

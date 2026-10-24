@@ -15,9 +15,9 @@
     "@microrealestate/common": "workspace:*",
     "axios": "catalog:",
     "express": "catalog:",
-    "express-rate-limit": "8.3.0",
-    "express-slow-down": "3.0.0",
-    "http-proxy-middleware": "3.0.7",
+    "express-rate-limit": "8.7.1",
+    "express-slow-down": "3.1.1",
+    "http-proxy-middleware": "4.2.0",
     "tsx": "catalog:"
   },
   "devDependencies": {

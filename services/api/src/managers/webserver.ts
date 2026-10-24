@@ -4,8 +4,13 @@ import {
   Service,
   ServiceError
 } from '@microrealestate/common';
-import type { WebServerConfig } from '@microrealestate/shared';
-import { cleanDomain } from '@microrealestate/shared';
+import type { ReverseProxy, WebServerConfig } from '@microrealestate/shared';
+import {
+  canDisableIpAccess,
+  canEnableHttps,
+  cleanDomain,
+  parseDomain
+} from '@microrealestate/shared';
 import axios from 'axios';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -14,10 +19,6 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 // braces, slashes, newlines — anything that could inject Caddyfile directives.
 const HOSTNAME_REGEX =
   /^(?=.{1,253}$)[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*(:\d{1,5})?$/;
-
-function _isIPAddress(domain: string): boolean {
-  return /^\d{1,3}(\.\d{1,3}){3}$/.test(domain);
-}
 
 // output of validateWebServer: safe to persist and to render into a Caddyfile.
 // `acmeEmail` stays optional — it is only required when https is on.
@@ -42,6 +43,47 @@ const DEFAULT_CADDYFILE = `${CADDY_GLOBAL_OPTIONS}:80 {
 const SYNC_ATTEMPTS = 10;
 const SYNC_RETRY_DELAY_MS = 2000;
 
+/**
+ * 'external' when the operator runs their own reverse proxy: no Caddy container
+ * exists, so nothing is pushed to an admin API and TLS is not ours to manage.
+ */
+export function reverseProxy(): ReverseProxy {
+  return Service.getInstance().envConfig.getValues().REVERSE_PROXY ===
+    'external'
+    ? 'external'
+    : 'bundled';
+}
+
+export function externalWebServer(): NormalizedWebServer | null {
+  return parseAppUrl(Service.getInstance().envConfig.getValues().APP_URL);
+}
+
+export function parseAppUrl(
+  appUrl: string | undefined
+): NormalizedWebServer | null {
+  if (!appUrl) {
+    return null;
+  }
+  let url: URL;
+  try {
+    url = new URL(appUrl);
+  } catch {
+    return null;
+  }
+  if (
+    (url.protocol !== 'https:' && url.protocol !== 'http:') ||
+    !HOSTNAME_REGEX.test(url.host)
+  ) {
+    return null;
+  }
+  return {
+    domain: url.host,
+    acmeEmail: undefined,
+    httpsEnabled: url.protocol === 'https:',
+    ipAccessEnabled: true
+  };
+}
+
 function _delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -53,13 +95,16 @@ async function _loadCaddyfile(caddyfile: string): Promise<void> {
   });
 }
 
-function _generateCaddyfile({
-  domain,
+export function generateCaddyfile({
+  domain: rawDomain,
   acmeEmail,
   httpsEnabled,
   ipAccessEnabled
 }: NormalizedWebServer): string {
-  if (_isIPAddress(domain)) {
+  // The stored domain keeps its port for the links in emails. Caddy only
+  // listens on the published 80/443, so the site address must not carry it.
+  const { host: domain, isLocal } = parseDomain(rawDomain);
+  if (isLocal) {
     return DEFAULT_CADDYFILE;
   }
 
@@ -113,7 +158,10 @@ ${tlsDirective}  reverse_proxy gateway:8080
 export async function reloadCaddy(
   webServer: NormalizedWebServer
 ): Promise<void> {
-  const caddyfile = _generateCaddyfile(webServer);
+  if (reverseProxy() === 'external') {
+    return;
+  }
+  const caddyfile = generateCaddyfile(webServer);
   try {
     await _loadCaddyfile(caddyfile);
     logger.info(
@@ -125,21 +173,57 @@ export async function reloadCaddy(
   }
 }
 
+async function _syncExternalWebServer(): Promise<void> {
+  const webServer = externalWebServer();
+  if (!webServer) {
+    logger.error(
+      'External reverse proxy: APP_URL is missing or invalid, set MRE_URL in .env'
+    );
+    return;
+  }
+  try {
+    await Collections.Realm.updateOne({}, { $set: { webServer } });
+    logger.info(
+      `External reverse proxy - domain: ${webServer.domain} (https=${webServer.httpsEnabled ? 'on' : 'off'})`
+    );
+  } catch (error) {
+    logger.error('Could not store the web server configuration:', error);
+  }
+}
+
 /**
  * Re-applies the stored configuration to the reverse proxy on every api start.
  * Only the two mutating realm endpoints ever push to Caddy, so without this a
  * recreated container or a lost caddy_config volume would strand the proxy on
  * the bootstrap Caddyfile while the UI still shows the domain.
  *
+ * Behind an external reverse proxy there is no Caddy to push to: the URL from
+ * the environment is written to the organization instead, so the services
+ * that build links from the stored domain follow a change of MRE_URL.
+ *
  * Never rejects: the api has to serve even when the proxy does not answer.
  */
 export async function syncWebServerFromDb(): Promise<void> {
+  if (reverseProxy() === 'external') {
+    await _syncExternalWebServer();
+    return;
+  }
+
   let caddyfile: string;
   let description: string;
   try {
     const realm = await Collections.Realm.findOne({}).sort({ _id: 1 }).lean();
-    const webServer = validateWebServer(realm?.webServer ?? null);
-    caddyfile = webServer ? _generateCaddyfile(webServer) : DEFAULT_CADDYFILE;
+    const stored = realm?.webServer ?? null;
+    // Configurations saved before HTTPS was limited to public hostnames, or
+    // stored behind an external proxy (HTTPS without an ACME email), still
+    // have to load: serve them over plain HTTP
+    const webServer = validateWebServer(
+      stored?.httpsEnabled &&
+        (!canEnableHttps(stored.domain ?? '') || !stored.acmeEmail)
+        ? { ...stored, httpsEnabled: false }
+        : stored
+    );
+    caddyfile = webServer ? generateCaddyfile(webServer) : DEFAULT_CADDYFILE;
     description = webServer
       ? `domain: ${webServer.domain} (https=${webServer.httpsEnabled ? 'on' : 'off'})`
       : 'no domain configured';
@@ -188,10 +272,18 @@ export function validateWebServer(
   }
 
   const httpsEnabled = webServer.httpsEnabled === true;
+
   const acmeEmail =
     typeof webServer.acmeEmail === 'string' && webServer.acmeEmail.trim()
       ? webServer.acmeEmail.trim()
       : undefined;
+
+  if (httpsEnabled && !canEnableHttps(domain)) {
+    throw new ServiceError(
+      'HTTPS requires a public domain name without a port',
+      422
+    );
+  }
 
   if (httpsEnabled && (!acmeEmail || !EMAIL_REGEX.test(acmeEmail))) {
     throw new ServiceError(
@@ -200,9 +292,15 @@ export function validateWebServer(
     );
   }
 
-  const ipAccessEnabled = webServer.ipAccessEnabled !== false;
+  const ipAccessEnabled =
+    webServer.ipAccessEnabled !== false || !canDisableIpAccess(domain);
 
-  return { domain, acmeEmail, httpsEnabled, ipAccessEnabled };
+  return {
+    domain,
+    acmeEmail: httpsEnabled ? acmeEmail : undefined,
+    httpsEnabled,
+    ipAccessEnabled
+  };
 }
 
 export function keepIpAccess(

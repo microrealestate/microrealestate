@@ -1,29 +1,34 @@
 # Operations
 
-Day-to-day administration of a self-hosted MicroRealEstate instance: running the stack, HTTPS, updates and backups.
+This guide explains how to administer a self-hosted MicroRealEstate installation: how to run the application, set up HTTPS, update it and back it up.
 
 ## Supported systems
 
-Tested on **Ubuntu** and **Debian**. Expected to work on **AlmaLinux**, **Rocky Linux** and **Fedora**; those are best-effort.
+We test the application on **Ubuntu** and **Debian**. It is expected to work on **AlmaLinux**, **Rocky Linux** and **Fedora**, but support for these systems is best-effort.
 
-Prerequisites, if your image does not already have them:
+If your system does not have these packages yet, install them:
 
 | Family | Install |
 |---|---|
 | Debian, Ubuntu | `apt install curl openssl sudo iproute2` |
 | AlmaLinux, Rocky, Fedora | `dnf install curl openssl sudo iproute` |
 
-**Container engine.** Docker Engine with the Compose v2 plugin is the tested path. Podman 4.0 or newer also works: the installer enables `podman.socket` and drives it through podman's Docker-compatible API at `/run/podman/podman.sock`, using the real Compose v2 binary (`dnf install docker-compose`). `podman compose` is deliberately not used — it delegates to podman-compose, which does not honour the healthcheck-gated service dependencies this stack relies on. The installer also enables `podman-restart.service`, without which containers do not come back after a reboot. The podman path is **rootful**: rootless podman is not supported, and cannot bind ports 80/443 without lowering `net.ipv4.ip_unprivileged_port_start`.
+**Container engine.** We test Docker Engine with the Compose v2 plugin. Podman 4.0 or newer also works:
 
-**SELinux.** Enforcing mode on the RHEL family is handled: every bind mount is labelled `:z`. That relabelling is *recursive*, so starting the stack re-labels everything under `backup/`, including archives you put there yourself — contents and ownership untouched, only the label.
+- The installer enables `podman.socket` and drives podman through its Docker-compatible API at `/run/podman/podman.sock`, with the real Compose v2 binary (`dnf install docker-compose`).
+- The installer does not use `podman compose`, because that command runs podman-compose, which ignores the healthchecks that the services wait for before they start.
+- The installer also enables `podman-restart.service`. Without it, the containers do not come back after a reboot.
+- Podman must run as root. Rootless podman is not supported, because it cannot bind ports 80 and 443 unless you lower `net.ipv4.ip_unprivileged_port_start`.
 
-**firewalld.** Published container ports stay reachable with firewalld active: they traverse DNAT and FORWARD, where the container engine installs its own rules, while firewalld's zone rules apply to INPUT. Still confirm 80 and 443 are reachable from outside before relying on Let's Encrypt.
+**SELinux.** The installation works with SELinux in enforcing mode on the RHEL family, because each bind mount has the `:z` label option. This relabeling is *recursive*, so each time the stack starts, it relabels every file under `backup/`, including archives that you put there yourself. Only the SELinux label changes, not the content or the owner of the files.
+
+**firewalld.** The published container ports stay reachable when firewalld is active. Their traffic goes through DNAT and FORWARD, where the container engine adds its own rules, while the zone rules of firewalld apply only to INPUT. Before you rely on Let's Encrypt, make sure that ports 80 and 443 are reachable from outside.
 
 ## Running the application
 
-`install.sh` installs and updates. Everything after that belongs to `mre.sh`, which it drops next to `.env` and refreshes on every `./install.sh update`. An installation older than `mre.sh` has no copy yet; the next `update` fetches one.
+Use `install.sh` to install and update, and `mre.sh` for everything else. The installer puts `mre.sh` next to `.env` and replaces it on each `./install.sh update`. If you installed MicroRealEstate before `mre.sh` existed, you do not have this script yet. Run `./install.sh update` once to get it.
 
-Run it **from the install directory** — the one holding `.env` and `docker/` — or point it there with `--dir /path/to/microrealestate`. `./mre.sh --help` lists every command and option. If `install.sh` ran under `sudo`, run `mre.sh` as the account that invoked it, or under `sudo` as well.
+Run `mre.sh` **from the install directory**, the one that contains `.env` and `docker/`, or point it there with `--dir /path/to/microrealestate`. To see all commands and options, run `./mre.sh --help`. If `install.sh` ran under `sudo`, run `mre.sh` as the user who started `sudo`, or under `sudo` as well.
 
 ```shell
 ./mre.sh start           # bring the application up
@@ -33,57 +38,139 @@ Run it **from the install directory** — the one holding `.env` and `docker/` �
 ./mre.sh logs gateway    # follow one service, or all of them with no argument
 ```
 
-`stop` does not remove the containers, so `start` brings them straight back. `status` lists the stopped ones too, which is why `init` shows as `Exited (0)` on a healthy stack.
+`stop` does not remove the containers, so `start` brings them back as they were. `status` also lists the stopped containers, which is why `init` shows `Exited (0)` on a healthy installation.
 
-**A container's environment is fixed when it is created.** `restart` restarts the containers as they are, so an edited `.env` does not reach them. `start` does: it reconciles the stack against the compose file and recreates whatever changed. So does `./install.sh update`.
+**After you edit `.env`, run `./mre.sh start`, not `restart`.** A container reads `.env` only when it is created. `restart` keeps the existing containers, so they still use the old values. `start` recreates the containers whose settings changed, so they get the new values. `./install.sh update` does the same.
 
 ## HTTPS with Let's Encrypt
 
-The domain, the HTTPS switch and the ACME email are **set in the application, not in a file**: they are stored on the organization record in the database. So the application has to be running and reachable before HTTPS can be turned on.
+You set the domain, the HTTPS switch and the ACME email **in the application, not in a file**, because the application stores them on the organization record in the database. So the application must be running and reachable before you can turn on HTTPS.
 
-1. Start the application and open it over plain HTTP, at the address the installer printed — an IP address is fine.
-2. Sign up. The domain step comes right after you create the organization, and can be skipped: an installation is allowed to stay on its IP address.
-3. Fill in the domain, turn **HTTPS** on, and give an email address for Let's Encrypt. To do it later, or to change it, go to *Settings > Web server*.
+1. Start the application and open it over plain HTTP, at the address that the installer printed. An IP address is fine.
+2. Sign up. The domain step comes right after you create the organization. You can skip it, because an installation can stay on its IP address.
+3. Enter the domain, turn on **HTTPS**, and give an email address for Let's Encrypt. To do this later, or to change it, go to *Settings > Web server*.
 
-On save the browser is sent to the new address, `https://` included — the address bar changing is the point, not a glitch.
+When you save, the browser goes to the new address, with `https://`. The change in the address bar is expected, not an error.
 
-For the certificate to be issued, DNS must already point at this server and ports 80 and 443 must be reachable from the internet; that is how Let's Encrypt validates the domain. Caddy then requests and renews it.
+To issue the certificate, Let's Encrypt must validate the domain, so the DNS must already point to this server and ports 80 and 443 must be reachable from the internet. Caddy then requests the certificate and renews it.
 
-Editing `docker/Caddyfile` changes none of this. It is only the bootstrap the proxy serves before a domain has been configured.
+Editing `docker/Caddyfile` does not change any of this. The proxy uses that file only until a domain is configured.
+
+## Using your own reverse proxy
+
+MicroRealEstate comes with its own reverse proxy, Caddy. If your server already runs a reverse proxy for other websites (for example Apache, nginx, Caddy or Traefik), install MicroRealEstate without its own Caddy, and give the public URL that your proxy serves:
+
+```shell
+curl -sSL https://raw.githubusercontent.com/microrealestate/microrealestate/main/install.sh | bash -s -- install --reverse-proxy external --url https://mre.example.com
+```
+
+In this mode the `reverse-proxy` container does not start and nothing binds ports 80 and 443. Instead, the gateway is published on `127.0.0.1:8080`, and your proxy forwards requests to it. The installer adds `docker/docker-compose.external-proxy.yml` on top of the compose file and saves these settings in `.env`:
+
+| Key | Default | Meaning |
+|---|---|---|
+| `MRE_REVERSE_PROXY` | `bundled` | `external` leaves Caddy out |
+| `MRE_URL` | none, required | public URL your proxy serves, set with `--url`. `https://` turns HTTPS on, `http://` leaves it off |
+| `MRE_HTTP_PORT` | `8080` | host port the gateway is published on |
+| `MRE_GATEWAY_BIND` | `127.0.0.1` | IPv4 address it binds. If the proxy runs on another machine, set a LAN address |
+
+Your proxy is then responsible for TLS and routing. Configure it as follows:
+
+- Forward the whole site (`/`) to the gateway.
+- Keep the original `Host` header.
+- Send the `X-Forwarded-Proto` header. Sessions use secure cookies only when the gateway sees that the request came in over HTTPS.
+
+Apache (`a2enmod proxy proxy_http headers ssl`):
+
+```apache
+<VirtualHost *:443>
+  ServerName mre.example.com
+  SSLEngine on
+  SSLCertificateFile    /etc/letsencrypt/live/mre.example.com/fullchain.pem
+  SSLCertificateKeyFile /etc/letsencrypt/live/mre.example.com/privkey.pem
+
+  ProxyPreserveHost On
+  RequestHeader set X-Forwarded-Proto "https"
+  ProxyPass        / http://127.0.0.1:8080/
+  ProxyPassReverse / http://127.0.0.1:8080/
+</VirtualHost>
+```
+
+nginx:
+
+```nginx
+server {
+  listen 443 ssl;
+  server_name mre.example.com;
+  # ssl_certificate / ssl_certificate_key ...
+
+  location / {
+    proxy_pass http://127.0.0.1:8080;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+  }
+}
+```
+
+The application takes its domain from `MRE_URL`, and uses it in the links of emails such as receipts and password resets. In *Settings > Web server* the domain is read-only, and there is no HTTPS, ACME email or IP access setting, because you configure certificates and the addresses that answer in your proxy. To change the URL, edit `MRE_URL` in `.env`, then run `./install.sh update`.
+
+**To change the mode of an existing installation**, in either direction, set `MRE_REVERSE_PROXY` in `.env` (and `MRE_URL`, when you switch to `external`), then run `./install.sh update`. Switching to `external` removes the Caddy container. Check `MRE_HTTP_PORT` too: in `external` mode it is the gateway port, so a value of `80` publishes the gateway on port 80. Switching back to `bundled` starts Caddy on `MRE_HTTP_PORT`/`MRE_HTTPS_PORT` and serves the stored domain over plain HTTP. To turn HTTPS on again, give an ACME email in *Settings > Web server*. `install` never changes the mode of an existing installation.
+
+`./mre.sh` reads `MRE_REVERSE_PROXY` from `.env` and adds the overlay file itself. If you run a compose command directly, add the overlay file yourself:
+
+```shell
+docker compose --env-file .env -f docker/docker-compose.yml -f docker/docker-compose.external-proxy.yml ps
+```
 
 ## Fronting with another reverse proxy or CDN
 
-`TRUST_PROXY` (default `uniquelocal`) controls how the gateway and authenticator derive the real client IP for rate limiting. The default trusts any number of private-network hops automatically — the Docker network, the bundled Caddy `reverse-proxy` container — so the stock deployment needs no configuration here.
+The gateway and the authenticator limit the request rate per client IP, and `TRUST_PROXY` (default `uniquelocal`) tells them how to find the real client IP. The default trusts any number of proxies on private network addresses, such as:
 
-Adding your own reverse proxy, load balancer, or CDN in front of the bundled Caddy:
+- the Docker network
+- the bundled Caddy `reverse-proxy` container
+- a host proxy in [external mode](#using-your-own-reverse-proxy), which reaches the gateway from a Docker bridge address
 
-- **Private address** (same internal network, e.g. an internal load balancer) — nothing to change, it's covered by the default.
-- **Public address** (a cloud load balancer, or a CDN edge like Cloudflare) — real client IP resolution breaks unless that address is trusted too, since it's outside the private-network default. Add it in `.env`:
+So the standard installation needs no configuration here.
+
+If you add your own reverse proxy, load balancer or CDN in front of the bundled Caddy (or in front of the gateway, in external mode):
+
+- **Private address** (on the same internal network, for example an internal load balancer): nothing to change, the default already covers it.
+- **Public address** (a cloud load balancer, or a CDN edge such as Cloudflare): the default does not trust this address, so the real client IP is lost unless you add it in `.env`:
   ```
   TRUST_PROXY=uniquelocal,<ip-or-cidr>
   ```
-  Comma-separated, multiple ranges allowed. Example for Cloudflare (full/current ranges at cloudflare.com/ips — they rotate occasionally, so a stale list can quietly break resolution again):
+  Separate the values with commas. You can give several ranges. Example for Cloudflare (the full, current ranges are at cloudflare.com/ips). Cloudflare changes these ranges from time to time, and an outdated list silently breaks the client IP detection again.
   ```
   TRUST_PROXY=uniquelocal,173.245.48.0/20,103.21.244.0/22,103.22.200.0/22,103.31.4.0/22,141.101.64.0/18,108.162.192.0/18,190.93.240.0/20,188.114.96.0/20,197.234.240.0/22,198.41.128.0/17,162.158.0.0/15,104.16.0.0/13,104.24.0.0/14,172.64.0.0/13,131.0.72.0/22
   ```
 
-Like any other `.env` change, this only reaches running containers via `./mre.sh start` (see "A container's environment is fixed when it is created" above), not `restart`.
+Like any change to `.env`, run `./mre.sh start` to apply it, not `restart` (see [Running the application](#running-the-application)).
 
 ## Updating
 
-Run `./install.sh update` from the install directory. It takes an automatic backup, refreshes the stack files, pulls the images named in `docker/docker-compose.yml` and recreates the containers.
+From the install directory, run `./install.sh update`. It makes an automatic backup, downloads the latest stack files, pulls the images named in `docker/docker-compose.yml` and recreates the containers.
 
-**Images.** Every image in the compose file is pulled — the MicroRealEstate services on the `MRE_VERSION` tag from `.env`, plus `caddy`, `mongo`, `redis` and `alpine`. `MRE_VERSION` is read from `.env` only. It is `latest` by default; if you pinned it to a commit sha, `update` re-pulls that same sha and no service moves forward. Edit `.env` to change the tag.
+**Images.** `update` pulls every image in the compose file: the MicroRealEstate services on the `MRE_VERSION` tag from `.env`, plus `caddy`, `mongo`, `redis` and `alpine`. `MRE_VERSION` is read only from `.env` and defaults to `latest`. If you pinned it to a commit sha, `update` pulls that same sha again and no service moves forward. To change the tag, edit `.env`.
 
-**Stack files.** `update` re-downloads `docker/docker-compose.yml`, `docker/Caddyfile`, the `.env.domain` template and `mre.sh` from `MRE_SRC_URL`, because new images otherwise run under the topology of the release you installed — a service, volume or route added since then would never arrive. A file is replaced only when its content changed, and the replaced copy is kept as `backup/<timestamp>-<filename>`. **Local edits to those four files are overwritten**; keep your own changes elsewhere, or recover them from `backup/`. In a git checkout the installer skips this and leaves the files to `git pull`.
+**Stack files.** `update` downloads these files again from `MRE_SRC_URL`:
 
-**`.env` is never rewritten by `update`.** Secrets and settings stay as they are. If a release introduces a new key, it appears in the refreshed `.env.domain` template and you must copy it into `.env` yourself, then run `./mre.sh start` to recreate the containers with it. Compose substitutes an empty value for a key that `.env` lacks.
+- `docker/docker-compose.yml`
+- `docker/Caddyfile`
+- the `.env.domain` template
+- `mre.sh`
+- `docker/docker-compose.external-proxy.yml`, if the installation uses it or already has it
+
+Without this step, new images would run with the stack files of the release you first installed, and any service, volume or route added since then would never arrive.
+
+`update` replaces a file only when its content changed, and keeps the old copy as `backup/<timestamp>-<filename>`. **Your local changes to these files are overwritten**, so keep them elsewhere, or recover them from `backup/`. In a git checkout, the installer skips this step and leaves the files to `git pull`.
+
+**`update` never rewrites `.env`**, so your secrets and settings stay as they are. If a release adds a new key, the key appears in the refreshed `.env.domain` template. Copy it into `.env` yourself, then run `./mre.sh start` to recreate the containers with it. If a key is missing from `.env`, compose uses an empty value.
 
 ## Backing up and restoring
 
 ### What a backup set is
 
-Everything one run writes shares a single UTC timestamp and lands flat in `backup/`:
+All files written by one backup run share the same UTC timestamp and sit directly in `backup/`:
 
 | File | Holds |
 |---|---|
@@ -91,9 +178,11 @@ Everything one run writes shares a single UTC timestamp and lands flat in `backu
 | `<timestamp>-uploads.tar.gz` | the uploaded documents (`data/uploads`, created for you on the first start) |
 | `<timestamp>-env` | a copy of `.env`, mode 600 |
 
-The timestamp is the name of the set: `./mre.sh restore 20260827T033000Z` puts all three back. Every member is optional — the automatic backups described below carry no `<timestamp>-env`, and restore fine without one.
+The timestamp is the name of the set, so `./mre.sh restore 20260827T033000Z` restores all three files. Each file is optional. The automatic backups described below have no `<timestamp>-env`, and they restore fine without it.
 
-**Why the secrets travel with the data.** Some database fields are encrypted with `CIPHER_KEY` and `CIPHER_IV_KEY` from `.env`, and sessions are signed with the token secrets. A database restored next to different secrets gives unreadable third-party credentials and no working login, so each set carries its own copy and `restore` compares it with the live `.env` before it touches anything. The flip side: **every set holds every secret of the installation**. Keep `backup/` as private as `.env` itself, and pass `--no-env` when the archives leave this machine.
+**Why a set contains the secrets.** The application encrypts some database fields with `CIPHER_KEY` and `CIPHER_IV_KEY` from `.env`, and signs sessions with the token secrets. A database restored with different secrets gives unreadable third-party credentials and no working login. That is why each set keeps its own copy of `.env`, and `restore` compares it with the live `.env` before it changes anything.
+
+> **WARNING:** Each set contains all secrets of the installation. Keep `backup/` as private as `.env`. If you copy the archives off this machine, use `--no-env`.
 
 ### Taking a backup
 
@@ -101,17 +190,17 @@ The timestamp is the name of the set: `./mre.sh restore 20260827T033000Z` puts a
 ./mre.sh backup
 ```
 
-It works whether the application is running or stopped: a stopped stack has its mongo service started for the dump and stopped again afterwards.
+This works whether the application is running or stopped. If the stack is stopped, the command starts the mongo service for the dump and stops it again afterwards.
 
-Nothing is ever deleted: sets accumulate in `backup/` and pruning them is yours to do. Archives you put there yourself are left alone.
+The command never deletes anything, so sets pile up in `backup/` until you remove them yourself. It leaves archives that you put there yourself alone.
 
-**From cron.** `--quiet` prints nothing on success and holds the container output back until something fails, which is what makes the mail worth reading. Run it as the account that owns the installation:
+**From cron.** With `--quiet`, the command prints nothing on success and shows the container output only when something fails, so cron mails you only when there is a problem. Run it as the user who owns the installation:
 
 ```shell
 30 3 * * * cd /path/to/microrealestate && ./mre.sh backup --quiet
 ```
 
-A set is only as safe as the disk under it — copy `backup/` off the machine as well.
+A set is only as safe as the disk it is on, so also copy `backup/` to another machine.
 
 ### Restoring
 
@@ -120,18 +209,29 @@ A set is only as safe as the disk under it — copy `backup/` off the machine as
 ./mre.sh restore 20260827T033000Z --yes   # restore that set, no questions asked
 ```
 
-In order, a restore: saves the current data as a new set — that is the only undo, and the command to reverse the restore is printed at the end; stops the application while keeping the database up; drops and reloads the collections held in the archive; unpacks the uploaded documents; then starts again exactly the services that were running.
+A restore runs these steps, in this order:
 
-Only the collections **present in the archive** are dropped and reloaded. A collection created after the backup was taken survives the restore untouched.
+1. It saves the current data as a new set. This is the only way to undo the restore, and the command to reverse it is printed at the end.
+2. It stops the application but keeps the database running.
+3. It drops and reloads the collections in the archive.
+4. It extracts the uploaded documents.
+5. It restarts exactly the services that were running before.
 
-Two things it refuses to do: guess which backup you meant when none is named and there is no terminal to ask on, and restore a set whose secrets differ from the live `.env` — that one needs `--restore-env`, or `--yes` to accept the consequences.
+Only the collections **in the archive** are dropped and reloaded, so a collection created after the backup is left untouched.
 
-`./mre.sh --help` lists the rest: restoring one half of a set, keeping the current uploads aside, installing the archived `.env`, or naming a single archive.
+The restore refuses to run in two cases:
+
+- You do not name a set, and there is no terminal to ask you which one.
+- The secrets of the set differ from the live `.env`. To go ahead, add `--restore-env`, or add `--yes` to accept the consequences.
+
+`./mre.sh --help` lists the other options: restore only one half of a set, keep the current uploads aside, install the archived `.env`, or name a single archive.
 
 ### Automatic backups
 
-`./install.sh update` writes a hot backup into `backup/` before it changes anything, and only when it has something to change: a stack file whose content moved, or an image the pull replaced. An `update` that finds everything already current writes no archive and says so; `MRE_SKIP_BACKUP=1` skips it. `./install.sh install` never writes one — it changes nothing on an installation that is already there, it only starts it. A stopped stack is briefly started first, so the dump runs against the existing data.
+Before `./install.sh update` changes anything, it writes a hot backup into `backup/`, but only when it has something to change: a stack file with new content, or an image replaced by the pull. If everything is already current, `update` writes no archive and says so. To skip the backup, set `MRE_SKIP_BACKUP=1`. If the stack is stopped, `update` starts it briefly, so that the dump reads the existing data.
 
-Beside the database and the uploads, such a run also keeps a copy of every stack file it replaced — `<timestamp>-docker-compose.yml`, `-Caddyfile`, `-env.domain`, `-mre.sh` — under that same timestamp.
+`./install.sh install` never writes a backup, because on an existing installation it changes nothing and only starts it.
 
-These sets hold no `<timestamp>-env`, because `update` has no reason to copy your secrets; `./mre.sh restore <timestamp>` restores them all the same, warning once that it cannot check them against the live `.env`. They belong to the account that invoked the installer, even when it ran under `sudo`, and the installer never deletes them.
+Next to the database and the uploads, these sets also keep a copy of each stack file that the run replaced, under the same timestamp: `<timestamp>-docker-compose.yml`, `-Caddyfile`, `-env.domain`, `-mre.sh`.
+
+These sets have no `<timestamp>-env`, because `update` has no reason to copy your secrets. `./mre.sh restore <timestamp>` still restores them, with one warning that it cannot compare their secrets with the live `.env`. They belong to the user who started the installer, even when it ran under `sudo`, and the installer never deletes them.

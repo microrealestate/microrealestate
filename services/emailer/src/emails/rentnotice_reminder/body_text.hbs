@@ -1,0 +1,15 @@
+{{> text/header}}
+
+
+
+{{> text/greetings}}
+
+{{t 'On examining your account, we note that, failing mistake or omission on our part, you have not settled your rent of {{term}}.' term=(formatTerm period tenant.contract.lease.timeRange)}}
+
+{{t 'We would be grateful if you could proceed to the payment of {{amount}} very shortly.' amount=(formatNumber tenant.rents.[0].total.amountDue 'currency')}}
+
+{{> text/paymentmethods}}
+
+{{> text/signature}}
+
+{{> text/landlordcontact}}

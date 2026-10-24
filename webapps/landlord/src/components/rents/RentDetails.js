@@ -122,7 +122,7 @@ export default function RentDetails({ rent, className }) {
                     {formattedDate} {payment.reference}
                   </div>
                 </div>
-                <NumberFormat value={payment.amount * -1} creditColor={true} />
+                <NumberFormat value={payment.amount} creditColor={true} />
               </div>
             );
           })}

@@ -1,10 +1,33 @@
 import {
   Collections,
+  DateFormat,
   type Middlewares,
   ServiceError
 } from '@microrealestate/common';
-import type { API, PropertyType } from '@microrealestate/shared';
+import type { API, PropertyType, TenantType } from '@microrealestate/shared';
+import moment from 'moment';
 import * as FD from './frontdata';
+
+function _lastBusyDay(tenant: Pick<TenantType, 'endDate' | 'terminationDate'>) {
+  const date = tenant.terminationDate || tenant.endDate;
+  return date ? moment(date, DateFormat.DATE_FORMAT) : undefined;
+}
+
+function _isOccupying(
+  tenant: Pick<TenantType, 'beginDate' | 'endDate' | 'terminationDate'>,
+  now: moment.Moment
+) {
+  const lastBusyDay = _lastBusyDay(tenant);
+  if (!tenant.beginDate || !lastBusyDay) {
+    return false;
+  }
+  return (
+    moment(tenant.beginDate, DateFormat.DATE_FORMAT).isSameOrBefore(
+      now,
+      'day'
+    ) && lastBusyDay.isSameOrAfter(now, 'day')
+  );
+}
 
 async function _toPropertiesData(
   realm: NonNullable<Express.Request['realm']>,
@@ -17,19 +40,23 @@ async function _toPropertiesData(
     }
   }).lean();
 
+  const now = moment();
   return inputProperties.map((property) => {
+    // most recent lease first, tenants without an end date last
     const tenants = allTenants
       .filter(({ properties }) =>
         properties
           .map(({ propertyId }) => propertyId)
           .includes(String(property._id))
       )
-      .sort((t1, t2) => {
-        const t1EndDate = t1.terminationDate || t1.endDate;
-        const t2EndDate = t2.terminationDate || t2.endDate;
-        return Number(t2EndDate) - Number(t1EndDate);
-      });
-    return FD.toProperty(property, tenants?.[0], tenants);
+      .sort(
+        (t1, t2) =>
+          (_lastBusyDay(t2)?.valueOf() ?? 0) -
+          (_lastBusyDay(t1)?.valueOf() ?? 0)
+      );
+    const occupant =
+      tenants.find((tenant) => _isOccupying(tenant, now)) ?? tenants[0];
+    return FD.toProperty(property, occupant, tenants);
   });
 }
 

@@ -3,12 +3,16 @@ import {
   Collections,
   Cookies,
   formatError,
+  InternalKey,
   logger,
   Middlewares,
   Service,
   ServiceError
 } from '@microrealestate/common';
-import { isStrongPassword } from '@microrealestate/shared';
+import {
+  INTERNAL_KEY_PURPOSES,
+  isStrongPassword
+} from '@microrealestate/shared';
 import axios from 'axios';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
@@ -212,7 +216,7 @@ export const signOut = Middlewares.asyncWrapper(async (req, res) => {
 });
 
 export const forgotPassword = Middlewares.asyncWrapper(async (req, res) => {
-  const { EMAILER_URL, RESET_TOKEN_SECRET } =
+  const { ACCESS_TOKEN_SECRET, EMAILER_URL, RESET_TOKEN_SECRET } =
     Service.getInstance().envConfig.getValues();
   const { email } = req.body;
   if (!email) {
@@ -243,14 +247,16 @@ export const forgotPassword = Middlewares.asyncWrapper(async (req, res) => {
         },
         {
           headers: {
+            [InternalKey.HEADER]: InternalKey.generate(
+              ACCESS_TOKEN_SECRET,
+              INTERNAL_KEY_PURPOSES.EMAILER_ROUTES
+            ),
             'Accept-Language': req.rawLocale.code
           }
         }
       );
     } catch (error) {
-      logger.error(
-        `cannot send the reset password email: ${formatError(error)}`
-      );
+      logger.error('cannot send the reset password email:', formatError(error));
     }
   }
   res.sendStatus(204);

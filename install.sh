@@ -13,9 +13,18 @@
 #
 # Environment variables (all optional)
 #   ADVERTISE_ADDR   Manual address override if auto-detection fails.
-#   MRE_HTTP_PORT    Host port for HTTP (default: 80). Takes precedence over
-#   MRE_HTTPS_PORT   .env, as compose does. Only a fresh 'install' writes it
-#                    there; every other run honours it for that run only.
+#   MRE_HTTP_PORT    Host port for HTTP (default: 80, or 8080 with an external
+#   MRE_HTTPS_PORT   proxy, where it is the gateway port and MRE_HTTPS_PORT is
+#                    unused). Takes precedence over .env, as compose does. Only
+#                    a fresh 'install' writes it there; every other run honours
+#                    it for that run only.
+#   MRE_REVERSE_PROXY  'bundled' (default) or 'external'. Same as the
+#                    --reverse-proxy option; only a fresh 'install' takes it, an
+#                    installation switches by editing .env then running 'update'.
+#   MRE_URL          With an external proxy: the public URL it serves, e.g.
+#                    https://mre.example.com. Same as --url. Required there.
+#   MRE_GATEWAY_BIND With an external proxy: the address the gateway binds
+#                    (default 127.0.0.1). Written to .env by a fresh 'install'.
 #   MRE_SKIP_BACKUP  Set to 1 to skip the automatic pre-change backup.
 #   MRE_SRC_URL      Where the compose file, Caddyfile and .env template are
 #                    fetched from. That compose file then runs as root, so point
@@ -25,6 +34,11 @@
 #
 # Note: with non-default host ports, Let's Encrypt cannot reach Caddy on
 # 80/443 from the internet, so automatic HTTPS for domains will not work.
+#
+# With an external reverse proxy (Apache, nginx...) the bundled Caddy is not
+# started: the gateway is published on MRE_GATEWAY_BIND:MRE_HTTP_PORT for that
+# proxy to forward to, and TLS is configured there, not in the app. MRE_URL is
+# the address that proxy serves; the app takes its domain and HTTPS from it.
 #
 # Behavior notes
 #   - 'update' owns every change to an installation. 'install' only installs:
@@ -60,6 +74,17 @@ HEALTH_WAIT_SECONDS=180
 RUN_STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
 RESOLVED_HTTP_PORT=""
 RESOLVED_HTTPS_PORT=""
+# Set by resolve_reverse_proxy: 'bundled' (Caddy on 80/443) or 'external'.
+REVERSE_PROXY=""
+REVERSE_PROXY_ARG=""
+URL_ARG=""
+EXTERNAL_PROXY_DOC_URL="https://github.com/microrealestate/microrealestate/blob/main/documentation/OPERATIONS.md#using-your-own-reverse-proxy"
+# Set by resolve_ports: the host ports compose publishes, and where the
+# readiness probe reaches the app.
+declare -a LISTEN_PORTS=()
+PORT_KEYS_HINT="MRE_HTTP_PORT/MRE_HTTPS_PORT"
+PROBE_HOST="127.0.0.1"
+PROBE_PORT=""
 # Set by probe_stack_files: one 'tmp|dest|backup' triple per file to install.
 declare -a STACK_FILE_UPDATES=()
 
@@ -121,7 +146,7 @@ show_help() {
 ${C_BOLD}MicroRealEstate installer${C_OFF}
 
 ${C_BOLD}Usage${C_OFF}
-  ./install.sh [install|update] [--dir PATH]
+  ./install.sh [install|update] [--dir PATH] [--reverse-proxy bundled|external]
 
 ${C_BOLD}Commands${C_OFF}
   install            Install, or start an existing installation without
@@ -130,15 +155,29 @@ ${C_BOLD}Commands${C_OFF}
 
 ${C_BOLD}Options${C_OFF}
   --dir PATH         Install directory (default: current dir).
+  --reverse-proxy MODE
+                     'bundled' (default): Caddy serves 80/443 and the domain
+                     and HTTPS are set in the app. 'external': no Caddy; the
+                     gateway listens on 127.0.0.1:8080 for the reverse proxy
+                     this host already runs. Fresh 'install' only.
+  --url URL          External proxy only, and required there: the public URL
+                     that proxy serves, e.g. https://mre.example.com. The app
+                     takes its domain, and HTTPS on or off, from it.
   -h, --help         Show this help.
 
 ${C_BOLD}Environment${C_OFF} (all optional)
   ADVERTISE_ADDR     Address override when auto-detection fails.
-  MRE_HTTP_PORT      Host port for HTTP (default: 80).
-  MRE_HTTPS_PORT     Host port for HTTPS (default: 443).
+  MRE_HTTP_PORT      Host port for HTTP (default: 80). With an external proxy
+                     it is the gateway port (default: 8080).
+  MRE_HTTPS_PORT     Host port for HTTPS (default: 443). Unused with an
+                     external proxy.
                      Both take precedence over .env, as compose does. A fresh
                      'install' writes them there; every other run honours them
                      for that run only.
+  MRE_REVERSE_PROXY  Same as --reverse-proxy.
+  MRE_URL            Same as --url.
+  MRE_GATEWAY_BIND   External proxy only: the IPv4 address the gateway binds
+                     (default: 127.0.0.1).
   MRE_SKIP_BACKUP    Set to 1 to skip the automatic pre-change backup.
   MRE_SRC_URL        Where docker-compose.yml, the Caddyfile and .env.domain
                      are fetched from. That compose file runs as root, so
@@ -162,6 +201,9 @@ ${C_BOLD}Notes${C_OFF}
     .env.domain by hand.
   - With non-default ports, Let's Encrypt cannot reach Caddy on 80/443, so
     automatic HTTPS for a domain will not work.
+  - To move an installation to or from an external proxy, set
+    MRE_REVERSE_PROXY in .env (and MRE_URL, for external), then run
+    './install.sh update'. To change MRE_URL, edit .env, then run 'update'.
 EOF
 }
 
@@ -175,6 +217,16 @@ parse_args() {
         shift
         INSTALL_DIR="${1:-}"
         [ -n "$INSTALL_DIR" ] || die "--dir requires a path"
+        ;;
+      --reverse-proxy)
+        shift
+        REVERSE_PROXY_ARG="${1:-}"
+        [ -n "$REVERSE_PROXY_ARG" ] || die "--reverse-proxy requires 'bundled' or 'external'"
+        ;;
+      --url)
+        shift
+        URL_ARG="${1:-}"
+        [ -n "$URL_ARG" ] || die "--url requires a URL, e.g. https://mre.example.com"
         ;;
       -h|--help) show_help; exit 0 ;;
       *)         die "Unknown argument: $1 (try --help)" ;;
@@ -404,53 +456,154 @@ port_in_use() {
 
 check_ports() {
   local p
-  for p in "$RESOLVED_HTTP_PORT" "$RESOLVED_HTTPS_PORT"; do
+  for p in "${LISTEN_PORTS[@]}"; do
     if port_in_use "$p"; then
-      die "Port $p is already in use. Stop the conflicting service, or choose other ports via MRE_HTTP_PORT/MRE_HTTPS_PORT."
+      die "Port $p is already in use. Stop the conflicting service, or choose other ports via ${PORT_KEYS_HINT}."
     fi
   done
-  ok "Ports $RESOLVED_HTTP_PORT and $RESOLVED_HTTPS_PORT are available"
+  ok "Port(s) ${LISTEN_PORTS[*]} available"
 }
 
 is_valid_port() {
   [[ "$1" =~ ^[0-9]{1,5}$ ]] && [ "$1" -ge 1 ] && [ "$1" -le 65535 ]
 }
 
-# resolve_ports <bootstrap|persisted>
+# resolve_env_value <key> <default> <validator> <bootstrap|persisted>
 #
 # Environment, then .env, then the default -- matching compose, which lets host
 # environment variables win over --env-file. Resolving any other way makes the
 # banner and the readiness probe disagree with the ports compose publishes.
 # The mode only changes the warning: 'install' persists the value, 'update' not.
+resolve_env_value() {
+  local key="$1" default="$2" valid="$3" mode="$4"
+  local from_env="${!key:-}"
+  local from_file="${ENV_CURRENT[$key]:-}"
+  "$valid" "$from_env"  || from_env=""
+  "$valid" "$from_file" || from_file=""
+
+  if [ -n "$from_env" ] && [ -n "$from_file" ] && [ "$from_env" != "$from_file" ]; then
+    if [ "$mode" = "bootstrap" ]; then
+      warn "$key=$from_env from the environment overrides $from_file in .env, and is written there permanently."
+    else
+      warn "$key=$from_env from the environment overrides $from_file in .env for this run only; this run does not rewrite .env, so a later '${COMPOSE_CMD[*]} up' without $key set will publish $from_file again."
+    fi
+  fi
+  ENV_CURRENT["$key"]="${from_env:-${from_file:-$default}}"
+}
+
+# resolve_ports <bootstrap|persisted>
 resolve_ports() {
   local mode="$1"
-  local key candidate from_env from_file default
-  for key in MRE_HTTP_PORT MRE_HTTPS_PORT; do
-    case "$key" in
-      MRE_HTTP_PORT)  default=80 ;;
-      MRE_HTTPS_PORT) default=443 ;;
-    esac
-    from_env="${!key:-}"
-    from_file="${ENV_CURRENT[$key]:-}"
-    is_valid_port "$from_env"  || from_env=""
-    is_valid_port "$from_file" || from_file=""
+  if [ "$REVERSE_PROXY" = "external" ]; then
+    resolve_env_value MRE_HTTP_PORT 8080 is_valid_port "$mode"
+    resolve_env_value MRE_GATEWAY_BIND 127.0.0.1 is_ipv4 "$mode"
+    RESOLVED_HTTP_PORT="${ENV_CURRENT[MRE_HTTP_PORT]}"
+    PROBE_PORT="$RESOLVED_HTTP_PORT"
+    PROBE_HOST="${ENV_CURRENT[MRE_GATEWAY_BIND]}"
+    [ "$PROBE_HOST" = "0.0.0.0" ] && PROBE_HOST="127.0.0.1"
+    LISTEN_PORTS=("$PROBE_PORT")
+    PORT_KEYS_HINT="MRE_HTTP_PORT"
+    ok "Gateway: ${ENV_CURRENT[MRE_GATEWAY_BIND]}:${PROBE_PORT} (for your reverse proxy)"
+    return
+  fi
 
-    candidate="${from_env:-${from_file:-$default}}"
-    if [ -n "$from_env" ] && [ -n "$from_file" ] && [ "$from_env" != "$from_file" ]; then
-      if [ "$mode" = "bootstrap" ]; then
-        warn "$key=$from_env from the environment overrides $from_file in .env, and is written there permanently."
-      else
-        warn "$key=$from_env from the environment overrides $from_file in .env for this run only; this run does not rewrite .env, so a later '${COMPOSE_CMD[*]} up' without $key set will publish $from_file again."
-      fi
-    fi
-    ENV_CURRENT["$key"]="$candidate"
-  done
+  resolve_env_value MRE_HTTP_PORT 80 is_valid_port "$mode"
+  resolve_env_value MRE_HTTPS_PORT 443 is_valid_port "$mode"
   RESOLVED_HTTP_PORT="${ENV_CURRENT[MRE_HTTP_PORT]}"
   RESOLVED_HTTPS_PORT="${ENV_CURRENT[MRE_HTTPS_PORT]}"
   if [ "$RESOLVED_HTTP_PORT" = "$RESOLVED_HTTPS_PORT" ]; then
     die "MRE_HTTP_PORT and MRE_HTTPS_PORT must differ (both are $RESOLVED_HTTP_PORT)."
   fi
+  PROBE_PORT="$RESOLVED_HTTP_PORT"
+  LISTEN_PORTS=("$RESOLVED_HTTP_PORT" "$RESOLVED_HTTPS_PORT")
   ok "HTTP port: $RESOLVED_HTTP_PORT / HTTPS port: $RESOLVED_HTTPS_PORT"
+}
+
+is_reverse_proxy() { [ "$1" = "bundled" ] || [ "$1" = "external" ]; }
+
+# resolve_reverse_proxy <bootstrap|persisted>
+#
+# --reverse-proxy, then MRE_REVERSE_PROXY, then .env, then 'bundled'. Only a
+# fresh install may choose: elsewhere a value that disagrees with .env would
+# start one topology now and another on the next './mre.sh start'.
+resolve_reverse_proxy() {
+  local mode="$1"
+  local requested="${REVERSE_PROXY_ARG:-${MRE_REVERSE_PROXY:-}}"
+  local from_file="${ENV_CURRENT[MRE_REVERSE_PROXY]:-}"
+  if [ -n "$requested" ] && ! is_reverse_proxy "$requested"; then
+    die "Unknown reverse proxy mode '$requested': use 'bundled' or 'external'."
+  fi
+  if [ -n "$from_file" ] && ! is_reverse_proxy "$from_file"; then
+    die "MRE_REVERSE_PROXY=$from_file in .env is not 'bundled' or 'external'. Fix .env, then re-run."
+  fi
+  if [ "$mode" = "persisted" ] && [ -n "$requested" ] \
+     && [ "$requested" != "${from_file:-bundled}" ]; then
+    die "This installation uses the ${from_file:-bundled} reverse proxy, and '$SUBCOMMAND' never changes it.
+    To switch, set MRE_REVERSE_PROXY=$requested in ${INSTALL_DIR}/.env, then run './install.sh update'."
+  fi
+  REVERSE_PROXY="${requested:-${from_file:-bundled}}"
+  ENV_CURRENT[MRE_REVERSE_PROXY]="$REVERSE_PROXY"
+  if [ "$REVERSE_PROXY" = "external" ]; then
+    ok "Reverse proxy: external (the bundled Caddy is not started)"
+  fi
+}
+
+is_app_url() { [[ "$1" =~ ^https?://[A-Za-z0-9]([A-Za-z0-9.-]*[A-Za-z0-9])?(:[0-9]{1,5})?$ ]]; }
+
+# resolve_url <bootstrap|persisted>
+#
+# External mode only: --url, then MRE_URL, then .env. The public URL the
+# operator's proxy serves; the api stores it as the organization's domain.
+# Like the mode, only a fresh install takes it from the command line.
+resolve_url() {
+  local mode="$1"
+  if [ "$REVERSE_PROXY" != "external" ]; then
+    [ -z "$URL_ARG" ] \
+      || die "--url only applies with --reverse-proxy external. With the bundled Caddy, set the domain in the application."
+    return 0
+  fi
+  local requested="${URL_ARG:-${MRE_URL:-}}"
+  local from_file="${ENV_CURRENT[MRE_URL]:-}"
+  requested="${requested%/}"
+  from_file="${from_file%/}"
+  if [ "$mode" = "persisted" ] && [ -n "$requested" ] \
+     && [ "$requested" != "$from_file" ]; then
+    die "'$SUBCOMMAND' never changes the public URL.
+    To change it, set MRE_URL=$requested in ${INSTALL_DIR}/.env, then run './install.sh update'."
+  fi
+  local url="${requested:-$from_file}"
+  [ -n "$url" ] || die "An external reverse proxy needs the public URL it serves.
+    Pass --url https://mre.example.com, or set MRE_URL in ${INSTALL_DIR}/.env."
+  is_app_url "$url" \
+    || die "'$url' is not a public URL such as https://mre.example.com (http or https, a host, an optional port, no path)."
+  ENV_CURRENT[MRE_URL]="$url"
+  ok "Public URL: $url"
+}
+
+external_proxy_overlay() {
+  case "${COMPOSE_ARGS[1]:-}" in
+    docker/*) echo "docker/docker-compose.external-proxy.yml" ;;
+    *)        echo "docker-compose.external-proxy.yml" ;;
+  esac
+}
+
+apply_reverse_proxy_mode() {
+  [ "$REVERSE_PROXY" = "external" ] || return 0
+  cd "$INSTALL_DIR"
+  local overlay; overlay="$(external_proxy_overlay)"
+  if [ ! -f "$overlay" ]; then
+    info "Fetching $overlay from $MRE_SRC_URL..."
+    download_file "$MRE_SRC_URL/docker/docker-compose.external-proxy.yml" "$overlay" \
+      || die "Failed to download $overlay from $MRE_SRC_URL"
+  fi
+  COMPOSE_ARGS+=(-f "$overlay")
+}
+
+# A Caddy container left over from bundled mode would keep holding 80/443: its
+# service is profiled out of the external topology, so 'up' never touches it.
+remove_bundled_proxy() {
+  [ "$REVERSE_PROXY" = "external" ] || return 0
+  compose --profile bundled-proxy rm --stop --force reverse-proxy >/dev/null 2>&1 || true
 }
 
 # INSTALL_DIR defaults to $PWD, so 'curl … | bash' in the wrong directory would
@@ -484,21 +637,26 @@ validate_install_dir() {
 }
 
 require_root() {
-  [ "$RESOLVED_HTTP_PORT" -lt 1024 ] || [ "$RESOLVED_HTTPS_PORT" -lt 1024 ] || return 0
+  local p low=""
+  for p in "${LISTEN_PORTS[@]}"; do
+    [ "$p" -lt 1024 ] && low=1
+  done
+  [ -n "$low" ] || return 0
   [ "$(id -u)" -eq 0 ] && return 0
 
-  info "Ports $RESOLVED_HTTP_PORT/$RESOLVED_HTTPS_PORT are below 1024 and need root to bind. Using sudo for the remaining docker/compose steps; you may be prompted for your password."
+  local ports="${LISTEN_PORTS[*]}"
+  info "Port(s) ${ports// //} below 1024 need root to bind. Using sudo for the remaining docker/compose steps; you may be prompted for your password."
 
   local resume_cmd="curl -sSL ${MRE_SRC_URL}/install.sh | sudo bash -s -- $SUBCOMMAND"
   [ "$INSTALL_DIR" = "$PWD" ] || resume_cmd="$resume_cmd --dir \"$INSTALL_DIR\""
 
   [ -r /dev/tty ] || die "No terminal available to prompt for sudo. Re-run with:
     $resume_cmd
-    or pick unprivileged ports via MRE_HTTP_PORT/MRE_HTTPS_PORT."
+    or pick unprivileged ports via ${PORT_KEYS_HINT}."
   require_cmd sudo
   sudo -v || die "sudo authentication failed. Re-run with:
     $resume_cmd
-    or pick unprivileged ports via MRE_HTTP_PORT/MRE_HTTPS_PORT."
+    or pick unprivileged ports via ${PORT_KEYS_HINT}."
   ROOT_CMD="sudo"
 }
 
@@ -700,7 +858,7 @@ probe_stack_files() {
   cd "$INSTALL_DIR"
   STACK_FILE_UPDATES=()
   if [ -d ".git" ]; then
-    info "Git checkout: the compose file, Caddyfile and .env.domain are left to git."
+    info "Git checkout: the compose files, Caddyfile and .env.domain are left to git."
     return 0
   fi
 
@@ -725,6 +883,16 @@ probe_stack_files() {
          die "Failed to download the Caddyfile from $MRE_SRC_URL. Nothing has been changed.
     Re-run './install.sh update' once the source is reachable."; }
   [ -n "$tmp" ] && STACK_FILE_UPDATES+=("${tmp}|${caddy_file}|${bk}-Caddyfile")
+  # Refreshed whenever it is in use or already on disk, so a later switch to an
+  # external proxy does not start under a stale overlay.
+  local overlay; overlay="$(external_proxy_overlay)"
+  if [ "$REVERSE_PROXY" = "external" ] || [ -f "$overlay" ]; then
+    tmp="$(probe_file "$MRE_SRC_URL/docker/docker-compose.external-proxy.yml" "$overlay")" \
+      || { discard_stack_files
+           die "Failed to download $overlay from $MRE_SRC_URL. Nothing has been changed.
+    Re-run './install.sh update' once the source is reachable."; }
+    [ -n "$tmp" ] && STACK_FILE_UPDATES+=("${tmp}|${overlay}|${bk}-docker-compose.external-proxy.yml")
+  fi
   # Template only, read by 'install' and by operators: never fatal.
   tmp="$(probe_file "$MRE_SRC_URL/.env.domain" ".env.domain")" \
     || { warn "Could not check the .env.domain template (not fatal)."; tmp=""; }
@@ -839,7 +1007,9 @@ generate_secrets() {
 # The canonical key order we emit. Keys missing from this list go at the end.
 ENV_KEY_ORDER=(
   MRE_VERSION
+  MRE_REVERSE_PROXY
   MRE_HTTP_PORT MRE_HTTPS_PORT
+  MRE_URL MRE_GATEWAY_BIND
   MONGO_URL
   ACCESS_TOKEN_SECRET REFRESH_TOKEN_SECRET RESET_TOKEN_SECRET
   CIPHER_KEY CIPHER_IV_KEY
@@ -1112,7 +1282,7 @@ wait_until_responding() {
     # curl prints 000 on failure itself; a "|| echo 000" fallback would
     # concatenate a second one and match neither case arm below.
     code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 4 \
-              "http://127.0.0.1:${RESOLVED_HTTP_PORT}/landlord" 2>/dev/null)" || true
+              "http://${PROBE_HOST}:${PROBE_PORT}/landlord" 2>/dev/null)" || true
     [ -n "$code" ] || code=000
     case "$code" in
       5??|000) ;;
@@ -1148,8 +1318,15 @@ print_banner() {
 EOF
   printf '%s' "$C_OFF"
   echo
-  echo "  Landlord UI:  $url/landlord"
-  echo "  Tenant UI:    $url/tenant"
+  if [ "$REVERSE_PROXY" = "external" ]; then
+    echo "  Point your reverse proxy at:  http://${ENV_CURRENT[MRE_GATEWAY_BIND]}:${PROBE_PORT}"
+    echo "  Landlord UI:  ${ENV_CURRENT[MRE_URL]}/landlord"
+    echo "  Tenant UI:    ${ENV_CURRENT[MRE_URL]}/tenant"
+    echo "  Proxy setup (Apache, nginx):  $EXTERNAL_PROXY_DOC_URL"
+  else
+    echo "  Landlord UI:  $url/landlord"
+    echo "  Tenant UI:    $url/tenant"
+  fi
   echo
   echo "Useful commands (run from ${C_BOLD}$INSTALL_DIR${C_OFF}):"
   print_useful_commands "$compose_cmd"
@@ -1204,6 +1381,9 @@ cmd_install() {
   # 'install' never changes an installation that is already there; every change
   # belongs to 'update'. This path only brings the app up.
   if [ -f ".env" ] && ! secrets_will_change; then
+    resolve_reverse_proxy persisted
+    resolve_url persisted
+    apply_reverse_proxy_mode
     resolve_ports persisted
     require_root
 
@@ -1228,6 +1408,9 @@ cmd_install() {
     return
   fi
 
+  resolve_reverse_proxy bootstrap
+  resolve_url bootstrap
+  apply_reverse_proxy_mode
   resolve_ports bootstrap
   require_root
   check_ports
@@ -1304,6 +1487,9 @@ cmd_update() {
     info "MRE_VERSION=$pinned in .env: images stay pinned to that tag. Edit .env to change it."
   fi
   detect_address
+  resolve_reverse_proxy persisted
+  resolve_url persisted
+  apply_reverse_proxy_mode
   resolve_ports persisted
   require_root
 
@@ -1316,6 +1502,7 @@ cmd_update() {
   pull_images
 
   step "Starting up"
+  remove_bundled_proxy
   info "Recreating containers..."
   compose up -d || die "'${COMPOSE_CMD[*]} up -d' failed during update."
 

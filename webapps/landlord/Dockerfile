@@ -32,7 +32,6 @@ COPY shared shared
 COPY webapps/commonui/scripts webapps/commonui/scripts
 COPY webapps/commonui/src webapps/commonui/src
 COPY webapps/commonui/postcss.config.mjs webapps/commonui/postcss.config.mjs
-COPY webapps/commonui/tailwind.config.ts webapps/commonui/tailwind.config.ts
 COPY webapps/landlord/locales webapps/landlord/locales
 COPY webapps/landlord/public webapps/landlord/public
 COPY webapps/landlord/scripts webapps/landlord/scripts

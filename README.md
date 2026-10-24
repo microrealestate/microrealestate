@@ -66,6 +66,11 @@ curl -sSL https://raw.githubusercontent.com/microrealestate/microrealestate/main
 
 (`./install.sh update` works too, if you did keep a local copy.)
 
+Already running Apache, nginx or another reverse proxy on that host? Append
+`-s -- install --reverse-proxy external --url https://your.domain` instead: the bundled Caddy is left out and
+the app listens on `127.0.0.1:8080` for your proxy - see
+[Using your own reverse proxy](./documentation/OPERATIONS.md#using-your-own-reverse-proxy).
+
 `install.sh` also drops an `mre.sh` script next to it for day-to-day operations (start, stop, restart,
 status, logs, backup, restore) - see [documentation/OPERATIONS.md](./documentation/OPERATIONS.md).
 

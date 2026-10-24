@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+{{> html/htmlhead}}
+    <body>
+        <div class="email-body">
+            <div class="email-container">
+                <div class="bar"></div>
+                <div class="content">
+                    <div class="header">
+                        <div class="logo">{{landlord.name}}</div>
+                    </div>
+
+                    <div class="title">{{t 'Last reminder before eviction'}}</div>
+
+                    <p>{{> html/greetings}}</p>
+
+                    <p>
+                        {{#if landlord.isCompany}}
+                            {{t 'We would like to point out that our business agreements with your company are stated in a contract signed {{date}}.' date=(formatDate tenant.contract.beginDate 'LL')}}
+                        {{else}}
+                            {{t 'We would like to point out that our business agreements with you are stated in a contract signed {{date}}.' date=(formatDate tenant.contract.beginDate 'LL')}}   
+                        {{/if}}
+                    </p>
+            
+                    <p>
+                        {{t 'In this contract, it is explicitly indicated that {{tenant}} is obliged to pay in advance and monthly its rents to {{landlord}}.' tenant=tenant.name landlord=landlord.legalName}}
+                    </p>
+
+                    <p>
+                        {{t 'So far, one or more rents have not been paid. The current amount of unpaid rents is <strong>{{amount}}</strong>.' amount=(formatNumber tenant.rents.[0].total.amountDue 'currency')}}
+                    </p>
+
+                    <p>
+                       <strong>{{t 'We would be grateful if you could proceed to the payment of your rent debts in the following 10 days, otherwise we will engage an eviction procedure.'}}</strong>
+                    </p>
+
+                    {{> html/paymentmethods}}
+
+                    {{> html/signature}}   
+                </div>
+            </div>
+            {{> html/landlordcontact}}   
+        </div>
+    </body>
+</html>

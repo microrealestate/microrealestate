@@ -53,8 +53,10 @@ yarn seeddev
 ```
 
 This creates the demo data — organization, contract, document templates,
-properties, tenants, lease documents, rent payments — and points the
-organization at smtp4dev, so emails work straight away. It empties the database
+properties, tenants, lease documents, rent payments — points the
+organization at smtp4dev, and sets its domain to the app URL (`localhost:8080`)
+so that receipts and password resets can link back to the app. Emails work
+straight away. It empties the database
 first, unless `--keep` is passed.
 
 ### Emails

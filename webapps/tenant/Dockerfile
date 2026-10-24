@@ -32,7 +32,6 @@ COPY shared shared
 COPY webapps/commonui/scripts webapps/commonui/scripts
 COPY webapps/commonui/src webapps/commonui/src
 COPY webapps/commonui/postcss.config.mjs webapps/commonui/postcss.config.mjs
-COPY webapps/commonui/tailwind.config.ts webapps/commonui/tailwind.config.ts
 COPY webapps/tenant/locales webapps/tenant/locales
 COPY webapps/tenant/public webapps/tenant/public
 COPY webapps/tenant/next.config.js webapps/tenant

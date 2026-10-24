@@ -1,0 +1,29 @@
+###############################################################################
+# External reverse proxy
+# Layered on docker-compose.yml when MRE_REVERSE_PROXY=external in .env, for a
+# host that already runs its own reverse proxy (Apache, nginx, a host Caddy...).
+# The bundled Caddy is not started and the gateway is published on
+# MRE_GATEWAY_BIND:MRE_HTTP_PORT for that proxy to forward to. TLS and routing
+# are then the operator's; MRE_URL is the public address that proxy serves.
+#   docker compose --env-file .env -f docker/docker-compose.yml \
+#     -f docker/docker-compose.external-proxy.yml up -d
+###############################################################################
+services:
+  reverse-proxy:
+    # A profile no command enables: the service exists but never starts.
+    profiles:
+      - bundled-proxy
+  gateway:
+    ports:
+      - '${MRE_GATEWAY_BIND:-127.0.0.1}:${MRE_HTTP_PORT:-8080}:8080'
+    networks:
+      - egress-gateway # edge is internal, the published port needs egress
+  api:
+    environment:
+      REVERSE_PROXY: external
+      APP_URL: ${MRE_URL:?set MRE_URL in .env, the public URL your reverse proxy serves}
+networks:
+  # Outbound access for the gateway alone, so its published port is not
+  # dropped; the shared egress would give it a lateral path to the services.
+  egress-gateway:
+    driver: bridge

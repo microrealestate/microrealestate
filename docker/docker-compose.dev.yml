@@ -8,7 +8,7 @@ services:
     ports:
       - '6379:6379'
     networks:
-      - net
+      - data
       - egress
   ###############################################################################
   # Mongo
@@ -19,7 +19,7 @@ services:
     ports:
       - '27017:27017'
     networks:
-      - net
+      - data
       - egress
   ###############################################################################
   # Reverse Proxy
@@ -66,7 +66,8 @@ services:
       mongo:
         condition: service_started
     networks:
-      - net
+      - svc
+      - data
       - egress
   ###############################################################################
   # Gateway
@@ -100,8 +101,11 @@ services:
     ports: !override
       - '9225:9225'
     networks:
-      - net
-      - egress
+      - edge
+      - web-landlord
+      - web-tenant
+      - svc
+      - egress-gateway # the svc network is internal, the published debugger port needs egress
   ###############################################################################
   # Authenticator
   ###############################################################################
@@ -133,7 +137,8 @@ services:
     ports:
       - '9226:9226'
     networks:
-      - net
+      - svc
+      - data
       - egress
   ###############################################################################
   # PDFGenerator
@@ -168,7 +173,8 @@ services:
     ports:
       - '9227:9227'
     networks:
-      - net
+      - svc
+      - data
       - egress
   ###############################################################################
   # Emailer
@@ -220,8 +226,8 @@ services:
     ports:
       - '5080:80'
     networks:
-      - net
-      - egress # the net network is internal, published ports need egress
+      - svc
+      - egress # the svc network is internal, published ports need egress
   ###############################################################################
   # api
   ###############################################################################
@@ -254,7 +260,9 @@ services:
     ports:
       - '9229:9229'
     networks:
-      - net
+      - svc
+      - data
+      - caddy-admin
       - egress
   ###############################################################################
   # tenant api
@@ -287,7 +295,8 @@ services:
     ports:
       - '9240:9240'
     networks:
-      - net
+      - svc
+      - data
       - egress
   ###############################################################################
   # Landlord frontend
@@ -313,7 +322,6 @@ services:
       - ../webapps/commonui/src:/usr/app/webapps/commonui/src
       - ../webapps/commonui/package.json:/usr/app/webapps/commonui/package.json
       - ../webapps/commonui/postcss.config.mjs:/usr/app/webapps/commonui/postcss.config.mjs
-      - ../webapps/commonui/tailwind.config.ts:/usr/app/webapps/commonui/tailwind.config.ts
       - ../webapps/landlord/locales:/usr/app/webapps/landlord/locales
       - ../webapps/landlord/public:/usr/app/webapps/landlord/public
       - ../webapps/landlord/scripts:/usr/app/webapps/landlord/scripts
@@ -323,8 +331,8 @@ services:
       - ../webapps/landlord/postcss.config.mjs:/usr/app/webapps/landlord/postcss.config.mjs
       - ../webapps/landlord/tsconfig.json:/usr/app/webapps/landlord/tsconfig.json
     networks:
-      - net
-      - egress # next/font/google fetches Inter at compile time
+      - web-landlord
+      - egress-landlord # next/font/google fetches Inter at compile time
   ###############################################################################
   # Tenant frontend
   ###############################################################################
@@ -350,7 +358,6 @@ services:
       - ../webapps/commonui/src:/usr/app/webapps/commonui/src
       - ../webapps/commonui/package.json:/usr/app/webapps/commonui/package.json
       - ../webapps/commonui/postcss.config.mjs:/usr/app/webapps/commonui/postcss.config.mjs
-      - ../webapps/commonui/tailwind.config.ts:/usr/app/webapps/commonui/tailwind.config.ts
       - ../webapps/tenant/locales:/usr/app/webapps/tenant/locales
       - ../webapps/tenant/public:/usr/app/webapps/tenant/public
       - ../webapps/tenant/src:/usr/app/webapps/tenant/src
@@ -359,5 +366,22 @@ services:
       - ../webapps/tenant/postcss.config.mjs:/usr/app/webapps/tenant/postcss.config.mjs
       - ../webapps/tenant/tsconfig.json:/usr/app/webapps/tenant/tsconfig.json
     networks:
-      - net
-      - egress # next/font/google fetches Inter at compile time
+      - web-tenant
+      - egress-tenant # next/font/google fetches Inter at compile time
+###############################################################################
+# Networks
+# DEV only. The frontends need the internet at compile time (next/font/google
+# fetches Inter), but egress is an ordinary bridge shared with mongo, redis and
+# every service, and Docker resolves a name over any shared network. A private
+# bridge per frontend gives each one outbound access with no lateral path to
+# another container.
+###############################################################################
+networks:
+  egress-landlord:
+    driver: bridge
+  egress-tenant:
+    driver: bridge
+  # The gateway publishes its debugger port in DEV, which an internal network drops.
+  # Its own bridge keeps it off the egress it would otherwise share with mongo.
+  egress-gateway:
+    driver: bridge

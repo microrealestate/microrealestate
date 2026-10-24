@@ -31,13 +31,6 @@ function toRentView(
   return FD.toRentData(...args);
 }
 
-type EmailerStatusRow = {
-  recordId: string;
-  templateName: string;
-  sentTo: string;
-  sentDate: string;
-};
-
 type EmailStatusByTenant = Record<
   string,
   Record<string, API.Landlord.Rent.RentEmailSendRecord[]>
@@ -92,14 +85,20 @@ async function _getEmailStatus(
     if (endTerm !== undefined) {
       emailEndPoint = `${EMAILER_URL}/status/${startTerm}/${endTerm}`;
     }
-    const response = await axios.get<EmailerStatusRow[]>(emailEndPoint, {
-      headers: {
-        authorization: authorizationHeader,
-        'Accept-Language': locale
+    const response = await axios.get<API.Emailer.GetStatus.ResponseBody>(
+      emailEndPoint,
+      {
+        headers: {
+          authorization: authorizationHeader,
+          'Accept-Language': locale
+        }
       }
-    });
+    );
     logger.debug('email statuses fetched');
     return response.data.reduce<EmailStatusByTenant>((acc, status) => {
+      if (!status.sentDate || !status.sentTo) {
+        return acc;
+      }
       const data = {
         sentTo: status.sentTo,
         sentDate: status.sentDate

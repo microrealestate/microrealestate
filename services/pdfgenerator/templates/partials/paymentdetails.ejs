@@ -1,0 +1,21 @@
+<% if (rent.payments && rent.payments.length) { %>
+<div class="payments">
+  <%= _.t('Payments') %>
+  <table>
+    <tr>
+      <th class="date"><%= _.t('Date') %></th>
+      <th class="method"><%= _.t('Payment method') %></th>
+      <th><%= _.t('Reference') %></th>
+      <th class="amount"><%= _.t('Amount') %></th>
+    </tr>
+    <% rent.payments.forEach(function(payment) { %>
+    <tr class="item-row">
+      <td class="date"><%= _.formatDate(payment.date, 'L') %></td>
+      <td class="method"><%= _.t(payment.methodLabel) %></td>
+      <td><% if (payment.reference) { %><%= payment.reference %><% } else { %>&nbsp;<% } %></td>
+      <td class="amount txtAlignRight"><%= _.formatNumber(payment.amount, 'currency') %></td>
+    </tr>
+    <% }); %>
+  </table>
+</div>
+<% } %>

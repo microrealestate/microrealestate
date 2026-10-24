@@ -16,6 +16,11 @@ export type Member = {
   registered?: boolean;
 };
 
+// Who terminates HTTP in front of the gateway: the bundled Caddy container, or
+// a reverse proxy the operator runs themselves (install mode MRE_REVERSE_PROXY).
+export const REVERSE_PROXIES = ['bundled', 'external'] as const;
+export type ReverseProxy = (typeof REVERSE_PROXIES)[number];
+
 export type WebServerConfig = {
   domain?: string;
   acmeEmail?: string;

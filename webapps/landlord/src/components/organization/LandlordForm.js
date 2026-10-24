@@ -149,8 +149,12 @@ function LandlordForm({ organization }) {
         return;
       }
 
-      // the domain is configured in its own step, which is skippable
-      router.push('/setupdomain', { locale: savedOrganization.locale });
+      // the domain is configured in its own step, which is skippable. Behind
+      // an external reverse proxy it comes from MRE_URL: nothing to configure
+      router.push(
+        savedOrganization.reverseProxy === 'external' ? '/' : '/setupdomain',
+        { locale: savedOrganization.locale }
+      );
     } else {
       const updatedOrgPart = {
         name: landlord.name,

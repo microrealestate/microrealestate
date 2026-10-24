@@ -107,7 +107,8 @@ async function _toRealmApiBody(
       : r.member2,
     bankInfo: r.bankInfo ?? { name: '', iban: '' },
     companyInfo: r.companyInfo ?? undefined,
-    thirdParties: _mapSecrets(r.thirdParties, () => SECRET_PLACEHOLDER)
+    thirdParties: _mapSecrets(r.thirdParties, () => SECRET_PLACEHOLDER),
+    reverseProxy: WebServer.reverseProxy()
   };
 }
 
@@ -142,9 +143,12 @@ export const add: Middlewares.AsyncRequestHandler<
     throw new ServiceError('an organization already exists', 409);
   }
 
-  let webServer = req.body.webServer
-    ? WebServer.validateWebServer(req.body.webServer)
-    : null;
+  let webServer =
+    WebServer.reverseProxy() === 'external'
+      ? WebServer.externalWebServer()
+      : req.body.webServer
+        ? WebServer.validateWebServer(req.body.webServer)
+        : null;
   if (webServer) {
     webServer = WebServer.keepIpAccess(webServer, null);
   }
@@ -205,10 +209,13 @@ export const update: Middlewares.AsyncRequestHandler<
     }
   }
 
+  // not editable behind an external reverse proxy: the body's webServer is ignored
   let webServer =
-    req.body.webServer !== undefined
-      ? WebServer.validateWebServer(req.body.webServer)
-      : undefined;
+    WebServer.reverseProxy() === 'external'
+      ? (WebServer.externalWebServer() ?? undefined)
+      : req.body.webServer !== undefined
+        ? WebServer.validateWebServer(req.body.webServer)
+        : undefined;
   if (webServer) {
     webServer = WebServer.keepIpAccess(webServer, previous.webServer);
   }

@@ -1,3 +1,4 @@
+import type { RentEmailName } from '../../../entities/email';
 import type { Payment } from '../../../entities/tenant';
 import type { OccupantData } from '../tenant/types';
 
@@ -28,7 +29,8 @@ export type PatchRentPaymentRequestBody = {
 };
 
 export type RentEmailSendRecord = {
-  sentTo: string;
+  /** Every address the message went to: the engine sends one email to all of a tenant's contacts. */
+  sentTo: string[];
   sentDate: string;
 };
 
@@ -37,25 +39,13 @@ export type RentEmailSendRecord = {
  * Spread `...emailStatus` adds dynamic template keys mapped to send-record arrays.
  */
 export type RentEmailStatusPayload = {
-  status: {
-    rentnotice: boolean;
-    rentnotice_reminder: boolean;
-    rentnotice_last_reminder: boolean;
-    receipt: boolean;
-  };
-  last: {
-    rentnotice?: RentEmailSendRecord;
-    rentnotice_reminder?: RentEmailSendRecord;
-    rentnotice_last_reminder?: RentEmailSendRecord;
-    receipt?: RentEmailSendRecord;
-  };
-  count: {
-    rentnotice: number;
-    rentnotice_reminder: number;
-    rentnotice_last_reminder: number;
-    allRentnotice: number;
-    receipt: number;
-  };
+  /** Whether each rent document has ever been sent for this term. */
+  status: Record<RentEmailName, boolean>;
+  /** The most recent send of each, when there is one. */
+  last: Partial<Record<RentEmailName, RentEmailSendRecord>>;
+  /** How many times each was sent. `allRentnotice` sums the notices only, excluding the receipt. */
+  count: Record<RentEmailName, number> & { allRentnotice: number };
+  /** The raw per-template arrays, spread on by `toRentData`. */
 } & Record<string, RentEmailSendRecord[] | unknown>;
 
 /**

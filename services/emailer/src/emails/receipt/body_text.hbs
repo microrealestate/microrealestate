@@ -1,0 +1,13 @@
+{{> text/header}}
+
+
+
+{{> text/greetings}}
+
+{{t 'Thank you for your payment.'}}
+
+{{t 'Please find in attachment your rent receipt of {{term}}. It is also available in your tenant space: {{{link}}}' term=(formatTerm period tenant.contract.lease.timeRange) link=receiptsLink}}
+
+{{> text/signature}}
+
+{{> text/landlordcontact}}

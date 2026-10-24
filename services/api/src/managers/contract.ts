@@ -242,11 +242,12 @@ export function payTerm(
   rents.forEach((rent, index) => {
     if (index > previousRentIndex) {
       if (index > previousRentIndex + 1) {
-        const { debts, discounts, payments } = rent;
+        const { debts, discounts, payments, description } = rent;
         currentSettlements = {
           debts,
           discounts: discounts.filter((d) => d.origin === 'settlement'),
-          payments
+          payments,
+          description
         };
       }
       rents[index] = BL.computeRent(

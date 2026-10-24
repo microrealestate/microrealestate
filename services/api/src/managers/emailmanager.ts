@@ -19,20 +19,12 @@ interface EmailMessage {
   term: number;
 }
 
-interface EmailerResponseItem {
-  templateName: string;
-  recordId: string;
-  params: { term: number };
-  email: string;
-  status: string;
-}
-
 interface EmailResult {
   document: string;
   tenantId: string;
   term: number;
   email: string;
-  status: string;
+  status: API.Emailer.PostSendEmail.SendStatus;
 }
 
 async function _sendEmail(
@@ -53,25 +45,21 @@ async function _sendEmail(
   };
 
   try {
-    // TODO: rework types when emailer service will be migrated to typescript
-    const response: AxiosResponse<EmailerResponseItem[]> = await axios.post(
-      EMAILER_URL,
-      postData,
-      {
+    const response: AxiosResponse<API.Emailer.PostSendEmail.ResponseBody> =
+      await axios.post(EMAILER_URL, postData, {
         headers: {
           authorization: req.headers.authorization,
           'Accept-Language': req.headers['accept-language']
         }
-      }
-    );
+      });
 
     logger.debug('email sent');
 
     return response.data.map(
-      ({ templateName, recordId, params, email, status }): EmailResult => ({
+      ({ templateName, recordId, email, status }): EmailResult => ({
         document: templateName,
         tenantId: recordId,
-        term: params.term,
+        term: message.term,
         email,
         status
       })
@@ -79,7 +67,13 @@ async function _sendEmail(
   } catch (error) {
     logger.error(formatError(error));
     if (axios.isAxiosError(error)) {
-      throw new Error(error.response?.data?.message || error.message);
+      if (error.response) {
+        throw new ServiceError(
+          error.response.data?.message || error.message,
+          error.response.status
+        );
+      }
+      throw new Error(error.message);
     }
     throw error instanceof Error ? error : new Error(String(error));
   }
@@ -111,18 +105,20 @@ export const send: Middlewares.AsyncRequestHandler<
       const term = Number(terms?.[index] || defaultTerm);
 
       try {
-        const status = await _sendEmail(req, {
+        const results = await _sendEmail(req, {
           name: tenant.name,
           tenantId,
           document,
           term
         });
+        const [result] = results;
         return {
           name: tenant.name,
           tenantId,
           document,
           term,
-          ...status
+          email: result?.email,
+          status: result?.status
         };
       } catch (error) {
         logger.error(formatError(error));
@@ -132,8 +128,8 @@ export const send: Middlewares.AsyncRequestHandler<
           document,
           term,
           error:
-            axios.isAxiosError(error) && error.response?.data
-              ? error.response.data
+            error instanceof ServiceError
+              ? { status: error.statusCode, message: error.message }
               : {
                   status: 500,
                   message: `Something went wrong when sending the email to ${tenant.name}`
@@ -142,6 +138,10 @@ export const send: Middlewares.AsyncRequestHandler<
       }
     })
   );
+
+  if (statusList.some((status) => status.error?.message === 'missing domain')) {
+    throw new ServiceError('missing domain', 422);
+  }
 
   if (statusList.some((status) => !!status.error)) {
     throw new ServiceError('Failed to send some emails', 500);

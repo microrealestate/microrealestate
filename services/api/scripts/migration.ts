@@ -588,6 +588,49 @@ async function migrateEmailTemplateNames() {
   );
 }
 
+async function migrateEmailSendLog() {
+  const db = mongoose.connection.db;
+  if (!db) {
+    throw new Error('mongoose connection is not ready');
+  }
+  const collection = db.collection('emails');
+
+  const sentTo = await collection.updateMany(
+    { $expr: { $eq: [{ $type: '$sentTo' }, 'string'] } },
+    [{ $set: { sentTo: ['$sentTo'] } }]
+  );
+  logger.info(`migrated ${sentTo.modifiedCount} email sentTo fields to arrays`);
+
+  const status = await collection.updateMany(
+    { status: { $nin: ['sent', 'failed'] } },
+    { $set: { status: 'sent' } }
+  );
+  logger.info(`migrated ${status.modifiedCount} email statuses to sent`);
+
+  const occupants = db.collection('occupants');
+  const occupantIdsByRealm = new Map<string, string[]>();
+  const occupantCursor = occupants.find({}, { projection: { realmId: 1 } });
+  for await (const occupant of occupantCursor) {
+    const realmId = String(occupant.realmId);
+    const occupantIds = occupantIdsByRealm.get(realmId) ?? [];
+    occupantIds.push(String(occupant._id));
+    occupantIdsByRealm.set(realmId, occupantIds);
+  }
+
+  let migratedRealmIds = 0;
+  for (const [realmId, occupantIds] of occupantIdsByRealm) {
+    const result = await collection.updateMany(
+      { realmId: { $exists: false }, recordId: { $in: occupantIds } },
+      { $set: { realmId } }
+    );
+    migratedRealmIds += result.modifiedCount;
+  }
+  logger.info(`migrated ${migratedRealmIds} email realmIds`);
+
+  await collection.createIndex({ realmId: 1, status: 1, 'params.term': 1 });
+  logger.info('Email indexes ensured');
+}
+
 async function migrateAutoRenew() {
   const db = mongoose.connection.db;
   if (!db) {
@@ -627,6 +670,7 @@ export default async function migratedb() {
     await migrateThirdPartiesEmailService();
     await migrateTenantContacts();
     await migrateEmailTemplateNames();
+    await migrateEmailSendLog();
     await migrateAutoRenew();
     logger.info('Migration done');
   } catch (error) {

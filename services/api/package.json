@@ -12,22 +12,20 @@
     "tsc": "tsc --noEmit"
   },
   "dependencies": {
+    "@json2csv/plainjs": "7.0.8",
     "@microrealestate/common": "workspace:*",
     "axios": "catalog:",
     "cron": "catalog:",
     "express": "catalog:",
     "i18n": "catalog:",
-    "json2csv": "5.0.6",
     "lodash": "catalog:",
     "moment": "catalog:",
     "nanoid": "catalog:",
     "tsx": "catalog:"
   },
   "devDependencies": {
-    "@types/cron": "catalog:",
     "@types/express": "catalog:",
     "@types/i18n": "catalog:",
-    "@types/json2csv": "catalog:",
     "@types/node": "catalog:",
     "typescript": "catalog:"
   }

@@ -9,11 +9,13 @@ export function SwitchField({
   disabled,
   readOnly,
   dataCy,
+  checked,
   ...props
 }: {
   disabled?: boolean;
   readOnly?: boolean;
   dataCy?: string;
+  checked?: boolean;
   name: string;
   label?: string;
   'data-cy'?: string;
@@ -21,12 +23,13 @@ export function SwitchField({
   const [field] = useField(props.name);
   const { errorMessage, hasError } = useFormError({ name: props.name });
   const t = useTranslations('common');
+  const isChecked = checked ?? field.value;
 
   if (readOnly) {
     return (
       <FormField name={props.name} label={props.label ?? ''}>
         <div className="py-2 text-sm font-medium">
-          {field.value ? t('Yes') : t('No')}
+          {isChecked ? t('Yes') : t('No')}
         </div>
       </FormField>
     );
@@ -38,7 +41,7 @@ export function SwitchField({
         <Switch
           data-cy={dataCy ?? props['data-cy']}
           name={props.name}
-          checked={field.value}
+          checked={isChecked}
           onCheckedChange={(value) =>
             field.onChange({ target: { value, name: field.name } })
           }

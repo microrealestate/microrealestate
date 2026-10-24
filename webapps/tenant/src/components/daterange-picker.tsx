@@ -6,14 +6,12 @@ import {
   PopoverContent,
   PopoverTrigger
 } from '@microrealestate/commonui/components/ui/popover';
+import { useLocaleContext } from '@microrealestate/commonui/providers/AppProvider';
 import { cn } from '@microrealestate/commonui/utils';
 import type { DateRange } from '@microrealestate/shared';
 import { format } from 'date-fns';
-// TODO: import only the locale needed
-// TODO: remove momentjs and use date-fns
-import { de, enUS, fr, ptBR } from 'date-fns/locale';
 import { Calendar as CalendarIcon } from 'lucide-react';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 
 export function DateRangePicker({
@@ -25,7 +23,7 @@ export function DateRangePicker({
 }) {
   const [rangeDate, setRangeDate] = useState<DateRange | undefined>();
   const t = useTranslations('common');
-  const locale = useLocale();
+  const { dateFnsLocale: fnsLocale } = useLocaleContext();
 
   const handleChange = useCallback(
     (range: DateRange | undefined) => {
@@ -34,15 +32,6 @@ export function DateRangePicker({
     },
     [onValueChange]
   );
-
-  let fnsLocale = enUS;
-  if (locale === 'fr-FR') {
-    fnsLocale = fr;
-  } else if (locale === 'de-DE') {
-    fnsLocale = de;
-  } else if (locale === 'pt-BR') {
-    fnsLocale = ptBR;
-  }
 
   return (
     <div className={cn('grid gap-2', className)}>

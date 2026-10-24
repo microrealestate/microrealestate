@@ -13,6 +13,9 @@ pre-commit:
       glob: "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}"
       run: npx @biomejs/biome check --write --no-errors-on-unmatched --files-ignore-unknown=true --colors=off {staged_files}
       stage_fixed: true
+    typecheck:
+      glob: "*.{ts,tsx,mts,cts}"
+      run: yarn tsc
 
 pre-push:
   commands:

@@ -45,7 +45,7 @@ export function displayHelp() {
     {
       name: 'seeddev',
       description:
-        'Same as seeddemo, then configure the organization to use the smtp4dev service of the DEV environment. The application has to be started in DEV mode to run this command.'
+        'Same as seeddemo, then configure the organization to use the smtp4dev service of the DEV environment, and the app URL as its domain so that emails can link back to the app. The application has to be started in DEV mode to run this command.'
     },
     {
       name: 'resetdata',

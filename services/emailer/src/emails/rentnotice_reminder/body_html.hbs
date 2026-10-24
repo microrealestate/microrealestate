@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+  {{> html/htmlhead}}
+  <body>
+    <div class="email-body">
+      <div class="email-container">
+        <div class="bar"></div>
+        <div class="content">
+          <div class="header">
+            <div class="logo">{{landlord.name}}</div>
+          </div>
+
+          <div class="title">{{t 'Payment notice reminder'}}</div>
+
+          <p>{{> html/greetings}}</p>
+
+          <p>
+            {{t 'On examining your account, we note that, failing mistake or omission on our part, you have not settled your rent of <strong>{{term}}</strong>.' term=(formatTerm period tenant.contract.lease.timeRange)}}
+          </p>
+
+          <p>
+            {{t 'We would be grateful if you could proceed to the payment of <strong>{{amount}}</strong> very shortly.' amount=(formatNumber tenant.rents.[0].total.amountDue 'currency')}}
+          </p>
+
+          {{> html/paymentmethods}}         
+          
+          {{> html/signature}}   
+        </div>
+      </div>
+      {{> html/landlordcontact}}   
+    </div>
+  </body>
+</html>

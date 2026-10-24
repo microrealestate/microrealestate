@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+  {{> html/htmlhead}}
+  <body>
+    <div class="email-body">
+      <div class="email-container">
+        <div class="bar"></div>
+        <div class="content">
+          <div class="header">
+            <div class="logo">{{landlord.name}}</div>
+          </div>
+
+          <div class="title">{{t 'Receipt'}}</div>
+
+          <p>{{> html/greetings}}</p>
+
+          <p>
+            {{t 'Thank you for your payment.'}}
+          </p>
+
+          <p>
+            {{t 'Please find in attachment your rent receipt of {{term}}. It is also available in your tenant space:' term=(formatTerm period tenant.contract.lease.timeRange)}}<br />
+            <a href="{{receiptsLink}}">{{receiptsLink}}</a>
+          </p>
+ 
+          {{> html/signature}}   
+        </div>
+      </div>
+      {{> html/landlordcontact}}   
+    </div>
+  </body>
+</html>

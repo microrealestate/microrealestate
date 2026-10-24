@@ -1,0 +1,24 @@
+<div class="footer">
+    {{#if landlord.hasContact}}
+        <p>
+            {{t 'For any questions, please contact us:'}}<br />
+            <strong>{{landlord.contacts.[0].email}}</strong><br />
+            <strong>{{landlord.contacts.[0].phone1}}</strong>{{#if landlord.contacts.[0].phone2}} / <strong>{{landlord.contacts.[0].phone2}}</strong>{{/if}}
+        </p>
+    {{/if}}
+    <p>
+        {{#if landlord.hasAddress}}
+            {{landlord.name}} {{landlord.addresses.[0].street1}} 
+            {{#if landlord.addresses.[0].street2}}
+                {{landlord.addresses.[0].street2}} 
+            {{/if}}
+            {{landlord.addresses.[0].zipCode}} {{landlord.addresses.[0].city}} 
+            {{#if landlord.addresses.[0].state}}
+                {{landlord.addresses.[0].state}} 
+            {{/if}}
+            {{#if landlord.addresses.[0].country}}
+                {{landlord.addresses.[0].country}}
+            {{/if}}
+        {{/if}}
+    </p>
+</div>

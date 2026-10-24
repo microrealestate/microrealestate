@@ -13,9 +13,12 @@ import type { RateLimitRequestHandler } from 'express-rate-limit';
 import rateLimit from 'express-rate-limit';
 import type { SlowDownRequestHandler } from 'express-slow-down';
 import slowDown from 'express-slow-down';
-import { legacyCreateProxyMiddleware as createProxyMiddleware } from 'http-proxy-middleware';
+import { createProxyMiddleware } from 'http-proxy-middleware';
 
-const logProvider = () => logger;
+// Matches a path the way an Express mount does, for proxies that must forward
+// the full request path and so cannot be mounted (a mount strips its prefix)
+const underPath = (prefix: string) => (pathname: string) =>
+  pathname === prefix || pathname.startsWith(`${prefix}/`);
 const LANDLORD_BASE_PATH = '/landlord';
 const TENANT_BASE_PATH = '/tenant';
 
@@ -74,6 +77,23 @@ let forgotPasswordLimiter: RateLimitRequestHandler | RequestHandler = rateLimit(
   }
 );
 
+const CONNECTION_TEST_PATHS = ['/test-smtp'];
+
+let connectionTestLimiter: RateLimitRequestHandler | RequestHandler = rateLimit(
+  {
+    windowMs: 10 * 60 * 1000,
+    max: 10,
+    standardHeaders: true,
+    legacyHeaders: false,
+    skip: (req) =>
+      !CONNECTION_TEST_PATHS.some((path) => req.path?.includes(path)),
+    handler: (request: Request, response: Response) => {
+      logger.warn(`connection test rate limit exceeded for ${request.ip}`);
+      response.sendStatus(429);
+    }
+  }
+);
+
 let authSpeedLimiter: SlowDownRequestHandler | RequestHandler = slowDown({
   windowMs: 10 * 60 * 1000,
   delayAfter: 2, // Allow 2 requests without delay
@@ -91,7 +111,8 @@ Main();
 
 async function onStartUp(application: Application) {
   const config = Service.getInstance().envConfig.getValues();
-  if (!config.PRODUCTION) {
+  if (process.env.NODE_ENV === 'ci') {
+    logger.info('rate limiting not applied: NODE_ENV is ci');
     const passThrough: RequestHandler = (
       _req: Request,
       _res: Response,
@@ -103,6 +124,7 @@ async function onStartUp(application: Application) {
     authLimiter = passThrough;
     otpLimiter = passThrough;
     forgotPasswordLimiter = passThrough;
+    connectionTestLimiter = passThrough;
     authSpeedLimiter = passThrough;
   }
 
@@ -161,20 +183,20 @@ async function Main() {
 function exposeFrontends(application: Application) {
   const config = Service.getInstance().envConfig.getValues();
   application.use(
-    LANDLORD_BASE_PATH,
     createProxyMiddleware({
       target: config.LANDLORD_FRONTEND_URL,
+      pathFilter: underPath(LANDLORD_BASE_PATH),
       ws: true,
-      logProvider
+      logger
     })
   );
 
   application.use(
-    TENANT_BASE_PATH,
     createProxyMiddleware({
       target: config.TENANT_FRONTEND_URL,
+      pathFilter: underPath(TENANT_BASE_PATH),
       ws: true,
-      logProvider
+      logger
     })
   );
 }
@@ -189,35 +211,34 @@ function exposeServices(application: Application) {
     forgotPasswordLimiter,
     createProxyMiddleware({
       target: config.AUTHENTICATOR_URL,
-      pathRewrite: { '^/api/v2/authenticator': '' },
-      logProvider
+      logger
     })
   );
 
   application.use(
-    '/api/v2/documents',
     createProxyMiddleware({
       target: config.PDFGENERATOR_URL,
+      pathFilter: underPath('/api/v2/documents'),
       pathRewrite: { '^/api/v2': '' },
-      logProvider
+      logger
     })
   );
 
   application.use(
-    '/api/v2/templates',
     createProxyMiddleware({
       target: config.PDFGENERATOR_URL,
+      pathFilter: underPath('/api/v2/templates'),
       pathRewrite: { '^/api/v2': '' },
-      logProvider
+      logger
     })
   );
 
   application.use(
     '/api/v2',
+    connectionTestLimiter,
     createProxyMiddleware({
       target: config.API_URL,
-      pathRewrite: { '^/api/v2': '' },
-      logProvider
+      logger
     })
   );
 
@@ -225,19 +246,18 @@ function exposeServices(application: Application) {
     '/tenantapi',
     createProxyMiddleware({
       target: config.TENANTAPI_URL,
-      pathRewrite: { '^/tenantapi': '' },
-      logProvider
+      logger
     })
   );
 
   // Do not expose reset api on Prod
   if (!config.PRODUCTION && config.RESETSERVICE_URL) {
     application.use(
-      '/api/reset',
       createProxyMiddleware({
         target: config.RESETSERVICE_URL,
+        pathFilter: underPath('/api/reset'),
         pathRewrite: { '^/api': '' },
-        logProvider
+        logger
       })
     );
   }

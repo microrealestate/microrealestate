@@ -1,8 +1,10 @@
+import * as EmailerModule from './api/emailer/index';
 import * as LandlordModule from './api/landlord';
 import * as TenantModule from './api/tenant';
 
 export namespace API {
   export import Landlord = LandlordModule;
+  export import Emailer = EmailerModule;
   export import Tenant = TenantModule;
 }
 

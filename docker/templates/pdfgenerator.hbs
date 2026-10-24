@@ -7,7 +7,7 @@ RUN npm install -g --force corepack \
 
 FROM base AS install
 RUN apk --no-cache add build-base python3
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=1
+ENV PUPPETEER_SKIP_DOWNLOAD=1
 WORKDIR /usr/app
 COPY package.json .yarnrc.yml yarn.lock .
 COPY shared shared

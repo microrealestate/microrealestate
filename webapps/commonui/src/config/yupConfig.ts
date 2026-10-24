@@ -1,3 +1,4 @@
+import { isValidDomain } from '@microrealestate/shared';
 import moment from 'moment';
 import * as Yup from 'yup';
 
@@ -19,9 +20,6 @@ Yup.addMethod(Yup.string, 'emails', function (message) {
   });
 });
 
-const DOMAIN_OR_IP_REGEX =
-  /^(\d{1,3}(\.\d{1,3}){3}|([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,})$/i;
-
 Yup.addMethod(Yup.string, 'domain', function () {
   return this.test({
     name: 'domain',
@@ -30,11 +28,7 @@ Yup.addMethod(Yup.string, 'domain', function () {
       if (value == null || value === '') {
         return true;
       }
-      const cleaned = value
-        .replace(/^https?:\/\//, '')
-        .replace(/\/.*$/, '')
-        .trim();
-      return DOMAIN_OR_IP_REGEX.test(cleaned);
+      return isValidDomain(value);
     }
   });
 });

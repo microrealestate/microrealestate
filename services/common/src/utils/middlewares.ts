@@ -1,8 +1,9 @@
-import type { CallerType } from '@microrealestate/shared';
+import type { CallerType, InternalKeyPurpose } from '@microrealestate/shared';
 import type { NextFunction, Request, RequestHandler, Response } from 'express';
 import type { ParamsDictionary, Query } from 'express-serve-static-core';
 import * as JWT from 'jsonwebtoken';
 import Realm from '../collections/realm';
+import * as InternalKey from './internalkey';
 import logger, { formatError } from './logger';
 import type {
   LandlordServicePrincipal,
@@ -123,6 +124,33 @@ export function needAccessToken(accessTokenSecret: string | undefined) {
       }
     } catch (error) {
       logger.warn(String(error));
+      return response.sendStatus(401);
+    }
+
+    next();
+  };
+}
+
+export function needInternalKey(
+  accessTokenSecret: string | undefined,
+  purpose: InternalKeyPurpose
+) {
+  if (!accessTokenSecret) {
+    throw new Error(
+      'ACCESS_TOKEN_SECRET is required to protect internal routes'
+    );
+  }
+  const expected = InternalKey.generate(accessTokenSecret, purpose);
+
+  return (request: Request, response: Response, next: NextFunction) => {
+    if (skipPaths.includes(request.path)) {
+      return next();
+    }
+
+    if (!InternalKey.matches(expected, request.headers[InternalKey.HEADER])) {
+      logger.warn(
+        `internal key rejected for ${request.path} from ${request.ip}`
+      );
       return response.sendStatus(401);
     }
 

@@ -6,8 +6,9 @@ html,
 body {
   margin: 0;
   padding: 0;
+  /* FreeSans, from the image's ttf-freefont, is the only installed in docker image */
   font:
-    10pt "Tahoma",
+    10pt "FreeSans",
     sans-serif;
 }
 
@@ -216,7 +217,7 @@ span.error {
   top: 80mm;
   left: 105mm;
   font:
-    10pt "Tahoma",
+    10pt "FreeSans",
     sans-serif;
   text-align: left;
 }
@@ -241,6 +242,7 @@ span.error {
 .items th {
   border-right: 1pt solid #555;
   border-bottom: 1pt solid #555;
+  font-weight: normal;
 }
 
 .items th:first-child {
@@ -279,6 +281,37 @@ span.error {
   border-bottom: 1pt solid #555;
 }
 
+.items td.balance {
+  font-weight: bold;
+}
+
+.items .payments {
+  margin-top: 18pt;
+}
+
+.items .payments table {
+  margin-top: 8pt;
+}
+
+.items .payments td {
+  padding-left: 10pt;
+}
+
+.items .payments td.date,
+.items .payments th.date {
+  width: 70pt;
+}
+
+.items .payments td.method,
+.items .payments th.method {
+  width: 110pt;
+}
+
+.items .payments td.amount,
+.items .payments th.amount {
+  width: 100pt;
+}
+
 .certificate .items {
   font-size: 14pt;
   line-height: 26pt;
@@ -299,7 +332,7 @@ span.error {
   border-radius: 10pt;
   border: 2.8pt solid #555;
   padding: 5pt;
-  font-family: "Vollkorn", serif;
+  font-family: "FreeSerif", serif;
   text-transform: uppercase;
   transform: rotate(-20deg);
   transform-origin: bottom left;

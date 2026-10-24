@@ -18,8 +18,8 @@
 								</div>
 
 								<div class="limit">
-									<%=_.t('The total amount of {{amount}} was expected to be paid on {{date}}.', {
-										amount: _.formatNumber(rent.total.grandTotal, 'currency' ), date:
+									<%-_.t('The total amount of <strong>{{amount}}</strong> was expected to be paid on {{date}}.', {
+										amount: _.formatNumber(rent.total.amountDue, 'currency' ), date:
 										_.formatDate(rent.dueDate, 'LL' ) }) %>
 								</div>
 
@@ -31,6 +31,8 @@
 											<%- include('partials/rentnoticetotal.ejs', { rent: rent }) %>
 
 									</table>
+
+										<%- include('partials/paymentdetails.ejs', { rent: rent }) %>
 								</div>
 
 								<%- include('partials/paymentmodalities.ejs') %>

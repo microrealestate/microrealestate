@@ -21,7 +21,7 @@
     "i18n": "catalog:",
     "locale": "catalog:",
     "moment": "catalog:",
-    "puppeteer": "23.2.1",
+    "puppeteer": "25.14.0",
     "tsx": "catalog:"
   },
   "devDependencies": {

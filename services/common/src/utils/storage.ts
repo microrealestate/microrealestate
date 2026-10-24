@@ -15,11 +15,11 @@ import sanitizeFilename from 'sanitize-filename';
 import logger, { formatError } from './logger';
 import ServiceError from './serviceerror';
 
-export function sanitize(name = '') {
+export function sanitizeSegment(name = '') {
   return sanitizeFilename(name, { replacement: '_' });
 }
 
-export function contentDispositionAttachment(name = '') {
+export function attachmentHeader(name = '') {
   const safe = name || 'document';
   // biome-ignore lint/suspicious/noControlCharactersInRegex: stripping C0 controls is intentional
   const ascii = safe.replace(/[\x00-\x1f"\\]/g, '');
@@ -46,7 +46,7 @@ async function _moveFile(src: string, dest: string) {
 
 // Persists a staged upload to its final location under `uploadsDir` and owns the
 // staged temp file's lifecycle.
-export async function persistUpload({
+export async function persistDocument({
   stagedPath,
   key,
   fileName,
@@ -72,7 +72,7 @@ export async function persistUpload({
 
 // Removes stored document bytes for the given files from the local uploads
 // directory (best-effort per file).
-export async function deleteDocumentFiles(
+export async function deleteDocuments(
   files: { url?: string }[],
   { uploadsDir }: { uploadsDir: string }
 ): Promise<void> {
@@ -135,6 +135,69 @@ export async function getDocumentStream(
   throw new ServiceError('document not found', 404);
 }
 
+export function streamToFile(
+  source: Readable,
+  target: fs.WriteStream,
+  filePath: string,
+  {
+    timeoutMs,
+    stallMessage,
+    expectedBytes
+  }: { timeoutMs: number; stallMessage: string; expectedBytes?: number }
+): Promise<string> {
+  return new Promise<string>((resolve, reject) => {
+    let settled = false;
+    let timer: NodeJS.Timeout | undefined;
+
+    const clearTimer = () => {
+      if (timer) {
+        clearTimeout(timer);
+        timer = undefined;
+      }
+    };
+    const armTimer = () => {
+      clearTimer();
+      timer = setTimeout(() => fail(new Error(stallMessage)), timeoutMs);
+    };
+
+    function fail(error: Error) {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      clearTimer();
+      source.destroy();
+      target.destroy();
+      reject(error);
+    }
+
+    source.on('data', armTimer);
+    source.on('error', fail);
+    target.on('error', fail);
+    target.on('close', () => {
+      if (settled) {
+        return;
+      }
+      clearTimer();
+      if (
+        expectedBytes !== undefined &&
+        target.bytesWritten !== expectedBytes
+      ) {
+        return fail(
+          new Error(
+            `truncated download: ${target.bytesWritten} of ${expectedBytes} bytes`
+          )
+        );
+      }
+      settled = true;
+      resolve(filePath);
+    });
+
+    armTimer();
+    source.pipe(target);
+  });
+}
+
 // Builds the storage key/filename for an uploaded document:
 // "<orgName>-<orgId>/<folder>/<name>-<suffix>.<ext>".
 export function buildStorageKey({
@@ -155,12 +218,14 @@ export function buildStorageKey({
     throw new ServiceError('file not supported', 422);
   }
   const suffix = randomUUID();
-  const safeName = sanitize(`${fileName || 'noname'}-${suffix}.${extension}`);
-  const dir = [`${sanitize(realmName)}-${sanitize(realmId)}`]
+  const safeName = sanitizeSegment(
+    `${fileName || 'noname'}-${suffix}.${extension}`
+  );
+  const dir = [`${sanitizeSegment(realmName)}-${sanitizeSegment(realmId)}`]
     .concat(
       folder
         .split('/')
-        .map((part) => sanitize(part))
+        .map((part) => sanitizeSegment(part))
         .filter(Boolean)
     )
     .join('/');
@@ -180,7 +245,7 @@ async function _discardStagedFile(filePath: string) {
 // `uploadsDir` with a randomized, mimetype-validated filename. The caller then
 // moves the staged file to its final local path. Bounded memory regardless of
 // file size.
-export function uploadMiddleware({
+export function stageUploadMiddleware({
   uploadsDir,
   maxSize = UPLOAD_MAX_SIZE
 }: {
@@ -202,7 +267,7 @@ export function uploadMiddleware({
         return cb(new Error('file not supported'), '');
       }
       const extension = SUPPORTED_FILE_EXTENSIONS[file.mimetype];
-      cb(null, sanitize(`upload-${randomUUID()}.${extension}`));
+      cb(null, sanitizeSegment(`upload-${randomUUID()}.${extension}`));
     }
   });
 

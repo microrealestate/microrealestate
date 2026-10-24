@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 import _ from 'lodash';
 import winston from 'winston';
 
@@ -9,7 +10,7 @@ export function formatError(error: unknown): {
   const err = error instanceof Error ? error : new Error(String(error));
   return {
     level: 'error',
-    message: 'an error has occurred',
+    message: err.message,
     stack: err.stack
   };
 }
@@ -104,5 +105,15 @@ const logger = winston.createLogger({
   format: winston.format.errors({ stack: true }),
   transports
 });
+
+export function hashEmail(email?: string | null): string | undefined {
+  if (!email) {
+    return undefined;
+  }
+  return crypto
+    .createHash('sha256')
+    .update(email.trim().toLowerCase())
+    .digest('hex');
+}
 
 export default logger;

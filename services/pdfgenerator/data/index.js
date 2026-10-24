@@ -1,5 +1,23 @@
 import { Collections, formatError, logger } from '@microrealestate/common';
+import { PAYMENT_METHODS } from '@microrealestate/shared';
 import moment from 'moment';
+
+// i18n keys, so the document names the method in the landlord's locale.
+const PAYMENT_METHOD_LABELS = {
+  transfer: 'Bank transfer',
+  card: 'Card',
+  cash: 'Cash',
+  cheque: 'Cheque',
+  direct_debit: 'Direct debit',
+  other: 'Other'
+};
+
+// A legacy value outside the const array prints as "Other" rather than raw.
+function paymentMethodLabel(type) {
+  return PAYMENT_METHODS.includes(type)
+    ? PAYMENT_METHOD_LABELS[type]
+    : PAYMENT_METHOD_LABELS.other;
+}
 
 export async function getRentsData(params) {
   const { id: tenantId, term, realmId } = params;
@@ -39,6 +57,13 @@ export async function getRentsData(params) {
         billingReference: `${moment(rent.term, 'YYYYMMDDHH').format('MM_YY_')}${
           dbTenant.reference
         }`,
+        // The stored order is insertion order; a document reads chronologically.
+        payments: [...(rent.payments || [])]
+          .sort((a, b) => String(a.date).localeCompare(String(b.date)))
+          .map((payment) => ({
+            ...payment,
+            methodLabel: paymentMethodLabel(payment.type)
+          })),
         total: {
           ...rent.total,
           payment: rent.total.payment || 0,
@@ -47,7 +72,11 @@ export async function getRentsData(params) {
             rent.total.charges -
             rent.total.discount +
             rent.total.debts,
-          newBalance: rent.total.grandTotal - rent.total.payment
+          newBalance: rent.total.grandTotal - (rent.total.payment || 0),
+          amountDue: Math.max(
+            0,
+            rent.total.grandTotal - (rent.total.payment || 0)
+          )
         }
       }));
   }

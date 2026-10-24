@@ -18,7 +18,8 @@ export default function RichTextEditorDialog({
   onSave,
   title,
   fields,
-  editable
+  editable,
+  readOnlyReason
 }) {
   const t = useTranslations('common');
   const handleClose = useCallback(() => {
@@ -39,6 +40,7 @@ export default function RichTextEditorDialog({
           onClose={handleClose}
           showPrintButton
           editable={editable}
+          readOnlyReason={readOnlyReason}
         />
       </DrawerContent>
     </Drawer>

@@ -55,11 +55,11 @@ function revenuesBreakdownCard({ year, className }) {
 
   const handleClick = (dataKey) => (data) => {
     const { yearMonth } = data;
-    const status = dataKey.toLowerCase();
+    const statuses = dataKey === 'paid' ? 'partiallypaid,paid' : 'notpaid';
     const period = moment(yearMonth, 'YYYY.MM', true);
     const from = period.clone().startOf('month').format('YYYY-MM-DD');
     const to = period.clone().endOf('month').format('YYYY-MM-DD');
-    router.push(`/rents?from=${from}&to=${to}&filter.statuses=${status}`);
+    router.push(`/rents?from=${from}&to=${to}&filter.statuses=${statuses}`);
   };
 
   return (
@@ -115,11 +115,11 @@ function revenuesBreakdownCard({ year, className }) {
                 content={() => (
                   <div className="flex justify-center gap-4 text-sm mb-6">
                     <div className="flex items-center gap-2 text-warning">
-                      <div className="size-2 bg-[var(--chart-warning)]" />
+                      <div className="size-2 bg-(--chart-warning)" />
                       <span>{t('Not paid')}</span>
                     </div>
                     <div className="flex items-center gap-2 text-success">
-                      <div className="size-2 bg-[var(--chart-success)]" />
+                      <div className="size-2 bg-(--chart-success)" />
                       <span>{t('Paid')}</span>
                     </div>
                   </div>
@@ -165,7 +165,7 @@ function revenuesBreakdownCard({ year, className }) {
           </ChartContainer>
         )
       }
-      className={cn('min-h-[300px] md:min-h-[600px]', className)}
+      className={cn('min-h-75 md:min-h-150', className)}
     />
   );
 }

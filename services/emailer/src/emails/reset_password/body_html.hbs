@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+  {{> html/htmlhead}}
+  <body>
+    <div class="email-body">
+      <div class="email-container">
+        <div class="bar"></div>
+        <div class="content">
+          <div class="header">
+            <div class="logo">MicroRealEstate</div>
+          </div>
+
+          <p>{{> html/greetings}}</p>
+
+          <p>
+            {{t 'Someone requested to reset your password of your MicroRealEstate account.'}}
+          </p>
+
+          <p>
+            {{t 'Click on the button below, to create a new password:'}}
+          </p>
+
+           <div class="cta">
+            <a href="{{resetUrl}}" target="_blank">{{t 'Reset password'}}</a>
+            </div>
+          
+          <p>
+            {{t "If you don't request this, you can ignore this email. Your password won't change."}}
+          </p>
+          
+          {{> html/appsignature}}   
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

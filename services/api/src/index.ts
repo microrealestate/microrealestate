@@ -53,7 +53,10 @@ async function Main() {
         PDFGENERATOR_URL:
           process.env.PDFGENERATOR_URL || 'http://localhost:8082/pdfgenerator',
         CADDY_ADMIN_URL:
-          process.env.CADDY_ADMIN_URL || 'http://reverse-proxy:2019'
+          process.env.CADDY_ADMIN_URL || 'http://reverse-proxy:2019',
+        REVERSE_PROXY:
+          process.env.REVERSE_PROXY === 'external' ? 'external' : 'bundled',
+        APP_URL: process.env.APP_URL
       })
     );
 

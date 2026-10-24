@@ -1,3 +1,4 @@
+import { Parser } from '@json2csv/plainjs';
 import {
   DateFormat,
   type Middlewares,
@@ -5,7 +6,6 @@ import {
 } from '@microrealestate/common';
 import type { API } from '@microrealestate/shared';
 import i18n from 'i18n';
-import { Parser } from 'json2csv';
 import moment from 'moment';
 import {
   _fetchData,
@@ -303,7 +303,10 @@ export const settlementsAsCsv: Middlewares.AsyncRequestHandler<
   const months = moment.localeData(locale).months();
   const fields = [
     { label: i18n.__('Tenant'), value: 'tenant' },
-    ...months.map((m: string) => ({ label: m, value: m }))
+    ...months.map((m: string) => ({
+      label: m,
+      value: (row: SettlementForCsv) => row.settlements[m] ?? ''
+    }))
   ];
 
   const json2csvParser = new Parser({

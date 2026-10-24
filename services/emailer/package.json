@@ -4,26 +4,31 @@
   "description": "Generates and sends emails",
   "author": "Camel Aissani",
   "type": "module",
-  "main": "src/index.js",
+  "main": "src/index.ts",
   "private": true,
   "scripts": {
-    "dev": "tsx watch --clear-screen=false --include='./src/emailparts/**' --inspect=0.0.0.0:9228 src/index.js",
-    "start": "tsx src/index.js"
+    "dev": "tsx watch --clear-screen=false --include='./src/emails/**' --inspect=0.0.0.0:9228 src/index.ts",
+    "start": "tsx src/index.ts",
+    "tsc": "tsc --noEmit"
   },
   "dependencies": {
     "@microrealestate/common": "workspace:*",
+    "@microrealestate/shared": "workspace:*",
     "axios": "catalog:",
-    "ejs": "catalog:",
     "express": "catalog:",
+    "handlebars": "catalog:",
     "i18n": "catalog:",
+    "ipaddr.js": "1.9.1",
     "locale": "catalog:",
     "moment": "catalog:",
-    "nodemailer": "9.0.1",
+    "nodemailer": "10.0.9",
     "tsx": "catalog:"
   },
   "devDependencies": {
     "@types/express": "catalog:",
+    "@types/locale": "0.1.4",
     "@types/node": "catalog:",
+    "@types/nodemailer": "6.4.17",
     "typescript": "catalog:"
   }
 }

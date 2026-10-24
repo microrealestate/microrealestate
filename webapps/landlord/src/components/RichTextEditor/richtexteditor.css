@@ -2,11 +2,10 @@
   box-sizing: border-box;
   -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
-  font-size: 11pt;
 }
 
-.tiptap br {
-  height: 1.25rem;
+.tiptap {
+  font-size: 11pt;
 }
 
 .tiptap p {
@@ -69,17 +68,17 @@
 }
 
 .tiptap code {
-  background-color: var(--purple-light);
+  background-color: #f1f3f5;
   border-radius: 0.4rem;
-  color: var(--black);
+  color: #24292f;
   font-size: 0.85rem;
   padding: 0.25em 0.3em;
 }
 
 .tiptap pre {
-  background: var(--black);
+  background: #0d0d0d;
   border-radius: 0.5rem;
-  color: var(--white);
+  color: #ffffff;
   font-family: JetBrainsMono, monospace;
   margin: 1.5rem 0;
   padding: 0.75rem 1rem;
@@ -93,24 +92,82 @@
 }
 
 .tiptap blockquote {
-  border-left: 3px solid var(--gray-3);
+  border-left: 3px solid rgba(13, 13, 13, 0.1);
   margin: 1.5rem 0;
   padding-left: 1rem;
 }
 
 .tiptap hr {
   border: none;
-  border-top: 1px solid var(--gray-2);
+  border-top: 1px solid rgba(0, 0, 0, 0.2);
   margin: 2rem 0;
 }
 
+.page-frame {
+  width: var(--page-width);
+  --page-surface: #fff;
+  --page-ink: #000;
+  --page-selection: oklch(0.9514 0.025 236.8242);
+  --page-selection-rule: oklch(0.3791 0.1378 265.5222);
+  /* Fixed, not derived from a theme token: the sheet is always white paper, so
+     the rule must be chosen against white rather than against the app
+     background. Deriving it from --border/--muted-foreground produced 1.90:1 in
+     the light theme and 4.26:1 in the dark one from the same declaration,
+     because those two tokens move in opposite directions between themes.
+
+     This is the lightest neutral that still clears WCAG 2.1 SC 1.4.11's 3:1 for
+     graphics that carry meaning, and a page boundary carries meaning. Measured
+     on white: 0.66 -> 3.11:1, 0.665 -> 3.03:1, 0.670 -> 2.995:1 (fails). Do not
+     lighten further; 0.665 passes only by 1% and rounds away. */
+  --page-rule-color: oklch(0.66 0 0);
+  --page-rule-width: 2px;
+  --page-rule-dash: 10px;
+  --page-rule-gap: 8px;
+  --page-rule-period: calc(var(--page-rule-dash) + var(--page-rule-gap));
+  --page-rule-h: repeating-linear-gradient(
+    to right,
+    var(--page-rule-color) 0 var(--page-rule-dash),
+    transparent var(--page-rule-dash) var(--page-rule-period)
+  );
+  --page-rule-v: repeating-linear-gradient(
+    to bottom,
+    var(--page-rule-color) 0 var(--page-rule-dash),
+    transparent var(--page-rule-dash) var(--page-rule-period)
+  );
+}
+
 .ProseMirror {
-  padding: 0 30mm;
-  color: var(--color-black);
-  background-color: var(--color-white);
-  border: 2px solid var(--border);
-  border-radius: var(--radius-sm);
-  overflow: hidden;
+  width: var(--page-width);
+  min-height: var(--page-height);
+  padding: var(--page-margin-top) var(--page-margin-right)
+    var(--page-margin-bottom) var(--page-margin-left);
+  color: var(--page-ink);
+  background-color: var(--page-surface);
+  /* The edge is painted, never stroked. A background costs no layout, so the
+     text column stays exactly the printed column — reaching for `border` here
+     narrows it and makes the editor wrap differently from the paper. It also
+     survives the `outline: none` focus rule below, which erased the edge back
+     when this was an outline. Square corners: a radius clips the painted edges
+     so the dashes stop meeting cleanly. */
+  background-image:
+    var(--page-rule-h), var(--page-rule-h), var(--page-rule-v),
+    var(--page-rule-v);
+  background-size:
+    100% var(--page-rule-width),
+    100% var(--page-rule-width),
+    var(--page-rule-width) 100%,
+    var(--page-rule-width) 100%;
+  background-position:
+    0 0,
+    0 100%,
+    0 0,
+    100% 0;
+  background-repeat: no-repeat;
+  border-radius: 0;
+}
+
+.ProseMirror[contenteditable="false"] {
+  cursor: default;
 }
 
 .ProseMirror blockquote {
@@ -187,10 +244,49 @@
   outline: none;
 }
 
-.page-break {
+.page-gap,
+.ProseMirror .page-break {
+  position: relative;
+  height: calc(var(--page-margin-bottom) + var(--page-margin-top));
+  margin: 0;
+  user-select: none;
+  pointer-events: none;
+}
+
+.page-gap::after,
+.ProseMirror .page-break::after {
+  content: "";
   position: absolute;
-  border: 2px solid var(--border);
-  border-left: 2px solid var(--background);
-  border-right: 2px solid var(--background);
-  background-color: var(--background);
+  left: calc(var(--page-margin-left) * -1);
+  right: calc(var(--page-margin-right) * -1);
+  bottom: 0;
+  height: var(--page-margin-top);
+  background-image: var(--page-rule-h);
+  background-size: 100% var(--page-rule-width);
+  background-position: 0 0;
+  background-repeat: no-repeat;
+}
+
+/* An author break that ends no page — nothing sits above it on the sheet — is
+   flattened away entirely: Chrome ignores such a break when printing, so drawing
+   one here would show a boundary the paper does not have. */
+.ProseMirror .page-break.page-break-collapsed::after {
+  display: none;
+}
+
+.ProseMirror .page-break::after {
+  pointer-events: auto;
+}
+
+.ProseMirror .page-break.ProseMirror-selectednode::after {
+  /* Frozen, not --accent/--accent-foreground: those flip with the theme while
+     the paper under them does not, so in dark mode the tint became a dark blue
+     patch on a white sheet. Frozen, it is 9.03:1 in both modes. */
+  background-color: var(--page-selection);
+  --page-rule-color: var(--page-selection-rule);
+}
+
+.page-tail {
+  pointer-events: none;
+  user-select: none;
 }

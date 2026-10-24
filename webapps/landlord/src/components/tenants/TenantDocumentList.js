@@ -147,6 +147,16 @@ export default function TenantDocumentList({ disabled = false }) {
     }
   };
 
+  const readOnlyReason = !disabled
+    ? undefined
+    : store.tenant.selected.terminated
+      ? t(
+          'This lease is terminated. Use Edit on the tenant page to change this document.'
+        )
+      : t(
+          'This tenant has a signed lease. Use Edit on the tenant page to change this document.'
+        );
+
   return (
     <>
       <div className="flex flex-wrap items-center gap-2 mt-8">
@@ -225,6 +235,7 @@ export default function TenantDocumentList({ disabled = false }) {
         onSave={handleSaveTextDocument}
         title={selectedTextDocument?.name}
         editable={!disabled}
+        readOnlyReason={readOnlyReason}
       />
 
       <ConfirmDialog

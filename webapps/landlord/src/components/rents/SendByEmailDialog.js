@@ -33,12 +33,19 @@ export default function SendByEmailDialog({
     try {
       onSending?.();
       setSending(true);
-      const sendStatus = await store.rent.sendEmail({
+      const { status, message } = await store.rent.sendEmail({
         document: documentName,
         tenantIds: rents.map((r) => r._id),
         terms: rents.map((r) => r.term)
       });
-      if (sendStatus !== 200) {
+      if (message === 'missing domain') {
+        return toast.error(
+          t(
+            'No domain configured. Set one in the Web server settings to send this email.'
+          )
+        );
+      }
+      if (status !== 200) {
         return toast.error(t('Email delivery service cannot send emails'));
       }
       const response = await store.rent.fetch();

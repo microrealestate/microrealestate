@@ -3,7 +3,7 @@
 import { Shell } from '@microrealestate/commonui/components/shell/Shell';
 import Loading from '@microrealestate/commonui/components/ui/Loading';
 import { useSession } from '@microrealestate/commonui/providers/SessionProvider';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { observer } from 'mobx-react-lite';
 import moment from 'moment';
 import { useTranslations } from 'next-intl';
@@ -23,6 +23,7 @@ function LandlordShell({ children }) {
   const { session } = useSession();
   const t = useTranslations('common');
   const store = useStore();
+  const queryClient = useQueryClient();
   const router = useRouter();
   const pathname = usePathname();
   const { redirectTo } = useNav();
@@ -33,9 +34,13 @@ function LandlordShell({ children }) {
   if (!initialized.current && session?.account && session?.accessToken) {
     store.user.setUserFromSession(session.account, session.accessToken);
     // the session carries a partial organization (no currency, thirdParties nor
-    // isCompany): seed it so the shell renders right away
-    if (session.account.organization) {
-      store.organization.setSelected(session.account.organization);
+    // isCompany): seed it so the shell renders right away. A remount recreates
+    // the store but does not refetch the cached query, hence the cache first.
+    const organization =
+      queryClient.getQueryData([QueryKeys.ORGANIZATION]) ??
+      session.account.organization;
+    if (organization) {
+      store.organization.setSelected(organization);
     }
     initialized.current = true;
   }

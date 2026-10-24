@@ -9,8 +9,8 @@ services:
     ports:
       - '127.0.0.1:6379:6379'
     networks:
-      - net
-      - egress
+      - data
+      - egress # the data network is internal, published ports need egress
   ###############################################################################
   # Mongo
   ###############################################################################
@@ -20,7 +20,7 @@ services:
     expose:
       - '27017'
     networks:
-      - net
+      - data
     healthcheck:
       test: |
         mongosh --quiet --eval "try { rs.status().ok } catch (e) { rs.initiate({_id:'rs0',members:[{_id:0,host:'mongo:27017'}]}).ok }"
@@ -52,7 +52,8 @@ services:
       REDIS_PASSWORD: ${REDIS_PASSWORD:?REDIS_PASSWORD is required}
       MONGO_URL: ${MONGO_URL:-mongodb://mongo:27017/mredb}
     networks:
-      - net
+      - svc
+      - data
     depends_on:
       redis:
         condition: service_started

@@ -78,9 +78,12 @@ async function createOrganization(client: SeedClient, dataset: DemoDataset) {
 async function configureDevThirdParties(
   client: SeedClient,
   realmId: string,
-  dataset: DemoDataset
+  dataset: DemoDataset,
+  url: string
 ) {
   const email = dataset.credentials.email;
+  // Receipts and password resets link back into the app: the seed target is where it is reached
+  const domain = new URL(url).host;
 
   await client.api('patch', `/realms/${realmId}`, {
     _id: realmId,
@@ -96,10 +99,15 @@ async function configureDevThirdParties(
         fromEmail: email,
         replyToEmail: email
       }
-    }
+    },
+    webServer: { domain, httpsEnabled: false }
   });
   console.log(
     `${chalk.green('email service')} smtp4dev:25 (no encryption, no authentication)`
+  );
+
+  console.log(
+    `${chalk.green('web server')} http://${domain} (emails link to it)`
   );
 
   await client.api('post', `/realms/${realmId}/test-smtp`, {});
@@ -460,7 +468,7 @@ async function seed({ url, keep, dev }: SeedOptions & { dev: boolean }) {
 
   const realmId = await createOrganization(client, dataset);
   if (dev) {
-    await configureDevThirdParties(client, realmId, dataset);
+    await configureDevThirdParties(client, realmId, dataset, url);
   }
   const lease = await createContract(client, dataset);
   const leaseTemplate = await createTemplates(client, dataset, lease._id);

@@ -22,6 +22,13 @@ const rightMenuItems = [
       labelId: 'Web server',
       pathname: '/settings/webserver',
       dataCy: 'webServerNav'
+    },
+    {
+      key: 'email',
+      Icon: LuMail,
+      labelId: 'Email service',
+      pathname: '/settings/email',
+      dataCy: 'emailNav'
     }
   ],
   [
@@ -45,13 +52,6 @@ const rightMenuItems = [
       labelId: 'Access',
       pathname: '/settings/access',
       dataCy: 'accessNav'
-    },
-    {
-      key: 'email',
-      Icon: LuMail,
-      labelId: 'Email service',
-      pathname: '/settings/email',
-      dataCy: 'emailNav'
     }
   ]
 ];
