@@ -28,7 +28,7 @@
     "dompurify": "3.4.16",
     "formik": "catalog:",
     "js-file-download": "catalog:",
-    "jsesc": "3.0.2",
+    "jsesc": "3.1.0",
     "lodash": "catalog:",
     "mobx": "6.12.3",
     "mobx-react-lite": "3.4.3",
