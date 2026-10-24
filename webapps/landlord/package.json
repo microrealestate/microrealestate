@@ -14,7 +14,7 @@
     "@microrealestate/shared": "workspace:*",
     "@tanstack/react-query": "catalog:",
     "@tiptap/core": "3.31.3",
-    "@tiptap/extension-superscript": "3.31.3",
+    "@tiptap/extension-superscript": "3.32.0",
     "@tiptap/extension-table": "3.31.3",
     "@tiptap/extension-text-align": "3.31.3",
     "@tiptap/extension-text-style": "3.31.3",
