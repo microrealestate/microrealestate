@@ -21,7 +21,7 @@ export function ContactField({
     <div className="flex flex-col gap-4">
       <TextField
         label={t('Contact')}
-        name={contactName || 'name'}
+        name={contactName || 'contact'}
         autoComplete="name"
         disabled={disabled}
         readOnly={readOnly}
