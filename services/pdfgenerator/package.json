@@ -16,7 +16,7 @@
     "ejs": "catalog:",
     "express": "catalog:",
     "file-url": "3.0.0",
-    "fs-extra": "10.1.0",
+    "fs-extra": "11.4.1",
     "handlebars": "catalog:",
     "i18n": "catalog:",
     "locale": "catalog:",
