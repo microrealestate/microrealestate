@@ -1386,7 +1386,7 @@ __metadata:
     ipaddr.js: "npm:1.9.1"
     locale: "catalog:"
     moment: "catalog:"
-    nodemailer: "npm:10.0.9"
+    nodemailer: "npm:10.2.0"
     tsx: "catalog:"
     typescript: "catalog:"
   languageName: unknown
@@ -6805,10 +6805,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nodemailer@npm:10.0.9":
-  version: 10.0.9
-  resolution: "nodemailer@npm:10.0.9"
-  checksum: 10c0/4ab2a9e1441df0864923aefccdbbe365996534a75028f926afefc43941fdec6af4b026568103746e7c7ba6f1afa578cca391e485db05e8aed0c308eadfcacf95
+"nodemailer@npm:10.2.0":
+  version: 10.2.0
+  resolution: "nodemailer@npm:10.2.0"
+  checksum: 10c0/5f37531f85829b4f91fcf2bca17665a28e78cae98e4e8ab0bfa29d49a4cf60baca29727ca5666433ee83650607d12e178795a6704976d5844f03564b061215e2
   languageName: node
   linkType: hard
 
