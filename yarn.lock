@@ -1270,8 +1270,8 @@ __metadata:
     lodash: "catalog:"
     methods: "npm:1.1.2"
     moment: "catalog:"
-    mongoose: "npm:6.13.9"
-    multer: "npm:2.4.0"
+    mongoose: "npm:6.13.12"
+    multer: "npm:2.5.0"
     redis: "catalog:"
     sanitize-filename: "npm:1.6.3"
     tsx: "catalog:"
@@ -1354,7 +1354,7 @@ __metadata:
     ipaddr.js: "npm:1.9.1"
     locale: "catalog:"
     moment: "catalog:"
-    nodemailer: "npm:10.0.9"
+    nodemailer: "npm:10.1.7"
     tsx: "catalog:"
     typescript: "catalog:"
   languageName: unknown
@@ -1400,7 +1400,7 @@ __metadata:
     axios: "catalog:"
     currency-codes: "npm:2.1.0"
     currency-symbol-map: "npm:5.1.0"
-    dompurify: "npm:3.4.16"
+    dompurify: "npm:3.4.17"
     formik: "catalog:"
     js-file-download: "catalog:"
     jsesc: "npm:3.0.2"
@@ -1664,65 +1664,65 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@next/env@npm:15.5.27":
-  version: 15.5.27
-  resolution: "@next/env@npm:15.5.27"
-  checksum: 10c0/37037e339c9c1f1a6e3054dcbd9ff72a921cfce590fb8cb48b13cffe62e0cba0e3881067c92f97d5430a71f9086d0bc0e87dc630ced832573d0e3e4f6b3f7404
+"@next/env@npm:15.5.28":
+  version: 15.5.28
+  resolution: "@next/env@npm:15.5.28"
+  checksum: 10c0/2a8e93431b239293187f685259529272e879a3663b7b6a8d568c75a3b85cc6e879d105fe6f3802108dc8ecf5eb4934bba3c9471d659094969824db3a956ac283
   languageName: node
   linkType: hard
 
-"@next/swc-darwin-arm64@npm:15.5.27":
-  version: 15.5.27
-  resolution: "@next/swc-darwin-arm64@npm:15.5.27"
+"@next/swc-darwin-arm64@npm:15.5.28":
+  version: 15.5.28
+  resolution: "@next/swc-darwin-arm64@npm:15.5.28"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"@next/swc-darwin-x64@npm:15.5.27":
-  version: 15.5.27
-  resolution: "@next/swc-darwin-x64@npm:15.5.27"
+"@next/swc-darwin-x64@npm:15.5.28":
+  version: 15.5.28
+  resolution: "@next/swc-darwin-x64@npm:15.5.28"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
-"@next/swc-linux-arm64-gnu@npm:15.5.27":
-  version: 15.5.27
-  resolution: "@next/swc-linux-arm64-gnu@npm:15.5.27"
+"@next/swc-linux-arm64-gnu@npm:15.5.28":
+  version: 15.5.28
+  resolution: "@next/swc-linux-arm64-gnu@npm:15.5.28"
   conditions: os=linux & cpu=arm64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@next/swc-linux-arm64-musl@npm:15.5.27":
-  version: 15.5.27
-  resolution: "@next/swc-linux-arm64-musl@npm:15.5.27"
+"@next/swc-linux-arm64-musl@npm:15.5.28":
+  version: 15.5.28
+  resolution: "@next/swc-linux-arm64-musl@npm:15.5.28"
   conditions: os=linux & cpu=arm64 & libc=musl
   languageName: node
   linkType: hard
 
-"@next/swc-linux-x64-gnu@npm:15.5.27":
-  version: 15.5.27
-  resolution: "@next/swc-linux-x64-gnu@npm:15.5.27"
+"@next/swc-linux-x64-gnu@npm:15.5.28":
+  version: 15.5.28
+  resolution: "@next/swc-linux-x64-gnu@npm:15.5.28"
   conditions: os=linux & cpu=x64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@next/swc-linux-x64-musl@npm:15.5.27":
-  version: 15.5.27
-  resolution: "@next/swc-linux-x64-musl@npm:15.5.27"
+"@next/swc-linux-x64-musl@npm:15.5.28":
+  version: 15.5.28
+  resolution: "@next/swc-linux-x64-musl@npm:15.5.28"
   conditions: os=linux & cpu=x64 & libc=musl
   languageName: node
   linkType: hard
 
-"@next/swc-win32-arm64-msvc@npm:15.5.27":
-  version: 15.5.27
-  resolution: "@next/swc-win32-arm64-msvc@npm:15.5.27"
+"@next/swc-win32-arm64-msvc@npm:15.5.28":
+  version: 15.5.28
+  resolution: "@next/swc-win32-arm64-msvc@npm:15.5.28"
   conditions: os=win32 & cpu=arm64
   languageName: node
   linkType: hard
 
-"@next/swc-win32-x64-msvc@npm:15.5.27":
-  version: 15.5.27
-  resolution: "@next/swc-win32-x64-msvc@npm:15.5.27"
+"@next/swc-win32-x64-msvc@npm:15.5.28":
+  version: 15.5.28
+  resolution: "@next/swc-win32-x64-msvc@npm:15.5.28"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
@@ -4753,15 +4753,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dompurify@npm:3.4.16":
-  version: 3.4.16
-  resolution: "dompurify@npm:3.4.16"
+"dompurify@npm:3.4.17":
+  version: 3.4.17
+  resolution: "dompurify@npm:3.4.17"
   dependencies:
     "@types/trusted-types": "npm:^2.0.7"
   dependenciesMeta:
     "@types/trusted-types":
       optional: true
-  checksum: 10c0/65a901c6b6d489d3e898f67223d81dac66d613cda48f5785f0ed52a4ae320c4b2745490a58c14161e29f0273080fea0a0cb234a9ef892650e1a9b2a7befa07a5
+  checksum: 10c0/6a12251ef5e700fc91b6d96d33e9f8b5fd590c55276f632cf42d182c5808e9f48d5bef435ab26eac235dfcc05ed8fe95e1c8308dcc502bf1050e561f14d0361a
   languageName: node
   linkType: hard
 
@@ -6293,18 +6293,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mongoose@npm:6.13.9":
-  version: 6.13.9
-  resolution: "mongoose@npm:6.13.9"
+"mongoose@npm:6.13.12":
+  version: 6.13.12
+  resolution: "mongoose@npm:6.13.12"
   dependencies:
     bson: "npm:^4.7.2"
     kareem: "npm:2.5.1"
     mongodb: "npm:4.17.2"
     mpath: "npm:0.9.0"
-    mquery: "npm:4.0.3"
+    mquery: "npm:4.0.4"
     ms: "npm:2.1.3"
     sift: "npm:16.0.1"
-  checksum: 10c0/87ece3129ecebbd5ebbf92eee4834e787eb29399600c20479a0f7d35f737437d1bf56c4a232a1e4fab7288c9b0209d1b350362517dcaf0bbbd0ed9462c871759
+  checksum: 10c0/07d7ca1c146475408fc79cd90afb89a6ea4da9fcbb1eddda7cb19e7cc81a7be3fa3f580ffc45938b22e3fa47c7f52c7c527ce3df265adac9a80d47d0f7e0c08d
   languageName: node
   linkType: hard
 
@@ -6322,12 +6322,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mquery@npm:4.0.3":
-  version: 4.0.3
-  resolution: "mquery@npm:4.0.3"
+"mquery@npm:4.0.4":
+  version: 4.0.4
+  resolution: "mquery@npm:4.0.4"
   dependencies:
     debug: "npm:4.x"
-  checksum: 10c0/771eb00466f2c1a1342737fa0379d50c21bb6c09545d6fa4488a81c096a62548ec2080d53e5ead57c8e19f7354d3315e2403878abfb5a6bc8f3e732236874374
+  checksum: 10c0/fe9eb6920768343d3f66aa864f3928856483491e10e13a86f8dbf25c0c4551522061d6966e24023282258feedea2df1669051258aa11b80601298f701b732d0b
   languageName: node
   linkType: hard
 
@@ -6345,14 +6345,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"multer@npm:2.4.0":
-  version: 2.4.0
-  resolution: "multer@npm:2.4.0"
+"multer@npm:2.5.0":
+  version: 2.5.0
+  resolution: "multer@npm:2.5.0"
   dependencies:
     append-field: "npm:^1.0.0"
     busboy: "npm:^1.6.0"
     type-is: "npm:^1.6.18"
-  checksum: 10c0/4e271959ba4c9184f26dbd98a06eeb2ee8008e8ca2d1d30cb7856f642678648c085ed064627e9db01ae07442adfd275a7124fb409335a8f754ec41df51f1f1d0
+  checksum: 10c0/a89df3eae74ec2e9bfcbf272c8ce7e7f18597bd855ac193568103d83fbd8cb26d4539025a19df1bd52dc05aa0090745949f0ec90aecf479ca0fdc8a1d80121ee
   languageName: node
   linkType: hard
 
@@ -6462,23 +6462,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"next@npm:15.5.27":
-  version: 15.5.27
-  resolution: "next@npm:15.5.27"
+"next@npm:15.5.28":
+  version: 15.5.28
+  resolution: "next@npm:15.5.28"
   dependencies:
-    "@next/env": "npm:15.5.27"
-    "@next/swc-darwin-arm64": "npm:15.5.27"
-    "@next/swc-darwin-x64": "npm:15.5.27"
-    "@next/swc-linux-arm64-gnu": "npm:15.5.27"
-    "@next/swc-linux-arm64-musl": "npm:15.5.27"
-    "@next/swc-linux-x64-gnu": "npm:15.5.27"
-    "@next/swc-linux-x64-musl": "npm:15.5.27"
-    "@next/swc-win32-arm64-msvc": "npm:15.5.27"
-    "@next/swc-win32-x64-msvc": "npm:15.5.27"
+    "@next/env": "npm:15.5.28"
+    "@next/swc-darwin-arm64": "npm:15.5.28"
+    "@next/swc-darwin-x64": "npm:15.5.28"
+    "@next/swc-linux-arm64-gnu": "npm:15.5.28"
+    "@next/swc-linux-arm64-musl": "npm:15.5.28"
+    "@next/swc-linux-x64-gnu": "npm:15.5.28"
+    "@next/swc-linux-x64-musl": "npm:15.5.28"
+    "@next/swc-win32-arm64-msvc": "npm:15.5.28"
+    "@next/swc-win32-x64-msvc": "npm:15.5.28"
     "@swc/helpers": "npm:0.5.15"
     caniuse-lite: "npm:^1.0.30001579"
     postcss: "npm:8.4.31"
-    sharp: "npm:^0.34.3 || ^0.35.4"
+    sharp: "npm:^0.34.3 || ^0.35.5"
     styled-jsx: "npm:5.1.6"
   peerDependencies:
     "@opentelemetry/api": ^1.1.0
@@ -6517,7 +6517,7 @@ __metadata:
       optional: true
   bin:
     next: dist/bin/next
-  checksum: 10c0/01cce4723e81d29f1a9b9986ed52d96c3b23d3cfe4908329bfa3886af57ffd90e4c75caf2b26eb412460cf5186e76faaf0b39e15f47eee94419f3d48ded61467
+  checksum: 10c0/c4cc5354cde0bd88fa9e8e5bcbc719e1c0985751db2061cebb1d130ef28d9edd6b0d77424fe980d23bdee59d80d3b61afa30297e6e8b055b9399bbbb4f6f236f
   languageName: node
   linkType: hard
 
@@ -6550,10 +6550,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nodemailer@npm:10.0.9":
-  version: 10.0.9
-  resolution: "nodemailer@npm:10.0.9"
-  checksum: 10c0/4ab2a9e1441df0864923aefccdbbe365996534a75028f926afefc43941fdec6af4b026568103746e7c7ba6f1afa578cca391e485db05e8aed0c308eadfcacf95
+"nodemailer@npm:10.1.7":
+  version: 10.1.7
+  resolution: "nodemailer@npm:10.1.7"
+  checksum: 10c0/1bac1f2fb7a60ffa889973cfd1e71da2bdecacd82eb263a612a587a0c06cec43a9a7452fcbd830c39c3a047ef99eb101cb5cf2c6a0a9523624c38f1ae7f01bcb
   languageName: node
   linkType: hard
 
@@ -7274,7 +7274,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sharp@npm:^0.34.3 || ^0.35.4":
+"sharp@npm:^0.34.3 || ^0.35.5":
   version: 0.35.5
   resolution: "sharp@npm:0.35.5"
   dependencies:

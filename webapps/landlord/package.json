@@ -25,7 +25,7 @@
     "axios": "catalog:",
     "currency-codes": "2.1.0",
     "currency-symbol-map": "5.1.0",
-    "dompurify": "3.4.16",
+    "dompurify": "3.4.17",
     "formik": "catalog:",
     "js-file-download": "catalog:",
     "jsesc": "3.0.2",
