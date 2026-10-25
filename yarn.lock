@@ -1438,7 +1438,7 @@ __metadata:
     async-mutex: "npm:0.5.0"
     ejs: "catalog:"
     express: "catalog:"
-    file-url: "npm:3.0.0"
+    file-url: "npm:4.0.0"
     fs-extra: "npm:10.1.0"
     handlebars: "catalog:"
     i18n: "catalog:"
@@ -5158,10 +5158,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"file-url@npm:3.0.0":
-  version: 3.0.0
-  resolution: "file-url@npm:3.0.0"
-  checksum: 10c0/31c5f85711bda47a471fd8d4a7217330102b74fb3b4dbd3626dd9cbe8c9afc1bf4584da2877abd84db392e3b4c2ad6d61ba4830b45a273dfbfd1172b443d8bb9
+"file-url@npm:4.0.0":
+  version: 4.0.0
+  resolution: "file-url@npm:4.0.0"
+  checksum: 10c0/7869e572f8ed5742b91653e48c9c7705f74f84827ec2d0c42f01f8aadff9ce561153a8ca3f7315d3811c06021df492960d8006e0a05e3f62a5853e549c2c2b59
   languageName: node
   linkType: hard
 
