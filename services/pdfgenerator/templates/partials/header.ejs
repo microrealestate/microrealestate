@@ -16,7 +16,7 @@
             <% } %>
         </div>
     <% } -%>
-    <% for (contact in landlord.contacts) { %>
+    <% for (const contact of landlord.contacts || []) { %>
         <div class="contact">
             <% if (contact.phone1) { %>
                 <%= _.t('Phone: {{phone}}', { phone: contact.phone1 }) %><br>
