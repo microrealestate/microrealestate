@@ -5,17 +5,16 @@ export type LandlordData = ReturnType<typeof toLandlordData>;
 
 // The realm, plus the flags and names the templates need precomputed
 export function toLandlordData(realm: RealmType) {
-  const name =
-    (realm.isCompany ? realm.companyInfo?.name : realm.contacts?.[0]?.name) ||
-    '';
+  const name = (realm.isCompany && realm.companyInfo?.name) || realm.name || '';
   const hasCompanyInfo = !!realm.companyInfo;
   return {
     ...realm,
     name,
     hasCompanyInfo,
-    legalName: hasCompanyInfo
-      ? `${realm.companyInfo?.legalStructure} ${name}`
-      : name,
+    legalName:
+      realm.isCompany && realm.companyInfo?.legalStructure
+        ? `${realm.companyInfo.legalStructure} ${name}`
+        : name,
     hasBankInfo: !!realm.bankInfo?.iban,
     hasAddress: !!realm.addresses?.length,
     hasContact: !!realm.contacts?.length,
