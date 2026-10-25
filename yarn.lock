@@ -1386,7 +1386,7 @@ __metadata:
     "@tailwindcss/postcss": "catalog:"
     "@tanstack/react-query": "catalog:"
     "@tiptap/core": "npm:3.31.3"
-    "@tiptap/extension-superscript": "npm:3.31.3"
+    "@tiptap/extension-superscript": "npm:3.32.0"
     "@tiptap/extension-table": "npm:3.31.3"
     "@tiptap/extension-text-align": "npm:3.31.3"
     "@tiptap/extension-text-style": "npm:3.31.3"
@@ -3426,13 +3426,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tiptap/extension-superscript@npm:3.31.3":
-  version: 3.31.3
-  resolution: "@tiptap/extension-superscript@npm:3.31.3"
+"@tiptap/extension-superscript@npm:3.32.0":
+  version: 3.32.0
+  resolution: "@tiptap/extension-superscript@npm:3.32.0"
   peerDependencies:
-    "@tiptap/core": 3.31.3
-    "@tiptap/pm": 3.31.3
-  checksum: 10c0/eaf5d10ca2399b1037162f03347b11c330f299cb06fb0569c379c83c090f1033f7482311f45df5951ffe2a5cfe24cb8bd10de382e7725786372fbf17c9484b52
+    "@tiptap/core": 3.32.0
+    "@tiptap/pm": 3.32.0
+  checksum: 10c0/f6760c70f2c4402a318b19f714fcb6c0d497bf0e9b5a2fa4ad3a53ae29eec141afcc937534bd104aae8b439e6063a5093781c7eb77246ba26d627af3909726ac
   languageName: node
   linkType: hard
 
