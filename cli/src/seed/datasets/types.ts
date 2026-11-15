@@ -14,8 +14,7 @@ export type DemoProperty = {
   description: string;
   surface: number;
   price: number;
-  phone?: string;
-  digicode?: string;
+  customFields?: { label: string; value: string }[];
   address: {
     street1: string;
     zipCode: string;

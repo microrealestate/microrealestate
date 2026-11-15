@@ -1,6 +1,7 @@
 import { action, computed, flow, makeObservable, observable } from 'mobx';
 
 import apiClient from '../utils/apiClient';
+import { resetPropertyThresholdAlert } from '../utils/propertyThresholdAlert';
 import { updateItems } from './utils';
 
 export default class Property {
@@ -20,7 +21,9 @@ export default class Property {
       fetchOne: flow,
       create: flow,
       update: flow,
-      delete: flow
+      delete: flow,
+      attach: flow,
+      detach: flow
     });
   }
 
@@ -103,6 +106,7 @@ export default class Property {
     try {
       const response = yield apiClient.post('/properties', property);
       const createdProperty = response.data;
+      resetPropertyThresholdAlert();
       this.items = updateItems(createdProperty, this.items);
 
       return { status: 200, data: createdProperty };
@@ -118,6 +122,7 @@ export default class Property {
         property
       );
       const updatedProperty = response.data;
+      resetPropertyThresholdAlert();
       this.items = updateItems(updatedProperty, this.items);
       if (this.selected?._id === updatedProperty._id) {
         this.setSelected(updatedProperty);
@@ -128,10 +133,52 @@ export default class Property {
     }
   }
 
+  *attach(parentId, ids) {
+    try {
+      const response = yield apiClient.post(
+        `/properties/${parentId}/children`,
+        {
+          ids
+        }
+      );
+      resetPropertyThresholdAlert();
+      for (const attachedProperty of response.data) {
+        this.items = updateItems(attachedProperty, this.items);
+      }
+      return { status: 200, data: response.data };
+    } catch (error) {
+      return { status: error?.response?.status ?? 500 };
+    }
+  }
+
+  *detach(parentId, ids) {
+    try {
+      yield apiClient.delete(
+        `/properties/${parentId}/children/${ids.join(',')}`
+      );
+      resetPropertyThresholdAlert();
+      this.items = this.items.map((property) =>
+        ids.includes(property._id) && property.parentId === parentId
+          ? { ...property, parentId: undefined }
+          : property
+      );
+      return { status: 200 };
+    } catch (error) {
+      return { status: error?.response?.status ?? 500 };
+    }
+  }
+
   *delete(ids) {
     try {
       yield apiClient.delete(`/properties/${ids.join(',')}`);
-      this.items = this.items.filter((property) => !ids.includes(property._id));
+      resetPropertyThresholdAlert();
+      this.items = this.items
+        .filter((property) => !ids.includes(property._id))
+        .map((property) =>
+          ids.includes(property.parentId)
+            ? { ...property, parentId: undefined }
+            : property
+        );
       if (ids.includes(this.selected?._id)) {
         this.selected = {};
       }

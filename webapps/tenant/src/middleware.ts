@@ -21,7 +21,7 @@ function injectSession(response: Response, session: Session): Response {
   response.headers.set('x-middleware-override-headers', keys.join(','));
   response.headers.set(
     'x-middleware-request-x-session',
-    session ? JSON.stringify(session) : ''
+    session ? encodeURIComponent(JSON.stringify(session)) : ''
   );
   return response;
 }
@@ -33,7 +33,7 @@ function nextWithSession(session: Session, request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!api|_next|__nextjs|health|favicon.ico|.*\\.(?:svg|woff2?|ttf|png|jpe?g|ico)).*)',
+    '/((?!api|_next|__nextjs|health|favicon.ico|manifest\\.webmanifest$|sw\\.js$|offline\\.html$|.*\\.(?:svg|woff2?|ttf|png|jpe?g|ico)).*)',
     '/'
   ]
 };

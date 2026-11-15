@@ -84,7 +84,7 @@ export default function OutgoingTenants({ onCSVClick }) {
                   {tenant.balance > 0
                     ? t('Rent due')
                     : tenant.balance < 0
-                      ? t('Rent overpayment')
+                      ? t('Tenant credit')
                       : t('Last rent balance')}
                 </div>
                 <div>

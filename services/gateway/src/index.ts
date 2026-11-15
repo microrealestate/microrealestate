@@ -1,3 +1,4 @@
+import type { ClientRequest } from 'node:http';
 import {
   EnvironmentConfig,
   formatError,
@@ -22,11 +23,16 @@ const underPath = (prefix: string) => (pathname: string) =>
 const LANDLORD_BASE_PATH = '/landlord';
 const TENANT_BASE_PATH = '/tenant';
 
+const isNextDevAsset = (path: string) =>
+  path.includes('/_next/') || path.includes('/__nextjs_');
+
 let generalLimiter: RateLimitRequestHandler | RequestHandler = rateLimit({
   windowMs: 5 * 60 * 1000,
   max: 600,
   standardHeaders: true,
   legacyHeaders: false,
+  skip: (req) =>
+    process.env.NODE_ENV === 'development' && isNextDevAsset(req.path ?? ''),
   handler: (request: Request, response: Response) => {
     logger.warn(`general rate limit exceeded for ${request.ip}`);
     response.sendStatus(429);
@@ -180,6 +186,13 @@ async function Main() {
   }
 }
 
+// The frontends' middleware hands the session to Server Components in the
+// x-session request header. A client must never be able to set it: a path
+// that skips the middleware would otherwise render with a forged session.
+function stripInternalHeaders(proxyReq: ClientRequest) {
+  proxyReq.removeHeader('x-session');
+}
+
 function exposeFrontends(application: Application) {
   const config = Service.getInstance().envConfig.getValues();
   application.use(
@@ -187,7 +200,8 @@ function exposeFrontends(application: Application) {
       target: config.LANDLORD_FRONTEND_URL,
       pathFilter: underPath(LANDLORD_BASE_PATH),
       ws: true,
-      logger
+      logger,
+      on: { proxyReq: stripInternalHeaders }
     })
   );
 
@@ -196,7 +210,8 @@ function exposeFrontends(application: Application) {
       target: config.TENANT_FRONTEND_URL,
       pathFilter: underPath(TENANT_BASE_PATH),
       ws: true,
-      logger
+      logger,
+      on: { proxyReq: stripInternalHeaders }
     })
   );
 }

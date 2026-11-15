@@ -1,12 +1,11 @@
 import { TextField } from '@microrealestate/commonui/components/formfields/TextField';
 import { Button } from '@microrealestate/commonui/components/ui/button';
-import { Card } from '@microrealestate/commonui/components/ui/card';
+import { toast } from '@microrealestate/commonui/components/ui/sonner';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Form, Formik } from 'formik';
 import { useTranslations } from 'next-intl';
 import { useCallback, useMemo, useState } from 'react';
 import { LuCopy, LuTrash } from 'react-icons/lu';
-import { toast } from 'sonner';
 import * as Yup from 'yup';
 import { useStore } from '@/providers/StoreProvider';
 import {
@@ -109,7 +108,7 @@ export default function Members({ organization }) {
 
   return (
     <>
-      <div className="flex flex-col gap-4">
+      <div className="divide-y">
         {SLOTS.map((slot, index) => (
           <MemberSlot
             key={slot}
@@ -164,7 +163,10 @@ function TemporaryPassword({ email, password }) {
   }, [password, t]);
 
   return (
-    <Card className="p-4 space-y-2" data-cy="temporaryPassword">
+    <div
+      className="space-y-2 py-6 first:pt-0 last:pb-0"
+      data-cy="temporaryPassword"
+    >
       <div className="text-lg">{t('Temporary password')}</div>
       <div className="flex items-center gap-2">
         <code className="grow rounded-md bg-muted px-3 py-2 font-mono text-base break-all">
@@ -185,7 +187,7 @@ function TemporaryPassword({ email, password }) {
           { email }
         )}
       </div>
-    </Card>
+    </div>
   );
 }
 
@@ -225,7 +227,7 @@ function MemberSlot({
 
   if (registered || readOnly) {
     return (
-      <Card className="p-4">
+      <div className="py-6 first:pt-0 last:pb-0">
         <div className="text-lg mb-2">{label}</div>
         <div className="flex items-center justify-between gap-2">
           <div className="break-all">
@@ -248,12 +250,12 @@ function MemberSlot({
             </Button>
           ) : null}
         </div>
-      </Card>
+      </div>
     );
   }
 
   return (
-    <Card className="p-4">
+    <div className="py-6 first:pt-0 last:pb-0">
       <div className="text-lg mb-2">{label}</div>
       <Formik
         initialValues={initialValues}
@@ -301,6 +303,6 @@ function MemberSlot({
           </Form>
         )}
       </Formik>
-    </Card>
+    </div>
   );
 }

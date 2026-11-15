@@ -4,6 +4,7 @@ import { SubmitButton } from '@microrealestate/commonui/components/formfields/Su
 import { SwitchField } from '@microrealestate/commonui/components/formfields/SwitchField';
 import { TextField } from '@microrealestate/commonui/components/formfields/TextField';
 import { Button } from '@microrealestate/commonui/components/ui/button';
+import { toast } from '@microrealestate/commonui/components/ui/sonner';
 import {
   canDisableIpAccess,
   canEnableHttps,
@@ -15,7 +16,6 @@ import { Form, Formik, useFormikContext } from 'formik';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { LuCheck, LuRotateCw, LuTriangleAlert } from 'react-icons/lu';
-import { toast } from 'sonner';
 import * as Yup from 'yup';
 import useUrlConnectivity from '@/hooks/useUrlConnectivity';
 import { useStore } from '@/providers/StoreProvider';
@@ -206,7 +206,7 @@ export default function WebServerForm({
                 description={
                   externalProxy
                     ? t(
-                        'Set by MRE_URL in the .env file of the server. To change it, edit .env, then run ./install.sh update.'
+                        "Set by MRE_URL in the .env file of the server. To change it, edit .env, then run the installer's update."
                       )
                     : t(
                         'The address used to open the application, as a domain name or an IP address. Emails such as receipts and password resets contain links to this address.'

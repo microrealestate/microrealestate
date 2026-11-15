@@ -54,7 +54,7 @@ export default function TenantStepper({ onSubmit }) {
     try {
       await onSubmit({ stepperMode: false });
       setValidSteps([true, true, true, true]);
-      goBack();
+      goBack('/tenants');
     } catch (_error) {
       // do nothing on error
     }

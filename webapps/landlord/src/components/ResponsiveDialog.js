@@ -8,12 +8,12 @@ import {
 import {
   Drawer,
   DrawerContent,
-  DrawerFooter,
   DrawerHeader,
   DrawerTitle
 } from '@microrealestate/commonui/components/ui/drawer';
 import { useTranslations } from 'next-intl';
 import { useMediaQuery } from 'usehooks-ts';
+import DrawerActionBar from './DrawerActionBar';
 import Loading from './Loading';
 
 function InProgress() {
@@ -34,7 +34,8 @@ export default function ResponsiveDialog({
   renderContent,
   renderFooter,
   isLoading,
-  hideTitle = false
+  hideTitle = false,
+  fullScreen = false
 }) {
   const isDesktop = useMediaQuery('(min-width: 768px)');
   const handleOpenChange = (value) => {
@@ -80,7 +81,7 @@ export default function ResponsiveDialog({
 
   return (
     <Drawer open={open} dismissible={false}>
-      <DrawerContent className="w-full" hideHandle>
+      <DrawerContent className="w-full" hideHandle fullScreen={fullScreen}>
         {open && showHeader ? (
           <DrawerHeader className="text-lg md:text-xl font-semibold leading-none tracking-tight px-4">
             <DrawerTitle className={renderHeader ? 'sr-only' : undefined}>
@@ -94,15 +95,21 @@ export default function ResponsiveDialog({
         ) : null}
 
         {renderContent && open ? (
-          <div className="flex justify-center p-4 max-h-96 overflow-y-auto">
+          <div
+            className={
+              fullScreen
+                ? 'flex min-h-0 flex-1 justify-center overflow-y-auto p-4'
+                : 'flex justify-center p-4 max-h-96 overflow-y-auto'
+            }
+          >
             {renderContent()}
           </div>
         ) : null}
 
         {renderFooter && open ? (
-          <DrawerFooter className="px-4">
+          <DrawerActionBar>
             {!isLoading ? renderFooter() : <InProgress />}
-          </DrawerFooter>
+          </DrawerActionBar>
         ) : null}
       </DrawerContent>
     </Drawer>

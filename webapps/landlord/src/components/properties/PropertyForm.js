@@ -3,6 +3,7 @@ import { NumberField } from '@microrealestate/commonui/components/formfields/Num
 import { Section } from '@microrealestate/commonui/components/formfields/Section';
 import { SelectField } from '@microrealestate/commonui/components/formfields/SelectField';
 import { SubmitButton } from '@microrealestate/commonui/components/formfields/SubmitButton';
+import { SwitchField } from '@microrealestate/commonui/components/formfields/SwitchField';
 import { TextField } from '@microrealestate/commonui/components/formfields/TextField';
 import { PROPERTY_KINDS } from '@microrealestate/shared';
 import { Form, Formik } from 'formik';
@@ -18,8 +19,6 @@ const validationSchema = Yup.object().shape({
   type: Yup.string().required(),
   name: Yup.string().required(),
   description: Yup.string(),
-  phone: Yup.string(),
-  digicode: Yup.string(),
   address: Yup.object().shape({
     street1: Yup.string(),
     street2: Yup.string(),
@@ -28,9 +27,17 @@ const validationSchema = Yup.object().shape({
     state: Yup.string(),
     country: Yup.string()
   }),
-  rent: Yup.number().min(0).required()
+  rent: Yup.number()
+    .transform((value, original) => (original === '' ? undefined : value))
+    .min(0)
+    .when('availableForRent', {
+      is: true,
+      then: (schema) => schema.required()
+    }),
+  availableForRent: Yup.boolean()
 });
 
+/** @type {import('react').FC<{ onSubmit: (propertyPart: Record<string, unknown>) => Promise<unknown> }>} */
 const PropertyForm = observer(({ onSubmit }) => {
   const t = useTranslations('common');
   const store = useStore();
@@ -41,8 +48,6 @@ const PropertyForm = observer(({ onSubmit }) => {
       name: store.property.selected?.name || '',
       description: store.property.selected?.description || '',
       surface: store.property.selected?.surface || '',
-      phone: store.property.selected?.phone || '',
-      digicode: store.property.selected?.digicode || '',
       address: store.property.selected?.address || {
         street1: '',
         street2: '',
@@ -51,7 +56,8 @@ const PropertyForm = observer(({ onSubmit }) => {
         state: '',
         country: ''
       },
-      rent: store.property.selected?.price || ''
+      rent: store.property.selected?.price || '',
+      availableForRent: store.property.selected?.availableForRent === true
     }),
     [store.property.selected]
   );
@@ -88,37 +94,27 @@ const PropertyForm = observer(({ onSubmit }) => {
                 <TextField label={t('Name')} name="name" className="w-full" />
               </div>
               <TextField label={t('Description')} name="description" />
-
               {PROPERTY_KINDS.filter(
                 (t) => t !== 'parking' && t !== 'letterbox'
               ).includes(values.type) && (
-                <div className="sm:flex sm:gap-2">
-                  <NumberField
-                    label={t('Surface')}
-                    name="surface"
-                    className="w-full"
-                  />
-                  <TextField
-                    label={t('Phone')}
-                    name="phone"
-                    className="w-full"
-                  />
-                  <TextField
-                    label={t('Door code')}
-                    name="digicode"
-                    className="w-full"
-                  />
-                </div>
+                <NumberField label={t('Surface')} name="surface" />
               )}
             </Section>
             <Section label={t('Address')}>
               <AddressField />
             </Section>
-            <Section label={t('Rent')}>
-              <NumberField
-                label={t('Rent excluding tax and charges')}
-                name="rent"
+            <Section label={t('Rent')} visible={values.availableForRent}>
+              <SwitchField
+                name="availableForRent"
+                label={t('Offered for rent')}
+                dataCy="availableForRent"
               />
+              {values.availableForRent ? (
+                <NumberField
+                  label={t('Base rent, excluding charges and VAT')}
+                  name="rent"
+                />
+              ) : null}
             </Section>
             <SubmitButton label={t('Save')} />
           </Form>

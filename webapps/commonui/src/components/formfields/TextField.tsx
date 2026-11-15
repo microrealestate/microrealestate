@@ -58,6 +58,7 @@ export function TextField({
           readOnly={isSubmitting}
           {...props}
           {...field}
+          value={field.value ?? ''}
           type={
             props.type === 'password' && displayPassword ? 'text' : props.type
           }

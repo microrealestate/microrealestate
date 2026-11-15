@@ -1,11 +1,14 @@
 import '@/app/globals.css';
+import AppHeadTags from '@microrealestate/commonui/components/AppHeadTags';
 import { cn } from '@microrealestate/commonui/utils';
 import type { Metadata } from 'next';
 import { unstable_noStore as noStore } from 'next/cache';
 import { Inter } from 'next/font/google';
-
+import { notFound } from 'next/navigation';
+import { hasLocale } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import type { ReactNode } from 'react';
+import { routing } from '@/i18n/routing';
 import AppProvider from '@/providers/AppProvider';
 import { BASE_PATH } from '@/utils/basepath';
 
@@ -38,6 +41,11 @@ export default async function RootLayout(props: {
 
   const { locale } = params;
 
+  // A path that skips the middleware (see its matcher) must not render a page.
+  if (!hasLocale(routing.locales, locale)) {
+    notFound();
+  }
+
   const { children } = props;
 
   noStore(); // Opt into dynamic rendering
@@ -45,14 +53,18 @@ export default async function RootLayout(props: {
   const messages = await getMessages();
 
   const env = {
-    NEXT_PUBLIC_DEMO_MODE: process.env.DEMO_MODE,
-    NEXT_PUBLIC_APP_VERSION: process.env.MRE_VERSION
+    NEXT_PUBLIC_BASE_PATH: BASE_PATH,
+    NEXT_PUBLIC_DEMO_MODE: process.env.DEMO_MODE
   };
 
   return (
     <html lang={locale} translate="no" className="overscroll-none">
       <head>
-        <link rel="icon" href={`${BASE_PATH}/favicon.svg`} />
+        <AppHeadTags
+          basePath={BASE_PATH}
+          appName="MicroRealEstate"
+          locale={locale}
+        />
       </head>
       <body className={cn('min-h-screen', inter.variable)}>
         <AppProvider env={env} locale={locale} messages={messages}>

@@ -16,7 +16,7 @@ export function AppMenu({
   onMenuClick: (item: MenuItem) => void;
 }) {
   return (
-    <div className="grow overflow-auto">
+    <div className="grow overflow-auto flex flex-col gap-0.5 py-2">
       {menuItems.map((item) => (
         <div key={item.key}>
           {autoClose ? (

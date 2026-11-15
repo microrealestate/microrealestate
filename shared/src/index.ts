@@ -18,4 +18,4 @@ export * from './entities/realm';
 export * from './entities/template';
 export * from './entities/tenant';
 export * from './entities/todo';
-export * from './utils';
+export * from './utils/index';

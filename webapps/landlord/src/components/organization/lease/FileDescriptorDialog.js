@@ -58,13 +58,15 @@ export default function FileDescriptorDialog({
     async (data) => {
       try {
         setIsLoading(true);
-        await onSave({
+        const saved = await onSave({
           ...data,
           required: data.required === 'required',
           requiredOnceContractTerminated:
             data.required === 'requiredOnceContractTerminated'
         });
-        handleClose();
+        if (saved !== false) {
+          handleClose();
+        }
       } finally {
         setIsLoading(false);
       }
@@ -77,10 +79,10 @@ export default function FileDescriptorDialog({
       open={open}
       setOpen={setOpen}
       isLoading={isLoading}
-      title={t('Template document to upload')}
+      title={t('Document to provide')}
       renderHeader={() => (
         <>
-          <div>{t('Template document to upload')}</div>
+          <div>{t('Document to provide')}</div>
           <div className="text-base text-muted-foreground font-normal">
             {t(
               'Describe the document that will be uploaded when creating the lease'

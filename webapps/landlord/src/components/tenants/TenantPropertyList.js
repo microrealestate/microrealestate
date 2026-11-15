@@ -5,6 +5,7 @@ import {
   PopoverTrigger
 } from '@microrealestate/commonui/components/ui/popover';
 import { cn } from '@microrealestate/commonui/utils';
+import _ from 'lodash';
 import PropertyIcon from '../properties/PropertyIcon';
 
 function Address({ address }) {
@@ -39,33 +40,31 @@ export default function TenantPropertyList({ tenant, className }) {
         className
       )}
     >
-      {tenant.properties?.map(({ property }) => (
-        <Popover key={property._id}>
-          <PopoverTrigger asChild>
-            <Button variant="outline" size="icon">
-              <PropertyIcon
-                key={property._id}
-                type={property.type}
-                className="size-8"
-              />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="p-4 w-fit">
-            <div>
-              <p className="text-sm font-medium leading-none">
-                {property.name}
-              </p>
-              {!!property.description && (
-                <p className="text-xs text-muted-foreground">
-                  {property.description}
+      {_.uniqBy(tenant.properties ?? [], ({ property }) => property._id).map(
+        ({ property }) => (
+          <Popover key={property._id}>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="icon">
+                <PropertyIcon type={property.type} className="size-8" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="p-4 w-fit">
+              <div>
+                <p className="text-sm font-medium leading-none">
+                  {property.name}
                 </p>
-              )}
+                {!!property.description && (
+                  <p className="text-xs text-muted-foreground">
+                    {property.description}
+                  </p>
+                )}
 
-              <Address address={property.address} />
-            </div>
-          </PopoverContent>
-        </Popover>
-      ))}
+                <Address address={property.address} />
+              </div>
+            </PopoverContent>
+          </Popover>
+        )
+      )}
     </div>
   );
 }

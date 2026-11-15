@@ -11,8 +11,6 @@ export type OccupantData = TenantType & {
   preTaxTotal?: number;
   total: number;
   vat?: number;
-  office?: { surface: number; price: number };
-  parking?: { price: number };
   hasPayments: boolean;
   filesToUpload?: {
     _id: string;

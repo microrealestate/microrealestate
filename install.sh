@@ -6,10 +6,9 @@
 # Licensed under the Sustainable Use License v2.0 - see LICENSE.md
 #
 # Usage
-#   curl -sSL <raw-url>/install.sh | bash
-#   ./install.sh install            # default: fresh install, idempotent re-run
-#   ./install.sh update             # pull latest images and restart
-#   ./install.sh --help
+#   curl -sSL <raw-url>/install.sh | bash                # fresh install, idempotent re-run
+#   curl -sSL <raw-url>/install.sh | bash -s -- update   # pull latest images and restart
+#   ./install.sh [install|update|--help]                 # from a git checkout or a local copy
 #
 # Environment variables (all optional)
 #   ADVERTISE_ADDR   Manual address override if auto-detection fails.
@@ -65,6 +64,7 @@ set -euo pipefail
 
 MRE_SRC_URL_DEFAULT="https://raw.githubusercontent.com/microrealestate/microrealestate/main"
 MRE_SRC_URL="${MRE_SRC_URL:-$MRE_SRC_URL_DEFAULT}"
+installer_cmd() { echo "curl -sSL ${MRE_SRC_URL}/install.sh | bash -s -- $*"; }
 SPONSOR_URL="https://ko-fi.com/camelaissani/tip"
 INSTALL_DIR="${INSTALL_DIR:-$PWD}"
 COMPOSE_HINT_DEFAULT="docker compose --env-file .env -f docker/docker-compose.yml"
@@ -146,7 +146,8 @@ show_help() {
 ${C_BOLD}MicroRealEstate installer${C_OFF}
 
 ${C_BOLD}Usage${C_OFF}
-  ./install.sh [install|update] [--dir PATH] [--reverse-proxy bundled|external]
+  curl -sSL ${MRE_SRC_URL}/install.sh | bash -s -- [install|update] [OPTIONS]
+  ./install.sh [install|update] [OPTIONS]    ${C_DIM}# git checkout or local copy${C_OFF}
 
 ${C_BOLD}Commands${C_OFF}
   install            Install, or start an existing installation without
@@ -203,7 +204,10 @@ ${C_BOLD}Notes${C_OFF}
     automatic HTTPS for a domain will not work.
   - To move an installation to or from an external proxy, set
     MRE_REVERSE_PROXY in .env (and MRE_URL, for external), then run
-    './install.sh update'. To change MRE_URL, edit .env, then run 'update'.
+    'update'. To change MRE_URL, edit .env, then run 'update'.
+  - A curl install keeps no install.sh on disk. Run 'update' from the
+    install directory with:
+      $(installer_cmd update)
 EOF
 }
 
@@ -539,7 +543,8 @@ resolve_reverse_proxy() {
   if [ "$mode" = "persisted" ] && [ -n "$requested" ] \
      && [ "$requested" != "${from_file:-bundled}" ]; then
     die "This installation uses the ${from_file:-bundled} reverse proxy, and '$SUBCOMMAND' never changes it.
-    To switch, set MRE_REVERSE_PROXY=$requested in ${INSTALL_DIR}/.env, then run './install.sh update'."
+    To switch, set MRE_REVERSE_PROXY=$requested in ${INSTALL_DIR}/.env, then run:
+    $(installer_cmd update)"
   fi
   REVERSE_PROXY="${requested:-${from_file:-bundled}}"
   ENV_CURRENT[MRE_REVERSE_PROXY]="$REVERSE_PROXY"
@@ -569,7 +574,8 @@ resolve_url() {
   if [ "$mode" = "persisted" ] && [ -n "$requested" ] \
      && [ "$requested" != "$from_file" ]; then
     die "'$SUBCOMMAND' never changes the public URL.
-    To change it, set MRE_URL=$requested in ${INSTALL_DIR}/.env, then run './install.sh update'."
+    To change it, set MRE_URL=$requested in ${INSTALL_DIR}/.env, then run:
+    $(installer_cmd update)"
   fi
   local url="${requested:-$from_file}"
   [ -n "$url" ] || die "An external reverse proxy needs the public URL it serves.
@@ -620,7 +626,8 @@ refuse_foreign_env() {
   grep -qE "^[[:space:]]*($pattern)[[:space:]]*=" "${INSTALL_DIR}/.env" && return 0
   die "${INSTALL_DIR}/.env exists but holds no MicroRealEstate settings, so it
     belongs to another project and this installer would rewrite it.
-    Install somewhere else with:  ./install.sh install --dir /path/to/microrealestate"
+    Install somewhere else with:
+    $(installer_cmd install --dir /path/to/microrealestate)"
 }
 
 # Refuse to scatter an install across the filesystem root or a system tree.
@@ -881,7 +888,8 @@ probe_stack_files() {
   tmp="$(probe_file "$MRE_SRC_URL/docker/Caddyfile" "$caddy_file")" \
     || { discard_stack_files
          die "Failed to download the Caddyfile from $MRE_SRC_URL. Nothing has been changed.
-    Re-run './install.sh update' once the source is reachable."; }
+    Re-run the update once the source is reachable:
+    $(installer_cmd update)"; }
   [ -n "$tmp" ] && STACK_FILE_UPDATES+=("${tmp}|${caddy_file}|${bk}-Caddyfile")
   # Refreshed whenever it is in use or already on disk, so a later switch to an
   # external proxy does not start under a stale overlay.
@@ -890,7 +898,8 @@ probe_stack_files() {
     tmp="$(probe_file "$MRE_SRC_URL/docker/docker-compose.external-proxy.yml" "$overlay")" \
       || { discard_stack_files
            die "Failed to download $overlay from $MRE_SRC_URL. Nothing has been changed.
-    Re-run './install.sh update' once the source is reachable."; }
+    Re-run the update once the source is reachable:
+    $(installer_cmd update)"; }
     [ -n "$tmp" ] && STACK_FILE_UPDATES+=("${tmp}|${overlay}|${bk}-docker-compose.external-proxy.yml")
   fi
   # Template only, read by 'install' and by operators: never fatal.
@@ -1105,7 +1114,7 @@ print_useful_commands() {
   echo "  ./mre.sh backup"
   echo "  ./mre.sh restore"
   echo "  ${C_DIM}# update to the latest images${C_OFF}"
-  echo "  ./install.sh update"
+  echo "  $(installer_cmd update)"
   echo "  ${C_DIM}# anything else, straight through compose${C_OFF}"
   echo "  $compose_cmd ps"
 }
@@ -1449,7 +1458,8 @@ cmd_update() {
   # Cheap guards first: resolving the engine can offer to install Docker, which
   # would be wasted work if there is nothing to update here.
   cd "$INSTALL_DIR"
-  [ -f ".env" ] || die "No .env found in $INSTALL_DIR. Run './install.sh install' first."
+  [ -f ".env" ] || die "No .env found in $INSTALL_DIR. Install first with:
+    $(installer_cmd install)"
   if [ ! -r ".env" ]; then
     die ".env is not readable by user '$(id -un)'. Re-run with sudo."
   fi
@@ -1458,7 +1468,8 @@ cmd_update() {
   load_env_file ".env"
   if secrets_will_change; then
     die "${INSTALL_DIR}/.env holds no usable secrets, so nothing is installed here.
-    Run './install.sh install' first."
+    Install first with:
+    $(installer_cmd install)"
   fi
 
   # Resolves the engine and, for podman, DOCKER_HOST. Installs nothing when an

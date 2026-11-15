@@ -92,11 +92,15 @@ export default function AddressMap({ address }: AddressMapProps) {
     getLatLong();
   }, [address]);
 
+  if (!loading && !center) {
+    return null;
+  }
+
   return (
     <div className="flex items-center justify-center w-full h-64">
-      {loading ? (
+      {loading || !center ? (
         <Loading fullScreen={false} />
-      ) : center ? (
+      ) : (
         <PigeonMap height={256} center={center} zoom={16}>
           <Marker
             height={35}
@@ -105,7 +109,7 @@ export default function AddressMap({ address }: AddressMapProps) {
             anchor={center}
           />
         </PigeonMap>
-      ) : null}
+      )}
     </div>
   );
 }

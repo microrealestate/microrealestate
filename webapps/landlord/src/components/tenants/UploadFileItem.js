@@ -96,10 +96,10 @@ export default function UploadFileItem({
     <Card>
       <CardHeader className="pb-4 space-y-2">
         <div className="flex items-start gap-2">
-          <LuFileText className="size-5 mt-0.5" />
-          <div>
-            <div className="flex items-center gap-2">
-              <span>{file.template.name}</span>
+          <LuFileText className="size-5 mt-0.5 shrink-0" />
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+              <span className="wrap-break-word">{file.template.name}</span>
               {!file.documents.length && file.template.required ? (
                 <Badge variant="warning" className="text-xs">
                   {t('Required')}
@@ -142,8 +142,13 @@ export default function UploadFileItem({
       </CardContent>
 
       <CardFooter>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={handleClickUpload}>
+        <div className="flex w-full flex-wrap items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleClickUpload}
+            className="w-full sm:w-auto"
+          >
             <LuCloudUpload />
             {t('Upload')}
           </Button>

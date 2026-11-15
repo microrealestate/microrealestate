@@ -63,10 +63,6 @@ export default function routes(): express.Router {
     Middlewares.asyncWrapper(dashboardManager.topUnpaid)
   );
   dashboardRouter.get(
-    '/rents/count/:year/:month',
-    Middlewares.asyncWrapper(dashboardManager.rentsCount)
-  );
-  dashboardRouter.get(
     '/contracts/near-renewal',
     Middlewares.asyncWrapper(dashboardManager.contractsNearRenewal)
   );
@@ -121,6 +117,14 @@ export default function routes(): express.Router {
   propertiesRouter.delete(
     '/:ids',
     Middlewares.asyncWrapper(propertyManager.remove)
+  );
+  propertiesRouter.post(
+    '/:id/children',
+    Middlewares.asyncWrapper(propertyManager.attach)
+  );
+  propertiesRouter.delete(
+    '/:id/children/:ids',
+    Middlewares.asyncWrapper(propertyManager.detach)
   );
   router.use('/properties', propertiesRouter);
 

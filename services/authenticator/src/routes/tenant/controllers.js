@@ -126,18 +126,43 @@ export const signedIn = Middlewares.asyncWrapper(async (req, res) => {
     throw new ServiceError('invalid otp', 401);
   }
 
-  const tenant = { email: payload.email };
+  const tenants = await Collections.Tenant.find(
+    { 'contacts.email': payload.email },
+    { _id: 1, name: 1, contacts: 1 }
+  ).lean();
+
+  const name = tenantDisplayName(tenants, payload.email);
+  const tenant = { email: payload.email, ...(name ? { name } : {}) };
+  const sessionSeconds = PRODUCTION ? 30 * 60 : 12 * 60 * 60;
   const sessionToken = jwt.sign(
     { type: 'tenant', tenant },
     ACCESS_TOKEN_SECRET,
     {
-      expiresIn: PRODUCTION ? '30m' : '12h'
+      expiresIn: sessionSeconds
     }
   );
   await Service.getInstance().redisClient.set(sessionToken, payload.email);
-  res.cookie('sessionToken', sessionToken, cookieAttrs);
+  await Service.getInstance().redisClient.expire(sessionToken, sessionSeconds);
+  res.cookie('sessionToken', sessionToken, {
+    ...cookieAttrs,
+    maxAge: sessionSeconds * 1000
+  });
   res.json({ sessionToken });
 });
+
+function tenantDisplayName(tenants, email) {
+  const normalizedEmail = email?.trim().toLowerCase();
+  for (const tenant of tenants) {
+    const contact = tenant.contacts?.find(
+      (c) => c.email?.trim().toLowerCase() === normalizedEmail
+    );
+    const contactName = contact?.name?.trim();
+    if (contactName) {
+      return contactName;
+    }
+  }
+  return tenants[0]?.name?.trim() || undefined;
+}
 
 export const getSession = Middlewares.asyncWrapper(async (req, res) => {
   const { ACCESS_TOKEN_SECRET } = Service.getInstance().envConfig.getValues();
@@ -152,11 +177,15 @@ export const getSession = Middlewares.asyncWrapper(async (req, res) => {
     throw new ServiceError('invalid token', 401);
   }
 
+  let decoded;
   try {
-    jwt.verify(sessionToken, ACCESS_TOKEN_SECRET);
+    decoded = jwt.verify(sessionToken, ACCESS_TOKEN_SECRET);
   } catch (error) {
+    // covers keys written before they had a TTL
+    await Service.getInstance().redisClient.del(sessionToken);
     throw new ServiceError(error, 401);
   }
+  const name = decoded?.tenant?.name;
 
-  return res.json({ email });
+  return res.json(name ? { email, name } : { email });
 });

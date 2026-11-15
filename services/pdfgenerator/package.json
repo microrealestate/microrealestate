@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@microrealestate/common": "workspace:*",
+    "@microrealestate/shared": "workspace:*",
     "async-mutex": "0.5.0",
     "ejs": "catalog:",
     "express": "catalog:",

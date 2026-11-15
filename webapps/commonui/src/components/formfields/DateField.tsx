@@ -4,6 +4,7 @@ import { useLocale } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { LuCalendar } from 'react-icons/lu';
 import 'react-day-picker/style.css';
+import { useMediaQuery } from 'usehooks-ts';
 import { useLocaleContext } from '../../providers/AppProvider';
 import { cn } from '../../utils';
 import { Button } from '../ui/button';
@@ -14,6 +15,10 @@ import FormField from './FormField';
 
 export const DEFAULT_MIN_DATE = moment('1900-01-01', 'YYYY-MM-DD');
 export const DEFAULT_MAX_DATE = moment('2100-01-01', 'YYYY-MM-DD');
+
+// iOS Safari: fill the row, left-align the date, keep height when empty.
+export const NATIVE_DATE_INPUT_CLASS =
+  'block min-w-0 min-h-10 appearance-none text-left [&::-webkit-date-and-time-value]:text-left [&::-webkit-date-and-time-value]:min-h-6 [&::-webkit-date-and-time-value]:m-0';
 
 export function DateField({
   disabled,
@@ -35,6 +40,7 @@ export function DateField({
   const nextLocale = useLocale();
   const { dateFnsLocale } = useLocaleContext();
   const [open, setOpen] = useState(false);
+  const isDesktop = useMediaQuery('(min-width: 768px)');
   const [inputValue, setInputValue] = useState(
     field.value ? moment(field.value).format('L') : ''
   );
@@ -149,23 +155,41 @@ export function DateField({
 
     // Mark field as touched for error display
     if (momentDate) {
-      if (props.min && momentDate.isBefore(props.min, 'day')) {
-        setFieldError(field.name, [
-          'Enter a date after {min}',
-          { min: props.min.format('L') }
-        ] as unknown as string);
-      } else if (props.max && momentDate.isAfter(props.max, 'day')) {
-        setFieldError(field.name, [
-          'Enter a date before {max}',
-          { max: props.max.format('L') }
-        ] as unknown as string);
-      } else {
-        setFieldValue(field.name, momentDate, true);
-      }
+      applyDate(momentDate);
     } else {
       setFieldError(field.name, 'Invalid date format');
     }
     setFieldTouched(field.name, true, false);
+  };
+
+  const applyDate = (momentDate: moment.Moment) => {
+    if (props.min && momentDate.isBefore(props.min, 'day')) {
+      setFieldError(field.name, [
+        'Enter a date after {min}',
+        { min: props.min.format('L') }
+      ] as unknown as string);
+    } else if (props.max && momentDate.isAfter(props.max, 'day')) {
+      setFieldError(field.name, [
+        'Enter a date before {max}',
+        { max: props.max.format('L') }
+      ] as unknown as string);
+    } else {
+      setFieldValue(field.name, momentDate, true);
+    }
+  };
+
+  const handleNativeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (!value) {
+      setFieldValue(field.name, null, true);
+      return;
+    }
+    const momentDate = moment(value, 'YYYY-MM-DD', true);
+    if (momentDate.isValid()) {
+      applyDate(momentDate);
+    } else {
+      setFieldError(field.name, 'Invalid date format');
+    }
   };
 
   return (
@@ -179,7 +203,7 @@ export function DateField({
           disabled={disabled}
           readOnly={readOnly || isSubmitting}
         />
-      ) : (
+      ) : isDesktop ? (
         <Popover open={open} onOpenChange={setOpen} modal>
           <div className="relative flex items-center gap-2">
             <Input
@@ -226,6 +250,21 @@ export function DateField({
             />
           </PopoverContent>
         </Popover>
+      ) : (
+        <Input
+          className={NATIVE_DATE_INPUT_CLASS}
+          id={field.name}
+          name={field.name}
+          type="date"
+          value={field.value ? moment(field.value).format('YYYY-MM-DD') : ''}
+          min={props.min?.format('YYYY-MM-DD')}
+          max={props.max?.format('YYYY-MM-DD')}
+          onChange={handleNativeChange}
+          onBlur={() => setFieldTouched(field.name, true, false)}
+          onFocus={() => {
+            helpers.setTouched(false, false);
+          }}
+        />
       )}
     </FormField>
   );

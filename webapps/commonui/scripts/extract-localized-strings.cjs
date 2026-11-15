@@ -7,6 +7,9 @@ const { Project, Node } = require('ts-morph');
 // It scans the app source *and* the shared `commonui` package (whose components
 // render inside every app on the same `common` namespace), resolves dynamic
 // `t()` keys across files via ts-morph, and rewrites `locales/<lang>/common.json`.
+// Yup error messages are harvested too — raised with `this.createError({ message })`
+// or passed positionally (`.test(name, 'msg', fn)`, `.required('msg')`,
+// `.min(x, 'msg')`, ...): `useFormError` translates them with `t(meta.error)`.
 
 // const TRANSLATION_SERVICE_ENDPOINT = 'https://translate.astian.org/translate';
 const DEFAULT_LANGUAGES = ['en', 'fr-FR', 'pt-BR', 'de-DE', 'es-CO'];
@@ -20,6 +23,31 @@ const TRANSLATOR_FACTORIES = new Set([
   'createTranslator'
 ]);
 const TRANSLATOR_MEMBERS = new Set(['rich', 'markup', 'raw']);
+// Yup test-context methods whose `message` option becomes a translation key.
+const YUP_ERROR_FACTORIES = new Set(['createError']);
+// Yup schema methods that take an optional message, mapped to its argument index.
+// `test` also accepts `{ message }` as its first argument.
+const YUP_MESSAGE_ARG_INDEX = {
+  test: 1,
+  required: 0,
+  defined: 0,
+  typeError: 0,
+  email: 0,
+  url: 0,
+  positive: 0,
+  negative: 0,
+  integer: 0,
+  emails: 0,
+  min: 1,
+  max: 1,
+  moreThan: 1,
+  lessThan: 1,
+  length: 1,
+  matches: 1,
+  oneOf: 1,
+  notOneOf: 1
+};
+const IMPORTS_YUP = /from\s+['"]yup['"]|require\(\s*['"]yup['"]\s*\)/;
 // Array methods whose callback parameter iterates the receiver array.
 const ITERATION_METHODS = new Set([
   'map',
@@ -373,11 +401,95 @@ const harvestKeysFromSourceFiles = ({
       return false;
     };
 
+    // `this.createError({ message: 'key' })` or `message: ['key', { ...data }]`
+    const harvestYupErrorMessage = (node) => {
+      const options = unwrap(node.getArguments()[0]);
+      if (!options || !Node.isObjectLiteralExpression(options)) {
+        return;
+      }
+      const property = options.getProperty('message');
+      if (!property || !Node.isPropertyAssignment(property)) {
+        return;
+      }
+      let message = unwrap(property.getInitializer());
+      if (Node.isArrayLiteralExpression(message)) {
+        message = message.getElements()[0];
+      }
+      const resolved = resolveDynamicKeys(message);
+      if (resolved.size) {
+        resolved.forEach(addKey);
+      } else {
+        unresolved.push(
+          `${relative(sourceFile)}:${property.getStartLineNumber()}  createError(${property
+            .getText()
+            .replace(/\s+/g, ' ')
+            .slice(0, 60)})`
+        );
+      }
+    };
+
+    // A missing or function message falls back to the Yup.setLocale default.
+    const usesYup = IMPORTS_YUP.test(sourceFile.getFullText());
+    const harvestYupPositionalMessage = (node, method) => {
+      const args = node.getArguments();
+      let message = args[YUP_MESSAGE_ARG_INDEX[method]];
+      if (method === 'test') {
+        const first = unwrap(args[0]);
+        if (first && Node.isObjectLiteralExpression(first)) {
+          const property = first.getProperty('message');
+          message =
+            property && Node.isPropertyAssignment(property)
+              ? property.getInitializer()
+              : undefined;
+        }
+      }
+      message = unwrap(message);
+      if (!message) {
+        return;
+      }
+      if (Node.isArrayLiteralExpression(message)) {
+        message = unwrap(message.getElements()[0]);
+      }
+      if (
+        !message ||
+        Node.isArrowFunction(message) ||
+        Node.isFunctionExpression(message)
+      ) {
+        return;
+      }
+      const resolved = resolveDynamicKeys(message);
+      if (resolved.size) {
+        resolved.forEach(addKey);
+      } else {
+        unresolved.push(
+          `${relative(sourceFile)}:${message.getStartLineNumber()}  ${method}(${message
+            .getText()
+            .replace(/\s+/g, ' ')
+            .slice(0, 60)})`
+        );
+      }
+    };
+
     sourceFile.forEachDescendant((node) => {
       if (!Node.isCallExpression(node)) {
         return;
       }
       const callee = unwrap(node.getExpression());
+      if (
+        Node.isPropertyAccessExpression(callee) &&
+        YUP_ERROR_FACTORIES.has(callee.getName())
+      ) {
+        harvestYupErrorMessage(node);
+        return;
+      }
+      if (
+        usesYup &&
+        Node.isPropertyAccessExpression(callee) &&
+        Object.hasOwn(YUP_MESSAGE_ARG_INDEX, callee.getName())
+      ) {
+        harvestYupPositionalMessage(node, callee.getName());
+        return;
+      }
       if (!isTranslationCallee(callee)) {
         return;
       }
@@ -527,7 +639,7 @@ const logHarvestReport = (keys, unresolved, resolvedCount) => {
   );
   if (unresolved.length) {
     console.log(
-      `\n${unresolved.length} dynamic t() call(s) could not be resolved statically.`
+      `\n${unresolved.length} dynamic t(), createError() or Yup message(s) could not be resolved statically.`
     );
     console.log(
       'Their keys must be listed in scripts/.keptkeys.json (or they will be pruned):'

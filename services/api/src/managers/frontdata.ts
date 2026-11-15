@@ -249,13 +249,6 @@ export function toOccupantData(
   }
 
   if (occupant.properties) {
-    occupant.office = {
-      surface: 0,
-      price: 0
-    };
-    occupant.parking = {
-      price: 0
-    };
     occupant.properties.forEach(
       (item: {
         propertyId: { _id: string } | string;
@@ -286,12 +279,6 @@ export function toOccupantData(
               expense.endDate = expense.endDate || item.exitDate;
             }
           );
-          if (item.property.type === 'parking') {
-            occupant.parking.price += item.property.price;
-          } else {
-            occupant.office.surface += item.property.surface;
-            occupant.office.price += item.property.price;
-          }
         }
         occupant.rental += item.rent || 0;
         occupant.expenses +=
@@ -339,11 +326,14 @@ export function toProperty(
     name: inputProperty.name,
     description: inputProperty.description,
     surface: inputProperty.surface,
-    phone: inputProperty.phone,
-    digicode: inputProperty.digicode,
+    notes: inputProperty.notes,
+    customFields: inputProperty.customFields,
     address: inputProperty.address,
 
     price: inputProperty.price,
+
+    parentId: inputProperty.parentId,
+    availableForRent: inputProperty.availableForRent,
 
     beginDate: undefined,
     endDate: undefined,
@@ -354,8 +344,6 @@ export function toProperty(
 
     occupancyHistory: [],
 
-    // TODO to remove, replaced by address
-    location: inputProperty.location,
     stepperMode: inputProperty.stepperMode ?? false
   };
   if (inputOccupant) {

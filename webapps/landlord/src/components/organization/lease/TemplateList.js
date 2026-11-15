@@ -1,4 +1,5 @@
 import { Button } from '@microrealestate/commonui/components/ui/button';
+import { toast } from '@microrealestate/commonui/components/ui/sonner';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
@@ -8,6 +9,14 @@ import ConfirmDialog from '../../ConfirmDialog';
 import DocumentList from '../../DocumentList';
 import RichTextEditorDialog from '../../RichTextEditor/RichTextEditorDialog';
 import FileDescriptorDialog from './FileDescriptorDialog';
+
+// keep the contracts a template is already shared with, and add this one
+function linkToLease(relatesTo = [], leaseId) {
+  if (!leaseId || relatesTo.includes(leaseId)) {
+    return relatesTo;
+  }
+  return [...relatesTo, leaseId];
+}
 
 const TemplateItems = observer(function TemplateItems({ onEdit, onDelete }) {
   const store = useStore();
@@ -45,50 +54,58 @@ function TemplateList() {
 
   const onSaveTemplate = useCallback(
     async (template) => {
-      if (!template?._id) {
-        const { status, data } = await store.template.create(template);
-        if (status !== 200) {
-          return console.error(status);
-        }
+      const isCreate = !template?._id;
+      const { status, data } = isCreate
+        ? await store.template.create(template)
+        : await store.template.update(template);
+      if (status !== 200) {
+        toast.error(t('The template could not be saved'));
+        return false;
+      }
+      if (isCreate) {
         if (data.type === 'text') {
           selectedTemplate._id = data._id;
         } else if (data.type === 'fileDescriptor') {
           selectedFileDescriptor._id = data._id;
         }
-      } else {
-        const { status } = await store.template.update(template);
-        if (status !== 200) {
-          return console.error(status);
-        }
       }
+      return true;
     },
-    [selectedFileDescriptor, selectedTemplate, store.template]
+    [selectedFileDescriptor, selectedTemplate, store.template, t]
   );
 
   const handleSaveTextTemplate = useCallback(
     async (title, contents, html) => {
+      const existing = store.template.items.find(
+        ({ _id }) => _id === selectedTemplate?._id
+      );
       await onSaveTemplate({
         _id: selectedTemplate?._id,
         name: title,
         type: 'text',
         contents,
         html,
-        relatesTo: store.lease.selected?._id ? [store.lease.selected._id] : []
+        relatesTo: linkToLease(existing?.relatesTo, store.lease.selected?._id)
       });
     },
-    [onSaveTemplate, selectedTemplate?._id, store.lease.selected._id]
+    [
+      onSaveTemplate,
+      selectedTemplate?._id,
+      store.template.items,
+      store.lease.selected?._id
+    ]
   );
 
   const handleSaveFileDescriptor = useCallback(
     async (template) => {
-      await onSaveTemplate({
+      return onSaveTemplate({
         ...template,
         _id: selectedFileDescriptor?._id,
         type: 'fileDescriptor',
-        relatesTo: store.lease.selected?._id ? [store.lease.selected._id] : []
+        relatesTo: linkToLease(template.relatesTo, store.lease.selected?._id)
       });
     },
-    [onSaveTemplate, selectedFileDescriptor?._id, store.lease.selected._id]
+    [onSaveTemplate, selectedFileDescriptor?._id, store.lease.selected?._id]
   );
 
   const handleDeleteTemplate = (template) => {
@@ -101,26 +118,19 @@ function TemplateList() {
       return;
     }
 
-    if (selectedTemplateToRemove.relatesTo?.length <= 1) {
-      await store.template.delete([selectedTemplateToRemove._id]);
-    } else {
-      await store.template.update({
-        ...selectedTemplateToRemove,
-        relatesTo: store.lease.selected?._id
-          ? [
-              ...selectedTemplate.relatesTo.filter(
-                (_id) => store.lease.selected._id !== _id
-              )
-            ]
-          : selectedTemplateToRemove.relatesTo
-      });
+    const leaseId = store.lease.selected?._id;
+    const relatesTo = selectedTemplateToRemove.relatesTo || [];
+    const { status } =
+      relatesTo.length <= 1
+        ? await store.template.delete([selectedTemplateToRemove._id])
+        : await store.template.update({
+            ...selectedTemplateToRemove,
+            relatesTo: relatesTo.filter((_id) => _id !== leaseId)
+          });
+    if (status !== 200) {
+      toast.error(t('The template could not be removed'));
     }
-  }, [
-    selectedTemplateToRemove,
-    store.template,
-    store.lease.selected._id,
-    selectedTemplate?.relatesTo
-  ]);
+  }, [selectedTemplateToRemove, store.template, store.lease.selected?._id, t]);
 
   const handleClickEdit = (template) => {
     if (template.type === 'text') {
@@ -152,7 +162,7 @@ function TemplateList() {
           className="w-full justify-start sm:justify-normal sm:w-fit gap-2"
         >
           <LuCirclePlus className="size-4" />
-          {t('Upload template')}
+          {t('Document to provide')}
         </Button>
         <Button
           variant="secondary"
@@ -161,7 +171,7 @@ function TemplateList() {
           className="w-full justify-start sm:justify-normal sm:w-fit gap-2"
         >
           <LuCirclePlus className="size-4" />
-          {t('Text template')}
+          {t('Document to write')}
         </Button>
       </div>
       <TemplateItems onEdit={handleClickEdit} onDelete={handleDeleteTemplate} />

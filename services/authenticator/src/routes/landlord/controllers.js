@@ -132,7 +132,10 @@ export const refreshToken = Middlewares.asyncWrapper(async (req, res) => {
 
   await Utils.clearTokens(oldRefreshToken, 10);
 
-  res.cookie('refreshToken', refreshToken, cookieAttrs);
+  res.cookie('refreshToken', refreshToken, {
+    ...cookieAttrs,
+    maxAge: Utils.refreshTokenSeconds() * 1000
+  });
   res.json({
     accessToken
   });
@@ -155,6 +158,8 @@ export const getSession = Middlewares.asyncWrapper(async (req, res) => {
     }
   } catch (exc) {
     logger.error(formatError(exc));
+    // covers keys written before they had a TTL
+    await Utils.clearTokens(refreshToken);
     throw new ServiceError('invalid session', 401);
   }
 
@@ -191,6 +196,10 @@ export const getSession = Middlewares.asyncWrapper(async (req, res) => {
         ? {
             _id: organization._id,
             name: organization.name,
+            isCompany: !!organization.isCompany,
+            companyInfo: organization.companyInfo?.name
+              ? { name: organization.companyInfo.name }
+              : null,
             locale: organization.locale,
             webServer: {
               domain: organization.webServer?.domain,
@@ -233,6 +242,7 @@ export const forgotPassword = Middlewares.asyncWrapper(async (req, res) => {
       expiresIn: '1h'
     });
     await Service.getInstance().redisClient.set(token, email);
+    await Service.getInstance().redisClient.expire(token, 60 * 60);
 
     // send email
     try {
@@ -495,7 +505,10 @@ async function userSignIn(req, res) {
   });
 
   logger.debug('created a new refresh token');
-  res.cookie('refreshToken', refreshToken, cookieAttrs);
+  res.cookie('refreshToken', refreshToken, {
+    ...cookieAttrs,
+    maxAge: Utils.refreshTokenSeconds() * 1000
+  });
   res.json({
     accessToken
   });

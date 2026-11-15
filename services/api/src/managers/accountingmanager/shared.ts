@@ -5,7 +5,7 @@ import type {
   SecurityDepositEntry
 } from '@microrealestate/shared';
 
-interface TenantProperty {
+export interface TenantProperty {
   _id: string;
   name: string;
   type?: PropertyKind;
@@ -45,7 +45,7 @@ export async function _fetchData(
   realmId: string,
   year: number
 ): Promise<TenantData[]> {
-  return await Collections.Tenant.aggregate([
+  const tenants: TenantData[] = await Collections.Tenant.aggregate([
     {
       $match: {
         realmId,
@@ -157,6 +157,26 @@ export async function _fetchData(
       }
     }
   ]);
+
+  return tenants.map((tenant) => ({
+    ...tenant,
+    properties: uniqueProperties(tenant.properties)
+  }));
+}
+
+export function uniqueProperties(
+  properties: TenantProperty[]
+): TenantProperty[] {
+  // a lease can hold the same property over several periods
+  const seen = new Set<string>();
+  return properties.filter(({ _id }) => {
+    const id = String(_id);
+    if (seen.has(id)) {
+      return false;
+    }
+    seen.add(id);
+    return true;
+  });
 }
 
 export function _getProperties(tenant: TenantData): TenantProperty[] {

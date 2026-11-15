@@ -1,7 +1,7 @@
+import { toast } from '@microrealestate/commonui/components/ui/sonner';
 import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
 import { forwardRef, useEffect, useRef, useState } from 'react';
-import { toast } from 'sonner';
 import apiClient from '../../utils/apiClient';
 import Loading from '../Loading';
 import ImageViewer from './ImageViewer/ImageViewer';
@@ -11,7 +11,6 @@ const DynPdfViewer = dynamic(() => import('./PdfViewer/PdfViewer'), {
   ssr: false
 });
 
-// eslint-disable-next-line react/display-name
 const PdfViewer = forwardRef((props, ref) => (
   <DynPdfViewer {...props} forwardRef={ref} />
 ));

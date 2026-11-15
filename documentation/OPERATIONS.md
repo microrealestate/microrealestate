@@ -26,7 +26,7 @@ If your system does not have these packages yet, install them:
 
 ## Running the application
 
-Use `install.sh` to install and update, and `mre.sh` for everything else. The installer puts `mre.sh` next to `.env` and replaces it on each `./install.sh update`. If you installed MicroRealEstate before `mre.sh` existed, you do not have this script yet. Run `./install.sh update` once to get it.
+Use `install.sh` to install and update, and `mre.sh` for everything else. The installer puts `mre.sh` next to `.env` and replaces it on each [update](#updating). If you installed MicroRealEstate before `mre.sh` existed, you do not have this script yet. Run the update once to get it.
 
 Run `mre.sh` **from the install directory**, the one that contains `.env` and `docker/`, or point it there with `--dir /path/to/microrealestate`. To see all commands and options, run `./mre.sh --help`. If `install.sh` ran under `sudo`, run `mre.sh` as the user who started `sudo`, or under `sudo` as well.
 
@@ -40,7 +40,7 @@ Run `mre.sh` **from the install directory**, the one that contains `.env` and `d
 
 `stop` does not remove the containers, so `start` brings them back as they were. `status` also lists the stopped containers, which is why `init` shows `Exited (0)` on a healthy installation.
 
-**After you edit `.env`, run `./mre.sh start`, not `restart`.** A container reads `.env` only when it is created. `restart` keeps the existing containers, so they still use the old values. `start` recreates the containers whose settings changed, so they get the new values. `./install.sh update` does the same.
+**After you edit `.env`, run `./mre.sh start`, not `restart`.** A container reads `.env` only when it is created. `restart` keeps the existing containers, so they still use the old values. `start` recreates the containers whose settings changed, so they get the new values. The [update](#updating) does the same.
 
 ## HTTPS with Let's Encrypt
 
@@ -112,9 +112,9 @@ server {
 }
 ```
 
-The application takes its domain from `MRE_URL`, and uses it in the links of emails such as receipts and password resets. In *Settings > Web server* the domain is read-only, and there is no HTTPS, ACME email or IP access setting, because you configure certificates and the addresses that answer in your proxy. To change the URL, edit `MRE_URL` in `.env`, then run `./install.sh update`.
+The application takes its domain from `MRE_URL`, and uses it in the links of emails such as receipts and password resets. In *Settings > Web server* the domain is read-only, and there is no HTTPS, ACME email or IP access setting, because you configure certificates and the addresses that answer in your proxy. To change the URL, edit `MRE_URL` in `.env`, then run the [update](#updating).
 
-**To change the mode of an existing installation**, in either direction, set `MRE_REVERSE_PROXY` in `.env` (and `MRE_URL`, when you switch to `external`), then run `./install.sh update`. Switching to `external` removes the Caddy container. Check `MRE_HTTP_PORT` too: in `external` mode it is the gateway port, so a value of `80` publishes the gateway on port 80. Switching back to `bundled` starts Caddy on `MRE_HTTP_PORT`/`MRE_HTTPS_PORT` and serves the stored domain over plain HTTP. To turn HTTPS on again, give an ACME email in *Settings > Web server*. `install` never changes the mode of an existing installation.
+**To change the mode of an existing installation**, in either direction, set `MRE_REVERSE_PROXY` in `.env` (and `MRE_URL`, when you switch to `external`), then run the [update](#updating). Switching to `external` removes the Caddy container. Check `MRE_HTTP_PORT` too: in `external` mode it is the gateway port, so a value of `80` publishes the gateway on port 80. Switching back to `bundled` starts Caddy on `MRE_HTTP_PORT`/`MRE_HTTPS_PORT` and serves the stored domain over plain HTTP. To turn HTTPS on again, give an ACME email in *Settings > Web server*. `install` never changes the mode of an existing installation.
 
 `./mre.sh` reads `MRE_REVERSE_PROXY` from `.env` and adds the overlay file itself. If you run a compose command directly, add the overlay file yourself:
 
@@ -148,7 +148,15 @@ Like any change to `.env`, run `./mre.sh start` to apply it, not `restart` (see 
 
 ## Updating
 
-From the install directory, run `./install.sh update`. It makes an automatic backup, downloads the latest stack files, pulls the images named in `docker/docker-compose.yml` and recreates the containers.
+From the install directory, the one that contains `.env`, run:
+
+```shell
+curl -sSL https://raw.githubusercontent.com/microrealestate/microrealestate/main/install.sh | bash -s -- update
+```
+
+The installer does not keep a copy of itself in the install directory, so `./install.sh update` works only from a git checkout or a local copy of `install.sh`.
+
+The update makes an automatic backup, downloads the latest stack files, pulls the images named in `docker/docker-compose.yml` and recreates the containers.
 
 **Images.** `update` pulls every image in the compose file: the MicroRealEstate services on the `MRE_VERSION` tag from `.env`, plus `caddy`, `mongo`, `redis` and `alpine`. `MRE_VERSION` is read only from `.env` and defaults to `latest`. If you pinned it to a commit sha, `update` pulls that same sha again and no service moves forward. To change the tag, edit `.env`.
 
@@ -228,9 +236,9 @@ The restore refuses to run in two cases:
 
 ### Automatic backups
 
-Before `./install.sh update` changes anything, it writes a hot backup into `backup/`, but only when it has something to change: a stack file with new content, or an image replaced by the pull. If everything is already current, `update` writes no archive and says so. To skip the backup, set `MRE_SKIP_BACKUP=1`. If the stack is stopped, `update` starts it briefly, so that the dump reads the existing data.
+Before the [update](#updating) changes anything, it writes a hot backup into `backup/`, but only when it has something to change: a stack file with new content, or an image replaced by the pull. If everything is already current, `update` writes no archive and says so. To skip the backup, set `MRE_SKIP_BACKUP=1`. If the stack is stopped, `update` starts it briefly, so that the dump reads the existing data.
 
-`./install.sh install` never writes a backup, because on an existing installation it changes nothing and only starts it.
+`install` never writes a backup, because on an existing installation it changes nothing and only starts it.
 
 Next to the database and the uploads, these sets also keep a copy of each stack file that the run replaced, under the same timestamp: `<timestamp>-docker-compose.yml`, `-Caddyfile`, `-env.domain`, `-mre.sh`.
 

@@ -2,6 +2,7 @@ import { DateField } from '@microrealestate/commonui/components/formfields/DateF
 import { PaymentsField } from '@microrealestate/commonui/components/formfields/PaymentsField';
 import { SelectField } from '@microrealestate/commonui/components/formfields/SelectField';
 import { Button } from '@microrealestate/commonui/components/ui/button';
+import { toast } from '@microrealestate/commonui/components/ui/sonner';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Form, Formik } from 'formik';
 import { toJS } from 'mobx';
@@ -9,7 +10,6 @@ import moment from 'moment';
 import { nanoid } from 'nanoid';
 import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { toast } from 'sonner';
 import * as Yup from 'yup';
 import { useStore } from '@/providers/StoreProvider';
 import usePaymentTypes from '../../hooks/usePaymentTypes';
@@ -184,7 +184,6 @@ export default function TerminateLeaseDialog({
       queryClient.invalidateQueries({ queryKey: [QueryKeys.TENANTS] });
       queryClient.invalidateQueries({ queryKey: [QueryKeys.TENANT_COUNT] });
       queryClient.invalidateQueries({ queryKey: [QueryKeys.OCCUPANCY_RATE] });
-      queryClient.invalidateQueries({ queryKey: [QueryKeys.RENT_COUNT] });
       store.tenant.setSelected(data);
 
       handleClose(false);

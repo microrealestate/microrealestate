@@ -1,21 +1,61 @@
 'use client';
 
+import {
+  Avatar,
+  AvatarFallback
+} from '@microrealestate/commonui/components/ui/avatar';
+import { cn } from '@microrealestate/commonui/utils';
+import { LuUser } from 'react-icons/lu';
+
 interface UserAvatarProps {
-  user: { firstName?: string; lastName?: string; email?: string };
+  user: {
+    firstName?: string;
+    lastName?: string;
+    name?: string;
+    email?: string;
+  };
+  size?: 'sm' | 'lg';
+  className?: string;
 }
 
-export function UserAvatar({ user }: UserAvatarProps) {
-  let name = '';
-  if (user.firstName && user.lastName) {
-    name = `${user.firstName[0]}${user.lastName[0]}`;
-  } else if (user.email) {
-    name = user.email[0];
+function initialsOf({
+  firstName,
+  lastName,
+  name,
+  email
+}: UserAvatarProps['user']) {
+  const first = firstName?.trim()[0] ?? '';
+  const last = lastName?.trim()[0] ?? '';
+  if (first || last) {
+    return `${first}${last}`.toUpperCase();
   }
-  const initials = name.toUpperCase().slice(0, 2);
+  const words = name?.trim().split(/\s+/).filter(Boolean) ?? [];
+  if (words.length) {
+    return words
+      .slice(0, 2)
+      .map((word) => word[0])
+      .join('')
+      .toUpperCase();
+  }
+  return (email?.trim()[0] ?? '').toUpperCase();
+}
 
-  return initials ? (
-    <div className="flex items-center justify-center rounded-full font-bold text-muted-foreground p-1 border-2 hover:border-ring/50 min-w-8">
-      {initials}
-    </div>
-  ) : null;
+export function UserAvatar({ user, size = 'sm', className }: UserAvatarProps) {
+  const initials = initialsOf(user);
+
+  return (
+    <Avatar
+      aria-hidden="true"
+      className={cn(size === 'lg' ? 'size-10' : 'size-8', className)}
+    >
+      <AvatarFallback
+        className={cn(
+          'bg-primary/15 text-primary font-medium',
+          size === 'lg' ? 'text-sm' : 'text-xs'
+        )}
+      >
+        {initials || <LuUser className={size === 'lg' ? 'size-5' : 'size-4'} />}
+      </AvatarFallback>
+    </Avatar>
+  );
 }

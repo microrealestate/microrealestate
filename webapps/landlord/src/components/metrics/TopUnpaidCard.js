@@ -10,17 +10,11 @@ import { fetchTopUnpaid, QueryKeys } from '../../utils/restcalls';
 import { DashboardCard } from '../dashboard/DashboardCard';
 import NumberFormat from '../NumberFormat';
 
-function TopUnpaidCard({ month, year }) {
+function TopUnpaidCard() {
   const t = useTranslations('common');
   const store = useStore();
   const router = useRouter();
   const currentMonth = moment();
-  if (month) {
-    currentMonth.month(month - 1);
-  }
-  if (year) {
-    currentMonth.year(year);
-  }
   const from = currentMonth.clone().startOf('month').format('YYYY-MM-DD');
   const to = currentMonth.clone().endOf('month').format('YYYY-MM-DD');
 

@@ -13,7 +13,8 @@ import StarterKit from '@tiptap/starter-kit';
 import jsesc from 'jsesc';
 import { toJS } from 'mobx';
 import { useTranslations } from 'next-intl';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useMediaQuery } from 'usehooks-ts';
 import useTimeout from '../../hooks/useTimeout';
 import EditorMenu from './EditorMenu';
 import PageBreak from './extensions/PageBreak';
@@ -22,8 +23,13 @@ import PageSetup, {
   normalizePageSetup
 } from './extensions/PageSetup';
 import Pagination from './extensions/Pagination';
-import FieldMenu from './FieldMenu';
+import FieldMenu, {
+  chipLabel,
+  FieldMenuDrawer,
+  FieldMenuStrip
+} from './FieldMenu';
 import TemplateNode from './TemplateNode';
+import useFitScale from './useFitScale';
 
 const SAVE_DELAY = 250;
 const CLEAR_SAVE_LABEL_DELAY = 2500;
@@ -43,7 +49,14 @@ const RichTextEditor = ({
   const t = useTranslations('common');
   const [title, setTitle] = useState(initialTitle || t('Untitled document'));
   const [saving, setSaving] = useState();
-  const [showFieldMenu, setShowFieldMenu] = useState(fields.length > 0);
+  const isWide = useMediaQuery('(min-width: 768px)');
+  const [showFieldMenu, setShowFieldMenu] = useState(false);
+  const [openFieldGroups, setOpenFieldGroups] = useState(null);
+  const zoomState = useFitScale(isWide ? 16 : 8);
+  const labelByMarker = useRef(new Map());
+  labelByMarker.current = new Map(
+    fields.map((field) => [field.marker, chipLabel(t, field)])
+  );
   const editor = useEditor({
     editable,
     immediatelyRender: false,
@@ -70,7 +83,9 @@ const RichTextEditor = ({
       TemplateNode.configure({
         HTMLAttributes: {
           class: 'template'
-        }
+        },
+        renderLabel: ({ node }) =>
+          labelByMarker.current.get(node.attrs.id) ?? node.attrs.label
       })
     ],
     onUpdate() {
@@ -145,9 +160,6 @@ const RichTextEditor = ({
       <EditorMenu
         editor={editor}
         title={title}
-        hasFields={fields.length > 0}
-        showFieldMenu={showFieldMenu}
-        onToggleFieldMenu={onToggleFieldMenu}
         showPrintButton={showPrintButton}
         saving={saving}
         onChange={onTitleChange}
@@ -156,34 +168,68 @@ const RichTextEditor = ({
         readOnlyReason={readOnlyReason}
       />
       <div className="relative flex min-h-0 flex-1">
-        <div className="flex-1 overflow-auto pb-2">
-          {/* `w-max` before `mx-auto`: an auto-margin on an element wider than
-              its scroll container clips the leading edge instead of centring,
-              so the centring is done on a wrapper that is never wider than the
-              sheet it holds. */}
-          <div className="mx-auto w-max px-4">
+        {editable && fields.length > 0 && !isWide ? (
+          <>
+            <FieldMenuStrip onOpen={onToggleFieldMenu} />
+            <FieldMenuDrawer
+              open={showFieldMenu}
+              setOpen={setShowFieldMenu}
+              editor={editor}
+              fields={fields}
+              openGroups={openFieldGroups}
+              onOpenGroupsChange={setOpenFieldGroups}
+            />
+          </>
+        ) : null}
+        {editable && fields.length > 0 && isWide ? (
+          showFieldMenu ? (
+            <FieldMenu
+              editor={editor}
+              fields={fields}
+              openGroups={openFieldGroups}
+              onOpenGroupsChange={setOpenFieldGroups}
+              onClose={onToggleFieldMenu}
+            />
+          ) : (
+            <FieldMenuStrip onOpen={onToggleFieldMenu} />
+          )
+        ) : null}
+        <div ref={zoomState.scrollerRef} className="flex-1 overflow-auto pb-2">
+          <div className="mx-auto w-max px-2 md:px-4">
             <div
-              className="page-frame my-4 relative"
-              style={{
-                '--page-width': `${geometry.widthMm}mm`,
-                '--page-height': `${geometry.heightMm}mm`,
-                '--page-margin-top': `${geometry.margins.top}mm`,
-                '--page-margin-right': `${geometry.margins.right}mm`,
-                '--page-margin-bottom': `${geometry.margins.bottom}mm`,
-                '--page-margin-left': `${geometry.margins.left}mm`
-              }}
+              className="my-4"
+              style={
+                zoomState.frameSize && zoomState.scale !== 1
+                  ? {
+                      width: zoomState.frameSize.width * zoomState.scale,
+                      height: zoomState.frameSize.height * zoomState.scale
+                    }
+                  : undefined
+              }
             >
-              <EditorContent editor={editor} />
+              <div
+                ref={zoomState.frameRef}
+                className="page-frame relative"
+                style={{
+                  '--page-width': `${geometry.widthMm}mm`,
+                  '--page-height': `${geometry.heightMm}mm`,
+                  '--page-margin-top': `${geometry.margins.top}mm`,
+                  '--page-margin-right': `${geometry.margins.right}mm`,
+                  '--page-margin-bottom': `${geometry.margins.bottom}mm`,
+                  '--page-margin-left': `${geometry.margins.left}mm`,
+                  ...(zoomState.scale !== 1
+                    ? {
+                        transform: `scale(${zoomState.scale})`,
+                        transformOrigin: '0 0'
+                      }
+                    : {})
+                }}
+              >
+                <EditorContent editor={editor} />
+              </div>
             </div>
           </div>
         </div>
-        {editable && fields.length > 0 && showFieldMenu ? (
-          <FieldMenu
-            editor={editor}
-            fields={fields}
-            onClose={onToggleFieldMenu}
-          />
-        ) : null}
       </div>
     </div>
   );

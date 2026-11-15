@@ -2,16 +2,16 @@ import { Button } from '@microrealestate/commonui/components/ui/button';
 import {
   Drawer,
   DrawerContent,
-  DrawerFooter,
   DrawerHeader,
   DrawerTitle
 } from '@microrealestate/commonui/components/ui/drawer';
+import { toast } from '@microrealestate/commonui/components/ui/sonner';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { toast } from 'sonner';
 import { useStore } from '@/providers/StoreProvider';
 import { fetchRents, QueryKeys } from '@/utils/restcalls';
+import DrawerActionBar from '../DrawerActionBar';
 import PaymentTabs from './PaymentTabs';
 import RentSelector from './RentSelector';
 
@@ -19,7 +19,7 @@ export default function NewPaymentDialog({
   open,
   setOpen,
   data: defaultRent,
-  onClose
+  onClose = () => {}
 }) {
   const t = useTranslations('common');
   const store = useStore();
@@ -69,7 +69,7 @@ export default function NewPaymentDialog({
     <Drawer open={open} onOpenChange={setOpen}>
       <DrawerContent fullScreen data-cy="newPaymentDialog">
         <DrawerHeader className="mx-auto w-full max-w-(--breakpoint-lg) text-lg md:text-xl font-semibold leading-none tracking-tight px-4">
-          <DrawerTitle>{t('Cash a rent')}</DrawerTitle>
+          <DrawerTitle>{t('Record payment')}</DrawerTitle>
         </DrawerHeader>
 
         <div className="p-4 overflow-y-auto mx-auto w-full max-w-(--breakpoint-lg) space-y-2">
@@ -87,20 +87,18 @@ export default function NewPaymentDialog({
           ) : null}
         </div>
 
-        <DrawerFooter className="mx-auto w-full max-w-(--breakpoint-lg)">
-          <div className="flex flex-col md:flex-row md:justify-end gap-2">
-            <Button variant="outline" onClick={handleClose}>
-              {t('Cancel')}
-            </Button>
-            <Button
-              data-cy="savePayment"
-              onClick={handleSave}
-              disabled={!!selectedRent?.occupant === false}
-            >
-              {t('Save')}
-            </Button>
-          </div>
-        </DrawerFooter>
+        <DrawerActionBar>
+          <Button variant="outline" onClick={handleClose}>
+            {t('Cancel')}
+          </Button>
+          <Button
+            data-cy="savePayment"
+            onClick={handleSave}
+            disabled={!!selectedRent?.occupant === false}
+          >
+            {t('Save')}
+          </Button>
+        </DrawerActionBar>
       </DrawerContent>
     </Drawer>
   );

@@ -174,7 +174,7 @@ async function createProperties(client: SeedClient, dataset: DemoDataset) {
       await client.api<API.Landlord.Property.PostAddProperty.ResponseBody>(
         'post',
         '/properties',
-        property
+        { ...property, availableForRent: true }
       );
     propertyIdsByName.set(property.name, created._id);
     console.log(

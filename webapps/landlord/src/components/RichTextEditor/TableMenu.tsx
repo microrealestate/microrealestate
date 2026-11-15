@@ -10,7 +10,7 @@ import {
   RiInsertRowTop,
   RiMergeCellsHorizontal,
   RiSplitCellsHorizontal,
-  RiTable2
+  RiTableLine
 } from 'react-icons/ri';
 import {
   ToolbarButton,
@@ -47,9 +47,9 @@ export default function TableMenu({ editor }: { editor: Editor }) {
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-y-1 rounded-md bg-muted/50 px-2 py-1">
+    <div className="flex flex-nowrap items-center overflow-x-auto rounded-md bg-muted/50 px-2 py-1 [scrollbar-width:none] [&>*]:shrink-0">
       <span className="mr-1 flex items-center gap-1 text-xs text-muted-foreground">
-        <RiTable2 className="size-4" />
+        <RiTableLine className="size-4" />
         <span className="hidden sm:inline">{t('Table tools')}</span>
       </span>
       <ToolbarSeparator />

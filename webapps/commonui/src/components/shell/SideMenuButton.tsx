@@ -15,6 +15,14 @@ export type MenuItem = {
   badge?: number | null;
 };
 
+export type MenuGroup = {
+  key: string;
+  label?: string;
+  items: MenuItem[];
+  withThemeSwitch?: boolean;
+  withAbout?: boolean;
+};
+
 export function SideMenuButton({
   item,
   selected,
@@ -26,36 +34,36 @@ export function SideMenuButton({
   className?: string;
   onClick: () => void;
 }) {
+  const badge = item.badge && item.badge > 0 ? item.badge : null;
+
   return (
     <Button
-      variant={selected ? 'default' : 'ghost'}
+      variant="ghost"
       onClick={onClick}
+      aria-current={selected ? 'page' : undefined}
       className={cn(
-        'border-none rounded-none shadow-none h-12 w-full justify-between gap-0 text-foreground',
+        'h-10 mx-2 w-[calc(100%-1rem)] justify-start gap-3 px-3 font-normal [&_svg]:size-5',
         selected
-          ? 'bg-primary text-primary-foreground disabled:opacity-100'
-          : 'bg-transparent hover:bg-primary/10',
+          ? 'bg-primary/10 text-primary font-medium hover:bg-primary/15 hover:text-primary'
+          : 'text-foreground hover:bg-accent hover:text-accent-foreground',
         className
       )}
       data-cy={item.dataCy}
     >
-      <div className="flex gap-1">
-        {item.Icon ? <item.Icon className="size-6" /> : null}
-        <span>{item.label}</span>
-      </div>
-      {item.badge && item.badge > 0 && (
+      {item.Icon ? (
+        <item.Icon
+          className={selected ? 'text-primary' : 'text-muted-foreground'}
+        />
+      ) : null}
+      <span className="truncate">{item.label}</span>
+      {badge ? (
         <Badge
           variant="default"
-          className={cn(
-            'flex items-center px-1 py-0.5 -mr-2.5',
-            selected ? 'border-1 border-primary-foreground' : ''
-          )}
+          className="ml-auto h-5 min-w-5 justify-center rounded-full px-1.5 text-xs"
         >
-          <span className="pt-0.5 text-xs font-medium min-w-3.5">
-            {item.badge > 99 ? '99+' : item.badge}
-          </span>
+          {badge > 99 ? '99+' : badge}
         </Badge>
-      )}
+      ) : null}
     </Button>
   );
 }

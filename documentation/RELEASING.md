@@ -107,33 +107,29 @@ gh run watch   # follow progress
 - The [releases page](https://github.com/microrealestate/microrealestate/releases) shows the new release at the right commit, with the changelog section as its body
 - Spot-check one package under the org's *Packages*: the new tags are listed
 
-## Version badge
+## Version shown in the app
 
-The label in the webapps' side bar resolves three sources in order, and stops at the first real value:
+The landlord app knows one version: `release` in `version.json`, the newest `changelog/<version>.md` at the commit being built (`scripts/generate-version.mjs`). It is set in official images too, although CI builds a commit *before* the release tags it: the release workflow promotes only the commit whose newest changelog entry is the version being released. The About dialog (user menu → About) shows it, else the git sha (`NEXT_PUBLIC_GIT_SHA`); the update button compares it with the published releases.
 
-1. **`MRE_VERSION` from the container environment** — read per request, so a promoted image shows the version it was deployed as even though promotion never rebuilt it. `docker/docker-compose.yml` passes the same variable that selects the image tag into both frontends.
-2. **`version` baked into `version.json`** — `scripts/generate-version.mjs` reads the release tags on the commit being built (`git tag --points-at HEAD`), so this is set when you build from a checked-out tag and empty otherwise. When a commit carries several — the `-rc.1`, `-rc.2`, `1.4.0` sequence above — the highest version wins, which under the "a stable release is final" rule is also the last one applied. Creation order cannot be used: these are lightweight tags and all share the commit's date. Official images have no baked version: CI builds a commit *before* the release tags it, which is precisely what makes promotion without a rebuild possible. The script deliberately does not use `git describe`, which would report the previous release and label the image with a version it does not correspond to.
-3. **The git sha**, from `version.json`, baked in as `NEXT_PUBLIC_GIT_SHA`.
+`MRE_VERSION` plays no part in the app: it only selects the image tag that `install.sh` and compose pull.
 
-`latest` and `dev` are moving tags, not versions: they are never displayed, but they do not blank the badge either — resolution simply continues to the next source. With the stock `MRE_VERSION=latest` in `.env`, the badge therefore shows the sha, which identifies the running code exactly. Pin `MRE_VERSION=1.4.0` and the badge shows `1.4.0`.
+A commit after a release and before the next one carries the last release's `release`, so a dev build shows it too. A commit prepared as `1.4.0-rc.1` and promoted as `1.4.0` carries `release: "1.4.0-rc.1"`, so that install reads as the rc and offers `1.4.0` as an update: give the stable version its own changelog entry before promoting.
 
-The sha is pinned to 7 characters, the same length CI uses for the `sha-<short-sha>` image tags — the badge value can be pasted straight into the release workflow's `sha` input.
+The sha is pinned to 7 characters, the same length CI uses for the `sha-<short-sha>` image tags — the shown value can be pasted straight into the release workflow's `sha` input.
 
-`version.json` is gitignored and regenerated automatically by `yarn dev`, `yarn build`, `yarn start` and `yarn ci`. The badge disappears only when nothing resolves at all. Regenerate manually anytime with:
+`version.json` is gitignored and regenerated automatically by `yarn dev`, `yarn build`, `yarn start` and `yarn ci`. The About row also shows the commit date, `date` in `version.json`. It disappears only when neither `release` nor the sha is set. Regenerate manually anytime with:
 
 ```shell
-yarn generate:version     # on a branch  -> { "version": null,    "sha": "<HEAD>" }
-
-git checkout v1.4.0
-yarn generate:version     # on the tag   -> { "version": "1.4.0", "sha": "<the tagged commit>" }
+yarn generate:version     # -> { "release": "<newest changelog entry>", "sha": "<HEAD>", "date": "<commit date>" }
 ```
 
-`MRE_VERSION` has no effect on `version.json` — it only labels a *running* container, where no git repository exists to read a tag from.
+`MRE_VERSION` has no effect on `version.json`.
 
 ## Upgrading an installed instance
 
 ```shell
-./install.sh update            # pulls :latest of everything and restarts
+# from the install directory; pulls :latest of everything and restarts
+curl -sSL https://raw.githubusercontent.com/microrealestate/microrealestate/main/install.sh | bash -s -- update
 ```
 
 To stay on a specific version, set it in `.env` before updating:
@@ -142,14 +138,14 @@ To stay on a specific version, set it in `.env` before updating:
 MRE_VERSION=1.4.0
 ```
 
-Keep the pin in step with what is deployed. `MRE_VERSION` selects the image tag **and** labels the version badge, and nothing reconciles the two afterwards: leave `MRE_VERSION=1.4.0` in place while pulling something newer and the badge keeps claiming `1.4.0`. Update the pin whenever you change versions, or set it back to `latest` — then the badge falls back to the git sha, which always identifies the running code.
+The pin only selects the image tag: the About dialog shows the version the image was built as, whatever `.env` says. Update the pin to move to another version, or set it back to `latest`.
 
 ## Troubleshooting
 
 - **"Source image not found"** — CI hasn't finished (or failed) on that commit. Check the CI run for the sha; fix and re-merge if needed.
 - **Login/push denied (403)** — `GHCR_TOKEN` lacks `write:packages`, expired, or the account isn't allowed on the org packages.
 - **Tag/version already exists** — delete the stale git tag (`git push origin :refs/tags/v1.4.0`) and/or the package tags from the GHCR UI first; image tags cannot be safely re-pointed once published externally.
-- **Do not re-run CI on a released commit** — once the tag exists, a rebuild bakes the version into the two *frontend* images (the six backend images do not copy `version.json`, so their re-push is a no-op) and republishes `:sha-<sha>` at a new digest. The promoted `:1.4.0` and `:latest` tags keep serving the old digest, so nothing running is affected — but `:sha-<sha>` is no longer the artifact you shipped, and promoting that sha again would deliver different bytes.
+- **Do not re-run CI on a released commit** — the builds are not byte-reproducible, so a rebuild republishes `:sha-<sha>` at a new digest. The promoted `:1.4.0` and `:latest` tags keep serving the old digest, so nothing running is affected — but `:sha-<sha>` is no longer the artifact you shipped, and promoting that sha again would deliver different bytes.
 - **"No changelog entry for &lt;version&gt;"** — the commit you are promoting predates the *Prepare release* pull request, or that pull request was never merged. Promote the merge commit instead.
 - **"… is not the newest entry at this commit"** — you named a sha from after a later release was prepared. Entry files accumulate, so the workflow requires the version being released to be the newest one present; promote the commit that prepared it.
 - **Partial release after a failed job** — re-run the failed job; `crane tag` operations are idempotent (same digest re-tagged).

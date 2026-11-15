@@ -6,10 +6,12 @@ import FormField from './FormField';
 export function TextAreaField({
   disabled,
   readOnly,
+  hideLabel,
   ...props
 }: {
   disabled?: boolean;
   readOnly?: boolean;
+  hideLabel?: boolean;
   name: string;
   label: string;
 }) {
@@ -21,7 +23,7 @@ export function TextAreaField({
       return null;
     }
     return (
-      <FormField {...props}>
+      <FormField {...props} hideLabel={hideLabel}>
         <div className="py-2 text-sm font-medium whitespace-pre-wrap">
           {field.value}
         </div>
@@ -30,7 +32,7 @@ export function TextAreaField({
   }
 
   return (
-    <FormField {...props}>
+    <FormField {...props} hideLabel={hideLabel}>
       <Textarea
         className={cn('grow not-last:mr-2')}
         disabled={disabled}

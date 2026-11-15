@@ -13,13 +13,14 @@ export default function DocumentReadonlyRow({
   const t = useTranslations('common');
 
   return (
-    <div className="flex items-start justify-between">
-      <div className="flex flex-col gap-1">
+    <div className="flex flex-wrap items-start justify-between gap-2">
+      <div className="flex min-w-0 flex-1 flex-col gap-1">
         <Button
           variant="link"
-          className="size-fit p-0"
+          className="h-fit max-w-full justify-start p-0"
           onClick={onView}
           disabled={!doc.url}
+          title={doc.name || templateName}
         >
           <LuPaperclip className="shrink-0" />
           <span className="truncate">{doc.name || templateName}</span>
@@ -31,7 +32,12 @@ export default function DocumentReadonlyRow({
         </div>
       </div>
       {!disabled ? (
-        <Button variant="outline" size="sm" onClick={onDelete}>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onDelete}
+          className="shrink-0"
+        >
           <LuTrash />
           {t('Delete')}
         </Button>

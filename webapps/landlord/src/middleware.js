@@ -32,7 +32,7 @@ function getPathname(pathname) {
 
 export const config = {
   matcher: [
-    '/((?!api|_next|__nextjs|health|favicon.ico|.*\\.(?:svg|woff2?|ttf|png|jpe?g|ico)).*)',
+    '/((?!api|_next|__nextjs|health|favicon.ico|licenses.json|manifest\\.webmanifest$|sw\\.js$|offline\\.html$|.*\\.(?:svg|woff2?|ttf|png|jpe?g|ico)).*)',
     '/'
   ]
 };

@@ -17,6 +17,7 @@ import { nanoid } from 'nanoid';
 import { useTranslations } from 'next-intl';
 import { Fragment, useCallback, useMemo } from 'react';
 import * as Yup from 'yup';
+import { parentPath } from '@/components/properties/composition';
 import { useStore } from '@/providers/StoreProvider';
 import usePaymentTypes from '../../../hooks/usePaymentTypes';
 
@@ -231,21 +232,31 @@ function LeaseContractForm({ readOnly, onSubmit }) {
       ? store.tenant.selected.properties.map(({ propertyId }) => propertyId)
       : [];
     return [
-      ...store.property.items.map(({ _id, name, status, occupantLabel }) => ({
-        id: _id,
-        value: _id,
-        label: t('{name} - {status}', {
-          name,
-          status:
-            status === 'occupied'
-              ? !currentProperties.includes(_id)
-                ? t('occupied by {tenantName}', {
-                    tenantName: occupantLabel
-                  })
-                : t('occupied by current tenant')
-              : t('vacant')
+      ...store.property.items
+        .filter(
+          (unit) =>
+            unit.availableForRent || currentProperties.includes(unit._id)
+        )
+        .map((unit) => {
+          const { _id, name, status, occupantLabel } = unit;
+          return {
+            id: _id,
+            value: _id,
+            label: t('{name} - {status}', {
+              name: [...parentPath(unit, store.property.items), name].join(
+                ' › '
+              ),
+              status:
+                status === 'occupied'
+                  ? !currentProperties.includes(_id)
+                    ? t('occupied by {tenantName}', {
+                        tenantName: occupantLabel
+                      })
+                    : t('occupied by current tenant')
+                  : t('vacant')
+            })
+          };
         })
-      }))
     ];
   }, [t, store.tenant.selected.properties, store.property.items]);
 
@@ -323,20 +334,6 @@ function LeaseContractForm({ readOnly, onSubmit }) {
                   max={values.endDate}
                   readOnly={readOnly}
                 />
-                <PaymentsField
-                  name="securityDepositRefund"
-                  items={values.securityDepositRefund}
-                  emptyItem={emptySecurityDeposit()}
-                  addLabel={t('Add a security deposit refund')}
-                  renderTitle={(_, index) =>
-                    t('Refund installment {count}', { count: index + 1 })
-                  }
-                  paymentTypes={paymentTypes.itemList}
-                  typeKey="paymentType"
-                  minItems={0}
-                  readOnly={readOnly}
-                  organizationName={store.organization.selected?.name}
-                />
               </Section>
             )}
             <Section
@@ -380,6 +377,20 @@ function LeaseContractForm({ readOnly, onSubmit }) {
                 readOnly={readOnly}
                 organizationName={store.organization.selected?.name}
               />
+              <PaymentsField
+                name="securityDepositRefund"
+                items={values.securityDepositRefund}
+                emptyItem={emptySecurityDeposit()}
+                addLabel={t('Add a security deposit refund')}
+                renderTitle={(_, index) =>
+                  t('Refund installment {count}', { count: index + 1 })
+                }
+                paymentTypes={paymentTypes.itemList}
+                typeKey="paymentType"
+                minItems={0}
+                readOnly={readOnly}
+                organizationName={store.organization.selected?.name}
+              />
             </Section>
             <Section label={t('Properties')}>
               <ArrayField
@@ -415,6 +426,7 @@ function LeaseContractForm({ readOnly, onSubmit }) {
                       propertyToUpdate.rent = selectedProperty?.price || '';
                       propertyToUpdate.expenses = [
                         {
+                          key: nanoid(),
                           title: t('General charges'),
                           // TODO: find another way to have expenses configurable
                           amount:

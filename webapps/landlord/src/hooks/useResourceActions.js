@@ -51,6 +51,7 @@ export default function useResourceActions() {
         <NewPropertyDialog
           open={openNewPropertyDialog}
           setOpen={setOpenNewPropertyDialog}
+          openAfterAdd
         />
         <NewLeaseDialog
           open={openNewLeaseDialog}

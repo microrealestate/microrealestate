@@ -6,9 +6,9 @@ import { fetchYearRevenues, QueryKeys } from '../../utils/restcalls';
 import { DashboardCard } from '../dashboard/DashboardCard';
 import NumberFormat from '../NumberFormat';
 
-export default function YearRevenuesCard({ year, className }) {
+export default function YearRevenuesCard() {
   const t = useTranslations('common');
-  const currentYear = year || moment().year();
+  const currentYear = moment().year();
 
   const { data, isLoading, error } = useQuery({
     queryKey: [QueryKeys.YEAR_REVENUES, currentYear],
@@ -30,7 +30,6 @@ export default function YearRevenuesCard({ year, className }) {
           <NumberFormat value={data.total} showZero={true} />
         )
       }
-      className={className}
     />
   );
 }

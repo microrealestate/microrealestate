@@ -1,5 +1,5 @@
 import { Collections, formatError, logger } from '@microrealestate/common';
-import { PAYMENT_METHODS } from '@microrealestate/shared';
+import { landlordName, PAYMENT_METHODS } from '@microrealestate/shared';
 import moment from 'moment';
 
 // i18n keys, so the document names the method in the landlord's locale.
@@ -37,8 +37,7 @@ export async function getRentsData(params) {
   }
 
   const landlord = dbTenant.realmId;
-  landlord.name =
-    (landlord.isCompany && landlord.companyInfo?.name) || landlord.name || '';
+  landlord.name = landlordName(landlord);
   landlord.hasCompanyInfo = !!landlord.companyInfo;
   landlord.hasBankInfo = !!landlord.bankInfo?.iban;
   landlord.hasAddress = !!landlord.addresses?.length;

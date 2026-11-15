@@ -4,11 +4,11 @@ import { SubmitButton } from '@microrealestate/commonui/components/formfields/Su
 import { SwitchField } from '@microrealestate/commonui/components/formfields/SwitchField';
 import { TextField } from '@microrealestate/commonui/components/formfields/TextField';
 import { Button } from '@microrealestate/commonui/components/ui/button';
+import { toast } from '@microrealestate/commonui/components/ui/sonner';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Form, Formik, validateYupSchema, yupToFormErrors } from 'formik';
 import { useTranslations } from 'next-intl';
 import { useCallback, useMemo } from 'react';
-import { toast } from 'sonner';
 import * as Yup from 'yup';
 import { useStore } from '@/providers/StoreProvider';
 import {
@@ -176,8 +176,9 @@ export default function EmailServiceForm({ organization }) {
         store,
         organization: mergeOrganization(organization, formData)
       });
+      toast.success(t('Changes saved'));
     },
-    [mutateAsync, store, organization, initialValues.smtp_password]
+    [t, mutateAsync, store, organization, initialValues.smtp_password]
   );
 
   const handleFormValidation = useCallback((value) => {

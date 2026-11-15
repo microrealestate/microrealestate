@@ -317,7 +317,6 @@ services:
       # from inside the container. Never exposed to the browser (apiClient
       # uses same-origin /api/v2/...).
       GATEWAY_URL: http://gateway:8080
-      MRE_VERSION: ${MRE_VERSION:-}
     expose:
       - '8180'
     depends_on:
@@ -343,7 +342,6 @@ services:
       # Server-side only: used by the Next.js middleware to reach the gateway
       # from inside the container. Never exposed to the browser.
       GATEWAY_URL: http://gateway:8080
-      MRE_VERSION: ${MRE_VERSION:-}
     expose:
       - '8190'
     depends_on:

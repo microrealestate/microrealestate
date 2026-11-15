@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#3B82F6" />
+    <title>Offline</title>
+    <script>
+      (function () {
+        var theme = 'system';
+        try {
+          theme = localStorage.getItem('mre-theme') || 'system';
+        } catch {}
+        var dark =
+          theme === 'dark' ||
+          (theme !== 'light' &&
+            window.matchMedia('(prefers-color-scheme: dark)').matches);
+        if (dark) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+    <style>
+      /* Tokens copied from commonui/src/styles/globals.css: keep them in sync. */
+      :root {
+        color-scheme: light;
+        --background: oklch(0.95 0.006 264.54);
+        --foreground: oklch(0.3211 0 0);
+        --muted-foreground: oklch(0.5 0.025 264.36);
+        --primary: oklch(0.53 0.2 262);
+        --primary-foreground: oklch(1 0 0);
+        --ring: oklch(0.53 0.2 262);
+        --radius: 0.375rem;
+        --font-app:
+          Inter, ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
+          'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+      }
+
+      .dark {
+        color-scheme: dark;
+        --background: oklch(0.242 0.009 255.62);
+        --foreground: oklch(0.9219 0 0);
+        --muted-foreground: oklch(0.7155 0 0);
+        --primary: oklch(0.6231 0.188 259.8145);
+        --primary-foreground: oklch(1 0 0);
+        --ring: oklch(0.6231 0.188 259.8145);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--background);
+        color: var(--foreground);
+        font-family: var(--font-app);
+      }
+
+      main {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 1.5rem;
+        min-height: 100vh;
+        padding: 0 1rem;
+      }
+
+      /* 100dvh excludes the mobile address bar; older browsers keep 100vh */
+      @supports (min-height: 100dvh) {
+        main {
+          min-height: 100dvh;
+        }
+      }
+
+      .icon {
+        width: 4rem;
+        height: 4rem;
+        color: var(--muted-foreground);
+      }
+
+      .text {
+        text-align: center;
+      }
+
+      .text > * + * {
+        margin-top: 0.5rem;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 1.875rem;
+        line-height: 2.25rem;
+        font-weight: 600;
+      }
+
+      p {
+        margin: 0;
+        color: var(--muted-foreground);
+      }
+
+      button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: 2.5rem;
+        padding: 0.5rem 1rem;
+        border: 0;
+        border-radius: calc(var(--radius) - 2px);
+        background: var(--primary);
+        color: var(--primary-foreground);
+        font: inherit;
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+        font-weight: 500;
+        white-space: nowrap;
+        cursor: pointer;
+        transition: background-color 150ms cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      button:hover {
+        background: color-mix(in oklab, var(--primary) 90%, transparent);
+      }
+
+      button:focus-visible {
+        outline: none;
+        box-shadow:
+          0 0 0 2px var(--background),
+          0 0 0 4px var(--ring);
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <svg
+        class="icon"
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M12 20h.01" />
+        <path d="M8.5 16.429a5 5 0 0 1 7 0" />
+        <path d="M5 12.859a10 10 0 0 1 5.17-2.69" />
+        <path d="M19 12.859a10 10 0 0 0-2.007-1.523" />
+        <path d="M2 8.82a15 15 0 0 1 4.177-2.643" />
+        <path d="M22 8.82a15 15 0 0 0-11.288-3.764" />
+        <path d="m2 2 20 20" />
+      </svg>
+      <div class="text">
+        <h1 id="title">You are offline</h1>
+        <p id="message">Check your internet connection, then try again.</p>
+      </div>
+      <button id="retry" type="button">Try again</button>
+    </main>
+    <script>
+      (function () {
+        var messages = {
+          'de-DE': {
+            lang: 'de',
+            title: 'Sie sind offline',
+            message:
+              'Prüfen Sie Ihre Internetverbindung und versuchen Sie es dann erneut.',
+            retry: 'Erneut versuchen'
+          },
+          en: {
+            lang: 'en',
+            title: 'You are offline',
+            message: 'Check your internet connection, then try again.',
+            retry: 'Try again'
+          },
+          'fr-FR': {
+            lang: 'fr',
+            title: 'Vous êtes hors ligne',
+            message: 'Vérifiez votre connexion internet, puis réessayez.',
+            retry: 'Réessayer'
+          },
+          'pt-BR': {
+            lang: 'pt-BR',
+            title: 'Você está sem conexão',
+            message: 'Verifique sua conexão com a internet e tente novamente.',
+            retry: 'Tentar novamente'
+          },
+          'es-CO': {
+            lang: 'es',
+            title: 'No tienes conexión',
+            message: 'Revisa tu conexión a internet e inténtalo de nuevo.',
+            retry: 'Reintentar'
+          }
+        };
+        var locales = Object.keys(messages);
+
+        // The apps keep the locale in the URL (/landlord/fr-FR/...,
+        // /tenant/fr-FR/...); fall back to the browser language.
+        var segments = location.pathname.split('/');
+        var locale = locales.find(function (key) {
+          return segments.indexOf(key) !== -1;
+        });
+        var language = (navigator.language || 'en')
+          .toLowerCase()
+          .split('-')[0];
+        if (!locale) {
+          locale =
+            locales.find(function (key) {
+              return key.toLowerCase().split('-')[0] === language;
+            }) || 'en';
+        }
+
+        var text = messages[locale];
+        document.documentElement.lang = text.lang;
+        document.title = text.title;
+        document.getElementById('title').textContent = text.title;
+        document.getElementById('message').textContent = text.message;
+
+        var retry = document.getElementById('retry');
+        retry.textContent = text.retry;
+        retry.addEventListener('click', function () {
+          location.reload();
+        });
+        window.addEventListener('online', function () {
+          location.reload();
+        });
+      })();
+    </script>
+  </body>
+</html>

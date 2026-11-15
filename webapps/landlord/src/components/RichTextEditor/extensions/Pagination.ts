@@ -5,8 +5,10 @@ import { Decoration, DecorationSet, type EditorView } from '@tiptap/pm/view';
 import {
   appliedBefore,
   computeBreakPoints,
+  layoutOffset,
   type MeasuredBlock,
   type PageBreakPoint,
+  scaleFromTransform,
   signature
 } from './pagebreaks';
 
@@ -144,7 +146,12 @@ class PaginationView {
     // positions have been mapped through every edit since, so they match the
     // spacers actually present in the DOM being measured.
     const applied = this.appliedBreakPoints();
-    const contentTop = dom.getBoundingClientRect().top + paddingTop;
+    // rects are visual px under the fit-to-screen transform; convert to layout px first
+    const domRect = dom.getBoundingClientRect();
+    const frame = dom.closest('.page-frame');
+    const scale = scaleFromTransform(
+      frame ? getComputedStyle(frame).transform : null
+    );
 
     const blocks: MeasuredBlock[] = [];
     this.view.state.doc.forEach((node, offset) => {
@@ -153,14 +160,20 @@ class PaginationView {
         return;
       }
       const rect = nodeDom.getBoundingClientRect();
-      const shift = appliedBefore(applied, offset) + contentTop;
+      const shift = appliedBefore(applied, offset);
       const marginTop = Number.parseFloat(getComputedStyle(nodeDom).marginTop);
       blocks.push({
         pos: offset,
         endPos: offset + node.nodeSize,
         isPageBreak: node.type.name === 'pageBreak',
-        top: rect.top - shift,
-        bottom: rect.bottom - shift,
+        top: layoutOffset(rect.top, domRect.top, scale, paddingTop, shift),
+        bottom: layoutOffset(
+          rect.bottom,
+          domRect.top,
+          scale,
+          paddingTop,
+          shift
+        ),
         marginTop: Number.isFinite(marginTop) ? marginTop : 0
       });
     });

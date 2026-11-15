@@ -10,8 +10,17 @@ export const PropertySchema = new Schema<Omit<PropertyType, '_id'>>({
   name: { type: String, required: true },
   description: String,
   surface: Number,
-  phone: String,
-  digicode: String,
+  notes: String,
+  customFields: {
+    type: [
+      {
+        _id: false,
+        label: { type: String, required: true },
+        value: { type: String, default: '' }
+      }
+    ],
+    default: undefined
+  },
   address: {
     _id: false,
     street1: String,
@@ -22,6 +31,9 @@ export const PropertySchema = new Schema<Omit<PropertyType, '_id'>>({
     country: String
   },
   price: { type: Number, default: 0 },
+
+  parentId: { type: String, ref: 'Property' },
+  availableForRent: { type: Boolean, required: true },
 
   // ui state
   stepperMode: { type: Boolean, default: false }

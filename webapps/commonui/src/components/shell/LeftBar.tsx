@@ -1,6 +1,5 @@
 'use client';
 
-import { Separator } from '@microrealestate/commonui/components/ui/separator';
 import { cn } from '@microrealestate/commonui/utils';
 import { AppMenu } from './AppMenu';
 import type { MenuItem } from './SideMenuButton';
@@ -19,33 +18,32 @@ export function LeftBar({
   onMenuClick: (item: MenuItem) => void;
 }) {
   return (
-    <div
+    <aside
       className={cn(
-        'bg-card flex flex-col fixed w-60 h-full z-50 border-r',
+        'bg-card flex flex-col sticky top-(--env-bar-h) h-[calc(100svh-var(--env-bar-h,0))] w-60 shrink-0 z-50',
         className
       )}
     >
-      {organizationName ? (
-        <>
-          <div className="whitespace-nowrap text-2xl font-semibold px-4 -mt-10">
-            {organizationName}
-          </div>
-          <div className="text-muted-foreground px-4 mt-2">MicroRealEstate</div>
-          <Separator className="bg-secondary-foreground/25 mt-4" />
-        </>
-      ) : (
-        <>
-          <div className="whitespace-nowrap text-2xl font-semibold px-4 -mt-10">
+      <div className="flex flex-col justify-center h-14 shrink-0 px-4 border-b">
+        <div
+          className="text-xl font-semibold leading-tight truncate"
+          title={organizationName || 'MicroRealEstate'}
+        >
+          {organizationName || 'MicroRealEstate'}
+        </div>
+        {organizationName ? (
+          <div className="text-sm text-muted-foreground truncate">
             MicroRealEstate
           </div>
-          <Separator className="bg-secondary-foreground/25 mt-2" />
-        </>
-      )}
-      <AppMenu
-        menuItems={menuItems}
-        selectedMenuItem={selectedMenuItem}
-        onMenuClick={onMenuClick}
-      />
-    </div>
+        ) : null}
+      </div>
+      <div className="flex min-h-0 grow flex-col border-r">
+        <AppMenu
+          menuItems={menuItems}
+          selectedMenuItem={selectedMenuItem}
+          onMenuClick={onMenuClick}
+        />
+      </div>
+    </aside>
   );
 }
