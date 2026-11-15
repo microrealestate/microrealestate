@@ -2,10 +2,10 @@
 
 import { SubmitButton } from '@microrealestate/commonui/components/formfields/SubmitButton';
 import { TextField } from '@microrealestate/commonui/components/formfields/TextField';
+import { toast } from '@microrealestate/commonui/components/ui/sonner';
 import { Form, Formik } from 'formik';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { toast } from 'sonner';
 import * as Yup from 'yup';
 import Link from '@/components/Link';
 import { useNav } from '@/providers/NavProvider';

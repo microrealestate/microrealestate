@@ -4,6 +4,7 @@ import { TextAreaField } from '@microrealestate/commonui/components/formfields/T
 import { Button } from '@microrealestate/commonui/components/ui/button';
 
 import { Collapse } from '@microrealestate/commonui/components/ui/collapse';
+import { toast } from '@microrealestate/commonui/components/ui/sonner';
 import { useQueryClient } from '@tanstack/react-query';
 import { Form, Formik } from 'formik';
 import _ from 'lodash';
@@ -17,7 +18,6 @@ import {
   useRef,
   useState
 } from 'react';
-import { toast } from 'sonner';
 import * as Yup from 'yup';
 import { useStore } from '@/providers/StoreProvider';
 import usePaymentTypes from '../../hooks/usePaymentTypes';

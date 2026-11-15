@@ -1,6 +1,6 @@
+import { toast } from '@microrealestate/commonui/components/ui/sonner';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
-import { toast } from 'sonner';
 import { useStore } from '@/providers/StoreProvider';
 import { fetchOrganization, QueryKeys } from '@/utils/restcalls';
 

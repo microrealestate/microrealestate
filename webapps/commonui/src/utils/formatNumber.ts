@@ -11,6 +11,6 @@ export function formatNumber(
     style: 'currency',
     currency: currency || DEFAULT_CURRENCY,
     minimumFractionDigits,
-    signDisplay: showSign ? 'exceptZero' : 'auto'
+    signDisplay: showSign ? 'exceptZero' : 'negative'
   }).format(value);
 }

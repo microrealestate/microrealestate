@@ -3,3 +3,11 @@
 /out/
 /build
 next-env.d.ts
+
+# copied by `yarn assets`
+/public/favicon.svg
+/public/favicon.ico
+/public/apple-touch-icon.png
+/public/icons/
+/public/sw.js
+/public/offline.html

@@ -1,11 +1,15 @@
 import { ServiceError } from '@microrealestate/common';
-import type { Member, RealmType } from '@microrealestate/shared';
+import {
+  landlordName,
+  type Member,
+  type RealmType
+} from '@microrealestate/shared';
 
 export type LandlordData = ReturnType<typeof toLandlordData>;
 
 // The realm, plus the flags and names the templates need precomputed
 export function toLandlordData(realm: RealmType) {
-  const name = (realm.isCompany && realm.companyInfo?.name) || realm.name || '';
+  const name = landlordName(realm);
   const hasCompanyInfo = !!realm.companyInfo;
   return {
     ...realm,

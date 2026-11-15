@@ -52,7 +52,9 @@
     "@tailwindcss/oxide"
   ],
   "resolutions": {
+    "@ts-morph/common/minimatch": "11.0.8",
     "basic-ftp": "6.2.3",
+    "cacache/glob": "14.0.4",
     "postcss": "8.5.23"
   },
   "packageManager": "yarn@4.12.0"

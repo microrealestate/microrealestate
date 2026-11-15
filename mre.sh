@@ -7,12 +7,13 @@
 #
 # Run from the directory an installation lives in, or point it there with
 # --dir. './mre.sh --help' lists every command. Installing and updating belong
-# to ./install.sh.
+# to install.sh, run through curl (see $UPDATE_CMD).
 
 set -euo pipefail
 
 INSTALL_DIR="${INSTALL_DIR:-$PWD}"
 SPONSOR_URL="https://ko-fi.com/camelaissani/tip"
+UPDATE_CMD="curl -sSL ${MRE_SRC_URL:-https://raw.githubusercontent.com/microrealestate/microrealestate/main}/install.sh | bash -s -- update"
 # No '-' in the stamp: it is read back as everything before the first one.
 RUN_STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
 SUBCOMMAND=""
@@ -281,7 +282,8 @@ resolve_compose_files() {
     external)
       [ -f "${dir}docker-compose.external-proxy.yml" ] \
         || die "MRE_REVERSE_PROXY=external but ${dir}docker-compose.external-proxy.yml is missing.
-    Run './install.sh update' to fetch it."
+    Fetch it with:
+    $UPDATE_CMD"
       COMPOSE_ARGS+=(-f "${dir}docker-compose.external-proxy.yml")
       ;;
     *) die "MRE_REVERSE_PROXY in .env must be 'bundled' or 'external'." ;;
@@ -881,7 +883,7 @@ ${C_BOLD}backup${C_OFF}
 
 ${C_BOLD}restore${C_OFF} [STAMP | ARCHIVE]
   (none)             List the sets in ./backup and ask which one to restore.
-  STAMP              A set written by 'backup' or by './install.sh update',
+  STAMP              A set written by 'backup' or by the installer's 'update',
                      named by its timestamp, e.g. 20260827T033000Z.
   ARCHIVE            A single mongodump archive in ./backup. Database only.
 

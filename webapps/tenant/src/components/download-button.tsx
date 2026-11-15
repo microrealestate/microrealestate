@@ -3,11 +3,11 @@ import {
   Button,
   type ButtonProps
 } from '@microrealestate/commonui/components/ui/button';
+import { toast } from '@microrealestate/commonui/components/ui/sonner';
 import fileDownload from 'js-file-download';
 import { Download } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
-import { toast } from 'sonner';
 import type { Receipt } from '@/types';
 import apiClient from '@/utils/fetch/client';
 

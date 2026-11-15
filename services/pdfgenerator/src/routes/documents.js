@@ -9,9 +9,11 @@ import {
   ServiceError,
   Storage
 } from '@microrealestate/common';
+import { customFieldKey } from '@microrealestate/shared';
 import express from 'express';
 import fs from 'fs-extra';
 import Handlebars from 'handlebars';
+import i18n from 'i18n';
 import moment from 'moment';
 import * as pdf from '../pdf';
 
@@ -164,33 +166,25 @@ async function _getTemplateValues(organization, tenantId, leaseId) {
             PropertyGlobals.vatAmount
         )
       },
-      list: tenant?.properties.map(
-        ({
-          propertyId: {
-            name,
-            description,
-            type,
-            surface,
-            phone,
-            address,
-            digicode,
-            price
-          }
-        }) => ({
+      // the lease's own copy of the unit and its lease rent; the fields the
+      // landlord added to the unit are read from the unit as it is today
+      list: tenant?.properties.map(({ propertyId: unit, property, rent }) => {
+        const { name, description, type, surface, address } =
+          property || unit || {};
+        return {
           name,
           description,
-          type,
+          type: _propertyTypeLabel(organization.locale, type),
           rent: Format.formatCurrency(
             organization.locale,
             organization.currency,
-            price
+            rent
           ),
           surface: Format.formatNumber(organization.locale, surface),
-          phone,
           address,
-          digicode
-        })
-      )
+          customField: _customFieldsByKey(unit?.customFields)
+        };
+      })
     },
 
     lease: {
@@ -241,6 +235,37 @@ async function verifyReceiptAccess(req, res, next) {
 
   req.realm = { _id: tenant.realmId };
   return next();
+}
+
+// translations live in templates/locales
+const PROPERTY_TYPE_LABELS = {
+  estate: 'Estate',
+  building: 'Building',
+  floor: 'Floor',
+  apartment: 'Apartment',
+  office: 'Office',
+  store: 'Store',
+  room: 'Room',
+  cellar: 'Cellar',
+  garage: 'Garage',
+  parking: 'Parking spot',
+  letterbox: 'Mailbox'
+};
+
+function _propertyTypeLabel(locale, type) {
+  const phrase = PROPERTY_TYPE_LABELS[type];
+  return phrase ? i18n.__({ phrase, locale }) : type;
+}
+
+function _customFieldsByKey(customFields) {
+  const values = {};
+  for (const { label, value } of customFields ?? []) {
+    const key = label ? customFieldKey(label) : '';
+    if (key && value && !(key in values)) {
+      values[key] = value;
+    }
+  }
+  return values;
 }
 
 function _resolveTemplates(element, templateValues) {

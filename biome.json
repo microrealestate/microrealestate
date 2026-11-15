@@ -32,6 +32,16 @@
       },
       "complexity": {
         "noForEach": "off"
+      },
+      "style": {
+        "noRestrictedImports": {
+          "level": "error",
+          "options": {
+            "paths": {
+              "sonner": "Import toast from '@microrealestate/commonui/components/ui/sonner': it sets the error duration, close button and deduplication."
+            }
+          }
+        }
       }
     }
   },
@@ -53,5 +63,17 @@
         "organizeImports": "on"
       }
     }
-  }
+  },
+  "overrides": [
+    {
+      "includes": ["**/commonui/src/components/ui/sonner.tsx"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": "off"
+          }
+        }
+      }
+    }
+  ]
 }

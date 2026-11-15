@@ -3,8 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build --no-lint",
+    "dev": "yarn licenses && yarn assets && next dev --turbopack",
+    "build": "yarn licenses && yarn assets && next build --no-lint",
+    "licenses": "node ../commonui/scripts/generate-licenses.ts .",
+    "assets": "node ../commonui/scripts/copy-assets.ts .",
     "start": "next start",
     "generateStrings": "node scripts/extractlocalizedstrings.js",
     "tsc": "tsc --noEmit"
@@ -42,7 +44,6 @@
     "react-icons": "catalog:",
     "react-pdf": "10.4.1",
     "recharts": "catalog:",
-    "sonner": "catalog:",
     "usehooks-ts": "catalog:",
     "yup": "catalog:"
   },

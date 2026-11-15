@@ -10,6 +10,7 @@ import 'react-pdf/dist/Page/TextLayer.css';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import '../../components/DocumentViewer/ImageViewer/imageviewer.css';
 import '../../components/RichTextEditor/richtexteditor.css';
+import AppHeadTags from '@microrealestate/commonui/components/AppHeadTags';
 import type { Metadata } from 'next';
 import AppProvider from '@/providers/AppProvider';
 import { BASE_PATH } from '@/utils/basepath';
@@ -52,14 +53,17 @@ export default async function LocaleLayout({
 
   const env = {
     NEXT_PUBLIC_DEMO_MODE: process.env.DEMO_MODE,
-    NEXT_PUBLIC_APP_VERSION: process.env.MRE_VERSION
+    NEXT_PUBLIC_BASE_PATH: BASE_PATH
   };
 
   return (
     <html lang={locale} className={inter.variable} suppressHydrationWarning>
       <head>
-        <link rel="shortcut icon" href={`${BASE_PATH}/favicon.svg`} />
-        <meta name="theme-color" content="hsl(var(--primary))" />
+        <AppHeadTags
+          basePath={BASE_PATH}
+          appName="MicroRealEstate"
+          locale={locale}
+        />
         <meta
           name="viewport"
           content="minimum-scale=1, initial-scale=1, width=device-width"

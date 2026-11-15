@@ -2,10 +2,10 @@
 
 import { SubmitButton } from '@microrealestate/commonui/components/formfields/SubmitButton';
 import { TextField } from '@microrealestate/commonui/components/formfields/TextField';
+import { toast } from '@microrealestate/commonui/components/ui/sonner';
 import { Form, Formik } from 'formik';
 import { useTranslations } from 'next-intl';
 import { use } from 'react';
-import { toast } from 'sonner';
 import * as Yup from 'yup';
 import { Link, useRouter } from '@/i18n/navigation';
 import { useStore } from '@/providers/StoreProvider';
@@ -53,7 +53,6 @@ export default function ResetPassword({ params }) {
             return;
         }
       }
-      toast.success(t('Password reset successfully'));
       router.push('/signin');
     } catch (error) {
       console.error(error);

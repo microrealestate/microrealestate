@@ -7,7 +7,7 @@ function readVersionFile() {
     return require('../../version.json');
   } catch {
     console.warn(
-      'version.json not found at the repository root: the version badge falls back to the runtime MRE_VERSION, or hides itself'
+      'version.json not found at the repository root: the About dialog hides the version and the update features are off'
     );
     return {};
   }
@@ -18,7 +18,8 @@ const versionFile = readVersionFile();
 module.exports = withNextIntl({
   env: {
     NEXT_PUBLIC_GIT_SHA: versionFile.sha || 'dev',
-    NEXT_PUBLIC_APP_VERSION: versionFile.version || ''
+    NEXT_PUBLIC_RELEASE_VERSION: versionFile.release || '',
+    BUILD_DATE: versionFile.date || ''
   },
   output: 'standalone',
   experimental: {

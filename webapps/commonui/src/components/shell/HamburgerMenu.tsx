@@ -11,6 +11,7 @@ import {
   SheetTrigger
 } from '@microrealestate/commonui/components/ui/sheet';
 import { cn } from '@microrealestate/commonui/utils';
+import { useTranslations } from 'next-intl';
 import { LuMenu } from 'react-icons/lu';
 import { AppMenu } from './AppMenu';
 import type { MenuItem } from './SideMenuButton';
@@ -20,23 +21,33 @@ export function HamburgerMenu({
   organizationName,
   menuItems,
   selectedMenuItem,
+  hasBadge = false,
   onMenuClick
 }: {
   className?: string;
   organizationName?: string;
   menuItems: MenuItem[];
   selectedMenuItem: MenuItem | null;
+  hasBadge?: boolean;
   onMenuClick: (item: MenuItem) => void;
 }) {
+  const t = useTranslations('common');
+
   return (
-    <div className={cn('flex grow items-center z-40', className)}>
+    <div className={cn('flex shrink-0 items-center', className)}>
       <Sheet>
         <SheetTrigger asChild>
           <Button
+            variant="ghost"
+            size="icon"
+            className="relative size-11 shrink-0 text-muted-foreground [&_svg]:size-5"
+            aria-label={t('Menu')}
             data-cy="appMenu"
-            className="text-muted-foreground bg-card hover:bg-card"
           >
             <LuMenu />
+            {hasBadge ? (
+              <span className="absolute top-2.5 right-2.5 size-2 rounded-full bg-primary" />
+            ) : null}
           </Button>
         </SheetTrigger>
         <SheetContent side="left" className="flex flex-col gap-0 px-0">
@@ -64,9 +75,6 @@ export function HamburgerMenu({
           />
         </SheetContent>
       </Sheet>
-      {selectedMenuItem ? (
-        <span className="whitespace-nowrap ml-2">{selectedMenuItem.label}</span>
-      ) : null}
     </div>
   );
 }

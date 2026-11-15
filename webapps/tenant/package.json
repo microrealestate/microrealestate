@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build --no-lint --turbopack",
+    "dev": "yarn assets && next dev --turbopack",
+    "build": "yarn assets && next build --no-lint --turbopack",
+    "assets": "node ../commonui/scripts/copy-assets.ts .",
     "start": "next start",
     "generateStrings": "node scripts/extractlocalizedstrings.js",
     "tsc": "tsc --noEmit"
@@ -26,7 +27,7 @@
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-icons": "catalog:",
-    "sonner": "catalog:",
+    "usehooks-ts": "catalog:",
     "yup": "catalog:"
   },
   "devDependencies": {

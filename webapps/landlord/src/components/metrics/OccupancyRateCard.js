@@ -6,9 +6,9 @@ import { fetchOccupancyRate, QueryKeys } from '../../utils/restcalls';
 import { DashboardCard } from '../dashboard/DashboardCard';
 import NumberFormat from '../NumberFormat';
 
-export default function OccupancyRateCard({ year, className }) {
+export default function OccupancyRateCard() {
   const t = useTranslations('common');
-  const currentYear = year || moment().year();
+  const currentYear = moment().year();
 
   const { data, isLoading, error } = useQuery({
     queryKey: [QueryKeys.OCCUPANCY_RATE, currentYear],
@@ -35,7 +35,6 @@ export default function OccupancyRateCard({ year, className }) {
           />
         )
       }
-      className={className}
     />
   );
 }

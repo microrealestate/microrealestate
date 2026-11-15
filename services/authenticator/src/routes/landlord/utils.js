@@ -2,8 +2,13 @@ import crypto from 'node:crypto';
 import { Service } from '@microrealestate/common';
 import jwt from 'jsonwebtoken';
 
+export function refreshTokenSeconds() {
+  const { PRODUCTION } = Service.getInstance().envConfig.getValues();
+  return PRODUCTION ? 600 : 12 * 60 * 60;
+}
+
 export async function generateTokens(dbAccount) {
-  const { REFRESH_TOKEN_SECRET, ACCESS_TOKEN_SECRET, PRODUCTION } =
+  const { REFRESH_TOKEN_SECRET, ACCESS_TOKEN_SECRET } =
     Service.getInstance().envConfig.getValues();
   const { _id, ...account } = dbAccount;
   delete account.password;
@@ -11,7 +16,7 @@ export async function generateTokens(dbAccount) {
     { type: 'landlord', account },
     REFRESH_TOKEN_SECRET,
     {
-      expiresIn: PRODUCTION ? '600s' : '12h',
+      expiresIn: refreshTokenSeconds(),
       jwtid: crypto.randomUUID()
     }
   );
@@ -25,6 +30,10 @@ export async function generateTokens(dbAccount) {
 
   // save tokens
   await Service.getInstance().redisClient.set(refreshToken, accessToken);
+  await Service.getInstance().redisClient.expire(
+    refreshToken,
+    refreshTokenSeconds()
+  );
 
   return {
     refreshToken,

@@ -330,6 +330,7 @@ services:
       - ../webapps/landlord/package.json:/usr/app/webapps/landlord/package.json
       - ../webapps/landlord/postcss.config.mjs:/usr/app/webapps/landlord/postcss.config.mjs
       - ../webapps/landlord/tsconfig.json:/usr/app/webapps/landlord/tsconfig.json
+      - ../version.json:/usr/app/version.json:ro
     networks:
       - web-landlord
       - egress-landlord # next/font/google fetches Inter at compile time

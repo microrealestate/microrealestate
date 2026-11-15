@@ -33,11 +33,15 @@ Yup.addMethod(Yup.string, 'domain', function () {
   });
 });
 
+const withValues = (key: string, values: Record<string, unknown>) => [
+  [key, values]
+];
+
 Yup.setLocale({
   string: {
-    length: ({ length }) => ['Enter {length} characters', { length }],
-    min: ({ min }) => ['Enter at least {min} characters', { min }],
-    max: ({ max }) => ['Enter at most {max} characters', { max }],
+    length: ({ length }) => withValues('Enter {length} characters', { length }),
+    min: ({ min }) => withValues('Enter at least {min} characters', { min }),
+    max: ({ max }) => withValues('Enter at most {max} characters', { max }),
     matches: 'Enter a valid value',
     url: 'Enter a valid URL',
     uuid: 'Enter a valid UUID',
@@ -55,23 +59,23 @@ Yup.setLocale({
     defined: 'Enter a valid value'
   },
   number: {
-    min: ({ min }) => ['Enter a value greater than or equal to {min}', { min }],
-    max: ({ max }) => ['Enter a value less than or equal to {max}', { max }],
-    lessThan: ({ less }) => ['Enter a value less than {less}', { less }],
-    moreThan: ({ more }) => ['Enter a value greater than {more}', { more }],
+    min: ({ min }) =>
+      withValues('Enter a value greater than or equal to {min}', { min }),
+    max: ({ max }) =>
+      withValues('Enter a value less than or equal to {max}', { max }),
+    lessThan: ({ less }) =>
+      withValues('Enter a value less than {less}', { less }),
+    moreThan: ({ more }) =>
+      withValues('Enter a value greater than {more}', { more }),
     positive: 'Enter a positive number',
     negative: 'Enter a negative number',
     integer: 'Enter an integer'
   },
   date: {
-    min: ({ min }) => [
-      'Enter a date after {min}',
-      { min: moment(min).format('L') }
-    ],
-    max: ({ max }) => [
-      'Enter a date before {max}',
-      { max: moment(max).format('L') }
-    ]
+    min: ({ min }) =>
+      withValues('Enter a date after {min}', { min: moment(min).format('L') }),
+    max: ({ max }) =>
+      withValues('Enter a date before {max}', { max: moment(max).format('L') })
   },
   boolean: {
     isValue: 'Enter a valid value'
@@ -80,8 +84,8 @@ Yup.setLocale({
     noUnknown: 'Enter a valid value'
   },
   array: {
-    length: ({ length }) => ['Enter {length} items', { length }],
-    min: ({ min }) => ['Enter at least {min} items', { min }],
-    max: ({ max }) => ['Enter at most {max} items', { max }]
+    length: ({ length }) => withValues('Enter {length} items', { length }),
+    min: ({ min }) => withValues('Enter at least {min} items', { min }),
+    max: ({ max }) => withValues('Enter at most {max} items', { max })
   }
 });

@@ -1,25 +1,19 @@
-import { Button } from '@microrealestate/commonui/components/ui/button';
 import { Input } from '@microrealestate/commonui/components/ui/input';
 import { TooltipProvider } from '@microrealestate/commonui/components/ui/tooltip';
 import type { Editor } from '@tiptap/react';
 import { useTranslations } from 'next-intl';
 import { type ChangeEvent, useCallback } from 'react';
 import { LuSave } from 'react-icons/lu';
-import { RiFunctions, RiPrinterFill } from 'react-icons/ri';
+import { RiArrowLeftLine } from 'react-icons/ri';
 import FormatMenu from './FormatMenu';
-import { handlePrint } from './helpers';
-import PageMenu from './PageMenu';
 import TableMenu from './TableMenu';
 import ReadOnlyBadge from './toolbar/ReadOnlyBadge';
-import { ToolbarButton, ToolbarToggle } from './toolbar/ToolbarPrimitives';
+import { ToolbarButton } from './toolbar/ToolbarPrimitives';
 
 type EditorMenuProps = {
   editor: Editor;
   title: string;
   showPrintButton?: boolean;
-  hasFields: boolean;
-  showFieldMenu: boolean;
-  onToggleFieldMenu: () => void;
   saving?: boolean;
   onChange: (title: string) => void;
   onClose: () => void;
@@ -31,9 +25,6 @@ export default function EditorMenu({
   editor,
   title,
   showPrintButton,
-  hasFields,
-  showFieldMenu,
-  onToggleFieldMenu,
   saving,
   onChange,
   onClose,
@@ -52,13 +43,16 @@ export default function EditorMenu({
   return (
     <TooltipProvider delayDuration={300}>
       <div className="relative z-10 shrink-0 space-y-2 rounded-tl-md rounded-tr-md border-b bg-card p-2 shadow-md">
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-nowrap items-center gap-2">
+          <ToolbarButton label={t('Close')} onClick={onClose} data-cy="close">
+            <RiArrowLeftLine className="rtl:-scale-x-100" />
+          </ToolbarButton>
           {editable ? (
             <Input
               name="title"
               defaultValue={title}
               onChange={onTitleChange}
-              className="w-full min-w-0 sm:w-80"
+              className="min-w-0 flex-1 sm:max-w-80"
               aria-label={t('Document title')}
             />
           ) : (
@@ -68,7 +62,7 @@ export default function EditorMenu({
             </div>
           )}
 
-          <div className="ms-auto flex items-center gap-4 text-muted-foreground">
+          <div className="flex shrink-0 items-center text-muted-foreground">
             {saving ? (
               <div className="flex items-center gap-1 whitespace-nowrap">
                 <LuSave className="size-4" />
@@ -85,36 +79,14 @@ export default function EditorMenu({
                 {t('Saved')}
               </div>
             ) : null}
-            <Button onClick={onClose} variant="secondary" data-cy="close">
-              {t('Close')}
-            </Button>
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-y-1">
-          {editable ? <FormatMenu editor={editor} /> : null}
-
-          <div className="ms-auto flex items-center gap-1">
-            <PageMenu editor={editor} />
-            {showPrintButton ? (
-              <ToolbarButton
-                label={t('Print')}
-                onClick={() => handlePrint(editor)}
-              >
-                <RiPrinterFill />
-              </ToolbarButton>
-            ) : null}
-            {editable && hasFields ? (
-              <ToolbarToggle
-                label={t('Computed fields')}
-                pressed={showFieldMenu}
-                onClick={onToggleFieldMenu}
-              >
-                <RiFunctions />
-              </ToolbarToggle>
-            ) : null}
-          </div>
-        </div>
+        <FormatMenu
+          editor={editor}
+          editable={editable}
+          showPrintButton={showPrintButton}
+        />
 
         {editable ? <TableMenu editor={editor} /> : null}
       </div>

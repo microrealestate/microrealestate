@@ -41,5 +41,16 @@
   "Cash": "Bargeld",
   "Cheque": "Scheck",
   "Direct debit": "Lastschrift",
-  "Other": "Andere"
+  "Other": "Andere",
+  "Estate": "Liegenschaft",
+  "Building": "Gebäude",
+  "Floor": "Etage",
+  "Apartment": "Wohnung",
+  "Office": "Büro",
+  "Store": "Geschäft",
+  "Room": "Zimmer",
+  "Cellar": "Keller",
+  "Garage": "Garage",
+  "Parking spot": "Parkplatz",
+  "Mailbox": "Briefkasten"
 }

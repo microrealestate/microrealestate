@@ -54,7 +54,7 @@ function matchMarginPreset(margins: PageMargins): PageMarginPreset {
   return preset ?? 'normal';
 }
 
-export default function PageMenu({ editor }: { editor: Editor }) {
+export function PageSetupFields({ editor }: { editor: Editor }) {
   const t = useTranslations('common');
   const fieldId = useId();
   const state = useEditorState({
@@ -78,6 +78,93 @@ export default function PageMenu({ editor }: { editor: Editor }) {
   }
 
   return (
+    <div className="space-y-3">
+      <div className="space-y-1">
+        <Label htmlFor={`${fieldId}-format`}>{t('Page format')}</Label>
+        <Select
+          value={state.pageFormat}
+          disabled={!state.editable}
+          onValueChange={(pageFormat) =>
+            editor
+              .chain()
+              .focus()
+              .setPageSetup({ pageFormat: pageFormat as PageFormat })
+              .run()
+          }
+        >
+          <SelectTrigger id={`${fieldId}-format`} className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {PAGE_FORMATS.map((format) => (
+              <SelectItem key={format} value={format}>
+                {FORMAT_LABELS[format]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-1">
+        <Label htmlFor={`${fieldId}-orientation`}>{t('Orientation')}</Label>
+        <Select
+          value={state.orientation}
+          disabled={!state.editable}
+          onValueChange={(orientation) =>
+            editor
+              .chain()
+              .focus()
+              .setPageSetup({ orientation: orientation as PageOrientation })
+              .run()
+          }
+        >
+          <SelectTrigger id={`${fieldId}-orientation`} className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {PAGE_ORIENTATIONS.map((orientation) => (
+              <SelectItem key={orientation} value={orientation}>
+                {t(ORIENTATION_LABELS[orientation])}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-1">
+        <Label htmlFor={`${fieldId}-margins`}>{t('Margins')}</Label>
+        <Select
+          value={state.marginPreset}
+          disabled={!state.editable}
+          onValueChange={(preset) =>
+            editor
+              .chain()
+              .focus()
+              .setPageSetup({
+                margins: PAGE_MARGIN_PRESETS_MM[preset as PageMarginPreset]
+              })
+              .run()
+          }
+        >
+          <SelectTrigger id={`${fieldId}-margins`} className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {PAGE_MARGIN_PRESETS.map((preset) => (
+              <SelectItem key={preset} value={preset}>
+                {t(MARGIN_LABELS[preset])}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+    </div>
+  );
+}
+
+export default function PageMenu({ editor }: { editor: Editor }) {
+  const t = useTranslations('common');
+  return (
     <Popover>
       <PopoverTrigger asChild>
         <ToolbarButton label={t('Page setup')} className="w-auto gap-1 px-2">
@@ -88,86 +175,8 @@ export default function PageMenu({ editor }: { editor: Editor }) {
           <RiArrowDownSLine className="opacity-60" />
         </ToolbarButton>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-64 space-y-3">
-        <div className="space-y-1">
-          <Label htmlFor={`${fieldId}-format`}>{t('Page format')}</Label>
-          <Select
-            value={state.pageFormat}
-            disabled={!state.editable}
-            onValueChange={(pageFormat) =>
-              editor
-                .chain()
-                .focus()
-                .setPageSetup({ pageFormat: pageFormat as PageFormat })
-                .run()
-            }
-          >
-            <SelectTrigger id={`${fieldId}-format`} className="w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {PAGE_FORMATS.map((format) => (
-                <SelectItem key={format} value={format}>
-                  {FORMAT_LABELS[format]}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-1">
-          <Label htmlFor={`${fieldId}-orientation`}>{t('Orientation')}</Label>
-          <Select
-            value={state.orientation}
-            disabled={!state.editable}
-            onValueChange={(orientation) =>
-              editor
-                .chain()
-                .focus()
-                .setPageSetup({ orientation: orientation as PageOrientation })
-                .run()
-            }
-          >
-            <SelectTrigger id={`${fieldId}-orientation`} className="w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {PAGE_ORIENTATIONS.map((orientation) => (
-                <SelectItem key={orientation} value={orientation}>
-                  {t(ORIENTATION_LABELS[orientation])}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-1">
-          <Label htmlFor={`${fieldId}-margins`}>{t('Margins')}</Label>
-          <Select
-            value={state.marginPreset}
-            disabled={!state.editable}
-            onValueChange={(preset) =>
-              editor
-                .chain()
-                .focus()
-                .setPageSetup({
-                  margins: PAGE_MARGIN_PRESETS_MM[preset as PageMarginPreset]
-                })
-                .run()
-            }
-          >
-            <SelectTrigger id={`${fieldId}-margins`} className="w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {PAGE_MARGIN_PRESETS.map((preset) => (
-                <SelectItem key={preset} value={preset}>
-                  {t(MARGIN_LABELS[preset])}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+      <PopoverContent align="end" className="w-64">
+        <PageSetupFields editor={editor} />
       </PopoverContent>
     </Popover>
   );

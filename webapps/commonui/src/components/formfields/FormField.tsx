@@ -7,6 +7,7 @@ export default function FormField({
   className,
   error,
   description,
+  hideLabel = false,
   ...props
 }: {
   children?: React.ReactNode;
@@ -15,6 +16,7 @@ export default function FormField({
   label: string;
   error?: boolean;
   description?: string;
+  hideLabel?: boolean;
 }) {
   const { errorMessage, hasError } = useFormError({ name: props.name });
 
@@ -22,7 +24,10 @@ export default function FormField({
     <div className={cn('relative pb-2', className)}>
       <label
         htmlFor={props.name}
-        className={cn(error ? 'text-warning' : 'text-muted-foreground')}
+        className={cn(
+          error ? 'text-warning' : 'text-muted-foreground',
+          hideLabel && 'sr-only'
+        )}
       >
         {props.label}
       </label>

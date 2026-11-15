@@ -92,7 +92,8 @@ export const propertyCount: Middlewares.AsyncRequestHandler<
 > = async (req, res) => {
   try {
     const count = await Collections.Property.countDocuments({
-      realmId: req.realm?._id
+      realmId: req.realm?._id,
+      availableForRent: true
     });
 
     res.json({ count });
@@ -118,9 +119,13 @@ export const occupancyRate: Middlewares.AsyncRequestHandler<
     const beginOfYear = moment(`${year}-01-01`);
     const endOfYear = moment(`${year}-12-31`).endOf('day');
 
-    const propertyCount = await Collections.Property.countDocuments({
-      realmId: req.realm?._id
-    });
+    const rentablePropertyIds = (
+      await Collections.Property.find(
+        { realmId: req.realm?._id, availableForRent: true },
+        { _id: 1 }
+      ).lean()
+    ).map(({ _id }) => String(_id));
+    const propertyCount = rentablePropertyIds.length;
 
     const beginOfYearStr = beginOfYear.format(DateFormat.DATE_FORMAT);
     const endOfYearStr = endOfYear.format(DateFormat.DATE_FORMAT);
@@ -141,6 +146,9 @@ export const occupancyRate: Middlewares.AsyncRequestHandler<
       },
       {
         $unwind: '$properties'
+      },
+      {
+        $match: { 'properties.propertyId': { $in: rentablePropertyIds } }
       },
       {
         $group: {
@@ -516,51 +524,6 @@ export const topUnpaid: Middlewares.AsyncRequestHandler<
       error
     );
     throw new ServiceError('Failed to fetch top unpaid tenants', 500);
-  }
-};
-
-export const rentsCount: Middlewares.AsyncRequestHandler<
-  API.Landlord.Dashboard.GetRentsCount.RequestParams,
-  API.Landlord.Dashboard.GetRentsCount.ResponseBody
-> = async (req, res) => {
-  const { year, month } = req.params;
-  if (!_validateYearMonth(year, month)) {
-    throw new ServiceError(
-      'Invalid year or month format. Year must be a 4-digit number and month must be between 1-12.',
-      400
-    );
-  }
-
-  try {
-    const beginOfMonth = moment(`${year}-${month}-01`).startOf('month');
-    const endOfMonth = moment(`${year}-${month}-01`).endOf('month');
-
-    const count = await Collections.Tenant.aggregate<{ count: number }>([
-      {
-        $match: {
-          realmId: req.realm?._id
-        }
-      },
-      {
-        $unwind: '$rents'
-      },
-      {
-        $match: {
-          'rents.term': {
-            $gte: parseInt(beginOfMonth.format('YYYYMMDDHH'), 10),
-            $lte: parseInt(endOfMonth.format('YYYYMMDDHH'), 10)
-          }
-        }
-      },
-      {
-        $count: 'count'
-      }
-    ]);
-
-    res.json({ count: count[0]?.count || 0 });
-  } catch (error) {
-    logger.error(`Error counting rents for ${year}/${month}:`, error);
-    throw new ServiceError('Failed to count rents', 500);
   }
 };
 

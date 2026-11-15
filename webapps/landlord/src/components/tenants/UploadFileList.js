@@ -1,7 +1,7 @@
+import { toast } from '@microrealestate/commonui/components/ui/sonner';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
 import { useCallback, useMemo, useState } from 'react';
-import { toast } from 'sonner';
 import { useStore } from '@/providers/StoreProvider';
 import { downloadDocument } from '../../utils/fetch';
 import ConfirmDialog from '../ConfirmDialog';

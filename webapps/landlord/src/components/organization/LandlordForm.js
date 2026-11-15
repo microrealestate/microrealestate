@@ -6,6 +6,7 @@ import {
 import { SelectField } from '@microrealestate/commonui/components/formfields/SelectField';
 import { SubmitButton } from '@microrealestate/commonui/components/formfields/SubmitButton';
 import { TextField } from '@microrealestate/commonui/components/formfields/TextField';
+import { toast } from '@microrealestate/commonui/components/ui/sonner';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import cc from 'currency-codes';
 import getSymbolFromCurrency from 'currency-symbol-map';
@@ -13,7 +14,6 @@ import { Form, Formik } from 'formik';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
-import { toast } from 'sonner';
 import * as Yup from 'yup';
 import { useRouter } from '@/i18n/navigation';
 import { useStore } from '@/providers/StoreProvider';
@@ -80,6 +80,27 @@ const languages = [
   { id: 'es-CO', label: 'Español (Colombia)', value: 'es-CO' }
 ];
 
+function toOrganizationPart(landlord, companyInfo = {}) {
+  const isCompany = landlord.isCompany === 'true';
+  return {
+    name: landlord.name,
+    isCompany,
+    currency: landlord.currency,
+    locale: landlord.locale,
+    ...(isCompany && {
+      companyInfo: {
+        ...companyInfo,
+        name: landlord.company,
+        ein: landlord.ein,
+        dos: landlord.dos,
+        legalRepresentative: landlord.legalRepresentative,
+        legalStructure: landlord.legalStructure,
+        capital: landlord.capital
+      }
+    })
+  };
+}
+
 function LandlordForm({ organization }) {
   const t = useTranslations('common');
   const store = useStore();
@@ -133,7 +154,7 @@ function LandlordForm({ organization }) {
   const onSubmit = async (landlord) => {
     if (!organization) {
       const newOrganization = {
-        ...landlord,
+        ...toOrganizationPart(landlord),
         member1: {
           name: `${store.user.firstName} ${store.user.lastName}`,
           email: store.user.email
@@ -156,32 +177,14 @@ function LandlordForm({ organization }) {
         { locale: savedOrganization.locale }
       );
     } else {
-      const updatedOrgPart = {
-        name: landlord.name,
-        isCompany: landlord.isCompany === 'true',
-        currency: landlord.currency,
-        locale: landlord.locale
-      };
-
-      if (updatedOrgPart.isCompany) {
-        updatedOrgPart.companyInfo = {
-          ...(organization.companyInfo || {}),
-          name: landlord.company,
-          ein: landlord.ein,
-          dos: landlord.dos,
-          legalRepresentative: landlord.legalRepresentative,
-          legalStructure: landlord.legalStructure,
-          capital: landlord.capital
-        };
-      }
-
       let savedOrganization;
       try {
         savedOrganization = await mutateUpdateOrganization.mutateAsync({
           store,
-          organization: mergeOrganization(organization, {
-            ...updatedOrgPart
-          })
+          organization: mergeOrganization(
+            organization,
+            toOrganizationPart(landlord, organization.companyInfo || {})
+          )
         });
       } catch {
         return;
@@ -192,6 +195,8 @@ function LandlordForm({ organization }) {
       const isLocaleChanged = savedOrganization.locale !== initialValues.locale;
       if (isOrgNameChanged || isLocaleChanged) {
         router.push('/', { locale: savedOrganization.locale });
+      } else {
+        toast.success(t('Changes saved'));
       }
     }
   };

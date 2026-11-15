@@ -1,8 +1,10 @@
 import { cn } from '@microrealestate/commonui/utils';
 import {
-  LuBedSingle,
   LuBuilding,
+  LuDoorOpen,
   LuHouse,
+  LuLandPlot,
+  LuLayers,
   LuMailbox,
   LuMountain,
   LuSquareParking,
@@ -10,8 +12,9 @@ import {
   LuWarehouse
 } from 'react-icons/lu';
 import { PiOfficeChair } from 'react-icons/pi';
+import { TbStairsDown } from 'react-icons/tb';
 
-export default function PropertyIcon({ type, className }) {
+export default function PropertyIcon({ type, className, ...props }) {
   let TypeIcon = LuMountain;
   switch (type) {
     case 'store':
@@ -21,7 +24,7 @@ export default function PropertyIcon({ type, className }) {
       TypeIcon = LuHouse;
       break;
     case 'room':
-      TypeIcon = LuBedSingle;
+      TypeIcon = LuDoorOpen;
       break;
     case 'building':
       TypeIcon = LuBuilding;
@@ -38,7 +41,16 @@ export default function PropertyIcon({ type, className }) {
     case 'letterbox':
       TypeIcon = LuMailbox;
       break;
+    case 'floor':
+      TypeIcon = LuLayers;
+      break;
+    case 'cellar':
+      TypeIcon = TbStairsDown;
+      break;
+    case 'estate':
+      TypeIcon = LuLandPlot;
+      break;
   }
 
-  return <TypeIcon className={cn('size-6', className)} />;
+  return <TypeIcon className={cn('size-6', className)} {...props} />;
 }

@@ -7,6 +7,12 @@ import {
   logger,
   MongoClient
 } from '@microrealestate/common';
+import {
+  customFieldKey,
+  customFieldMarker,
+  type Locale,
+  type PropertyCustomField
+} from '@microrealestate/shared';
 import moment from 'moment';
 import mongoose from 'mongoose';
 
@@ -645,6 +651,214 @@ async function migrateAutoRenew() {
   logger.info(`migrated ${result.modifiedCount} leases with autoRenew=false`);
 }
 
+async function migrateAvailableForRent() {
+  const db = mongoose.connection.db;
+  if (!db) {
+    throw new Error('mongoose connection is not ready');
+  }
+  const result = await db
+    .collection('properties')
+    .updateMany(
+      { availableForRent: { $not: { $type: 'bool' } } },
+      { $set: { availableForRent: true } }
+    );
+  logger.info(
+    `migrated ${result.modifiedCount} properties with availableForRent=true`
+  );
+
+  // Lease lines embed a copy of the property, validated by the same schema.
+  const missingFlag = {
+    'line.property': { $type: 'object' },
+    'line.property.availableForRent': { $not: { $type: 'bool' } }
+  };
+  const leases = await db.collection('occupants').updateMany(
+    {
+      properties: {
+        $elemMatch: {
+          property: { $type: 'object' },
+          'property.availableForRent': { $not: { $type: 'bool' } }
+        }
+      }
+    },
+    { $set: { 'properties.$[line].property.availableForRent': true } },
+    { arrayFilters: [missingFlag] }
+  );
+  logger.info(
+    `migrated ${leases.modifiedCount} leases with property snapshots availableForRent=true`
+  );
+}
+
+const ACCESS_DETAIL_LABELS: Record<
+  Locale,
+  { phone: string; digicode: string }
+> = {
+  en: { phone: 'Phone', digicode: 'Door code' },
+  'fr-FR': { phone: 'Téléphone', digicode: 'Digicode' },
+  'de-DE': { phone: 'Telefon', digicode: 'Türcode' },
+  'pt-BR': { phone: 'Telefone', digicode: 'Código de acesso' },
+  'es-CO': { phone: 'Teléfono', digicode: 'Código de acceso' }
+};
+
+export function accessDetailsToCustomFields(
+  property: Record<string, unknown>,
+  locale?: string
+): PropertyCustomField[] {
+  const labels =
+    ACCESS_DETAIL_LABELS[locale as Locale] ?? ACCESS_DETAIL_LABELS.en;
+  return (['phone', 'digicode'] as const).flatMap((key) => {
+    const value = typeof property[key] === 'string' ? property[key].trim() : '';
+    return value ? [{ label: labels[key], value }] : [];
+  });
+}
+
+// runs at every api start: a field with the same key is updated, never duplicated
+export function mergeAccessDetails(
+  existing: PropertyCustomField[],
+  converted: PropertyCustomField[]
+): PropertyCustomField[] {
+  const newValues = new Map(
+    converted.map((field) => [customFieldKey(field.label), field.value])
+  );
+  const existingKeys = new Set(
+    existing.map((field) => customFieldKey(field.label))
+  );
+  const added = converted.filter(
+    (field) => !existingKeys.has(customFieldKey(field.label))
+  );
+  const updated = existing.map((field) => {
+    const value = newValues.get(customFieldKey(field.label));
+    return value === undefined ? field : { ...field, value };
+  });
+  return [...added, ...updated];
+}
+
+async function migratePropertyAccessDetails() {
+  const db = mongoose.connection.db;
+  if (!db) {
+    throw new Error('mongoose connection is not ready');
+  }
+  const realms = await db
+    .collection('realms')
+    .find({}, { projection: { locale: 1 } })
+    .toArray();
+  const localeByRealm = new Map(
+    realms.map(({ _id, locale }) => [String(_id), locale as string])
+  );
+
+  const properties = db.collection('properties');
+  const cursor = properties.find({
+    $or: [{ phone: { $exists: true } }, { digicode: { $exists: true } }]
+  });
+  let migrated = 0;
+  while (await cursor.hasNext()) {
+    const property = await cursor.next();
+    if (!property) continue;
+    const converted = accessDetailsToCustomFields(
+      property,
+      localeByRealm.get(String(property.realmId))
+    );
+    const customFields = mergeAccessDetails(
+      Array.isArray(property.customFields) ? property.customFields : [],
+      converted
+    );
+    await properties.updateOne(
+      { _id: property._id },
+      {
+        ...(customFields.length ? { $set: { customFields } } : {}),
+        $unset: { phone: '', digicode: '' }
+      }
+    );
+    migrated++;
+  }
+  logger.info(
+    `migrated ${migrated} properties with phone or door code to custom fields`
+  );
+
+  // Lease lines embed a copy of the property; nothing reads these two fields
+  // there (documents read the live unit), so they are only removed.
+  const leases = await db.collection('occupants').updateMany(
+    {
+      $or: [
+        { 'properties.property.phone': { $exists: true } },
+        { 'properties.property.digicode': { $exists: true } }
+      ]
+    },
+    {
+      $unset: {
+        'properties.$[line].property.phone': '',
+        'properties.$[line].property.digicode': ''
+      }
+    },
+    { arrayFilters: [{ 'line.property': { $type: 'object' } }] }
+  );
+  logger.info(
+    `removed phone and door code from ${leases.modifiedCount} leases with property snapshots`
+  );
+}
+
+const ACCESS_DETAIL_MARKERS = {
+  phone: '{{properties.list.[0].phone}}',
+  digicode: '{{properties.list.[0].digicode}}'
+} as const;
+
+// html and JSON contents both hold the marker verbatim
+export function rewriteAccessMarkers(text: string, locale?: string): string {
+  const labels =
+    ACCESS_DETAIL_LABELS[locale as Locale] ?? ACCESS_DETAIL_LABELS.en;
+  return (['phone', 'digicode'] as const).reduce(
+    (result, key) =>
+      result.replaceAll(
+        ACCESS_DETAIL_MARKERS[key],
+        customFieldMarker(customFieldKey(labels[key]))
+      ),
+    text
+  );
+}
+
+async function migrateTemplateAccessMarkers() {
+  const db = mongoose.connection.db;
+  if (!db) {
+    throw new Error('mongoose connection is not ready');
+  }
+  const realms = await db
+    .collection('realms')
+    .find({}, { projection: { locale: 1 } })
+    .toArray();
+  const localeByRealm = new Map(
+    realms.map(({ _id, locale }) => [String(_id), locale as string])
+  );
+
+  // a marker can sit in `contents` alone; write only what changed
+  const templates = db.collection('templates');
+  const cursor = templates.find({ type: 'text' });
+  let migrated = 0;
+  while (await cursor.hasNext()) {
+    const template = await cursor.next();
+    if (!template) continue;
+    const locale = localeByRealm.get(String(template.realmId));
+    const $set: Record<string, unknown> = {};
+    if (typeof template.html === 'string') {
+      const html = rewriteAccessMarkers(template.html, locale);
+      if (html !== template.html) {
+        $set.html = html;
+      }
+    }
+    if (template.contents) {
+      const contents = JSON.stringify(template.contents);
+      const rewritten = rewriteAccessMarkers(contents, locale);
+      if (rewritten !== contents) {
+        $set.contents = JSON.parse(rewritten);
+      }
+    }
+    if (Object.keys($set).length === 0) continue;
+    await templates.updateOne({ _id: template._id }, { $set });
+    migrated++;
+  }
+  logger.info(
+    `pointed phone and door code markers of ${migrated} templates at custom fields`
+  );
+}
+
 export default async function migratedb() {
   let failure = false;
   let db: MongoClient | undefined;
@@ -672,6 +886,9 @@ export default async function migratedb() {
     await migrateEmailTemplateNames();
     await migrateEmailSendLog();
     await migrateAutoRenew();
+    await migrateAvailableForRent();
+    await migratePropertyAccessDetails();
+    await migrateTemplateAccessMarkers();
     logger.info('Migration done');
   } catch (error) {
     logger.error(formatError(error));

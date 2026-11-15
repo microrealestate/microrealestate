@@ -6,17 +6,63 @@ import {
 } from '@microrealestate/commonui/components/ui/popover';
 import { type Editor, useEditorState } from '@tiptap/react';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { type ReactNode, useState } from 'react';
 import {
   RiAddLine,
   RiArrowDownSLine,
   RiPageSeparator,
   RiSeparator,
-  RiTable2,
+  RiTableLine,
   RiTextWrap
 } from 'react-icons/ri';
 import '../extensions/PageBreak';
 import { ToolbarMenuItem } from './ToolbarPrimitives';
+
+export type InsertItem = {
+  key: string;
+  label: string;
+  shortcut?: string;
+  icon: ReactNode;
+  run: () => void;
+};
+
+export function getInsertItems(
+  editor: Editor,
+  t: ReturnType<typeof useTranslations>
+): InsertItem[] {
+  return [
+    {
+      key: 'table',
+      label: t('Table'),
+      icon: <RiTableLine />,
+      run: () =>
+        editor
+          .chain()
+          .focus()
+          .insertTable({ rows: 1, cols: 2, withHeaderRow: false })
+          .run()
+    },
+    {
+      key: 'horizontal-line',
+      label: t('Horizontal line'),
+      icon: <RiSeparator />,
+      run: () => editor.chain().focus().setHorizontalRule().run()
+    },
+    {
+      key: 'line-break',
+      label: t('Line break'),
+      shortcut: 'Shift-Enter',
+      icon: <RiTextWrap />,
+      run: () => editor.chain().focus().setHardBreak().run()
+    },
+    {
+      key: 'page-break',
+      label: t('Insert page break'),
+      icon: <RiPageSeparator />,
+      run: () => editor.chain().focus().insertPageBreak().run()
+    }
+  ];
+}
 
 export default function InsertMenu({ editor }: { editor: Editor }) {
   const t = useTranslations('common');
@@ -51,33 +97,15 @@ export default function InsertMenu({ editor }: { editor: Editor }) {
         </Button>
       </PopoverTrigger>
       <PopoverContent align="start" className="w-60 p-1">
-        <ToolbarMenuItem
-          label={t('Table')}
-          icon={<RiTable2 />}
-          onSelect={run(() =>
-            editor
-              .chain()
-              .focus()
-              .insertTable({ rows: 1, cols: 2, withHeaderRow: false })
-              .run()
-          )}
-        />
-        <ToolbarMenuItem
-          label={t('Horizontal line')}
-          icon={<RiSeparator />}
-          onSelect={run(() => editor.chain().focus().setHorizontalRule().run())}
-        />
-        <ToolbarMenuItem
-          label={t('Line break')}
-          shortcut="Shift-Enter"
-          icon={<RiTextWrap />}
-          onSelect={run(() => editor.chain().focus().setHardBreak().run())}
-        />
-        <ToolbarMenuItem
-          label={t('Insert page break')}
-          icon={<RiPageSeparator />}
-          onSelect={run(() => editor.chain().focus().insertPageBreak().run())}
-        />
+        {getInsertItems(editor, t).map((item) => (
+          <ToolbarMenuItem
+            key={item.key}
+            label={item.label}
+            shortcut={item.shortcut}
+            icon={item.icon}
+            onSelect={run(item.run)}
+          />
+        ))}
       </PopoverContent>
     </Popover>
   );

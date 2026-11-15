@@ -11,11 +11,11 @@ import {
   DrawerHeader,
   DrawerTitle
 } from '@microrealestate/commonui/components/ui/drawer';
+import { toast } from '@microrealestate/commonui/components/ui/sonner';
 import { Observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
 import { useCallback, useMemo, useState } from 'react';
 import { LuCirclePlus } from 'react-icons/lu';
-import { toast } from 'sonner';
 import { useStore } from '@/providers/StoreProvider';
 import ConfirmDialog from '../ConfirmDialog';
 import DocumentList from '../DocumentList';
@@ -188,7 +188,7 @@ export default function TenantDocumentList({ disabled = false }) {
         dismissible={!creatingDocument}
       >
         <DrawerContent
-          className="w-full h-full p-4"
+          className="w-full h-full p-4 overflow-y-auto"
           hideHandle={creatingDocument}
         >
           <DrawerHeader className="flex flex-row items-center justify-between p-0">
@@ -200,12 +200,12 @@ export default function TenantDocumentList({ disabled = false }) {
               {t('Close')}
             </Button>
           </DrawerHeader>
-          <div className="flex flex-wrap mx-auto lg:mx-0 gap-4 mt-10">
+          <div className="grid gap-4 mt-10 sm:flex sm:flex-wrap sm:mx-auto lg:mx-0">
             {menuItems.map((item) => (
               <Card
                 key={item.key}
                 onClick={() => handleClickAddText(item.value)}
-                className="w-96 cursor-pointer"
+                className="w-full sm:w-96 cursor-pointer"
                 data-cy={`template-${item.label.replace(/\s/g, '')}`}
               >
                 <CardHeader>

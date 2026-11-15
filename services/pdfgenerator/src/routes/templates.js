@@ -6,6 +6,7 @@ import {
   Middlewares,
   ServiceError
 } from '@microrealestate/common';
+import { customFieldKey, customFieldMarker } from '@microrealestate/shared';
 import express from 'express';
 import { TEMPLATES_DIRECTORY } from '../directories';
 
@@ -47,9 +48,30 @@ export default function () {
   );
   const templatesApi = express.Router();
 
-  templatesApi.get('/fields', (_req, res) => {
-    res.status(200).json(FIELDS);
-  });
+  templatesApi.get(
+    '/fields',
+    Middlewares.asyncWrapper(async (req, res) => {
+      const labels = await Collections.Property.distinct('customFields.label', {
+        realmId: req.realm._id
+      });
+      const customFields = new Map();
+      for (const label of labels
+        .filter((label) => typeof label === 'string')
+        .sort((a, b) => a.localeCompare(b))) {
+        const key = customFieldKey(label);
+        if (key && !customFields.has(key)) {
+          customFields.set(key, {
+            _id: `properties_customField_${key}`,
+            marker: customFieldMarker(key),
+            type: 'string',
+            group: 'property',
+            label: label.trim()
+          });
+        }
+      }
+      res.status(200).json([...FIELDS, ...customFields.values()]);
+    })
+  );
 
   templatesApi.get(
     '/',

@@ -41,5 +41,16 @@
   "Cash": "Cash",
   "Cheque": "Cheque",
   "Direct debit": "Direct debit",
-  "Other": "Other"
+  "Other": "Other",
+  "Estate": "Estate",
+  "Building": "Building",
+  "Floor": "Floor",
+  "Apartment": "Apartment",
+  "Office": "Office",
+  "Store": "Store",
+  "Room": "Room",
+  "Cellar": "Cellar",
+  "Garage": "Garage",
+  "Parking spot": "Parking spot",
+  "Mailbox": "Mailbox"
 }

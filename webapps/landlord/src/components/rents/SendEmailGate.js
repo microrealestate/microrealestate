@@ -25,11 +25,11 @@ export function useSendEmailDisabledReason(rent) {
   const store = useStore();
 
   if (!store.organization.canSendEmails) {
-    return t('No mail service configured');
+    return t('No email delivery service is set up.');
   }
 
   if (rent && !rent.occupant.hasContactEmails) {
-    return t('No emails available for this tenant');
+    return t('This tenant has no email address.');
   }
 
   return null;

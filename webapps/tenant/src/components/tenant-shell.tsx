@@ -2,18 +2,20 @@
 
 import { Shell } from '@microrealestate/commonui/components/shell/Shell';
 import type { MenuItem } from '@microrealestate/commonui/components/shell/SideMenuButton';
+import { toast } from '@microrealestate/commonui/components/ui/sonner';
 import { useSession } from '@microrealestate/commonui/providers/SessionProvider';
 import { useTranslations } from 'next-intl';
 import { type ReactNode, useCallback, useMemo } from 'react';
 import { BsReceipt } from 'react-icons/bs';
 import { LuMail } from 'react-icons/lu';
-import { toast } from 'sonner';
 import { useRouter } from '@/i18n/navigation';
 import { BASE_PATH } from '@/utils/basepath';
 import apiClient from '@/utils/fetch/client';
 
 export function TenantShell({ children }: { children: ReactNode }) {
   const { session, status } = useSession();
+  const email = session?.email;
+  const name = session?.name;
   const router = useRouter();
 
   const t = useTranslations('common');
@@ -64,7 +66,8 @@ export function TenantShell({ children }: { children: ReactNode }) {
 
   return (
     <Shell
-      user={{ email: session?.email }}
+      user={{ name, email }}
+      showAbout={false}
       onSignOut={handleSignOut}
       menuItems={menuItems}
       onMenuClick={handleMenuClick}

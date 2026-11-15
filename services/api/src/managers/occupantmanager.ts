@@ -73,17 +73,38 @@ function formatTenant(
 
 async function buildPropertyMap(
   realm: NonNullable<Express.Request['realm']>
-): Promise<Record<string, Omit<PropertyType, '_id' | 'realmId'>>> {
+): Promise<Record<string, PropertyType>> {
   const properties = await Collections.Property.find({
     realmId: realm._id
   }).lean();
 
-  return properties.reduce<
-    Record<string, Omit<PropertyType, '_id' | 'realmId'>>
-  >((acc, property) => {
+  return properties.reduce<Record<string, PropertyType>>((acc, property) => {
     acc[String(property._id)] = property;
     return acc;
   }, {});
+}
+
+// Units already in the lease (`keptPropertyIds`) pass whatever their flag, so
+// a lease signed before the flag was set stays editable.
+function assertAvailableForRent(
+  propertyMap: Record<string, PropertyType>,
+  properties: { propertyId: string }[] | undefined,
+  keptPropertyIds: Set<string> = new Set()
+) {
+  const unavailable = (properties ?? []).flatMap(({ propertyId }) => {
+    const property = propertyMap[propertyId];
+    return !keptPropertyIds.has(propertyId) &&
+      property &&
+      !property.availableForRent
+      ? [property.name]
+      : [];
+  });
+  if (unavailable.length > 0) {
+    throw new ServiceError(
+      `property not available for rent: ${unavailable.join(', ')}`,
+      422
+    );
+  }
 }
 
 async function fetchTenants(
@@ -223,13 +244,15 @@ export const add: Middlewares.AsyncRequestHandler<
   }
 
   const propertyMap = await buildPropertyMap(realm);
+  assertAvailableForRent(propertyMap, occupant.properties);
 
-  // Resolve properties
+  // Copy each property from the db, never from the request
   occupant.properties?.forEach((property) => {
     const propertyInfo = propertyMap[property.propertyId];
-    if (propertyInfo) {
-      property.property = propertyInfo;
+    if (!propertyInfo) {
+      throw new ServiceError(`property not found: ${property.propertyId}`, 422);
     }
+    property.property = propertyInfo;
     property.rent = property.rent || property.property?.price;
     property.expenses = property.expenses || [];
   });
@@ -299,20 +322,30 @@ export const update: Middlewares.AsyncRequestHandler<
       throw new ServiceError('tenant not found', 404);
     }
 
-    newOccupant.properties = newOccupant.properties?.map((rentedProperty) => {
-      // Merge properties from originalOccupant to newOccupant
-      // copy property from db if not present in originalOccupant
-      if (!rentedProperty.property) {
-        const originalProperty = originalOccupant.properties?.find(
-          ({ propertyId }) => propertyId === rentedProperty.propertyId
-        );
+    assertAvailableForRent(
+      propertyMap,
+      newOccupant.properties,
+      new Set(
+        (originalOccupant.properties ?? []).map(({ propertyId }) =>
+          String(propertyId)
+        )
+      )
+    );
 
-        const property =
-          originalProperty?.property || propertyMap[rentedProperty.propertyId];
-        if (property) {
-          rentedProperty.property = property;
-        }
+    newOccupant.properties = newOccupant.properties?.map((rentedProperty) => {
+      // a unit already in the lease keeps its stored copy, a new one is copied from the db
+      const originalProperty = originalOccupant.properties?.find(
+        ({ propertyId }) => propertyId === rentedProperty.propertyId
+      );
+      const property =
+        originalProperty?.property || propertyMap[rentedProperty.propertyId];
+      if (!property) {
+        throw new ServiceError(
+          `property not found: ${rentedProperty.propertyId}`,
+          422
+        );
       }
+      rentedProperty.property = property;
 
       return rentedProperty;
     });

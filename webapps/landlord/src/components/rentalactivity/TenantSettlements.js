@@ -26,7 +26,7 @@ function SettlementList({ month, tenantId, settlements }) {
       </div>
       <div
         className={cn(
-          'col-span-3 flex flex-col gap-4 justify-end px-4 py-2 border-r',
+          'col-span-3 min-w-0 flex flex-col gap-4 justify-end px-4 py-2 border-r',
           !hasSettlements ? 'bg-muted' : ''
         )}
       >
@@ -35,7 +35,7 @@ function SettlementList({ month, tenantId, settlements }) {
               const { date, amount, type, reference } = settlement;
               const id = `${tenantId}_${month}_${index}`;
               return amount > 0 ? (
-                <div key={id} className="text-right pb-3.5">
+                <div key={id} className="text-right">
                   <div>{moment(date, 'DD/MM/YYYY').format('L')}</div>
                   <RentPayment
                     id={id}

@@ -3,6 +3,7 @@
 import { Shell } from '@microrealestate/commonui/components/shell/Shell';
 import Loading from '@microrealestate/commonui/components/ui/Loading';
 import { useSession } from '@microrealestate/commonui/providers/SessionProvider';
+import { landlordName } from '@microrealestate/shared';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { observer } from 'mobx-react-lite';
 import moment from 'moment';
@@ -11,7 +12,8 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 import DonateDialog from '@/components/DonateDialog';
 import SponsorLink from '@/components/SponsorLink';
 import leftMenuItemsRaw from '@/components/shell/leftmenuitems';
-import rightMenuItemsRaw from '@/components/shell/rightmenuitems';
+import rightMenuGroupsRaw from '@/components/shell/rightmenuitems';
+import UpdateAvailableButton from '@/components/UpdateAvailableButton';
 import useDonatePrompt from '@/hooks/useDonatePrompt';
 import { usePathname, useRouter } from '@/i18n/navigation';
 import { useNav } from '@/providers/NavProvider';
@@ -33,9 +35,6 @@ function LandlordShell({ children }) {
 
   if (!initialized.current && session?.account && session?.accessToken) {
     store.user.setUserFromSession(session.account, session.accessToken);
-    // the session carries a partial organization (no currency, thirdParties nor
-    // isCompany): seed it so the shell renders right away. A remount recreates
-    // the store but does not refetch the cached query, hence the cache first.
     const organization =
       queryClient.getQueryData([QueryKeys.ORGANIZATION]) ??
       session.account.organization;
@@ -86,19 +85,18 @@ function LandlordShell({ children }) {
     [router]
   );
 
-  // Compute Right Menu Items
-  const userMenuItems = useMemo(() => {
+  const userMenuGroups = useMemo(() => {
     if (isSetupRoute) {
       return [];
     }
 
-    const translate = (menuGroup) =>
-      menuGroup.map((item) => ({
-        ...item,
-        label: t(item.labelId)
-      }));
-
-    return rightMenuItemsRaw.map(translate);
+    return rightMenuGroupsRaw.map((group) => ({
+      key: group.key,
+      label: group.labelId ? t(group.labelId) : undefined,
+      withThemeSwitch: group.withThemeSwitch,
+      withAbout: group.withAbout,
+      items: group.items.map((item) => ({ ...item, label: t(item.labelId) }))
+    }));
   }, [t, isSetupRoute]);
 
   const handleUserMenuClick = useCallback(
@@ -108,10 +106,13 @@ function LandlordShell({ children }) {
     [router]
   );
 
-  const handleSignOut = useCallback(() => {
+  const handleSignOut = useCallback(async () => {
     setSigningOut(true);
-    store.user.signOut();
-    redirectTo(`${BASE_PATH}/signin`);
+    try {
+      await store.user.signOut();
+    } finally {
+      redirectTo(`${BASE_PATH}/signin`);
+    }
   }, [store.user, redirectTo]);
 
   if (signingOut) {
@@ -121,18 +122,23 @@ function LandlordShell({ children }) {
   return (
     <>
       <Shell
-        organizationName={store.organization.selected?.name}
+        organizationName={
+          store.organization.selected
+            ? landlordName(store.organization.selected)
+            : undefined
+        }
         user={{
           firstName: store.user?.firstName,
           lastName: store.user?.lastName,
           email: store.user?.email
         }}
         menuItems={menuItems}
-        userMenuItems={userMenuItems}
+        userMenuGroups={userMenuGroups}
         onMenuClick={handleMenuClick}
         onUserMenuClick={handleUserMenuClick}
         onSignOut={handleSignOut}
-        userMenuFooter={<SponsorLink dataCy="sponsorMenuLink" />}
+        userMenuFooter={<SponsorLink compact dataCy="sponsorMenuLink" />}
+        topBarActions={isSetupRoute ? null : <UpdateAvailableButton />}
       >
         {children}
       </Shell>

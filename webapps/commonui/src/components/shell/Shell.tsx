@@ -1,37 +1,51 @@
 'use client';
 
-import { cn } from '@microrealestate/commonui/utils';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { useCallback, useMemo } from 'react';
 import { useMediaQuery } from 'usehooks-ts';
-import { EnvironmentBar } from './EnvironmentBar';
+import {
+  ENVIRONMENT_BAR_HEIGHT,
+  EnvironmentBar,
+  useEnvironmentMode
+} from './EnvironmentBar';
 import { HamburgerMenu } from './HamburgerMenu';
 import { LeftBar } from './LeftBar';
 import { RightBar } from './RightBar';
-import type { MenuItem } from './SideMenuButton';
+import type { MenuGroup, MenuItem } from './SideMenuButton';
+import { TopBarTitle } from './TopBarTitle';
+import { TopBarTitleProvider } from './TopBarTitleSlot';
 
 export function Shell({
   children,
   organizationName,
   user,
   menuItems = [],
-  userMenuItems = [[], []],
+  userMenuGroups = [],
   onMenuClick,
   onUserMenuClick,
   onSignOut,
-  userMenuFooter
+  userMenuFooter,
+  topBarActions,
+  showAbout = true
 }: {
   children: ReactNode;
   organizationName?: string;
-  user: { firstName?: string; lastName?: string; email?: string };
+  user: {
+    firstName?: string;
+    lastName?: string;
+    name?: string;
+    email?: string;
+  };
   menuItems?: MenuItem[];
-  userMenuItems?: MenuItem[][];
+  userMenuGroups?: MenuGroup[];
   onMenuClick?: (item: MenuItem) => void;
   onUserMenuClick?: (item: MenuItem) => void;
   onSignOut?: () => void;
   userMenuFooter?: ReactNode;
+  topBarActions?: ReactNode;
+  showAbout?: boolean;
 }) {
   const isXLorGreater = useMediaQuery('(min-width: 1280px)');
   const pathname = usePathname();
@@ -45,7 +59,7 @@ export function Shell({
 
   // Find the most specific best-matching menu item based on current URL
   const findBestMatch = useCallback(
-    (items: MenuItem[]) => {
+    (items: MenuItem[]): MenuItem | null => {
       let bestMatch: MenuItem | null = null;
       let bestScore = -1;
 
@@ -77,49 +91,76 @@ export function Shell({
     [findBestMatch, menuItems]
   );
   const selectedUserMenuItem = useMemo(
-    () => findBestMatch(userMenuItems.flat()),
-    [findBestMatch, userMenuItems]
+    () => findBestMatch(userMenuGroups.flatMap((group) => group.items)),
+    [findBestMatch, userMenuGroups]
   );
 
+  const currentTitle = (selectedMenuItem ?? selectedUserMenuItem)?.label;
+
+  const environmentMode = useEnvironmentMode();
+
+  const envBarHeight = environmentMode ? ENVIRONMENT_BAR_HEIGHT : 0;
+  const shellTop = envBarHeight + (isRightBarVisible ? 56 : 0);
+
+  const hasMenuBadge = menuItems.some((item) => !!item.badge && item.badge > 0);
+
   return (
-    <>
-      <div className="sticky top-0 z-50 shadow-sm">
+    <TopBarTitleProvider>
+      <div
+        style={
+          {
+            '--env-bar-h': `${envBarHeight}px`,
+            '--shell-top': `${shellTop}px`
+          } as CSSProperties
+        }
+      >
         <EnvironmentBar />
-        {isRightBarVisible ? (
-          <div className="flex items-center xl:justify-end bg-card w-full gap-2 py-1">
-            {isHamburgerMenuVisible ? (
-              <HamburgerMenu
-                organizationName={organizationName}
-                menuItems={menuItems}
-                selectedMenuItem={selectedMenuItem}
-                onMenuClick={(item) => onMenuClick?.(item)}
-              />
-            ) : null}
-            <RightBar
-              user={user}
-              userMenuItems={userMenuItems}
-              selectedMenu={selectedUserMenuItem}
-              onMenuClick={onUserMenuClick}
-              onSignOut={onSignOut}
-              signOutLabel={t('Sign out')}
-              userMenuFooter={userMenuFooter}
+        <div className="flex min-h-svh">
+          {isLeftBarVisible ? (
+            <LeftBar
+              organizationName={organizationName}
+              menuItems={menuItems}
+              selectedMenuItem={selectedMenuItem}
+              onMenuClick={(item) => onMenuClick?.(item)}
             />
+          ) : null}
+          <div className="grow min-w-0">
+            <div className="sticky top-(--env-bar-h) z-50">
+              {isRightBarVisible ? (
+                <header className="flex items-center h-14 gap-2 px-2 xl:px-6 bg-card border-b">
+                  {isHamburgerMenuVisible ? (
+                    <HamburgerMenu
+                      organizationName={organizationName}
+                      menuItems={menuItems}
+                      selectedMenuItem={selectedMenuItem}
+                      hasBadge={hasMenuBadge}
+                      onMenuClick={(item) => onMenuClick?.(item)}
+                    />
+                  ) : null}
+                  <TopBarTitle
+                    title={currentTitle}
+                    organizationName={organizationName}
+                  />
+                  <div className="ml-auto flex shrink-0 items-center gap-1">
+                    {topBarActions}
+                    <RightBar
+                      user={user}
+                      userMenuGroups={userMenuGroups}
+                      selectedMenu={selectedUserMenuItem}
+                      onMenuClick={onUserMenuClick}
+                      onSignOut={onSignOut}
+                      signOutLabel={t('Sign out')}
+                      userMenuFooter={userMenuFooter}
+                      showAbout={showAbout}
+                    />
+                  </div>
+                </header>
+              ) : null}
+            </div>
+            {children}
           </div>
-        ) : null}
-      </div>
-      <div className="flex">
-        {isLeftBarVisible ? (
-          <LeftBar
-            organizationName={organizationName}
-            menuItems={menuItems}
-            selectedMenuItem={selectedMenuItem}
-            onMenuClick={(item) => onMenuClick?.(item)}
-          />
-        ) : null}
-        <div className={cn('grow min-w-0', isLeftBarVisible ? 'ml-60' : '')}>
-          {children}
         </div>
       </div>
-    </>
+    </TopBarTitleProvider>
   );
 }

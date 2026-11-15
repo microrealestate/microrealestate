@@ -7,6 +7,7 @@ type SessionStatus = 'loading' | 'authenticated' | 'unauthenticated';
 type BaseSession = {
   account?: unknown; // Landlord format
   email?: string; // Tenant format
+  name?: string; // Tenant format
   [key: string]: unknown;
 };
 

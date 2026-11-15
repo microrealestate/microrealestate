@@ -3,11 +3,11 @@ import { ContactField } from '@microrealestate/commonui/components/formfields/Co
 import { Section } from '@microrealestate/commonui/components/formfields/Section';
 import { SubmitButton } from '@microrealestate/commonui/components/formfields/SubmitButton';
 import { TextField } from '@microrealestate/commonui/components/formfields/TextField';
+import { toast } from '@microrealestate/commonui/components/ui/sonner';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Form, Formik } from 'formik';
 import { useTranslations } from 'next-intl';
 import { useCallback, useMemo } from 'react';
-import { toast } from 'sonner';
 import * as Yup from 'yup';
 import { useStore } from '@/providers/StoreProvider';
 import { QueryKeys, updateOrganization } from '../../utils/restcalls';
@@ -96,8 +96,9 @@ export default function BillingForm({ organization }) {
         addresses: [billing.address]
       });
       await mutateAsync({ store, organization: updatedOrganization });
+      toast.success(t('Changes saved'));
     },
-    [mutateAsync, organization, store]
+    [mutateAsync, organization, store, t]
   );
 
   return (

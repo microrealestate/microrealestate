@@ -33,8 +33,10 @@ const dataset: DemoDataset = {
       description: 'Two bedroom apartment on the third floor with a balcony',
       surface: 730,
       price: 3200,
-      phone: '2125550143',
-      digicode: '12A34',
+      customFields: [
+        { label: 'Phone', value: '2125550143' },
+        { label: 'Door code', value: '12A34' }
+      ],
       address: {
         street1: '18 Bedford Avenue',
         zipCode: '11249',
@@ -49,7 +51,7 @@ const dataset: DemoDataset = {
       description: 'Ground floor open plan office of 1,290 sq ft',
       surface: 1290,
       price: 5500,
-      phone: '2125550144',
+      customFields: [{ label: 'Phone', value: '2125550144' }],
       address: {
         street1: '5 West 22nd Street',
         zipCode: '10010',

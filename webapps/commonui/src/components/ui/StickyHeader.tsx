@@ -15,9 +15,15 @@ export function StickyHeader({
     const sentinel = sentinelRef.current;
     if (!sentinel) return;
 
+    // Stick right under what the app shell pins at the top (environment
+    // strip + top bar); 0 outside the shell
+    const offset =
+      Number.parseFloat(
+        getComputedStyle(sentinel).getPropertyValue('--shell-top')
+      ) || 0;
     const observer = new IntersectionObserver(
       ([entry]) => setStuck(!entry.isIntersecting),
-      { rootMargin: '-1px 0px 0px 0px', threshold: 0 }
+      { rootMargin: `-${offset + 1}px 0px 0px 0px`, threshold: 0 }
     );
 
     observer.observe(sentinel);
@@ -29,10 +35,11 @@ export function StickyHeader({
       <div ref={sentinelRef} aria-hidden="true" />
       <div
         className={cn(
-          'sm:relative sm:top-auto sm:z-auto sticky top-0 z-50 bg-card',
+          'sticky top-(--shell-top,0px) z-40 bg-card p-3 transition-shadow',
+          // Stuck: flush edge to edge on phones, a floating card from md up
           stuck
-            ? 'rounded-none border-x-0 border-t-0 border-b -mx-2'
-            : 'border rounded',
+            ? '-mx-4 rounded-none border-b md:mx-0 md:rounded-lg md:border md:shadow-md'
+            : 'rounded-lg border',
           className
         )}
       >

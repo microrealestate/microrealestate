@@ -21,6 +21,7 @@ interface DashboardCardProps {
   loading?: boolean;
   loadingContent?: ReactNode;
   className?: string;
+  contentClassName?: string;
 }
 
 export function DashboardCard({
@@ -30,19 +31,27 @@ export function DashboardCard({
   renderContent,
   onClick,
   className,
+  contentClassName,
   loading = false,
   loadingContent
 }: DashboardCardProps) {
   return (
-    <Card className={cn('flex flex-col justify-center size-full', className)}>
+    <Card className={cn('@container/card flex flex-col size-full', className)}>
       <CardHeader>
-        <CardTitle className="flex items-center justify-between font-normal text-xs md:text-sm xl:text-base">
-          {title}
-          {Icon ? <Icon className="size-6 text-muted-foreground" /> : null}
+        <CardTitle className="flex items-center justify-between gap-2 font-normal text-sm">
+          <span className="min-w-0 wrap-break-word hyphens-auto">{title}</span>
+          {Icon ? (
+            <Icon className="hidden size-6 shrink-0 text-muted-foreground @min-[11rem]/card:block" />
+          ) : null}
         </CardTitle>
       </CardHeader>
-      <CardContent className="grow flex justify-between items-center text-2xl md:text-3xl xl:text-4xl font-medium">
-        <div className="w-full h-full">
+      <CardContent
+        className={cn(
+          'grow flex justify-between items-start text-2xl @min-[70rem]/dashboard:text-3xl tabular-nums font-medium',
+          contentClassName
+        )}
+      >
+        <div className="w-full h-full min-w-0">
           {loading
             ? loadingContent || <Skeleton className="h-8 w-16 rounded" />
             : renderContent?.()}
@@ -58,7 +67,9 @@ export function DashboardCard({
         ) : null}
       </CardContent>
       <CardFooter>
-        <CardDescription className="text-xs">{description}</CardDescription>
+        <CardDescription className="text-xs wrap-break-word hyphens-auto">
+          {description}
+        </CardDescription>
       </CardFooter>
     </Card>
   );

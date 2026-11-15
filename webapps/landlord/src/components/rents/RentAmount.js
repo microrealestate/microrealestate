@@ -21,7 +21,8 @@ export default function RentAmount({
       <div
         className={cn(
           'text-xs text-muted-foreground',
-          labelBelow && 'absolute inset-x-0 top-full leading-none'
+          labelBelow &&
+            'absolute right-0 top-full leading-none whitespace-nowrap'
         )}
       >
         {label}

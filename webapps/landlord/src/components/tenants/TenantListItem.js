@@ -1,4 +1,3 @@
-import { Badge } from '@microrealestate/commonui/components/ui/badge';
 import { Button } from '@microrealestate/commonui/components/ui/button';
 import {
   Card,
@@ -16,6 +15,7 @@ import { useCallback, useMemo } from 'react';
 import { useRouter } from '@/i18n/navigation';
 import { useStore } from '@/providers/StoreProvider';
 import TenantAvatar from './TenantAvatar';
+import TenantLeaseStatusBadge from './TenantLeaseStatusBadge';
 import TenantPropertyList from './TenantPropertyList';
 import TenantStatus from './TenantStatus';
 
@@ -93,12 +93,7 @@ export default function TenantListItem({ tenant }) {
 
       <CardFooter className="p-0 flex-col">
         <div className="flex items-center justify-between w-full py-4 px-6">
-          <Badge
-            variant={tenant.terminated ? 'secondary' : 'success'}
-            className="font-normal"
-          >
-            {tenant.terminated ? t('Lease ended') : t('Lease running')}
-          </Badge>
+          <TenantLeaseStatusBadge tenant={tenant} />
         </div>
       </CardFooter>
     </Card>

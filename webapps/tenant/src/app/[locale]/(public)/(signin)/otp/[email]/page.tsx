@@ -6,9 +6,9 @@ import {
   InputOTPGroup,
   InputOTPSlot
 } from '@microrealestate/commonui/components/ui/input-otp';
+import { toast } from '@microrealestate/commonui/components/ui/sonner';
 import { useTranslations } from 'next-intl';
 import { use, useState } from 'react';
-import { toast } from 'sonner';
 import { useRouter } from '@/i18n/navigation';
 import { BASE_PATH } from '@/utils/basepath';
 import apiClient from '@/utils/fetch/client';

@@ -1,6 +1,5 @@
 import { useField, useFormikContext } from 'formik';
 import { useMemo, useState } from 'react';
-import { cn } from '../../utils';
 import {
   Select,
   SelectContent,
@@ -14,6 +13,7 @@ export function SelectField({
   values = [],
   disabled,
   readOnly,
+  hideLabel,
   ...props
 }: {
   values?: {
@@ -25,6 +25,7 @@ export function SelectField({
   }[];
   disabled?: boolean;
   readOnly?: boolean;
+  hideLabel?: boolean;
   name: string;
   label: string;
   onChange?: (event: { target: { value: string; name: string } }) => void;
@@ -60,20 +61,20 @@ export function SelectField({
       return null;
     }
     return (
-      <FormField {...props}>
+      <FormField {...props} hideLabel={hideLabel}>
         <div className="py-2 text-sm font-medium">{selectedOption.label}</div>
       </FormField>
     );
   }
 
   return (
-    <FormField {...props}>
+    <FormField {...props} hideLabel={hideLabel}>
       <Select
         disabled={disabled || isSubmitting}
         {...overridenField}
         onOpenChange={_setOpen}
       >
-        <SelectTrigger className={cn('w-full')}>
+        <SelectTrigger className="w-full data-[size=default]:h-10 bg-background dark:bg-background dark:hover:bg-background text-base md:text-sm shadow-none ring-offset-background focus-visible:border-input focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>

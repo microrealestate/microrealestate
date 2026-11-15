@@ -49,23 +49,17 @@ function ContractsNearRenewalCard({ daysThreshold = 90 }) {
                 key={tenant._id}
                 className="flex items-center justify-between text-sm md:text-base"
               >
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="link"
-                    onClick={handleClick(tenant)}
-                    className="justify-start grow p-0 m-0 whitespace-normal text-left"
-                  >
-                    {tenant.name}
-                  </Button>
-                  {tenant.autoRenew ? (
-                    <LuRefreshCw
-                      className="size-4 shrink-0 text-muted-foreground"
-                      title={t('Automatic renewal')}
-                    />
-                  ) : null}
-                </div>
+                <Button
+                  variant="link"
+                  onClick={handleClick(tenant)}
+                  className="justify-start grow p-0 m-0 whitespace-normal text-left"
+                >
+                  {tenant.name}
+                </Button>
                 <Badge variant={getUrgencyVariant(tenant.daysRemaining)}>
-                  <span className="text-base">{`${tenant.daysRemaining}${t('day_abbrev')}`}</span>
+                  <span className="text-base">
+                    {t('{count} d', { count: tenant.daysRemaining })}
+                  </span>
                 </Badge>
               </div>
             ))}

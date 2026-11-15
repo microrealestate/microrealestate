@@ -10,7 +10,6 @@ export const QueryKeys = {
   TENANT_COUNT: 'tenantCount',
 
   RENTS: 'rents',
-  RENT_COUNT: 'rentCount',
   TOP_UNPAID: 'topUnpaid',
   OCCUPANCY_RATE: 'occupanceRate',
 
@@ -102,13 +101,6 @@ export async function fetchPropertyCount() {
   return response.data;
 }
 
-export async function fetchRentCount(month, year) {
-  const response = await apiClient.get(
-    `/dashboard/rents/count/${year}/${month}`
-  );
-  return response.data;
-}
-
 export async function fetchOccupancyRate(year) {
   const response = await apiClient.get(`/dashboard/occupancy/${year}`);
   return response.data;
@@ -136,6 +128,11 @@ export async function fetchTopUnpaid(month, year) {
   return response.data;
 }
 
+/**
+ * @param {import('../store/Store').default} store
+ * @param {string | null} [yearMonth] the month to fetch, `YYYY.MM`; the current one when omitted
+ * @param {boolean} [updateStore]
+ */
 export async function fetchRents(store, yearMonth = null, updateStore = true) {
   let period;
   if (yearMonth) {
@@ -158,11 +155,17 @@ export async function fetchRents(store, yearMonth = null, updateStore = true) {
 
 export async function fetchLeases(store) {
   const response = await store.lease.fetch();
+  if (response.status !== 200) {
+    throw new Error(`fetch leases failed with status ${response.status}`);
+  }
   return response.data;
 }
 
 export async function updateLease({ store, lease }) {
   const response = await store.lease.update(lease);
+  if (response.status !== 200) {
+    throw new Error(`update lease failed with status ${response.status}`);
+  }
   return response.data;
 }
 

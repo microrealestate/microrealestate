@@ -5,10 +5,11 @@ import 'moment/locale/de';
 import 'moment/locale/es';
 import 'moment/locale/fr';
 import 'moment/locale/pt-br';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { ThemeProvider as NextThemesProvider } from 'next-themes';
 import { createContext, useContext, useMemo } from 'react';
 import { useIsClient } from 'usehooks-ts';
+import ServiceWorkerRegistration from '../components/ServiceWorkerRegistration';
 import { Toaster } from '../components/ui/sonner';
 import EnvProvider from './EnvProvider';
 
@@ -43,6 +44,7 @@ export default function AppProvider({
 }: AppProviderProps) {
   const isClient = useIsClient();
   const locale = useLocale();
+  const t = useTranslations('common');
 
   const dateFnsLocale = useMemo(() => {
     return dateFnsLocales[locale] || enUS;
@@ -66,22 +68,8 @@ export default function AppProvider({
       <EnvProvider env={env}>
         <LocaleContext.Provider value={{ dateFnsLocale }}>
           {children}
-          <Toaster
-            position="bottom-center"
-            closeButton
-            toastOptions={{
-              unstyled: true,
-              classNames: {
-                error:
-                  'flex items-center gap-2 p-4 rounded-lg shadow-lg bg-destructive text-destructive-foreground',
-                success:
-                  'flex items-center gap-2 p-4 rounded-lg shadow-lg bg-success text-success-foreground',
-                warning:
-                  'flex items-center gap-2 p-4 rounded-lg shadow-lg bg-warning text-warning-foreground',
-                info: 'flex items-center gap-2 p-4 rounded-lg shadow-lg bg-info text-info-foreground'
-              }
-            }}
-          />
+          <Toaster closeLabel={t('Close')} />
+          <ServiceWorkerRegistration />
         </LocaleContext.Provider>
       </EnvProvider>
     </NextThemesProvider>

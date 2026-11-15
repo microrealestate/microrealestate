@@ -26,10 +26,13 @@ function SelectRentItem({ rent, onClick }) {
           <div>{rent.occupant.name}</div>
           <div className="flex md:grid md:grid-cols-2 items-center">
             <RentAmount
-              label={t('Total to pay')}
-              amount={rentAmounts.totalAmount}
+              label={
+                rentAmounts.isOverpaid ? t('Tenant credit') : t('Total to pay')
+              }
+              amount={rentAmounts.absTotalAmount}
               withColor={false}
               debitColor={rentAmounts.totalAmount > 0}
+              creditColor={rentAmounts.isOverpaid}
             />
             <div className="grow">
               <RentAmount

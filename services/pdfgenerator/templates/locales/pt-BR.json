@@ -41,5 +41,16 @@
   "Cash": "Dinheiro",
   "Cheque": "Cheque",
   "Direct debit": "Débito direto",
-  "Other": "Outro"
+  "Other": "Outro",
+  "Estate": "Complexo imobiliário",
+  "Building": "Edifício",
+  "Floor": "Andar",
+  "Apartment": "Apartamento",
+  "Office": "Escritório",
+  "Store": "Loja",
+  "Room": "Sala",
+  "Cellar": "Depósito",
+  "Garage": "Garagem",
+  "Parking spot": "Vaga de estacionamento",
+  "Mailbox": "Caixa de correio"
 }

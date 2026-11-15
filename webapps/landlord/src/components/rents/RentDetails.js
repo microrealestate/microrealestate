@@ -24,7 +24,9 @@ export function getRentAmounts(rent) {
         type,
         reference
       })) || [],
-    totalAmount: rent.totalAmount
+    totalAmount: rent.totalAmount,
+    absTotalAmount: Math.abs(rent.totalAmount),
+    isOverpaid: rent.totalAmount < 0
   };
 }
 
@@ -44,11 +46,12 @@ export default function RentDetails({ rent, className }) {
           {rentAmounts.balance === 0
             ? t('Previous balance')
             : rentAmounts.isDebitBalance
-              ? t('Previous debit balance')
-              : t('Previous credit balance')}
+              ? t('Unpaid from previous months')
+              : t('Credit from previous months')}
         </DetailLabel>
         <NumberFormat
           value={rentAmounts.balance}
+          abs
           debitColor={rentAmounts.isDebitBalance}
           creditColor={!rentAmounts.isDebitBalance}
         />
@@ -83,13 +86,13 @@ export default function RentDetails({ rent, className }) {
             <div className="px-1.5 flex items-center gap-2 text-xs text-muted-foreground">
               {rent.notepromo}
             </div>
-            <NumberFormat value={rentAmounts.discount} creditColor={true} />
+            <NumberFormat value={rentAmounts.discount} abs creditColor={true} />
           </div>
         </>
       ) : (
         <div className="flex justify-between">
           <DetailLabel>{t('Discount')}</DetailLabel>
-          <NumberFormat value={rentAmounts.discount} />
+          <NumberFormat value={rentAmounts.discount} abs />
         </div>
       )}
 
@@ -99,8 +102,14 @@ export default function RentDetails({ rent, className }) {
         data-cy="rent-total"
         data-cy-amount={rentAmounts.totalAmount}
       >
-        <DetailLabel>{t('Total to pay')}</DetailLabel>
-        <NumberFormat value={rentAmounts.totalAmount} />
+        <DetailLabel>
+          {rentAmounts.isOverpaid ? t('Tenant credit') : t('Total to pay')}
+        </DetailLabel>
+        <NumberFormat
+          value={rentAmounts.totalAmount}
+          abs
+          creditColor={rentAmounts.isOverpaid}
+        />
       </div>
       {rent.payments?.length ? (
         <>
@@ -148,11 +157,11 @@ export default function RentDetails({ rent, className }) {
             ? t('Balance')
             : rentAmounts.isDebitNewBalance
               ? t('Rent due')
-              : t('Rent overpayment')}
+              : t('Tenant credit')}
         </DetailLabel>
         <NumberFormat
           value={rentAmounts.newBalance}
-          abs={true}
+          abs
           debitColor={rentAmounts.isDebitNewBalance}
           creditColor={!rentAmounts.isDebitNewBalance}
         />
@@ -160,7 +169,7 @@ export default function RentDetails({ rent, className }) {
       <Separator />
       <div className="flex flex-col">
         <DetailLabel>{t('Note')}</DetailLabel>
-        <div className="h-14 break-words overflow-y-auto px-1.5 text-xs">
+        <div className="h-14 wrap-break-word overflow-y-auto px-1.5 text-xs">
           {rent.description}
         </div>
       </div>

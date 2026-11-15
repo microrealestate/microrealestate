@@ -10,18 +10,18 @@ import { RiContractLine } from 'react-icons/ri';
 
 const leftMenuItems = [
   {
-    key: 'todo',
-    labelId: 'To do',
-    pathname: '/todo',
-    Icon: LuListTodo,
-    dataCy: 'todoNav'
-  },
-  {
     key: 'dashboard',
     labelId: 'Dashboard',
     pathname: '/dashboard',
     Icon: LuLayoutDashboard,
     dataCy: 'dashboardNav'
+  },
+  {
+    key: 'todo',
+    labelId: 'To do',
+    pathname: '/todo',
+    Icon: LuListTodo,
+    dataCy: 'todoNav'
   },
   {
     key: 'rents',
@@ -32,18 +32,18 @@ const leftMenuItems = [
     dataCy: 'rentsNav'
   },
   {
-    key: 'tenants',
-    labelId: 'Tenants',
-    pathname: '/tenants',
-    Icon: LuCircleUser,
-    dataCy: 'tenantsNav'
-  },
-  {
     key: 'properties',
     labelId: 'Properties',
     pathname: '/properties',
     Icon: LuKeyRound,
     dataCy: 'propertiesNav'
+  },
+  {
+    key: 'tenants',
+    labelId: 'Tenants',
+    pathname: '/tenants',
+    Icon: LuCircleUser,
+    dataCy: 'tenantsNav'
   },
   {
     key: 'contracts',

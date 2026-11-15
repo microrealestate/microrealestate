@@ -123,3 +123,22 @@ export function signature(breakPoints: PageBreakPoint[]): string {
     )
     .join('|');
 }
+
+export function scaleFromTransform(
+  transform: string | null | undefined
+): number {
+  const match = /^matrix\(\s*([-\d.e]+)/.exec(transform ?? '');
+  const scale = match ? Number.parseFloat(match[1]) : 1;
+  return Number.isFinite(scale) && scale > 0 ? scale : 1;
+}
+
+// rects are visual px: divide by the scale before subtracting layout px
+export function layoutOffset(
+  visual: number,
+  originVisual: number,
+  scale: number,
+  paddingTop: number,
+  shift: number
+): number {
+  return (visual - originVisual) / scale - paddingTop - shift;
+}

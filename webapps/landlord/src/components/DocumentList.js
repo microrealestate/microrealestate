@@ -1,10 +1,12 @@
 import { Button } from '@microrealestate/commonui/components/ui/button';
+import { useTranslations } from 'next-intl';
 import { useCallback } from 'react';
 import { GrDocumentText } from 'react-icons/gr';
 import { LuTrash } from 'react-icons/lu';
 import { MdOutlineScanner } from 'react-icons/md';
 
 const DocumentItem = ({ document, onEdit, onDelete, disabled }) => {
+  const t = useTranslations('common');
   const handleEditClick = useCallback(() => {
     onEdit(document);
   }, [onEdit, document]);
@@ -14,11 +16,11 @@ const DocumentItem = ({ document, onEdit, onDelete, disabled }) => {
   }, [onDelete, document]);
 
   return (
-    <div className="flex gap-2 items-center border rounded-full px-1 py-0.5 w-fit">
+    <div className="flex gap-2 items-center border rounded-full px-1 py-0.5 w-fit max-w-full">
       <Button
         variant="link"
         onClick={() => handleEditClick(document._id)}
-        className="flex items-center gap-1 p-0 h-fit w-fit text-xs font-normal text-secondary-foreground whitespace-normal"
+        className="flex min-w-0 items-center gap-1 p-0 h-fit w-fit text-xs font-normal text-secondary-foreground whitespace-normal break-words text-left"
       >
         {document.type === 'text' ? (
           <GrDocumentText className="size-3.5" />
@@ -31,6 +33,7 @@ const DocumentItem = ({ document, onEdit, onDelete, disabled }) => {
         variant="secondary"
         onClick={handleDeleteClick}
         disabled={disabled}
+        aria-label={t('Delete {name}', { name: document.name })}
         className="p-1 h-fit rounded-full"
       >
         <LuTrash className="size-4" />

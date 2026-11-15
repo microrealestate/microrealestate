@@ -7,10 +7,10 @@ import { useRouter } from '@/i18n/navigation';
 import { fetchTenantCount, QueryKeys } from '../../utils/restcalls';
 import { DashboardCard } from '../dashboard/DashboardCard';
 
-function TenantCountCard({ year, className }) {
+function TenantCountCard() {
   const router = useRouter();
   const t = useTranslations('common');
-  const currentYear = year || moment().year();
+  const currentYear = moment().year();
 
   const { data, isLoading, error } = useQuery({
     queryKey: [QueryKeys.TENANT_COUNT, currentYear],
@@ -29,7 +29,6 @@ function TenantCountCard({ year, className }) {
       onClick={() => {
         router.push(`/tenants`);
       }}
-      className={className}
     />
   );
 }

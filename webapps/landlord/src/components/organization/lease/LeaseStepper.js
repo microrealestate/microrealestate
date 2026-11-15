@@ -46,7 +46,7 @@ export default function LeaseStepper({ onSubmit }) {
     try {
       await onSubmit({ stepperMode: false });
       setValidSteps([true, true]);
-      goBack();
+      goBack('/settings/contracts');
     } catch (_error) {
       // do nothing on error
     }

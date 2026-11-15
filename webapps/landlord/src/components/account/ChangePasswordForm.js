@@ -1,9 +1,9 @@
 import { SubmitButton } from '@microrealestate/commonui/components/formfields/SubmitButton';
 import { TextField } from '@microrealestate/commonui/components/formfields/TextField';
+import { toast } from '@microrealestate/commonui/components/ui/sonner';
 import { Form, Formik } from 'formik';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
-import { toast } from 'sonner';
 import * as Yup from 'yup';
 import { useRouter } from '@/i18n/navigation';
 import { useStore } from '@/providers/StoreProvider';
@@ -38,7 +38,6 @@ function ChangePasswordForm() {
       );
 
       if (status === 200) {
-        toast.success(t('Password updated. Please sign in again.'));
         // the server already revoked the session, this clears the client state
         await store.user.signOut();
         router.push('/signin');

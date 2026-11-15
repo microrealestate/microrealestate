@@ -12,7 +12,9 @@ export default async function RootLayout({
 }) {
   const headerStore = await headers();
   const sessionString = headerStore.get('x-session');
-  const session = sessionString ? JSON.parse(sessionString) : null;
+  const session = sessionString
+    ? JSON.parse(decodeURIComponent(sessionString))
+    : null;
 
   return (
     <SessionProvider session={session}>
