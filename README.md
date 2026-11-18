@@ -1,4 +1,4 @@
-<div align="center">
+<div align="center"> 
   <h1>MicroRealEstate</h1>
   <p><strong>Leases, rents and receipts in one app. Self-hosted on a machine you own.</strong></p>
   <p>
